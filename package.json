@@ -3,6 +3,7 @@
   "displayName": "DevChat",
   "description": "Write prompts to create code!",
   "version": "0.0.1",
+  "publisher": "merico",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -14,8 +15,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "devchat.helloWorld",
-        "title": "Hello World"
+        "command": "devchat.prompt",
+        "title": "DevChat: Prompt"
       }
     ]
   },
