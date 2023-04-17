@@ -2,7 +2,7 @@
   "name": "devchat",
   "displayName": "DevChat",
   "description": "Write prompts to create code!",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publisher": "merico",
   "engines": {
     "vscode": "^1.77.0"
@@ -46,5 +46,12 @@
     "webpack": "^5.76.3",
     "webpack-cli": "^5.0.1",
     "@vscode/test-electron": "^2.3.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/covespace/devchat-vscode.git"
+  },
+  "bugs": {
+    "url": "https://github.com/covespace/devchat-vscode/issues"
   }
 }
