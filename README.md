@@ -1,6 +1,6 @@
-# DevChat
+# Visual Studio Code Extension for DevChat
 
-The last app developed on `git`. All the rest on [`cove`](https://www.covespace.dev).
+See https://github.com/covespace/devchat.
 
 ## Features
 
