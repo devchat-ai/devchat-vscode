@@ -1,0 +1,90 @@
+:root {
+  --vscode-background: var(--vscode-editor-background);
+  --vscode-foreground: var(--vscode-editor-foreground);
+  --vscode-border: var(--vscode-editorWidget-border);
+  --vscode-button-bg: var(--vscode-button-background);
+  --vscode-button-fg: var(--vscode-button-foreground);
+  --vscode-button-hover-bg: var(--vscode-button-hoverBackground);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--vscode-background);
+  color: var(--vscode-foreground);
+  margin: 0;
+  padding: 0;
+}
+
+#chat-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+#messages-container {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.message {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.sender-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 40px; 
+}
+
+.message-text {
+  flex-grow: 1;
+  padding: 5px 10px; /* Add some padding to the message text */
+  border-radius: 4px;
+}
+
+.user-message .message-text {
+  background-color: #007acc; /* Different background color for user messages */
+  color: white;
+}
+
+.bot-message .message-text {
+  background-color: #f1f1f1; /* Different background color for bot messages */
+  color: black;
+}
+
+.action-icon {
+  width: 24px;
+  height: 24px;
+  margin-left: 10px;
+}
+
+#input-container {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+}
+
+#message-input {
+  flex-grow: 1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 5px;
+  outline: none;
+}
+
+#send-button {
+  margin-left: 10px;
+  background-color: var(--vscode-button-bg);
+  color: var(--vscode-button-fg);
+  border: 1px solid var(--vscode-border);
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+#send-button:hover {
+  background-color: var(--vscode-button-hover-bg);
+}
