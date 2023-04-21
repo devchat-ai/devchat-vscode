@@ -1,10 +1,14 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import { v4 as uuidv4 } from 'uuid';
+import { chatWithGPT } from './openaiClient';
 
 export default class ChatPanel {
   public static currentPanel: ChatPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
+  private _session_id: string;
+  private _messageHistory: Array<{ role: string; content: string }>;
   private _disposables: vscode.Disposable[] = [];
 
   public static createOrShow(extensionUri: vscode.Uri) {
@@ -12,30 +16,26 @@ export default class ChatPanel {
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
 
-    // If the panel already exists, show it in the target column
-    if (ChatPanel.currentPanel) {
-      ChatPanel.currentPanel._panel.reveal(column);
-      return;
-    }
-
-    // Create a new panel
+    // Create a new webview panel
     const panel = vscode.window.createWebviewPanel(
       'chatPanel',
-      'Chat with Bot',
+      'Chat Panel',
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
-        retainContextWhenHidden: true
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
       }
     );
 
-    // Create a new ChatPanel instance and set it as the current panel
-    ChatPanel.currentPanel = new ChatPanel(panel, extensionUri);
+    // Set the webview's initial HTML content
+    new ChatPanel(panel, extensionUri, uuidv4()));
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, session_id: string) {
     // ... initialize the chat panel ...
     this._panel = panel;
+    this._session_id = session_id;
+    this._messageHistory = [];
 
     // Set the webview options
     this._panel.webview.options = {
@@ -49,6 +49,22 @@ export default class ChatPanel {
     // Handle webview events and dispose of the panel when closed
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
+    this._panel.webview.onDidReceiveMessage(
+      async (message) => {
+        switch (message.command) {
+          case 'sendMessage':
+            const [status, response] = await chatWithGPT(message.text, this._session_id, this._messageHistory);
+            if (status == 0) {
+              this._messageHistory.push({ role: 'user', content: message.text });
+              this._messageHistory.push({ role: 'assistant', content: response });
+            }
+            this._panel.webview.postMessage({ command: 'receiveMessage', text: response });
+            return;
+        }
+      },
+      null,
+      this._disposables
+    );
   }
 
   private _getHtmlContent(extensionUri: vscode.Uri): string {
