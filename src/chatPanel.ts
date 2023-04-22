@@ -8,10 +8,21 @@ export default class ChatPanel {
   public static currentPanel: ChatPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
   private _session_id: string;
+  private _sessionName: string;
   private _messageHistory: Array<{ role: string; content: string }>;
   private _disposables: vscode.Disposable[] = [];
+  private static _sessions: { [sessionName: string]: ChatPanel } = {};
 
-  public static createOrShow(extensionUri: vscode.Uri) {
+
+  public static createOrShow(extensionUri: vscode.Uri, sessionName: string) {
+    const session = ChatPanel._sessions[sessionName];
+
+    if (session) {
+      // If a session with the given name exists, reveal the existing panel
+      session._panel.reveal();
+      return
+    }
+
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
@@ -19,7 +30,7 @@ export default class ChatPanel {
     // Create a new webview panel
     const panel = vscode.window.createWebviewPanel(
       'chatPanel',
-      'Chat Panel',
+      sessionName,
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
@@ -28,12 +39,18 @@ export default class ChatPanel {
     );
 
     // Set the webview's initial HTML content
-    new ChatPanel(panel, extensionUri, uuidv4());
+    const chatPanel = new ChatPanel(panel, extensionUri, uuidv4(), sessionName);
+    ChatPanel._sessions[sessionName] = chatPanel;
   }
 
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, session_id: string) {
+  public static sessions() {
+    return ChatPanel._sessions;
+  }
+
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, session_id: string, sessionName: string) {
     // ... initialize the chat panel ...
     this._panel = panel;
+    this._sessionName = sessionName;
     this._session_id = session_id;
     this._messageHistory = [];
 
@@ -80,6 +97,17 @@ export default class ChatPanel {
 
   public dispose() {
     // ... dispose the panel and clean up resources ...
+    // Remove the ChatPanel instance from the _sessions object
+    delete ChatPanel._sessions[this._sessionName];
+
+    // Dispose of the WebviewPanel and other resources
+    this._panel.dispose();
+    while (this._disposables.length) {
+      const disposable = this._disposables.pop();
+      if (disposable) {
+        disposable.dispose();
+      }
+    }
   }
 
   // ... other helper methods ...
