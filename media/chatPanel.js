@@ -26,32 +26,49 @@
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  function processMessage(message) {
-      // Process the message and get the bot's response
-      // For an echo bot, return the same message
-      return message;
-    }
-  
-    sendButton.addEventListener('click', () => {
-      const message = messageInput.value;
-      if (message) {
-        const userIconClass = 'fas fa-user-circle';
+  window.addEventListener('message', (event) => {
+    const message = event.data;
+    switch (message.command) {
+      case 'receiveMessage':
+        // Display the received message in the chat UI
         const botIconClass = 'fas fa-robot';
         const actionIconClass = 'fas fa-check-circle';
-  
-        addMessageToUI(message, userIconClass, actionIconClass, 'user-message');
-        messageInput.value = '';
-  
-        const botResponse = processMessage(message);
-        addMessageToUI(botResponse, botIconClass, actionIconClass, 'bot-message');
-      }
+
+        addMessageToUI(message.text, botIconClass, actionIconClass, 'bot-message');
+        break;
+    }
+  });
+
+  function processMessage(message) {
+    // Process the message and get the bot's response
+    // For an echo bot, return the same message
+    vscode.postMessage({
+      command: 'sendMessage',
+      text: message
     });
-  
-    messageInput.addEventListener('keypress', (event) => {
-      if (event.key === 'Enter') {
-        sendButton.click();
-      }
-    });
-  })();
-  
-  
+
+    return message;
+  }
+
+  sendButton.addEventListener('click', () => {
+    const message = messageInput.value;
+    if (message) {
+      const userIconClass = 'fas fa-user-circle';
+      const botIconClass = 'fas fa-robot';
+      const actionIconClass = 'fas fa-check-circle';
+
+      addMessageToUI(message, userIconClass, actionIconClass, 'user-message');
+      messageInput.value = '';
+
+      const botResponse = processMessage(message);
+      
+    }
+  });
+
+  messageInput.addEventListener('keypress', (event) => {
+    if (event.key === 'Enter') {
+      sendButton.click();
+    }
+  });
+})();
+
