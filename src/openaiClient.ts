@@ -1,8 +1,15 @@
 
 const { Configuration, OpenAIApi } = require("openai");
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+const extensionDir = path.resolve(__dirname, '..');
+const envFilePath = path.join(extensionDir, '.env');
+const dotenvOutput = dotenv.config({ path: envFilePath });
+console.log('dotenv output:', dotenvOutput);
 
 const configuration = new Configuration({
-apiKey: "sk-xxxx",
+apiKey: process.env.OPENAI_API_KEY,
 });
 
 // Set up proxy settings
@@ -22,15 +29,7 @@ export async function chatWithGPT(prompt: string, session_id: string, messageLis
         },
       ];
 
-      const some_array = [
-            {role: 'user', content: 'how are you?'},
-            {role: 'assistant', content: "As an AI language model, I don't have feelin… you for asking. How can I assist you today?"},
-            {role: 'user', content: 'what is my question?'}
-        ]
-
     try {
-        console.log(fullConversation)
-        console.log(some_array)
         let completion = await openai.createChatCompletion({
             model: "gpt-3.5-turbo",
             messages: fullConversation,

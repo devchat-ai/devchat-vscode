@@ -28,7 +28,7 @@ export default class ChatPanel {
     );
 
     // Set the webview's initial HTML content
-    new ChatPanel(panel, extensionUri, uuidv4()));
+    new ChatPanel(panel, extensionUri, uuidv4());
   }
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, session_id: string) {
