@@ -37,8 +37,3 @@ function activate(context: { extensionUri: any; subscriptions: any[]; }) {
 	  context.subscriptions.push(disposable);
 }
 exports.activate = activate;
-
-function processMessage(message: any) {
-	// For an echo bot, return the same message
-	return message;
-  }
