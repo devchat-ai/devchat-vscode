@@ -1,106 +1,93 @@
+// chatPanel.ts
+
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
-import { v4 as uuidv4 } from 'uuid';
-import { chatWithGPT } from './openaiClient';
+import DevChat from './devchat';
+import handleMessage from './messageHandler';
 
 export default class ChatPanel {
-  public static currentPanel: ChatPanel | undefined;
+  private static _instance: ChatPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
-  private _session_id: string;
-  private _sessionName: string;
   private _messageHistory: Array<{ role: string; content: string }>;
   private _disposables: vscode.Disposable[] = [];
-  private static _sessions: { [sessionName: string]: ChatPanel } = {};
 
-
-  public static createOrShow(extensionUri: vscode.Uri, sessionName: string) {
-    const session = ChatPanel._sessions[sessionName];
-
-    if (session) {
-      // If a session with the given name exists, reveal the existing panel
-      session._panel.reveal();
-      return
+  // Create or reveal the chat panel
+  public static createOrShow(extensionUri: vscode.Uri) {
+    if (ChatPanel._instance) {
+      ChatPanel._instance._panel.reveal();
+    } else {
+      const panel = ChatPanel.createWebviewPanel(extensionUri);
+      ChatPanel._instance = new ChatPanel(panel, extensionUri);
     }
+  }
 
+  // Create a new webview panel
+  private static createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
     const column = vscode.window.activeTextEditor
       ? vscode.window.activeTextEditor.viewColumn
       : undefined;
 
-    // Create a new webview panel
-    const panel = vscode.window.createWebviewPanel(
+    return vscode.window.createWebviewPanel(
       'chatPanel',
-      sessionName,
+      'Chat',
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
-        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
       }
     );
-
-    // Set the webview's initial HTML content
-    const chatPanel = new ChatPanel(panel, extensionUri, uuidv4(), sessionName);
-    ChatPanel._sessions[sessionName] = chatPanel;
   }
 
-  public static sessions() {
-    return ChatPanel._sessions;
-  }
-
-  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri, session_id: string, sessionName: string) {
-    // ... initialize the chat panel ...
+  private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this._panel = panel;
-    this._sessionName = sessionName;
-    this._session_id = session_id;
     this._messageHistory = [];
 
-    // Set the webview options
+    this.setWebviewOptions(extensionUri);
+    this.setWebviewContent(extensionUri);
+    this.registerEventListeners();
+  }
+
+  // Set webview options
+  private setWebviewOptions(extensionUri: vscode.Uri) {
     this._panel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')]
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
     };
+  }
 
-    // Set the webview content
+  // Set webview content
+  private setWebviewContent(extensionUri: vscode.Uri) {
     this._panel.webview.html = this._getHtmlContent(extensionUri);
+  }
 
-    // Handle webview events and dispose of the panel when closed
+  // Register event listeners for the panel and webview
+  private registerEventListeners() {
     this._panel.onDidDispose(() => this.dispose(), null, this._disposables);
 
     this._panel.webview.onDidReceiveMessage(
       async (message) => {
-        switch (message.command) {
-          case 'sendMessage':
-            const [status, response] = await chatWithGPT(message.text, this._session_id, this._messageHistory);
-            if (status == 0) {
-              this._messageHistory.push({ role: 'user', content: message.text });
-              this._messageHistory.push({ role: 'assistant', content: response });
-            }
-            this._panel.webview.postMessage({ command: 'receiveMessage', text: response });
-            return;
-        }
+        handleMessage(message, this._panel);
       },
       null,
       this._disposables
     );
   }
 
+  // Get the HTML content for the panel
   private _getHtmlContent(extensionUri: vscode.Uri): string {
     const htmlPath = vscode.Uri.joinPath(extensionUri, 'media', 'chatPanel.html');
     const htmlContent = fs.readFileSync(htmlPath.fsPath, 'utf8');
 
-    // Replace the resource placeholder with the correct resource URI
     return htmlContent.replace(/<vscode-resource:(\/.+?)>/g, (_, resourcePath) => {
       const resourceUri = vscode.Uri.joinPath(extensionUri, 'media', resourcePath);
       return this._panel.webview.asWebviewUri(resourceUri).toString();
     });
   }
 
+  // Dispose the panel and clean up resources
   public dispose() {
-    // ... dispose the panel and clean up resources ...
-    // Remove the ChatPanel instance from the _sessions object
-    delete ChatPanel._sessions[this._sessionName];
-
-    // Dispose of the WebviewPanel and other resources
+    ChatPanel._instance = undefined;
     this._panel.dispose();
     while (this._disposables.length) {
       const disposable = this._disposables.pop();
@@ -109,6 +96,4 @@ export default class ChatPanel {
       }
     }
   }
-
-  // ... other helper methods ...
 }
