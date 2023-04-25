@@ -1,21 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- ... meta tags, title, etc. ... -->
+    <!-- Meta tags for responsiveness and charset -->
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Chat Panel</title>
+
+    <!-- Font Awesome icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.0/css/all.min.css" />
     <link rel="stylesheet" href="<vscode-resource:/chatPanel.css>" />
+    <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js"></script>
   </head>
   <body>
     <div id="chat-container">
       <div id="messages-container">
         <!-- Chat messages will be added here dynamically -->
       </div>
+      <div id="input-resize-handle" class="input-resize-handle"></div>
       <div id="input-container">
-        <input id="message-input" type="text" placeholder="Type your message..." />
+        <textarea id="message-input" placeholder="Type your message..."></textarea>
         <button id="send-button">Send</button>
       </div>
     </div>
-    <script src="<vscode-resource:/chatPanel.js>"></script>
-    
+
+    <!-- Load the chatPanel.js file -->
+    <script src="<vscode-resource:/chatUI.js>"></script>
+    <script src="<vscode-resource:/resizeInput.js>"></script>
+    <script src="<vscode-resource:/clipboard.js>"></script>
+    <script src="<vscode-resource:/main.js>"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        Prism.highlightAll();
+      });
+    </script>
   </body>
 </html>

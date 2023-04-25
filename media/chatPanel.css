@@ -15,11 +15,52 @@ body {
   padding: 0;
 }
 
+p {
+  margin-top: 0;
+}
+
+pre {
+  background-color: #f1f1f1;
+  overflow: auto;
+  margin-top: 0;
+}
+
 #chat-container {
   display: flex;
   flex-direction: column;
   height: 100vh;
 }
+
+.code-block {
+  background-color: #f1f1f1;
+  color: #000000;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-y: auto;
+  font-size: 14px;
+  margin: 0;
+  display: block;
+  margin: 10px 0;
+  padding: 10px;
+  background-color: #f1f1f1;
+  border-radius: 5px;
+  overflow: auto;
+}
+
+.copy-button {
+  background-color: #007acc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px;
+  cursor: pointer;
+  margin-top: 5px;
+}
+
+.copy-button:hover {
+  background-color: #005b8e;
+}
+
 
 #messages-container {
   flex-grow: 1;
@@ -27,35 +68,57 @@ body {
   padding: 10px;
 }
 
-.message {
+.message-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
   margin: 20px 0;
-}
-
-.sender-icon {
-  width: 24px;
-  height: 24px;
-  margin-right: 40px; 
-}
-
-.message-text {
-  flex-grow: 1;
-  padding: 5px 10px; /* Add some padding to the message text */
+  padding: 10px;
   border-radius: 4px;
+  border-bottom: 1px solid var(--vscode-border);
 }
 
-.user-message .message-text {
-  background-color: #007acc; /* Different background color for user messages */
+.message-item.user-message {
+  background-color: #007acc;
   color: white;
 }
 
-.bot-message .message-text {
-  background-color: #f1f1f1; /* Different background color for bot messages */
-  color: black;
+.message-content {
+  margin-left: 30px;
+  margin-right: 30px;
 }
 
-.action-icon {
+.message-item .message-content {
+  flex-grow: 1;
+}
+
+.new-message-textarea {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background-color: transparent;
+  padding: 0;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  overflow: hidden;
+  resize: none;
+}
+
+.message-item .message-content code {
+  background-color: #ddd;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.message-item .sender-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 10px;
+}
+
+.message-item .action-icon {
   width: 24px;
   height: 24px;
   margin-left: 10px;
@@ -63,9 +126,20 @@ body {
 
 #input-container {
   display: flex;
+  flex-direction: column;
   padding: 10px;
   border-top: 1px solid #ccc;
 }
+
+.input-resize-handle {
+  width: 100%;
+  height: 5px;
+  cursor: ns-resize;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+}
+
 
 #message-input {
   flex-grow: 1;
@@ -73,10 +147,11 @@ body {
   border-radius: 4px;
   padding: 5px;
   outline: none;
+  resize: none;
 }
 
 #send-button {
-  margin-left: 10px;
+  margin-top: 10px;
   background-color: var(--vscode-button-bg);
   color: var(--vscode-button-fg);
   border: 1px solid var(--vscode-border);

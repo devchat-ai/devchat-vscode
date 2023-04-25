@@ -17,8 +17,6 @@ const openai = new OpenAIApi(configuration);
 
 const HttpsProxyAgent = require('https-proxy-agent')
 const HttpProxyAgent = require('http-proxy-agent');
-const httpAgent = new HttpProxyAgent("http://127.0.0.1:4780");
-const httpsAgent = new HttpsProxyAgent("http://127.0.0.1:4780");
 
 export async function chatWithGPT(prompt: string, session_id: string, messageList: Array<{ role: string; content: string }>): Promise<any[]> {
     const fullConversation = [
@@ -41,8 +39,6 @@ export async function chatWithGPT(prompt: string, session_id: string, messageLis
             stop: null,
         },
             {
-                httpAgent,
-                httpsAgent
             }
         );
 
