@@ -44,7 +44,10 @@ function addMessageToUI(role, content, partial = false) {
     const messagesContainer = document.getElementById('messages-container');
 
     // Render the markdown content inside the message content container
-    const renderedContent = md.render(content);
+    let renderedContent = md.render(content);
+    if (role == "user") {
+      renderedContent = md.render("\`\`\`\n" + content);
+    }
     
     let lastBotMessage = getLastBotMessageItem(messagesContainer);
     let lastMessageContent;
@@ -80,8 +83,10 @@ function addMessageToUI(role, content, partial = false) {
     const codeBlocks = messageContent.querySelectorAll('pre > code');
   
     // Initialize the Apply Patch functionality
-    initButtonForCodeBlock(codeBlocks);
-
+    if (role != "user") {
+      initButtonForCodeBlock(codeBlocks);
+    }
+    
     messageItem.appendChild(senderIcon);
     messageItem.appendChild(messageContent);
 
