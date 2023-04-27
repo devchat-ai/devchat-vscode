@@ -1,11 +1,68 @@
+// chatUI.js
+
 const vscode_api = acquireVsCodeApi();
 const md = new markdownit();
 
-function addMessageToUI(role, content) {
+function getLastBotMessageItem(messagesContainer) {
+  const lastMessage = messagesContainer.lastElementChild;
+
+  if (lastMessage && lastMessage.classList.contains('message-item')) {
+      const lastMessageIcon = lastMessage.querySelector('i');
+      if (lastMessageIcon && lastMessageIcon.classList.contains('fa-robot')) {
+          return lastMessage;
+      }
+  }
+
+  return null;
+}
+
+function initButtonForCodeBlock(codeBlocks) {
+  codeBlocks.forEach(block => {
+    block.classList.add('code-block');
+    });
+
+  initClipboard(codeBlocks, (patchContent) => {
+    postVSCodeMessage({
+      command: 'block_apply',
+      content: patchContent,
+    });
+  }, (codeContent) => {
+    postVSCodeMessage({
+      command: 'code_apply',
+      content: codeContent,
+    });
+  }, (codeContent) => {
+    postVSCodeMessage({
+      command: 'code_file_apply',
+      content: codeContent,
+    });
+  });
+}
+
+function addMessageToUI(role, content, partial = false) {
     // Create a MarkdownIt instance for rendering markdown content
     const messagesContainer = document.getElementById('messages-container');
 
-    // Create a container for the message item
+    // Render the markdown content inside the message content container
+    const renderedContent = md.render(content);
+    
+    let lastBotMessage = getLastBotMessageItem(messagesContainer);
+    let lastMessageContent;
+
+    if (role == 'bot' && lastBotMessage != null) {
+      lastMessageContent = lastBotMessage.querySelector('.message-content');
+      lastMessageContent.innerHTML = renderedContent;
+
+      if (!partial) {
+        // Find any code blocks in the rendered content and add a class to style them
+        const codeBlocks = lastMessageContent.querySelectorAll('pre > code');
+      
+        // Initialize the Apply Patch functionality
+        initButtonForCodeBlock(codeBlocks);
+      }
+      return;
+    }
+
     const messageItem = document.createElement('div');
     messageItem.classList.add('message-item');
   
@@ -17,17 +74,13 @@ function addMessageToUI(role, content) {
     // Create a container for the message content
     const messageContent = document.createElement('div');
     messageContent.classList.add('message-content');
-  
-    // Render the markdown content inside the message content container
-    const renderedContent = md.render(content);
     messageContent.innerHTML = renderedContent;
   
     // Find any code blocks in the rendered content and add a class to style them
     const codeBlocks = messageContent.querySelectorAll('pre > code');
-    codeBlocks.forEach(block => {
-    block.classList.add('code-block');
-    });
-    initClipboard(codeBlocks);
+  
+    // Initialize the Apply Patch functionality
+    initButtonForCodeBlock(codeBlocks);
 
     messageItem.appendChild(senderIcon);
     messageItem.appendChild(messageContent);
@@ -121,4 +174,16 @@ function processMessage(message) {
 function processMessageUI(message) {
     addMessageToUI('user', message);
     processMessage(message);
+}
+
+// Function to request history messages from the extension
+function requestHistoryMessages() {
+  // Send a message to the extension with the 'historyMessages' command
+  vscode_api.postMessage({
+    command: 'historyMessages',
+  });
+}
+
+function postVSCodeMessage(message) {
+  vscode_api.postMessage(message);
 }

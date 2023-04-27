@@ -9,7 +9,6 @@ import handleMessage from './messageHandler';
 export default class ChatPanel {
   private static _instance: ChatPanel | undefined;
   private readonly _panel: vscode.WebviewPanel;
-  private _messageHistory: Array<{ role: string; content: string }>;
   private _disposables: vscode.Disposable[] = [];
 
   // Create or reveal the chat panel
@@ -20,6 +19,10 @@ export default class ChatPanel {
       const panel = ChatPanel.createWebviewPanel(extensionUri);
       ChatPanel._instance = new ChatPanel(panel, extensionUri);
     }
+  }
+
+  public static currentPanel(): ChatPanel | undefined {
+    return ChatPanel._instance;
   }
 
   // Create a new webview panel
@@ -35,13 +38,13 @@ export default class ChatPanel {
       {
         enableScripts: true,
         localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+        retainContextWhenHidden: true
       }
     );
   }
 
   private constructor(panel: vscode.WebviewPanel, extensionUri: vscode.Uri) {
     this._panel = panel;
-    this._messageHistory = [];
 
     this.setWebviewOptions(extensionUri);
     this.setWebviewContent(extensionUri);
@@ -59,6 +62,10 @@ export default class ChatPanel {
   // Set webview content
   private setWebviewContent(extensionUri: vscode.Uri) {
     this._panel.webview.html = this._getHtmlContent(extensionUri);
+  }
+
+  public panel() : vscode.WebviewPanel {
+    return this._panel;
   }
 
   // Register event listeners for the panel and webview

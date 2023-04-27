@@ -47,6 +47,22 @@ pre {
   overflow: auto;
 }
 
+.context-menu {
+  position: absolute;
+  display: none;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 8px;
+  z-index: 10;
+}
+.context-menu-item {
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.context-menu-item:last-child {
+  margin-bottom: 0;
+}
+
 .copy-button {
   background-color: #007acc;
   color: white;
