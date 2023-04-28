@@ -23,9 +23,44 @@
     "commands": [
       {
         "command": "devchat.openChatPanel",
-        "title": "Open Chat Panel"
+        "title": "DevChat"
+      },
+      {
+        "command": "devchat.addConext",
+        "title": "add to DevChat"
+      },
+      {
+        "command": "devchat.askForCode",
+        "title": "add to DevChat"
+      },
+      {
+        "command": "devchat.askForFile",
+        "title": "add to DevChat"
       }
-    ]
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "when": "resourceLangId != 'git'",
+          "command": "devchat.addConext",
+          "group": "navigation"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "devchat.askForCode",
+          "when": "editorTextFocus && editorHasSelection",
+          "group": "navigation",
+          "title": "add to DevChat"
+        },
+        {
+          "command": "devchat.askForFile",
+          "when": "editorTextFocus && !editorHasSelection",
+          "group": "navigation",
+          "title": "add to DevChat"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
@@ -40,15 +75,19 @@
   },
   "devDependencies": {
     "@types/glob": "^8.1.0",
+    "@types/jest": "^29.5.1",
     "@types/mocha": "^10.0.1",
     "@types/node": "16.x",
+    "@types/shell-escape": "^0.2.1",
     "@types/vscode": "^1.77.0",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
     "@typescript-eslint/parser": "^5.56.0",
     "@vscode/test-electron": "^2.3.0",
     "eslint": "^8.36.0",
     "glob": "^8.1.0",
+    "jest": "^29.5.0",
     "mocha": "^10.2.0",
+    "ts-jest": "^29.1.0",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.5",
     "webpack": "^5.76.3",
@@ -60,6 +99,8 @@
     "node-fetch": "^3.3.1",
     "nonce": "^1.0.4",
     "openai": "^3.2.1",
+    "quote": "^0.4.0",
+    "shell-escape": "^0.2.0",
     "uuid": "^9.0.0"
   }
 }
