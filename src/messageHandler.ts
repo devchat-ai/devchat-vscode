@@ -7,6 +7,10 @@ import { promisify } from 'util';
 import DevChat, { LogOptions } from './devchat';
 import DtmWrapper from './dtm';
 import applyCode, {applyCodeFile} from './applyCode';
+
+import './loadCommands';
+import CommandManager, { Command } from './commandManager';
+
 import * as vscode3 from 'vscode';
 
 const writeFileAsync = promisify(fs.writeFile);
@@ -102,6 +106,14 @@ async function handleMessage(
       return;
     case 'code_file_apply':
       await applyCodeFile(message.content);
+      return;
+    case 'regCommandList':
+      const commandList = CommandManager.getInstance().getCommandList();
+      panel.webview.postMessage({ command: 'regCommandList', result: commandList });
+      return;
+    case 'convertCommand':
+      const newText = CommandManager.getInstance().processText(message.text);
+      panel.webview.postMessage({ command: 'convertCommand', result: newText });
       return;
   }
 }
