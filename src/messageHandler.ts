@@ -41,18 +41,42 @@ export function askAI(panel: vscode.WebviewPanel, codeBlock: string, question: s
 }
 
 // Add this function to messageHandler.ts
-function parseMessageForContext(message: string): { context: string[]; text: string } {
+function parseMessage(message: string): { context: string[]; instruction: string[]; reference: string[]; text: string } {
   const contextRegex = /\[context\|(.*?)\]/g;
+  const instructionRegex = /\[instruction\|(.*?)\]/g;
+  const referenceRegex = /\[reference\|(.*?)\]/g;
+
   const contextPaths = [];
+  const instructionPaths = [];
+  const referencePaths = [];
+
   let match;
 
+  // 提取 context
   while ((match = contextRegex.exec(message)) !== null) {
     contextPaths.push(match[1]);
   }
 
-  const text = message.replace(contextRegex, '').trim();
-  return { context: contextPaths, text };
+  // 提取 instruction
+  while ((match = instructionRegex.exec(message)) !== null) {
+    instructionPaths.push(match[1]);
+  }
+
+  // 提取 reference
+  while ((match = referenceRegex.exec(message)) !== null) {
+    referencePaths.push(match[1]);
+  }
+
+  // 移除标签，保留纯文本
+  const text = message
+    .replace(contextRegex, '')
+    .replace(instructionRegex, '')
+    .replace(referenceRegex, '')
+    .trim();
+
+  return { context: contextPaths, instruction: instructionPaths, reference: referencePaths, text };
 }
+
 
 async function handleMessage(
   message: any,
@@ -63,11 +87,20 @@ async function handleMessage(
 
   switch (message.command) {
     case 'sendMessage':
-      const parsedMessage = parseMessageForContext(message.text);
+      const newText2 = await CommandManager.getInstance().processText(message.text);
+      panel.webview.postMessage({ command: 'convertCommand', result: newText2 });
+
+      const parsedMessage = parseMessage(newText2);
       const chatOptions: any = lastPromptHash ? { parent: lastPromptHash } : {};
 
       if (parsedMessage.context.length > 0) {
         chatOptions.context = parsedMessage.context;
+      }
+      if (parsedMessage.instruction.length > 0) {
+        chatOptions.instruction = parsedMessage.instruction;
+      }
+      if (parsedMessage.reference.length > 0) {
+        chatOptions.reference = parsedMessage.reference;
       }
 
       let partialData = "";
@@ -112,7 +145,7 @@ async function handleMessage(
       panel.webview.postMessage({ command: 'regCommandList', result: commandList });
       return;
     case 'convertCommand':
-      const newText = CommandManager.getInstance().processText(message.text);
+      const newText = await CommandManager.getInstance().processText(message.text);
       panel.webview.postMessage({ command: 'convertCommand', result: newText });
       return;
   }
