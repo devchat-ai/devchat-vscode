@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
+import ExtensionContextHolder from './extensionContext';
 
 const mkdirAsync = promisify(fs.mkdir);
 const execAsync = promisify(exec);
@@ -53,6 +54,9 @@ export const commitMessageCommand: Command = {
     const diff_file = path.join(tempDir, 'diff_output.txt');
     await writeDiffFile(diff_file);
 
-    return `[instruction|./commonInstructions.txt] [instruction|./commitMessageCommandInstructions.txt] [context|${diff_file}] Write a commit message`;
+    const commonInstructions = vscode.Uri.joinPath(ExtensionContextHolder.context?.extensionUri as vscode.Uri, 'instructions/commonInstructions.txt');
+    const commitMsgInstructions = vscode.Uri.joinPath(ExtensionContextHolder.context?.extensionUri as vscode.Uri, 'instructions/commitMessageCommandInstructions.txt');
+
+    return `[instruction|${commonInstructions.path}] [instruction|${commitMsgInstructions.path}] [context|${diff_file}] Write a commit message`;
   },
 };

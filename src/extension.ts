@@ -1,11 +1,12 @@
-const vscode = require('vscode');
+import * as vscode from 'vscode';
 const ChatPanel = require('./chatPanel').default;
 const sendFileSelectMessage = require('./messageHandler').sendFileSelectMessage;
 const sendCodeSelectMessage = require('./messageHandler').sendCodeSelectMessage;
 const askAI = require('./messageHandler').askAI;
+import ExtensionContextHolder from './extensionContext';
 
-
-function activate(context: { extensionUri: any; subscriptions: any[]; }) {
+function activate(context: vscode.ExtensionContext) {
+  ExtensionContextHolder.context = context;
   let disposable = vscode.commands.registerCommand('devchat.openChatPanel', () => {
     if (vscode.workspace.workspaceFolders) {
       ChatPanel.createOrShow(context.extensionUri);
