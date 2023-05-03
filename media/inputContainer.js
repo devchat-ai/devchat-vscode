@@ -1,4 +1,20 @@
 
+const messageInput = document.getElementById('message-input');
+const inputContainer = document.getElementById('input-container');
+
+const defaultHeight = 16;
+
+function autoResizeTextarea() {
+    const lineCount = (messageInput.value.match(/\n/g) || []).length + 1;
+    messageInput.style.height = 'auto';
+    messageInput.style.height = (lineCount <= 1 ? defaultHeight : messageInput.scrollHeight) + 'px';
+    inputContainer.style.height = 'auto';
+    inputContainer.style.height = messageInput.style.height + 25;
+}
+
+messageInput.addEventListener('input', autoResizeTextarea);
+
+autoResizeTextarea();
 
 function initInputContainer() {
     const messageInput = document.getElementById('message-input');
@@ -15,6 +31,7 @@ function initInputContainer() {
             } else if (!e.shiftKey) {
                 e.preventDefault();
                 messageInput.setRangeText('\n', messageInput.selectionStart, messageInput.selectionEnd, 'end');
+                autoResizeTextarea();
             }
         }
     });
@@ -33,6 +50,7 @@ function initInputContainer() {
                 command: 'sendMessage',
                 text: message
             });
+            autoResizeTextarea();
         }
     });
 
