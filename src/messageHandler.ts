@@ -97,7 +97,7 @@ async function handleMessage(
         chatOptions.context = parsedMessage.context;
       }
       if (parsedMessage.instruction.length > 0) {
-        chatOptions.instruction = parsedMessage.instruction;
+        chatOptions.header = parsedMessage.instruction;
       }
       if (parsedMessage.reference.length > 0) {
         chatOptions.reference = parsedMessage.reference;
