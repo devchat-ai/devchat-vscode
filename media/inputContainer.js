@@ -5,11 +5,16 @@ function initInputContainer() {
     const sendButton = document.getElementById('send-button');
 
     messageInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const message = messageInput.value.trim();
-            if (message !== '') {
-                sendButton.click();
+        if (e.key === 'Enter') {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (message !== '') {
+                    sendButton.click();
+                }
+            } else if (!e.shiftKey) {
+                e.preventDefault();
+                messageInput.setRangeText('\n', messageInput.selectionStart, messageInput.selectionEnd, 'end');
             }
         }
     });
@@ -19,10 +24,10 @@ function initInputContainer() {
         if (message) {
             // Add the user's message to the chat UI
             addMessageToUI('user', message);
-    
+
             // Clear the input field
             messageInput.value = '';
-    
+
             // Process and send the message to the extension
             messageUtil.sendMessage({
                 command: 'sendMessage',
