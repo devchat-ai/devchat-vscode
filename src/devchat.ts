@@ -74,10 +74,10 @@ class DevChat {
         args.push("-r", options.reference.join(","));
       }
       if (options.header) {
-        args.push("--header", options.header.join(","));
+        args.push("-i", options.header.join(","));
       }
       if (options.context) {
-        args.push("--context", options.context.join(","));
+        args.push("-c", options.context.join(","));
       }
       args.push(content)
     
