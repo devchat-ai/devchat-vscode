@@ -3,7 +3,9 @@
 
 function processMessageUI(message) {
     addMessageToUI('user', message);
-    processMessage(message);
+    messageUtil.sendMessage({
+        command: 'sendMessage',
+        text: message});
 }
 
 function userMessageActions(messageItem, onCancel, onSend, onEdit) {
@@ -68,12 +70,12 @@ function userMessageActions(messageItem, onCancel, onSend, onEdit) {
 function messageItemActions(messageItem, messageContent, role) {
     if (role === 'user') {
         userMessageActions(messageItem, () => { // onCancel
-            const textArea = messageItem.findChild('.edit-textarea');
+            const textArea = messageItem.querySelector('.edit-textarea');
             textArea.replaceWith(messageContent)
             // Remove the text area, save button, and cancel button
             textArea.remove();
         }, () => { // onSend
-            const textArea = messageItem.findChild('.edit-textarea');
+            const textArea = messageItem.querySelector('.edit-textarea');
             const newMessage = textArea.value.trim();
             if (newMessage !== '') {
                 textArea.replaceWith(messageContent)
