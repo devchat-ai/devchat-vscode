@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
+import { createTempSubdirectory } from './commonUtil';
 import ExtensionContextHolder from './extensionContext';
 
 const mkdirAsync = promisify(fs.mkdir);
@@ -46,11 +47,9 @@ export const commitMessageCommand: Command = {
   pattern: 'git: commit message',
   description: 'commit message for changes',
   handler: async (userInput: string) => {
-    const systemTempDir = os.tmpdir();
-    const tempDir = path.join(systemTempDir, 'devchat/context');
+    const tempDir = createTempSubdirectory('devchat/context');
 
     // 创建临时目录
-    await createTempDirectory(tempDir);
     const diff_file = path.join(tempDir, 'diff_output.txt');
     await writeDiffFile(diff_file);
 
