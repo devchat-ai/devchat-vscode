@@ -1,10 +1,5 @@
-// dtm.ts
-
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import * as vscode from 'vscode';
-
-const execAsync = promisify(exec);
 
 interface DtmResponse {
   status: number;
@@ -19,21 +14,45 @@ class DtmWrapper {
     this.workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
   }
 
-  async scaffold(directoryTree: string): Promise<DtmResponse> {
-    const { stdout } = await execAsync(`dtm scaffold "${directoryTree}" -o json`, {
-      cwd: this.workspaceDir,
+  private async runCommand(command: string, args: string[]): Promise<DtmResponse> {
+    return new Promise((resolve, reject) => {
+      const child = spawn(command, args, { cwd: this.workspaceDir });
+      let stdout = '';
+      let stderr = '';
+
+      child.stdout.on('data', (data) => {
+        stdout += data;
+      });
+
+      child.stderr.on('data', (data) => {
+        stderr += data;
+      });
+
+      child.on('close', (code) => {
+        if (code === 0) {
+          resolve(JSON.parse(stdout.trim()));
+        } else {
+          reject(JSON.parse(stdout.trim()));
+        }
+      });
     });
-    return JSON.parse(stdout.trim());
+  }
+
+  async scaffold(directoryTree: string): Promise<DtmResponse> {
+    return await this.runCommand('dtm', ['scaffold', directoryTree, '-o', 'json']);
   }
 
   async patch(patchFilePath: string): Promise<DtmResponse> {
+    return await this.runCommand('dtm', ['patch', patchFilePath, '-o', 'json']);
+  }
+
+  async commit(commitMsg: string): Promise<DtmResponse> {
     try {
-        const { stdout } = await execAsync(`dtm patch ${patchFilePath} -o json`, {
-        cwd: this.workspaceDir,
-        });
-        return JSON.parse(stdout.trim());
-    } catch (e) {
-        return JSON.parse((e as Error & { stdout: string }).stdout.trim());
+      return await this.runCommand('dtm', ['commit', '-m', commitMsg, '-o', 'json']);
+    } catch (error) {
+      // 处理异常
+      console.error('Error in commit:', error);
+      return {'status': -1, 'message': 'exception error', 'log': 'exception error'};
     }
   }
 }
