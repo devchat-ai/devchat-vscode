@@ -179,3 +179,37 @@ pre {
 #send-button:hover {
   background-color: var(--vscode-button-hover-bg);
 }
+
+.popup-context-menu {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+}
+.popup-context-menu a {
+  color: black;
+  text-decoration: none;
+  display: block;
+}
+.popup-context-menu a:hover {
+  background-color: #f1f1f1;
+}
+
+.popup-command-menu {
+  display: none;
+  position: absolute;
+  background-color: #f9f9f9;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  padding: 12px 16px;
+  z-index: 1;
+}
+.popup-command-menu a {
+  color: black;
+  text-decoration: none;
+  display: block;
+}
+.popup-command-menu a:hover {
+  background-color: #f1f1f1;
+}

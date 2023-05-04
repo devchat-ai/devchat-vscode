@@ -9,7 +9,9 @@ import DtmWrapper from './dtm';
 import applyCode, {applyCodeFile} from './applyCode';
 
 import './loadCommands';
+import './loadContexts'
 import CommandManager, { Command } from './commandManager';
+import ChatContextManager from './contextManager';
 
 import * as vscode3 from 'vscode';
 
@@ -177,6 +179,14 @@ async function handleMessage(
       } else {
         vscode.window.showErrorMessage(`Error commit fail: ${commitResult.message} ${commitResult.log}`);
       }
+      return;
+    case 'regContextList':
+      const contextList = ChatContextManager.getInstance().getContextList();
+      panel.webview.postMessage({ command: 'regContextList', result: contextList });
+      return;
+    case 'addContext':
+      const contextStr = await ChatContextManager.getInstance().processText(message.selected);
+      panel.webview.postMessage({ command: 'appendContext', context: contextStr });
       return;
   }
 }
