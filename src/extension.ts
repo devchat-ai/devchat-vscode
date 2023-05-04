@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 const ChatPanel = require('./chatPanel').default;
 const sendFileSelectMessage = require('./messageHandler').sendFileSelectMessage;
 const sendCodeSelectMessage = require('./messageHandler').sendCodeSelectMessage;
-const askAI = require('./messageHandler').askAI;
 import ExtensionContextHolder from './extensionContext';
 
 function activate(context: vscode.ExtensionContext) {
