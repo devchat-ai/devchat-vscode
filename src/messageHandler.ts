@@ -12,6 +12,8 @@ import './loadCommands';
 import './loadContexts'
 import CommandManager, { Command } from './commandManager';
 import ChatContextManager from './contextManager';
+import { handleCodeSelected } from './contextCodeSelected';
+import { handleFileSelected } from './contextFileSelected';
 
 import * as vscode3 from 'vscode';
 
@@ -30,12 +32,14 @@ async function deleteTempPatchFile(filePath: string): Promise<void> {
   await unlinkAsync(filePath);
 }
 
-export function sendFileSelectMessage(panel: vscode.WebviewPanel, filePath: string): void {
-  panel.webview.postMessage({ command: 'file_select', filePath });
+export async function sendFileSelectMessage(panel: vscode.WebviewPanel, filePath: string): Promise<void> {
+  const codeContext = await handleFileSelected(filePath);
+  panel.webview.postMessage({ command: 'appendContext', context: codeContext });
 }
 
-export function sendCodeSelectMessage(panel: vscode.WebviewPanel, codeBlock: string): void {
-  panel.webview.postMessage({ command: 'code_select', codeBlock });
+export async function sendCodeSelectMessage(panel: vscode.WebviewPanel, filePath: string, codeBlock: string): Promise<void> {
+  const codeContext = await handleCodeSelected(filePath, codeBlock);
+  panel.webview.postMessage({ command: 'appendContext', context: codeContext });
 }
 
 export function askAI(panel: vscode.WebviewPanel, codeBlock: string, question: string): void {
