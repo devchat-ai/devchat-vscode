@@ -37,7 +37,7 @@ export default class ChatPanel {
       column || vscode.ViewColumn.One,
       {
         enableScripts: true,
-        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+        localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')],
         retainContextWhenHidden: true
       }
     );
@@ -55,7 +55,7 @@ export default class ChatPanel {
   private setWebviewOptions(extensionUri: vscode.Uri) {
     this._panel.webview.options = {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'media')],
+      localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')],
     };
   }
 
@@ -64,7 +64,7 @@ export default class ChatPanel {
     this._panel.webview.html = this._getHtmlContent(extensionUri);
   }
 
-  public panel() : vscode.WebviewPanel {
+  public panel(): vscode.WebviewPanel {
     return this._panel;
   }
 
@@ -83,11 +83,12 @@ export default class ChatPanel {
 
   // Get the HTML content for the panel
   private _getHtmlContent(extensionUri: vscode.Uri): string {
-    const htmlPath = vscode.Uri.joinPath(extensionUri, 'media', 'chatPanel.html');
+    const htmlPath = vscode.Uri.joinPath(extensionUri, 'dist', 'assets', 'chatPanel.html');
+    // const htmlPath = vscode.Uri.joinPath(extensionUri, 'dist', 'index.html');
     const htmlContent = fs.readFileSync(htmlPath.fsPath, 'utf8');
 
     return htmlContent.replace(/<vscode-resource:(\/.+?)>/g, (_, resourcePath) => {
-      const resourceUri = vscode.Uri.joinPath(extensionUri, 'media', resourcePath);
+      const resourceUri = vscode.Uri.joinPath(extensionUri, 'dist', resourcePath);
       return this._panel.webview.asWebviewUri(resourceUri).toString();
     });
   }
