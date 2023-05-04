@@ -1,4 +1,20 @@
 
+const messageInput = document.getElementById('message-input');
+const inputContainer = document.getElementById('input-container');
+
+const defaultHeight = 16;
+
+function autoResizeTextarea() {
+    const lineCount = (messageInput.value.match(/\n/g) || []).length + 1;
+    messageInput.style.height = 'auto';
+    messageInput.style.height = (lineCount <= 1 ? defaultHeight : messageInput.scrollHeight) + 'px';
+    inputContainer.style.height = 'auto';
+    inputContainer.style.height = messageInput.style.height + 25;
+}
+
+messageInput.addEventListener('input', autoResizeTextarea);
+
+autoResizeTextarea();
 
 function initInputContainer() {
     const messageInput = document.getElementById('message-input');
@@ -12,11 +28,17 @@ function initInputContainer() {
     let commandList = [];
 
     messageInput.addEventListener('keypress', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const message = messageInput.value.trim();
-            if (message !== '') {
-                sendButton.click();
+        if (e.key === 'Enter') {
+            if (e.ctrlKey) {
+                e.preventDefault();
+                const message = messageInput.value.trim();
+                if (message !== '') {
+                    sendButton.click();
+                }
+            } else if (!e.shiftKey) {
+                e.preventDefault();
+                messageInput.setRangeText('\n', messageInput.selectionStart, messageInput.selectionEnd, 'end');
+                autoResizeTextarea();
             }
         }
     });
@@ -26,15 +48,16 @@ function initInputContainer() {
         if (message) {
             // Add the user's message to the chat UI
             addMessageToUI('user', message);
-    
+
             // Clear the input field
             messageInput.value = '';
-    
+
             // Process and send the message to the extension
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: message
             });
+            autoResizeTextarea();
         }
     });
 
