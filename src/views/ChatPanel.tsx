@@ -16,10 +16,23 @@ const useStyles = createStyles((theme, _params, classNames) => ({
         height: '100%',
         backgroundColor: theme.colors.gray[0],
     },
-    menu: {
+    plusMenu: {
         top: 'unset !important',
         left: '31px !important',
         bottom: 60,
+    },
+    commandMenu: {
+        top: 'unset !important',
+        left: '31px !important',
+        bottom: 60,
+    },
+    commandText: {
+        fontSize: '1.0rem',
+        fontWeight: 'bolder',
+    },
+    commandDesc: {
+        fontSize: '0.8rem',
+        color: theme.colors.gray[6],
     },
     icon: {
         pointerEvents: 'all',
@@ -29,6 +42,7 @@ const useStyles = createStyles((theme, _params, classNames) => ({
 const chatPanel = () => {
 
     const [opened, setOpened] = useState(false);
+    const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
 
@@ -39,6 +53,15 @@ const chatPanel = () => {
     const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>) => {
         if (opened) { setOpened(false); }
     };
+    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value
+        // if value start with '/' command show menu
+        if (value.startsWith('/')) {
+            setCommandOpened(true);
+        } else {
+            setCommandOpened(false);
+        }
+    }
 
     return (
         <Container className={classes.panel} onClick={handleContainerClick}>
@@ -51,8 +74,8 @@ const chatPanel = () => {
                     <List.Item>Submit a pull request once you are done</List.Item>
                 </List>
             </ScrollArea>
-            <Menu shadow="md" width={200} opened={opened} onChange={setOpened} >
-                <Menu.Dropdown className={classes.menu}>
+            <Menu id='plusMenu' shadow="md" width={200} opened={opened} onChange={setOpened} >
+                <Menu.Dropdown className={classes.plusMenu}>
                     <Menu.Label>Application</Menu.Label>
                     <Menu.Item icon={<IconSettings size={14} />}>Settings</Menu.Item>
                     <Menu.Item icon={<IconMessageCircle size={14} />}>Messages</Menu.Item>
@@ -71,6 +94,56 @@ const chatPanel = () => {
                     <Menu.Item color="red" icon={<IconTrash size={14} />}>Delete my account</Menu.Item>
                 </Menu.Dropdown>
             </Menu>
+            <Menu id='commandMenu' shadow="md" width={500} opened={commandOpened} onChange={setCommandOpened} >
+                <Menu.Dropdown className={classes.commandMenu}>
+                    <Menu.Label>Context Commands</Menu.Label>
+                    <Menu.Item>
+                        <Text className={classes.commandText}>
+                            /ref
+                        </Text>
+                        <Text className={classes.commandDesc}>
+                            Run a local CLI and add its output to the context (e.g., pytest .).
+                        </Text>
+                    </Menu.Item>
+                    <Menu.Item>
+                        <Text className={classes.commandText}>
+                            /local
+                        </Text>
+                        <Text className={classes.commandDesc}>
+                            Bypass AI and run a local CLI to check its output (e.g., git status).
+                        </Text>
+                    </Menu.Item>
+
+                    <Menu.Divider />
+
+                    <Menu.Label>DevChat Bots</Menu.Label>
+
+                    <Menu.Item>
+                        <Text className={classes.commandText}>
+                            /code
+                        </Text>
+                        <Text className={classes.commandDesc}>
+                            Generate or update code.
+                        </Text>
+                    </Menu.Item>
+                    <Menu.Item>
+                        <Text className={classes.commandText}>
+                            /commit_message
+                        </Text>
+                        <Text className={classes.commandDesc}>
+                            Write a commit message.
+                        </Text>
+                    </Menu.Item>
+                    <Menu.Item>
+                        <Text className={classes.commandText}>
+                            /doc
+                        </Text>
+                        <Text className={classes.commandDesc}>
+                            Write a doc for reference, wiki, or discussion.
+                        </Text>
+                    </Menu.Item>
+                </Menu.Dropdown>
+            </Menu>
             <Input
                 multiline={true}
                 radius="md"
@@ -85,6 +158,7 @@ const chatPanel = () => {
                         <IconSend size="1rem" />
                     </ActionIcon>
                 }
+                onChange={handleInputChange}
             />
         </Container>
     );
