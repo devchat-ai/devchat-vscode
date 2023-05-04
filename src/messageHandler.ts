@@ -148,6 +148,14 @@ async function handleMessage(
       const newText = await CommandManager.getInstance().processText(message.text);
       panel.webview.postMessage({ command: 'convertCommand', result: newText });
       return;
+    case 'doCommit':
+      const commitResult = await dtmWrapper.commit(message.content);
+      if (commitResult.status === 0) {
+        vscode.window.showInformationMessage('Commit successfully.');
+      } else {
+        vscode.window.showErrorMessage(`Error commit fail: ${commitResult.message} ${commitResult.log}`);
+      }
+      return;
   }
 }
 
