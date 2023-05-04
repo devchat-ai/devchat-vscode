@@ -1,13 +1,29 @@
-import React from 'react';
-import { Button } from '@mantine/core';
+import * as React from 'react';
+import { useState } from 'react';
+import {
+    AppShell,
+    Navbar,
+    Header,
+    Footer,
+    Aside,
+    Text,
+    MediaQuery,
+    Burger,
+    useMantineTheme,
+} from '@mantine/core';
+import ChatPanel from './ChatPanel';
 
-const App = () => {
+export default function App() {
+    const theme = useMantineTheme();
     return (
-        <div>
-            <h1>Hello World!</h1>
-            <Button>Click me!</Button>
-        </div>
+        <AppShell
+            styles={{
+                main: {
+                    background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
+                },
+            }}
+        >
+            <ChatPanel />
+        </AppShell>
     );
-};
-
-export default App;
+}
