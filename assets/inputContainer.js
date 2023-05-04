@@ -110,7 +110,7 @@ function initInputContainer() {
                 // 阻止<a>标签的默认行为（例如导航到链接）
                 event.preventDefault();
                 // 在此处定义点击处理逻辑
-                messageUtil.sendMessage({command: 'addContext', selected: item.href})
+                messageUtil.sendMessage({ command: 'addContext', selected: item.href })
                 // 隐藏弹出菜单
                 popupContextMenu.style.display = 'none';
             });
@@ -147,8 +147,8 @@ function initInputContainer() {
         });
     });
 
-    messageUtil.sendMessage({command: 'regContextList'});
-    messageUtil.sendMessage({command: 'regCommandList'});
+    messageUtil.sendMessage({ command: 'regContextList' });
+    messageUtil.sendMessage({ command: 'regCommandList' });
 }
 
 function addFileToMessageInput(filePath) {
