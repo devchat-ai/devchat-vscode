@@ -9,6 +9,7 @@ const sendCodeSelectMessage = require('./messageHandler').sendCodeSelectMessage;
 import ExtensionContextHolder from './extensionContext';
 
 function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.Uri) {
+  
   const workspaceFolders = vscode.workspace.workspaceFolders;
   if (!workspaceFolders) {
     return;
@@ -51,7 +52,7 @@ function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  const disposable_add_context = vscode.commands.registerCommand('devchat.addConext', (uri: { path: any; }) => {
+  const disposable_add_context = vscode.commands.registerCommand('devchat.addConext', async (uri: { path: any; }) => {
     if (!ChatPanel.currentPanel()) {
       if (vscode.workspace.workspaceFolders) {
         ChatPanel.createOrShow(context.extensionUri);
@@ -61,7 +62,7 @@ function activate(context: vscode.ExtensionContext) {
       }
     }
 
-    sendFileSelectMessage(ChatPanel.currentPanel().panel(), uri.path);
+    await sendFileSelectMessage(ChatPanel.currentPanel().panel(), uri.path);
   });
   
   const disposableCodeContext = vscode.commands.registerCommand('devchat.askForCode', async () => {
@@ -77,7 +78,7 @@ function activate(context: vscode.ExtensionContext) {
       }
   
       const selectedText = editor.document.getText(editor.selection);
-      sendCodeSelectMessage(ChatPanel.currentPanel().panel(), selectedText);
+      await sendCodeSelectMessage(ChatPanel.currentPanel().panel(), editor.document.fileName, selectedText);
     }
   });
 
