@@ -22,6 +22,8 @@ function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.Uri) {
     // 检查 .chat 目录是否存在，如果不存在，则创建它
     if (!fs.existsSync(chatDirPath)) {
       fs.mkdirSync(chatDirPath);
+    } else {
+      return;
     }
 
     // 将 instructions 目录复制到 .chat 目录中
