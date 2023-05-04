@@ -77,6 +77,28 @@ function parseMessage(message: string): { context: string[]; instruction: string
   return { context: contextPaths, instruction: instructionPaths, reference: referencePaths, text };
 }
 
+function getInstructionFiles(): string[] {
+  const instructionFiles: string[] = [];
+  const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+  if (workspaceDir) {
+    const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions');
+    try {
+      // 读取 chatInstructionsPath 目录下的所有文件和目录
+      const files = fs.readdirSync(chatInstructionsPath);
+      // 过滤出文件，忽略目录
+      for (const file of files) {
+        const filePath = path.join(chatInstructionsPath, file);
+        const fileStats = fs.statSync(filePath);
+        if (fileStats.isFile()) {
+          instructionFiles.push(filePath);
+        }
+      }
+    } catch (error) {
+      console.error('Error reading instruction files:', error);
+    }
+  }
+  return instructionFiles;
+}
 
 async function handleMessage(
   message: any,
@@ -96,9 +118,9 @@ async function handleMessage(
       if (parsedMessage.context.length > 0) {
         chatOptions.context = parsedMessage.context;
       }
-      if (parsedMessage.instruction.length > 0) {
-        chatOptions.header = parsedMessage.instruction;
-      }
+
+      chatOptions.header = getInstructionFiles();
+
       if (parsedMessage.reference.length > 0) {
         chatOptions.reference = parsedMessage.reference;
       }

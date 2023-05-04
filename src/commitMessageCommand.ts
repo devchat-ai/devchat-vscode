@@ -54,9 +54,6 @@ export const commitMessageCommand: Command = {
     const diff_file = path.join(tempDir, 'diff_output.txt');
     await writeDiffFile(diff_file);
 
-    const commonInstructions = vscode.Uri.joinPath(ExtensionContextHolder.context?.extensionUri as vscode.Uri, 'instructions/commonInstructions.txt');
-    const commitMsgInstructions = vscode.Uri.joinPath(ExtensionContextHolder.context?.extensionUri as vscode.Uri, 'instructions/commitMessageCommandInstructions.txt');
-
-    return `[instruction|${commonInstructions.path}] [instruction|${commitMsgInstructions.path}] [context|${diff_file}] Write a commit message`;
+    return `[context|${diff_file}] Write a commit message`;
   },
 };
