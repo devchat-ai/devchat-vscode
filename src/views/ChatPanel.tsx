@@ -12,6 +12,7 @@ import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import { useRemark } from 'react-remark';
+import MessageUtil from '../utils/MessageUtil';
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -56,9 +57,11 @@ const chatPanel = () => {
 
     const [reactContent, setMarkdownSource] = useRemark();
     const [opened, setOpened] = useState(false);
+    const [input, setInput] = useState('');
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
+    const messageUtil = new MessageUtil();
 
     const demoCode = `import { Button } from '@mantine/core';
     function Demo() {
@@ -76,15 +79,47 @@ const chatPanel = () => {
     const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>) => {
         if (opened) { setOpened(false); }
     };
+    const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const message = input;
+        if (message) {
+            // Add the user's message to the chat UI
+            // addMessageToUI('user', message);
+
+            // Clear the input field
+            event.currentTarget.value = '';
+
+            // Process and send the message to the extension
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: message
+            });
+        }
+    };
+
+    // Register message handlers for receiving messages from the extension
+    messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
+        console.log(`receiveMessage: ${message.text}`);
+        // Add the received message to the chat UI as a bot message
+        setMarkdownSource(message.text);
+    });
+
+    messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+        console.log(`receiveMessagePartial: ${message.text}`);
+        // Add the received message to the chat UI as a bot message
+        setMarkdownSource(message.text);
+    });
+
+
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value
+        const value = event.target.value;
         // if value start with '/' command show menu
         if (value.startsWith('/')) {
             setCommandOpened(true);
         } else {
             setCommandOpened(false);
         }
-    }
+        setInput(value);
+    };
 
     return (
         <Container className={classes.panel} onClick={handleContainerClick}>
@@ -208,7 +243,7 @@ const chatPanel = () => {
                     </ActionIcon>
                 }
                 rightSection={
-                    <ActionIcon>
+                    <ActionIcon onClick={handleSendClick}>
                         <IconSend size="1rem" />
                     </ActionIcon>
                 }
