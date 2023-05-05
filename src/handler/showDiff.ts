@@ -1,49 +1,8 @@
-const vscode = require('vscode');
+import * as vscode from 'vscode';
+import {messageHandler} from './messageHandler';
 import * as path from 'path';
-import { createTempSubdirectory } from './commonUtil';
+import { createTempSubdirectory } from '../util/commonUtil';
 
-
-export async function applyCodeFile(text: string) {
-    if (vscode.window.visibleTextEditors.length > 1) {
-        vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
-        return;
-    }
-
-    const editor = vscode.window.visibleTextEditors[0];
-    if (!editor) {
-      return;
-    }
-  
-    const document = editor.document;
-    const fullRange = new vscode.Range(
-        document.positionAt(0),
-        document.positionAt(document.getText().length)
-    );
-  
-    await editor.edit((editBuilder: string) => {
-      editBuilder.replace(fullRange, text);
-    });
-  }
-
-export async function applyCode(text: string) {
-    if (vscode.window.visibleTextEditors.length > 1) {
-        vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
-        return;
-    }
-
-    const editor = vscode.window.visibleTextEditors[0];
-    if (!editor) {
-      return;
-    }
-  
-    const selection = editor.selection;
-    const start = selection.start;
-    const end = selection.end;
-  
-    await editor.edit((editBuilder: string) => {
-      editBuilder.replace(new vscode.Range(start, end), text);
-    });
-  }
 
 export  async function diffView(code: string) {
     if (vscode.window.visibleTextEditors.length > 1) {
@@ -85,3 +44,17 @@ export  async function diffView(code: string) {
       vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
     }
   }
+
+
+async function showDiff(message: any, panel: vscode.WebviewPanel): Promise<void> {
+	diffView(message.content);
+    return;
+}
+
+async function blockApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+	diffView(message.content);
+    return;
+}
+
+messageHandler.registerHandler('block_apply', blockApply);
+messageHandler.registerHandler('show_diff', showDiff);

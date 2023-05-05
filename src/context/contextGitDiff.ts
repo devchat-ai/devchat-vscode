@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { ChatContext } from './contextManager';
-import { createTempSubdirectory, runCommandAndWriteOutput } from './commonUtil';
+import { createTempSubdirectory, runCommandAndWriteOutput } from '../util/commonUtil';
 
 export const gitDiffContext: ChatContext = {
   name: 'git diff',

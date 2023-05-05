@@ -7,8 +7,8 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { promisify } from 'util';
-import { createTempSubdirectory } from './commonUtil';
-import ExtensionContextHolder from './extensionContext';
+import { createTempSubdirectory } from '../util/commonUtil';
+import ExtensionContextHolder from '../util/extensionContext';
 
 const mkdirAsync = promisify(fs.mkdir);
 const execAsync = promisify(exec);
