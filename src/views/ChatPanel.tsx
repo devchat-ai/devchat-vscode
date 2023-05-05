@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Avatar, Container, Divider, Flex, Grid, Stack } from '@mantine/core';
+import { Avatar, Container, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -11,6 +11,7 @@ import { useViewportSize } from '@mantine/hooks';
 import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
+import { useRemark } from 'react-remark';
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -35,13 +36,25 @@ const useStyles = createStyles((theme, _params, classNames) => ({
         fontSize: '0.8rem',
         color: theme.colors.gray[6],
     },
+    responseContent: {
+        marginTop: 8,
+        marginLeft: 0,
+        marginRight: 0,
+    },
     icon: {
         pointerEvents: 'all',
+    },
+    avatar: {
+        marginTop: 8,
+        marginLeft: 8,
+    },
+    messageBody: {
     },
 }));
 
 const chatPanel = () => {
 
+    const [reactContent, setMarkdownSource] = useRemark();
     const [opened, setOpened] = useState(false);
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
@@ -51,6 +64,10 @@ const chatPanel = () => {
     function Demo() {
     return <Button>Hello</Button>
     }`;
+
+    setMarkdownSource(`# code block
+    print '3 backticks or'
+    print 'indent 4 spaces'`);
 
     const handlePlusBottonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
@@ -76,39 +93,39 @@ const chatPanel = () => {
                     mih={50}
                     gap="md"
                     justify="flex-start"
-                    align="center"
+                    align="flex-start"
                     direction="row"
                     wrap="wrap"
+                    className={classes.messageBody}
                 >
-                    <Avatar src={null} alt="no image here" >
-                        <IconUser size="1.125rem" />
+                    <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}>
+                        <IconUser size="1.5rem" />
                     </Avatar>
-                    <Text>
-                        Write a hello world, and explain it.
-                    </Text>
-                    <ActionIcon>
-                        <IconEdit size="1.125rem" />
-                    </ActionIcon>
+                    <Container className={classes.responseContent}>
+                        <Text>
+                            Write a hello world, and explain it.
+                        </Text>
+                    </Container>
+                    {/* <ActionIcon>
+                        <IconEdit size="1.5rem" />
+                    </ActionIcon> */}
                 </Flex>
-                <Divider />
+                <Divider my="sm" label="Mar 4, 2023" labelPosition="center" />
                 <Flex
                     mih={50}
                     gap="md"
                     justify="flex-start"
-                    align="center"
+                    align="flex-start"
                     direction="row"
                     wrap="wrap"
+                    className={classes.messageBody}
                 >
-                    <Avatar>
-                        <IconRobot size="1.125rem" />
+                    <Avatar color="blue" size='md' radius="xl" className={classes.avatar}>
+                        <IconRobot size="1.5rem" />
                     </Avatar>
-                    {/* <Prism language="tsx">{demoCode}</Prism> */}
-                    <Text>
-                        Write a hello world, and explain it.
-                    </Text>
-                    <ActionIcon>
-                        <IconEdit size="1.125rem" />
-                    </ActionIcon>
+                    <Container className={classes.responseContent}>
+                        {reactContent}
+                    </Container>
                 </Flex>
             </ScrollArea>
             <Menu id='plusMenu' shadow="md" width={200} opened={opened} onChange={setOpened} >
