@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Container } from '@mantine/core';
+import { Avatar, Container, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -8,8 +8,11 @@ import { createStyles } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useViewportSize } from '@mantine/hooks';
-import { IconSend, IconSquareRoundedPlus } from '@tabler/icons-react';
+import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
+import { Prism } from '@mantine/prism';
+import { useRemark } from 'react-remark';
+import MessageUtil from '../utils/MessageUtil';
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -34,17 +37,40 @@ const useStyles = createStyles((theme, _params, classNames) => ({
         fontSize: '0.8rem',
         color: theme.colors.gray[6],
     },
+    responseContent: {
+        marginTop: 8,
+        marginLeft: 0,
+        marginRight: 0,
+    },
     icon: {
         pointerEvents: 'all',
+    },
+    avatar: {
+        marginTop: 8,
+        marginLeft: 8,
+    },
+    messageBody: {
     },
 }));
 
 const chatPanel = () => {
 
+    const [reactContent, setMarkdownSource] = useRemark();
     const [opened, setOpened] = useState(false);
+    const [input, setInput] = useState('');
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
+    const messageUtil = new MessageUtil();
+
+    const demoCode = `import { Button } from '@mantine/core';
+    function Demo() {
+    return <Button>Hello</Button>
+    }`;
+
+    setMarkdownSource(`# code block
+    print '3 backticks or'
+    print 'indent 4 spaces'`);
 
     const handlePlusBottonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
@@ -53,26 +79,89 @@ const chatPanel = () => {
     const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>) => {
         if (opened) { setOpened(false); }
     };
+    const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        const message = input;
+        if (message) {
+            // Add the user's message to the chat UI
+            // addMessageToUI('user', message);
+
+            // Clear the input field
+            event.currentTarget.value = '';
+
+            // Process and send the message to the extension
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: message
+            });
+        }
+    };
+
+    // Register message handlers for receiving messages from the extension
+    messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
+        console.log(`receiveMessage: ${message.text}`);
+        // Add the received message to the chat UI as a bot message
+        setMarkdownSource(message.text);
+    });
+
+    messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+        console.log(`receiveMessagePartial: ${message.text}`);
+        // Add the received message to the chat UI as a bot message
+        setMarkdownSource(message.text);
+    });
+
+
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const value = event.target.value
+        const value = event.target.value;
         // if value start with '/' command show menu
         if (value.startsWith('/')) {
             setCommandOpened(true);
         } else {
             setCommandOpened(false);
         }
-    }
+        setInput(value);
+    };
 
     return (
         <Container className={classes.panel} onClick={handleContainerClick}>
             <ScrollArea h={height - 70} type="never">
-                <List>
-                    <List.Item>Clone or download repository from GitHub</List.Item>
-                    <List.Item>Install dependencies with yarn</List.Item>
-                    <List.Item>To start development server run npm start command</List.Item>
-                    <List.Item>Run tests to make sure your changes do not break the build</List.Item>
-                    <List.Item>Submit a pull request once you are done</List.Item>
-                </List>
+                <Flex
+                    mih={50}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    className={classes.messageBody}
+                >
+                    <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}>
+                        <IconUser size="1.5rem" />
+                    </Avatar>
+                    <Container className={classes.responseContent}>
+                        <Text>
+                            Write a hello world, and explain it.
+                        </Text>
+                    </Container>
+                    {/* <ActionIcon>
+                        <IconEdit size="1.5rem" />
+                    </ActionIcon> */}
+                </Flex>
+                <Divider my="sm" label="Mar 4, 2023" labelPosition="center" />
+                <Flex
+                    mih={50}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    className={classes.messageBody}
+                >
+                    <Avatar color="blue" size='md' radius="xl" className={classes.avatar}>
+                        <IconRobot size="1.5rem" />
+                    </Avatar>
+                    <Container className={classes.responseContent}>
+                        {reactContent}
+                    </Container>
+                </Flex>
             </ScrollArea>
             <Menu id='plusMenu' shadow="md" width={200} opened={opened} onChange={setOpened} >
                 <Menu.Dropdown className={classes.plusMenu}>
@@ -154,7 +243,7 @@ const chatPanel = () => {
                     </ActionIcon>
                 }
                 rightSection={
-                    <ActionIcon>
+                    <ActionIcon onClick={handleSendClick}>
                         <IconSend size="1rem" />
                     </ActionIcon>
                 }
