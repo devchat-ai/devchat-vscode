@@ -87,7 +87,7 @@ function getInstructionFiles(): string[] {
   const instructionFiles: string[] = [];
   const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
   if (workspaceDir) {
-    const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions');
+    const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions', 'default');
     try {
       // 读取 chatInstructionsPath 目录下的所有文件和目录
       const files = fs.readdirSync(chatInstructionsPath);
@@ -126,6 +126,9 @@ async function handleMessage(
       }
 
       chatOptions.header = getInstructionFiles();
+      if (parsedMessage.instruction.length > 0) {
+        chatOptions.header = parsedMessage.instruction;
+      }
 
       if (parsedMessage.reference.length > 0) {
         chatOptions.reference = parsedMessage.reference;
