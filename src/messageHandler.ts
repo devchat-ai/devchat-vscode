@@ -6,7 +6,7 @@ import * as path from 'path';
 import { promisify } from 'util';
 import DevChat, { LogOptions } from './devchat';
 import DtmWrapper from './dtm';
-import applyCode, {applyCodeFile} from './applyCode';
+import {applyCodeFile, diffView, applyCode} from './applyCode';
 
 import './loadCommands';
 import './loadContexts'
@@ -147,20 +147,12 @@ async function handleMessage(
       const logEntries = await devChat.log(logOptions);
       panel.webview.postMessage({ command: 'loadHistoryMessages', entries: logEntries });
       return;
+    case 'show_diff':
+      diffView(message.content);
+      return;
+    // TODO: remove block_apply
     case 'block_apply':
-      const tempPatchFile = await saveTempPatchFile(message.content);
-      try {
-        const patchResult = await dtmWrapper.patch(tempPatchFile);
-        await deleteTempPatchFile(tempPatchFile);
-        if (patchResult.status === 0) {
-          vscode.window.showInformationMessage('Patch applied successfully.');
-        } else {
-          vscode.window.showErrorMessage(`Error applying patch: ${patchResult.message} ${patchResult.log}`);
-        }
-      } catch (error) {
-        await deleteTempPatchFile(tempPatchFile);
-        vscode.window.showErrorMessage(`Error applying patch: ${error}`);
-      }
+      diffView(message.content);
       return;
     case 'code_apply':
       await applyCode(message.content);
