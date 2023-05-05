@@ -12,17 +12,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 /** @type WebpackConfig */
 const extensionConfig = {
+  name: 'vscode extension',
   target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
   mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
-  entry: {
-    extension: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
-    index: './src/views/index.tsx'
-  },
+  entry: './src/extension.ts', // the entry point of this extension, 📖 -> https://webpack.js.org/configuration/entry-context/
+
   output: {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'dist'),
-    filename: '[name].js',
+    filename: 'extension.js',
     libraryTarget: 'commonjs2'
   },
   externals: {
@@ -31,6 +30,51 @@ const extensionConfig = {
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+    extensions: ['.ts', '.json']
+  },
+  module: {
+    rules: [
+      {
+        test: /\.ts?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: [
+                '@babel/preset-env',
+                '@babel/preset-react',
+                '@babel/preset-typescript'
+              ]
+            }
+          },
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
+    ]
+  },
+  devtool: 'nosources-source-map',
+  infrastructureLogging: {
+    level: "log", // enables logging required for problem matchers
+  },
+  plugins: []
+};
+
+
+/** @type WebpackConfig */
+const webviewConfig = {
+  name: 'webview',
+  target: 'web',
+  mode: 'development',
+
+  entry: './src/views/index.tsx',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'index.js',
+  },
+  resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json']
   },
   module: {
@@ -56,8 +100,18 @@ const extensionConfig = {
       },
       {
         test: /\.jsx?$/,
-        use: 'babel-loader',
         exclude: /node_modules/,
+        use: [{
+          loader: 'babel-loader',
+          options: {
+            presets: [
+              [
+                '@babel/preset-env',
+                '@babel/preset-react',
+              ],
+            ]
+          },
+        }]
       },
       {
         test: /\.css$/i,
@@ -94,9 +148,9 @@ const extensionConfig = {
       }
     ]
   },
-  devtool: 'nosources-source-map',
+  devtool: 'source-map',
   infrastructureLogging: {
-    level: "log", // enables logging required for problem matchers
+    level: "log",
   },
   plugins: [
     // generate an HTML file that includes the extension's JavaScript file
@@ -109,12 +163,9 @@ const extensionConfig = {
       patterns: [
         { from: 'assets', to: 'assets' },
       ],
-    }),
-    // define global variables
-    new DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development')
     })
   ]
 };
 
-module.exports = [extensionConfig];
+
+module.exports = [extensionConfig, webviewConfig];
