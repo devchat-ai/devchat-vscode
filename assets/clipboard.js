@@ -32,7 +32,7 @@ function initClipboard(codeBlocks, onApplyButtonClick, onApplyCodeButtonClick, o
       // Add 'Apply' button
       const applyButton = document.createElement('button');
       applyButton.classList.add('apply-button');
-      applyButton.innerText = 'Apply Patch';
+      applyButton.innerText = 'Show Diff';
       block.appendChild(applyButton);
   
       applyButton.addEventListener('click', () => {
