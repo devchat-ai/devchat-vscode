@@ -44,15 +44,22 @@ async function writeDiffFile(diff_file: string) {
 
 export const commitMessageCommand: Command = {
   name: 'commitMessageCommand',
-  pattern: 'git: commit message',
+  pattern: 'commit_meesage',
   description: 'commit message for changes',
   handler: async (userInput: string) => {
     const tempDir = createTempSubdirectory('devchat/context');
 
-    // 创建临时目录
-    const diff_file = path.join(tempDir, 'diff_output.txt');
-    await writeDiffFile(diff_file);
+    // // 创建临时目录
+    // const diff_file = path.join(tempDir, 'diff_output.txt');
+    // await writeDiffFile(diff_file);
 
-    return `[context|${diff_file}] Write a commit message`;
+    // return `[context|${diff_file}] Write a commit message`;
+
+    const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+    if (workspaceDir) {
+        const commitmessageInstruction = path.join(workspaceDir, '.chat', 'instructions', 'commit_message', 'instCommitMessage.txt');
+        return `[instruction|${commitmessageInstruction}] Write a commit message`;
+    }
+    return 'Write a commit message';
   },
 };

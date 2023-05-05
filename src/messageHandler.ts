@@ -6,7 +6,7 @@ import * as path from 'path';
 import { promisify } from 'util';
 import DevChat, { LogOptions } from './devchat';
 import DtmWrapper from './dtm';
-import applyCode, {applyCodeFile} from './applyCode';
+import {applyCodeFile, diffView, applyCode} from './applyCode';
 
 import './loadCommands';
 import './loadContexts'
@@ -87,7 +87,7 @@ function getInstructionFiles(): string[] {
   const instructionFiles: string[] = [];
   const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
   if (workspaceDir) {
-    const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions');
+    const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions', 'default');
     try {
       // 读取 chatInstructionsPath 目录下的所有文件和目录
       const files = fs.readdirSync(chatInstructionsPath);
@@ -126,6 +126,9 @@ async function handleMessage(
       }
 
       chatOptions.header = getInstructionFiles();
+      if (parsedMessage.instruction.length > 0) {
+        chatOptions.header = parsedMessage.instruction;
+      }
 
       if (parsedMessage.reference.length > 0) {
         chatOptions.reference = parsedMessage.reference;
@@ -147,20 +150,12 @@ async function handleMessage(
       const logEntries = await devChat.log(logOptions);
       panel.webview.postMessage({ command: 'loadHistoryMessages', entries: logEntries });
       return;
+    case 'show_diff':
+      diffView(message.content);
+      return;
+    // TODO: remove block_apply
     case 'block_apply':
-      const tempPatchFile = await saveTempPatchFile(message.content);
-      try {
-        const patchResult = await dtmWrapper.patch(tempPatchFile);
-        await deleteTempPatchFile(tempPatchFile);
-        if (patchResult.status === 0) {
-          vscode.window.showInformationMessage('Patch applied successfully.');
-        } else {
-          vscode.window.showErrorMessage(`Error applying patch: ${patchResult.message} ${patchResult.log}`);
-        }
-      } catch (error) {
-        await deleteTempPatchFile(tempPatchFile);
-        vscode.window.showErrorMessage(`Error applying patch: ${error}`);
-      }
+      diffView(message.content);
       return;
     case 'code_apply':
       await applyCode(message.content);
