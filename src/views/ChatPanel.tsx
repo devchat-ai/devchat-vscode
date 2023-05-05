@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState } from 'react';
-import { Container } from '@mantine/core';
+import { Avatar, Container, Divider, Flex, Grid, Stack } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -8,8 +8,9 @@ import { createStyles } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useViewportSize } from '@mantine/hooks';
-import { IconSend, IconSquareRoundedPlus } from '@tabler/icons-react';
+import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
+import { Prism } from '@mantine/prism';
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -46,6 +47,11 @@ const chatPanel = () => {
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
 
+    const demoCode = `import { Button } from '@mantine/core';
+    function Demo() {
+    return <Button>Hello</Button>
+    }`;
+
     const handlePlusBottonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
         event.stopPropagation();
@@ -66,13 +72,44 @@ const chatPanel = () => {
     return (
         <Container className={classes.panel} onClick={handleContainerClick}>
             <ScrollArea h={height - 70} type="never">
-                <List>
-                    <List.Item>Clone or download repository from GitHub</List.Item>
-                    <List.Item>Install dependencies with yarn</List.Item>
-                    <List.Item>To start development server run npm start command</List.Item>
-                    <List.Item>Run tests to make sure your changes do not break the build</List.Item>
-                    <List.Item>Submit a pull request once you are done</List.Item>
-                </List>
+                <Flex
+                    mih={50}
+                    gap="md"
+                    justify="flex-start"
+                    align="center"
+                    direction="row"
+                    wrap="wrap"
+                >
+                    <Avatar src={null} alt="no image here" >
+                        <IconUser size="1.125rem" />
+                    </Avatar>
+                    <Text>
+                        Write a hello world, and explain it.
+                    </Text>
+                    <ActionIcon>
+                        <IconEdit size="1.125rem" />
+                    </ActionIcon>
+                </Flex>
+                <Divider />
+                <Flex
+                    mih={50}
+                    gap="md"
+                    justify="flex-start"
+                    align="center"
+                    direction="row"
+                    wrap="wrap"
+                >
+                    <Avatar>
+                        <IconRobot size="1.125rem" />
+                    </Avatar>
+                    {/* <Prism language="tsx">{demoCode}</Prism> */}
+                    <Text>
+                        Write a hello world, and explain it.
+                    </Text>
+                    <ActionIcon>
+                        <IconEdit size="1.125rem" />
+                    </ActionIcon>
+                </Flex>
             </ScrollArea>
             <Menu id='plusMenu' shadow="md" width={200} opened={opened} onChange={setOpened} >
                 <Menu.Dropdown className={classes.plusMenu}>
