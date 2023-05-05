@@ -56,6 +56,8 @@ export  async function diffView(code: string) {
       return;
     }
 
+    const selectedText = editor.document.getText(editor.selection);
+
     const curFile = editor.document.fileName;
     
     // get file name from fileSelected
@@ -68,6 +70,18 @@ export  async function diffView(code: string) {
     // save code to temp file
     await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(code));
 
-    // open diff view
-    vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
+    if (selectedText) {
+      // create temp directory and file
+      const tempDir = await createTempSubdirectory('devchat/context');
+      const tempSelectCodeFile = path.join(tempDir, fileName);
+
+      // save code to temp file
+      await vscode.workspace.fs.writeFile(vscode.Uri.file(tempSelectCodeFile), Buffer.from(selectedText));
+
+      // open diff view
+      vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(tempSelectCodeFile), vscode.Uri.file(tempFile), 'Diff View');
+    } else {
+      // open diff view
+      vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
+    }
   }
