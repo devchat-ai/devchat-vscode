@@ -18,6 +18,41 @@
     "README.md"
   ],
   "contributes": {
+    "configuration": {
+      "title": "DevChat",
+      "properties": {
+        "DevChat.llmModel": {
+          "type": "string",
+          "default": "OpenAI",
+          "enum": ["OpenAI"],
+          "description": "Select whose llm to use."
+        },
+        "DevChat.OpenAI.model": {
+          "type": "string",
+          "default": "gpt-4",
+          "description": "Specify llm model",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        },
+        "DevChat.OpenAI.temperature": {
+          "type": "number",
+          "default": 0.2,
+          "description": "Specify llm temperature",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        },
+        "DevChat.OpenAI.stream": {
+          "type": "boolean",
+          "default": true,
+          "description": "Specify llm stream",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        },
+        "DevChat.OpenAI.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "Open API Key",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        }
+      }
+    },
     "views": {
       "explorer": [
         {
@@ -139,6 +174,7 @@
     "nonce": "^1.0.4",
     "openai": "^3.2.1",
     "quote": "^0.4.0",
+    "react-remark": "^2.1.0",
     "shell-escape": "^0.2.0",
     "uuid": "^9.0.0"
   }
