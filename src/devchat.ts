@@ -5,6 +5,7 @@ import { promisify } from "util";
 import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import * as fs from 'fs';
 
 const spawnAsync = async (command: string, args: string[], options: any, onData: (data: string) => void): Promise<{code: number, stdout: string; stderr: string }> => {
   return new Promise((resolve, reject) => {
@@ -82,7 +83,28 @@ class DevChat {
       args.push(content)
     
       const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-      const openaiApiKey = process.env.OPENAI_API_KEY;
+      // const openaiApiKey = process.env.OPENAI_API_KEY;
+
+      const openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+
+      const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
+      const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
+      const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
+      const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
+
+      const devchatConfig = {                                                                                                                              
+        llm: llmModel,                                                                                                           
+        OpenAI: {                                                                                                                
+            model: openaiModel,                                                                                                      
+            temperature: openaiTemperature,                                                                                                    
+            stream: openaiStream                                                                                                         
+        }                                                                                                                          
+      }
+      // write to config file
+      const configPath = path.join(workspaceDir!, '.chatconfig.json');
+      // write devchatConfig to configPath
+      const configJson = JSON.stringify(devchatConfig, null, 2);
+      fs.writeFileSync(configPath, configJson);
 
       try {
         const {code, stdout, stderr } = await spawnAsync('devchat', args, {
