@@ -1,7 +1,7 @@
-import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as ncp from 'ncp';
+import * as vscode from 'vscode';
 
 export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.Uri) {
   

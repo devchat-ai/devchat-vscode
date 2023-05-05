@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import { createChatDirectoryAndCopyInstructionsSync } from './init/chatConfig';
+import { createChatDirectoryAndCopyInstructionsSync } from './initmodule/chatConfig';
 import {
   registerOpenChatPanelCommand,
   registerAddContextCommand,
@@ -11,7 +11,7 @@ import {
 import ExtensionContextHolder from './util/extensionContext';
 
 
-function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {
   ExtensionContextHolder.context = context;
 
   // 创建 .chat 目录并复制 instructions

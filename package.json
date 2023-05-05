@@ -2,7 +2,7 @@
   "name": "devchat",
   "displayName": "devchat",
   "description": "devchat",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.77.0"
   },
@@ -114,9 +114,9 @@
     "watch-tests": "tsc -p . -w --outDir out",
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js",
     "build": "webpack --config webpack.config.js",
-    "dev": "webpack serve --config webpack.config.js --open"
+    "dev": "webpack serve --config webpack.config.js --open",
+	"test": "jest"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
