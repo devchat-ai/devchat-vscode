@@ -3,9 +3,32 @@
 const vscodeApi = window.acquireVsCodeApi();
 
 class MessageUtil {
+
+  private static instance: MessageUtil;
+
   handlers: { [x: string]: any; };
+  messageListener: any;
+
   constructor() {
     this.handlers = {};
+    this.messageListener = null;
+
+    if (!this.messageListener) {
+      this.messageListener = (event: { data: any; }) => {
+        const message = event.data;
+        this.handleMessage(message);
+      };
+      window.addEventListener('message', this.messageListener);
+    } else {
+      console.log('Message listener has already been bound.');
+    }
+  }
+
+  public static getInstance(): MessageUtil {
+    if (!MessageUtil.instance) {
+      MessageUtil.instance = new MessageUtil();
+    }
+    return MessageUtil.instance;
   }
 
   // Register a message handler for a specific message type
@@ -42,4 +65,4 @@ class MessageUtil {
 }
 
 // Export the MessageUtil class as a module
-export default MessageUtil;
+export default MessageUtil.getInstance();

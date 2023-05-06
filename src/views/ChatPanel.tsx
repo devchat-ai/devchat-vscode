@@ -12,7 +12,7 @@ import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import { useRemark } from 'react-remark';
-import MessageUtil from '../utils/MessageUtil';
+import messageUtil from '../utils/MessageUtil';
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -61,16 +61,6 @@ const chatPanel = () => {
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
-    const messageUtil = new MessageUtil();
-
-    const demoCode = `import { Button } from '@mantine/core';
-    function Demo() {
-    return <Button>Hello</Button>
-    }`;
-
-    setMarkdownSource(`# code block
-    print '3 backticks or'
-    print 'indent 4 spaces'`);
 
     const handlePlusBottonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
