@@ -25,7 +25,8 @@ export default class WebviewManager {
 	}
 
 	private _getHtmlContent(): string {
-		const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'assets', 'chatPanel.html');
+		// const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'assets', 'chatPanel.html');
+		const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'index.html');
 		const htmlContent = fs.readFileSync(htmlPath.fsPath, 'utf8');
 
 		return htmlContent.replace(/<vscode-resource:(\/.+?)>/g, (_, resourcePath) => {

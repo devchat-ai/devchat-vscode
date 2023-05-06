@@ -1,18 +1,23 @@
 import * as React from 'react';
-import { useState } from 'react';
-import { Avatar, Container, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
+import { useState, useEffect } from 'react';
+import { Avatar, Center, Container, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
-import { createStyles } from '@mantine/core';
+import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
-import { useViewportSize } from '@mantine/hooks';
+import { useListState, useViewportSize } from '@mantine/hooks';
 import { IconEdit, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
-import { useRemark } from 'react-remark';
-import MessageUtil from '../utils/MessageUtil';
+import { useRemark, Remark } from 'react-remark';
+import messageUtil from '../util/MessageUtil';
+
+
+const blink = keyframes({
+    '50%': { opacity: 0 },
+});
 
 const useStyles = createStyles((theme, _params, classNames) => ({
     panel: {
@@ -38,9 +43,12 @@ const useStyles = createStyles((theme, _params, classNames) => ({
         color: theme.colors.gray[6],
     },
     responseContent: {
-        marginTop: 8,
+        marginTop: 0,
         marginLeft: 0,
         marginRight: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+        width: 'calc(100% - 62px)',
     },
     icon: {
         pointerEvents: 'all',
@@ -51,28 +59,25 @@ const useStyles = createStyles((theme, _params, classNames) => ({
     },
     messageBody: {
     },
+    cursor: {
+        animation: `${blink} 0.5s infinite;`
+    }
 }));
 
 const chatPanel = () => {
 
-    const [reactContent, setMarkdownSource] = useRemark();
+    const [messages, handlers] = useListState<{ type: string; message: string; }>([]);
+    const [showCursor, setShowCursor] = useState(false);
+    const [registed, setRegisted] = useState(false);
     const [opened, setOpened] = useState(false);
+    // const [markdown, setMarkdown] = useRemark();
+    // const [message, setMessage] = useState('');
     const [input, setInput] = useState('');
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
-    const messageUtil = new MessageUtil();
 
-    const demoCode = `import { Button } from '@mantine/core';
-    function Demo() {
-    return <Button>Hello</Button>
-    }`;
-
-    setMarkdownSource(`# code block
-    print '3 backticks or'
-    print 'indent 4 spaces'`);
-
-    const handlePlusBottonClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
         event.stopPropagation();
     };
@@ -80,35 +85,45 @@ const chatPanel = () => {
         if (opened) { setOpened(false); }
     };
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        const message = input;
-        if (message) {
+        if (input) {
             // Add the user's message to the chat UI
-            // addMessageToUI('user', message);
+            handlers.append({ type: 'user', message: input });
 
             // Clear the input field
-            event.currentTarget.value = '';
+            setInput('');
+            setShowCursor(true);
 
             // Process and send the message to the extension
             messageUtil.sendMessage({
                 command: 'sendMessage',
-                text: message
+                text: input
             });
         }
     };
 
-    // Register message handlers for receiving messages from the extension
-    messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
-        console.log(`receiveMessage: ${message.text}`);
+    useEffect(() => {
+        if (registed) return;
         // Add the received message to the chat UI as a bot message
-        setMarkdownSource(message.text);
-    });
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
+            console.log(`receiveMessage: ${message.text}`);
+            handlers.append({ type: 'bot', message: message.text });
+            setRegisted(true);
+        });
+    }, [registed]);
 
-    messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-        console.log(`receiveMessagePartial: ${message.text}`);
-        // Add the received message to the chat UI as a bot message
-        setMarkdownSource(message.text);
-    });
-
+    // useEffect(() => {
+    //     let current = 0;
+    //     const interval = setInterval(() => {
+    //         if (current >= message.length) {
+    //             clearInterval(interval);
+    //             setShowCursor(false);
+    //             return;
+    //         }
+    //         setMarkdown(message.slice(0, current + 1));
+    //         current++;
+    //     }, 25);
+    //     return () => clearInterval(interval);
+    // }, [message]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const value = event.target.value;
@@ -121,47 +136,47 @@ const chatPanel = () => {
         setInput(value);
     };
 
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+        if (event.key === 'Enter') {
+            handleSendClick(event as any);
+        }
+    };
+
+    const defaultMessages = (<Center>
+        <Text size="lg" color="gray" weight={500}>No messages yet</Text>
+    </Center>);
+
+    const messageList = messages.map(({ message: messageText, type: messageType }, index) => {
+        // setMessage(messageText);
+        return (<>
+            <Flex
+                mih={50}
+                gap="md"
+                justify="flex-start"
+                align="flex-start"
+                direction="row"
+                wrap="wrap"
+                className={classes.messageBody}
+            >
+                {
+                    messageType === 'bot'
+                        ? <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}><IconRobot size="1.5rem" /></Avatar>
+                        : <Avatar color="cyan" size='md' radius="xl" className={classes.avatar}><IconUser size="1.5rem" /></Avatar>
+                }
+
+                <Container className={classes.responseContent}>
+                    <Remark>{messageText}</Remark>
+                    {/* {markdown}{showCursor && <span className={classes.cursor}>|</span>} */}
+                </Container>
+            </Flex>
+            {index !== messages.length - 1 && <Divider my="sm" />}
+        </>);
+    });
+
     return (
         <Container className={classes.panel} onClick={handleContainerClick}>
             <ScrollArea h={height - 70} type="never">
-                <Flex
-                    mih={50}
-                    gap="md"
-                    justify="flex-start"
-                    align="flex-start"
-                    direction="row"
-                    wrap="wrap"
-                    className={classes.messageBody}
-                >
-                    <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}>
-                        <IconUser size="1.5rem" />
-                    </Avatar>
-                    <Container className={classes.responseContent}>
-                        <Text>
-                            Write a hello world, and explain it.
-                        </Text>
-                    </Container>
-                    {/* <ActionIcon>
-                        <IconEdit size="1.5rem" />
-                    </ActionIcon> */}
-                </Flex>
-                <Divider my="sm" label="Mar 4, 2023" labelPosition="center" />
-                <Flex
-                    mih={50}
-                    gap="md"
-                    justify="flex-start"
-                    align="flex-start"
-                    direction="row"
-                    wrap="wrap"
-                    className={classes.messageBody}
-                >
-                    <Avatar color="blue" size='md' radius="xl" className={classes.avatar}>
-                        <IconRobot size="1.5rem" />
-                    </Avatar>
-                    <Container className={classes.responseContent}>
-                        {reactContent}
-                    </Container>
-                </Flex>
+                {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
             <Menu id='plusMenu' shadow="md" width={200} opened={opened} onChange={setOpened} >
                 <Menu.Dropdown className={classes.plusMenu}>
@@ -238,7 +253,7 @@ const chatPanel = () => {
                 radius="md"
                 placeholder="Send a message."
                 icon={
-                    <ActionIcon className={classes.icon} onClick={handlePlusBottonClick}>
+                    <ActionIcon className={classes.icon} onClick={handlePlusClick}>
                         <IconSquareRoundedPlus size="1rem" />
                     </ActionIcon>
                 }
@@ -247,6 +262,8 @@ const chatPanel = () => {
                         <IconSend size="1rem" />
                     </ActionIcon>
                 }
+                value={input}
+                onKeyDown={handleKeyDown}
                 onChange={handleInputChange}
             />
         </Container>
