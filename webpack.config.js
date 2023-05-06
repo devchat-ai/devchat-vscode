@@ -69,7 +69,7 @@ const webviewConfig = {
   target: 'web',
   mode: 'development',
 
-  entry: './src/views/index.tsx',
+  entry: './src/index.tsx',
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: 'index.js',
@@ -155,7 +155,7 @@ const webviewConfig = {
   plugins: [
     // generate an HTML file that includes the extension's JavaScript file
     new HtmlWebpackPlugin({
-      template: path.resolve(__dirname, 'src', 'views', 'index.html'),
+      template: path.resolve(__dirname, 'src', 'index.html'),
       filename: 'index.html',
       chunks: ['index']
     }),
