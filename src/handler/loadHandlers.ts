@@ -1,0 +1,10 @@
+import './addContext';
+import './codeApply';
+import './codeFileApply';
+import './convertCommand';
+import './doCommit';
+import './historyMessages';
+import './regCommandList';
+import './regContextList';
+import './sendMessage';
+import './showDiff';
