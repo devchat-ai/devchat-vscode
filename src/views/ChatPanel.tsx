@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Avatar, Center, Container, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
+import { Avatar, Center, Container, CopyButton, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -8,10 +8,12 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useListState, useViewportSize } from '@mantine/hooks';
-import { IconClick, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
+import { IconCheck, IconClick, IconCopy, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
-import { useRemark, Remark } from 'react-remark';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../util/MessageUtil';
 
 
@@ -71,8 +73,6 @@ const chatPanel = () => {
     const [showCursor, setShowCursor] = useState(false);
     const [registed, setRegisted] = useState(false);
     const [opened, setOpened] = useState(false);
-    // const [markdown, setMarkdown] = useRemark();
-    // const [message, setMessage] = useState('');
     const [input, setInput] = useState('');
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
@@ -110,8 +110,8 @@ const chatPanel = () => {
     useEffect(() => {
         if (registed) return;
         // Add the received message to the chat UI as a bot message
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
-            console.log(`receiveMessage: ${message.text}`);
+        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+            console.log(`receiveMessagePartial: ${message.text}`);
             handlers.append({ type: 'bot', message: message.text });
             setRegisted(true);
         });
@@ -156,6 +156,7 @@ const chatPanel = () => {
         // setMessage(messageText);
         return (<>
             <Flex
+                key={`message-${index}`}
                 mih={50}
                 gap="md"
                 justify="flex-start"
@@ -171,7 +172,60 @@ const chatPanel = () => {
                 }
 
                 <Container className={classes.responseContent}>
-                    <Remark>{messageText}</Remark>
+                    <ReactMarkdown
+                        components={{
+                            code({ node, inline, className, children, ...props }) {
+
+                                const match = /language-(\w+)/.exec(className || '');
+                                const value = String(children).replace(/\n$/, '');
+                                const [copied, setCopied] = useState(false);
+                                const handleCopy = () => {
+                                    setCopied(true);
+                                    setTimeout(() => setCopied(false), 2000);
+                                };
+
+                                return !inline && match ? (
+                                    <div style={{ position: 'relative' }}>
+                                        <div style={{ position: 'absolute', top: 0, left: 0 }}>
+                                            {match[1] && (
+                                                <div
+                                                    style={{
+                                                        backgroundColor: '#333',
+                                                        color: '#fff',
+                                                        padding: '0.2rem 0.5rem',
+                                                        borderRadius: '0.2rem',
+                                                        fontSize: '0.8rem',
+                                                    }}
+                                                >
+                                                    {match[1]}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div style={{ position: 'absolute', top: 3, right: 5 }}>
+                                            <CopyButton value={value} timeout={2000}>
+                                                {({ copied, copy }) => (
+                                                    <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
+                                                        <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
+                                                            {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                )}
+                                            </CopyButton>
+                                        </div>
+                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '2em 1em 1em 2em' }} style={okaidia} PreTag="div">
+                                            {value}
+                                        </SyntaxHighlighter>
+                                    </div>
+                                ) : (
+                                    <code {...props} className={className}>
+                                        {children}
+                                    </code>
+                                );
+                            }
+                        }}
+                    >
+                        {messageText}
+                    </ReactMarkdown>
                     {/* {markdown}{showCursor && <span className={classes.cursor}>|</span>} */}
                 </Container>
             </Flex>
