@@ -11,7 +11,9 @@ import { useListState, useViewportSize } from '@mantine/hooks';
 import { IconClick, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
-import { useRemark, Remark } from 'react-remark';
+import ReactMarkdown from 'react-markdown';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../util/MessageUtil';
 
 
@@ -71,8 +73,6 @@ const chatPanel = () => {
     const [showCursor, setShowCursor] = useState(false);
     const [registed, setRegisted] = useState(false);
     const [opened, setOpened] = useState(false);
-    // const [markdown, setMarkdown] = useRemark();
-    // const [message, setMessage] = useState('');
     const [input, setInput] = useState('');
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
@@ -110,8 +110,8 @@ const chatPanel = () => {
     useEffect(() => {
         if (registed) return;
         // Add the received message to the chat UI as a bot message
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
-            console.log(`receiveMessage: ${message.text}`);
+        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+            console.log(`receiveMessagePartial: ${message.text}`);
             handlers.append({ type: 'bot', message: message.text });
             setRegisted(true);
         });
@@ -171,7 +171,28 @@ const chatPanel = () => {
                 }
 
                 <Container className={classes.responseContent}>
-                    <Remark>{messageText}</Remark>
+                    <ReactMarkdown
+                        components={{
+                            code({ node, inline, className, children, ...props }) {
+                                const match = /language-(\w+)/.exec(className || '');
+                                return !inline && match ? (
+                                    <SyntaxHighlighter
+                                        {...props}
+                                        children={String(children).replace(/\n$/, '')}
+                                        style={okaidia}
+                                        language={match[1]}
+                                        PreTag="div"
+                                    />
+                                ) : (
+                                    <code {...props} className={className}>
+                                        {children}
+                                    </code>
+                                );
+                            }
+                        }}
+                    >
+                        {messageText}
+                    </ReactMarkdown>
                     {/* {markdown}{showCursor && <span className={classes.cursor}>|</span>} */}
                 </Container>
             </Flex>
