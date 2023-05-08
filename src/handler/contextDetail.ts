@@ -7,6 +7,6 @@ import { handleRefCommand } from '../context/contextRef';
 // return json string
 export async function contextDetail(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const fileContent = fs.readFileSync(message.file, 'utf-8');
-    panel.webview.postMessage({ command: 'contextDetailResponse', result: fileContent });  
+    panel.webview.postMessage({ command: 'contextDetailResponse', 'file':message.file, result: fileContent });  
 	return;
 }
