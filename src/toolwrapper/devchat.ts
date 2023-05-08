@@ -70,9 +70,6 @@ class DevChat {
 	async chat(content: string, options: ChatOptions = {}, onData: (data: string) => void): Promise<ChatResponse> {
 		let args = ["prompt"];
 
-		if (options.parent) {
-			args.push("-p", options.parent);
-		}
 		if (options.reference) {
 			for (const reference of options.reference) {
 				args.push("-r", reference);
@@ -102,6 +99,11 @@ class DevChat {
 		const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
 		const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
 		const tokensPerPrompt = vscode.workspace.getConfiguration('DevChat').get('OpenAI.tokensPerPrompt');
+		const userHistoryPrompts = vscode.workspace.getConfiguration('DevChat').get('OpenAI.useHistoryPrompt');
+		
+		if (userHistoryPrompts && options.parent) {
+			args.push("-p", options.parent);
+		}
 		
 		const devchatConfig = {
 			model: openaiModel,
