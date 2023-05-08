@@ -26,14 +26,10 @@ export default class ChatPanel {
 
 	// Create a new webview panel
 	private static createWebviewPanel(extensionUri: vscode.Uri): vscode.WebviewPanel {
-		const column = vscode.window.activeTextEditor
-			? vscode.window.activeTextEditor.viewColumn
-			: undefined;
-
 		return vscode.window.createWebviewPanel(
 			'chatPanel',
 			'Chat',
-			column || vscode.ViewColumn.One,
+			vscode.ViewColumn.Beside,
 			{
 				enableScripts: true,
 				localResourceRoots: [vscode.Uri.joinPath(extensionUri, 'dist')],
