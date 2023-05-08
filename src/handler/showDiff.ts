@@ -1,16 +1,17 @@
 import * as vscode from 'vscode';
-import {messageHandler} from './messageHandler';
 import * as path from 'path';
 import { createTempSubdirectory } from '../util/commonUtil';
 
 
 export  async function diffView(code: string) {
-    if (vscode.window.visibleTextEditors.length > 1) {
+    const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+
+	if (validVisibleTextEditors.length > 1) {
         vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
         return;
     }
 
-    const editor = vscode.window.visibleTextEditors[0];
+    const editor = validVisibleTextEditors[0];
     if (!editor) {
       return;
     }
@@ -46,15 +47,14 @@ export  async function diffView(code: string) {
   }
 
 
-async function showDiff(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function showDiff(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	diffView(message.content);
     return;
 }
 
-async function blockApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function blockApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	diffView(message.content);
     return;
 }
 
-messageHandler.registerHandler('block_apply', blockApply);
-messageHandler.registerHandler('show_diff', showDiff);
+

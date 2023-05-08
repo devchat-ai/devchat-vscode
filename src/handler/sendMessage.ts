@@ -4,7 +4,6 @@ import * as fs from 'fs';
 import * as path from 'path';
 import DevChat from '../toolwrapper/devchat';
 import CommandManager from '../command/commandManager';
-import {messageHandler} from './messageHandler';
 
 
 // Add this function to messageHandler.ts
@@ -69,7 +68,7 @@ function getInstructionFiles(): string[] {
 
 let lastPromptHash: string | undefined;
 
-async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const devChat = new DevChat();
 
 	const newText2 = await CommandManager.getInstance().processText(message.text);
@@ -104,5 +103,5 @@ async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<vo
 	return;
 }
 
-messageHandler.registerHandler('sendMessage', sendMessage);
+
 

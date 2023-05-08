@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
-import { messageHandler } from './messageHandler';
 
 
 export async function applyCode(text: string) {
-	if (vscode.window.visibleTextEditors.length > 1) {
+	const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+
+	if (validVisibleTextEditors.length > 1) {
 		vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
 		return;
 	}
 
-	const editor = vscode.window.visibleTextEditors[0];
+	const editor = validVisibleTextEditors[0];
 	if (!editor) {
 		return;
 	}
@@ -23,10 +24,9 @@ export async function applyCode(text: string) {
 }
 
 
-async function codeApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function codeApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	await applyCode(message.content);
 	return;
 }
 
-messageHandler.registerHandler('code_apply', codeApply);
 
