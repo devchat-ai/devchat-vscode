@@ -23,6 +23,8 @@ function initInputContainer() {
     const addCommandButton = document.getElementById('add-command-button');
     const popupContextMenu = document.getElementById('popupContextMenu');
     const popupCommandMenu = document.getElementById('popupCommandMenu');
+	const refLsButton = document.getElementById('add-ref-ls');
+	
 
     let contextList = [];
     let commandList = [];
@@ -42,6 +44,13 @@ function initInputContainer() {
             }
         }
     });
+
+	refLsButton.addEventListener('click', () => {
+		messageUtil.sendMessage({
+			command: 'addRefCommandContext',
+			refCommand: 'ls .'
+		});
+	});
 
     sendButton.addEventListener('click', () => {
         const message = messageInput.value;
