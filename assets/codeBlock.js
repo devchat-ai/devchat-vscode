@@ -19,5 +19,10 @@ function initButtonForCodeBlock(codeBlocks) {
             command: 'code_file_apply',
             content: codeContent,
         });
+    }, (codeContent) => {
+        messageUtil.sendMessage({
+            command: 'doCommit',
+            content: codeContent,
+        });
     });
-  }
+}

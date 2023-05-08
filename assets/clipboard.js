@@ -1,7 +1,9 @@
+
+
 // clipboard.js
 
 
-function initClipboard(codeBlocks, onApplyButtonClick, onApplyCodeButtonClick, onApplyCodeFileButtonClick) {
+function initClipboard(codeBlocks, onApplyButtonClick, onApplyCodeButtonClick, onApplyCodeFileButtonClick, onCommitButtonClick) {
     codeBlocks.forEach(block => {
       const contentSpan = document.createElement('span');
       contentSpan.innerHTML = block.innerHTML;
@@ -57,6 +59,16 @@ function initClipboard(codeBlocks, onApplyButtonClick, onApplyCodeButtonClick, o
   
       applyCodeFileButton.addEventListener('click', () => {
         onApplyCodeFileButtonClick(contentSpan.textContent);
+      });
+
+      // Add 'Apply' button
+      const commitButton = document.createElement('button');
+      commitButton.classList.add('commit-button');
+      commitButton.innerText = 'Commit';
+      block.appendChild(commitButton);
+  
+      commitButton.addEventListener('click', () => {
+        onCommitButtonClick(contentSpan.textContent);
       });
     });
   }
