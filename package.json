@@ -53,6 +53,12 @@
 			"description": "token for each prompt",
 			"when": "DevChat.llmModel == 'OpenAI'"
 		},
+		"DevChat.OpenAI.useHistoryPrompt": {
+			"type": "boolean",
+			"default": true,
+			"description": "use history prompts as context",
+			"when": "DevChat.llmModel == 'OpenAI'"
+		},
         "DevChat.OpenAI.apiKey": {
           "type": "string",
           "default": "",
