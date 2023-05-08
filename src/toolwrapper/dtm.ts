@@ -29,11 +29,18 @@ class DtmWrapper {
       });
 
       child.on('close', (code) => {
-        if (code === 0) {
-          resolve(JSON.parse(stdout.trim()));
-        } else {
-          reject(JSON.parse(stdout.trim()));
-        }
+		try {
+			const parsedOutput = JSON.parse(stdout.trim());
+			if (code === 0) {
+			  resolve(parsedOutput);
+			} else {
+			  reject(parsedOutput);
+			}
+		  } catch (error) {
+			// 处理 JSON 解析异常
+			const errorObj = error as Error;
+			reject({ status: -1, message: 'JSON parse error', log: errorObj.message });
+		  }
       });
     });
   }
@@ -50,10 +57,10 @@ class DtmWrapper {
     try {
       return await this.runCommand('dtm', ['commit', '-m', commitMsg, '-o', 'json']);
     } catch (error) {
-      // 处理异常
-      console.error('Error in commit:', error);
-      return {'status': -1, 'message': 'exception error', 'log': 'exception error'};
-    }
+		// 处理 runCommand 中的 reject 错误
+		console.error('Error in commit:', error);
+		return error as DtmResponse;
+	}
   }
 }
 
