@@ -93,8 +93,28 @@ function initInputContainer() {
     });
 
     messageUtil.registerHandler('appendContext', (message) => {
+		// get detail of context
+		function findString(input) {
+			const regex = /\[context\|(.*?)\]/;
+			const match = input.match(regex);
+		  
+			if (match) {
+			  return match[1];
+			} else {
+			  return '';
+			}
+		  }
+
+		messageUtil.sendMessage({
+			command: 'contextDetail',
+			file: findString(message.context)
+		});
         addCodeToMessageInput(message.context);
     });
+
+	messageUtil.registerHandler('contextDetailResponse', (message) => {
+		console.log(message)
+	})
 
     messageUtil.registerHandler('regContextList', (message) => {
         contextList = message.result;
