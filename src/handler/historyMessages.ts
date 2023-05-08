@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import DevChat, { LogOptions } from '../toolwrapper/devchat';
-import {messageHandler} from './messageHandler';
 
 
-async function historyMessages(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function historyMessages(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const devChat = new DevChat();
 
 	const logOptions: LogOptions = message.options || {};
@@ -12,5 +11,4 @@ async function historyMessages(message: any, panel: vscode.WebviewPanel): Promis
 	return;
 }
 
-messageHandler.registerHandler('historyMessages', historyMessages);
 

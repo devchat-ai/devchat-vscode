@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 import DtmWrapper from '../toolwrapper/dtm';
-import {messageHandler} from './messageHandler';
 
 
-async function doCommit(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function doCommit(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const dtmWrapper = new DtmWrapper();
 
 	const commitResult = await dtmWrapper.commit(message.content);
@@ -15,5 +14,4 @@ async function doCommit(message: any, panel: vscode.WebviewPanel): Promise<void>
 	return;
 }
 
-messageHandler.registerHandler('doCommit', doCommit);
 

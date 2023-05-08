@@ -108,10 +108,10 @@ class DevChat {
 		const devchatConfig = {
 			model: openaiModel,
 			provider: llmModel,
+			"tokens-per-prompt": tokensPerPrompt,
 			OpenAI: {
 				temperature: openaiTemperature,
 				stream: openaiStream,
-				"tokens-per-prompt": tokensPerPrompt
 			}
 		}
 		// write to config file
