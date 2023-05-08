@@ -10,6 +10,8 @@ import { sendMessage } from './sendMessage';
 import { blockApply } from './showDiff';
 import { showDiff } from './showDiff';
 import { addConext } from './addContext';
+import { addRefCommandContext } from './addRefCommandContext';
+import { contextDetail } from './contextDetail';
 
 messageHandler.registerHandler('addContext', addConext);
 messageHandler.registerHandler('code_apply', codeApply);
@@ -22,3 +24,5 @@ messageHandler.registerHandler('regContextList', regContextList);
 messageHandler.registerHandler('sendMessage', sendMessage);
 messageHandler.registerHandler('block_apply', blockApply);
 messageHandler.registerHandler('show_diff', showDiff);
+messageHandler.registerHandler('addRefCommandContext', addRefCommandContext);
+messageHandler.registerHandler('contextDetail', contextDetail);
