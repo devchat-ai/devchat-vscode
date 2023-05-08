@@ -47,6 +47,12 @@
           "description": "Specify llm stream",
           "when": "DevChat.llmModel == 'OpenAI'"
         },
+		"DevChat.OpenAI.tokensPerPrompt": {
+			"type": "number",
+			"default": 6000,
+			"description": "token for each prompt",
+			"when": "DevChat.llmModel == 'OpenAI'"
+		},
         "DevChat.OpenAI.apiKey": {
           "type": "string",
           "default": "",
