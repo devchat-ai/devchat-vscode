@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ChatContext } from './contextManager';
-import { createTempSubdirectory, runCommandAndWriteOutput, runCommandStringAndWriteOutput } from '../util/commonUtil';
+import { createTempSubdirectory, runCommandStringAndWriteOutput } from '../util/commonUtil';
 
 export const customCommandContext: ChatContext = {
     name: '<custom command>',
