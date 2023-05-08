@@ -71,9 +71,7 @@ class DevChat {
 		let args = ["prompt"];
 
 		if (options.parent) {
-			for (const parent of options.parent) {
-				args.push("-p", parent);
-			}
+			args.push("-p", options.parent);
 		}
 		if (options.reference) {
 			for (const reference of options.reference) {

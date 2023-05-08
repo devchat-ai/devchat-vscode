@@ -66,6 +66,7 @@ function getInstructionFiles(): string[] {
 	return instructionFiles;
 }
 
+
 let lastPromptHash: string | undefined;
 
 export async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
@@ -97,7 +98,16 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	};
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
-	lastPromptHash = chatResponse["prompt-hash"];
+	if (chatResponse && typeof chatResponse === 'object' && !Array.isArray(chatResponse) && !(chatResponse instanceof String)) {
+		// 检查 "prompt-hash" 是否在 chatResponse 中
+		if ('prompt-hash' in chatResponse) {
+			// 检查 chatResponse['prompt-hash'] 是否不为空
+			if (chatResponse['prompt-hash']) {
+				// 如果 "prompt-hash" 在 chatResponse 中且不为空，则更新 lastPromptHash 的值
+				lastPromptHash = chatResponse['prompt-hash'];
+			}
+		}
+	}
 	const response = chatResponse.response;
 	panel.webview.postMessage({ command: 'receiveMessage', text: response });
 	return;
