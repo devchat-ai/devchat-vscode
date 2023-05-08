@@ -15,10 +15,15 @@ export async function handleCodeSelected(fileSelected: string, codeSelected: str
     const languageId = await getLanguageIdByFileName(fileSelected);
 
     // convert fileContent to markdown code block with languageId and file path
-    const markdownCodeBlock = `\`\`\`${languageId} path=${fileSelected}\n${codeSelected}\n\`\`\``;
+    const data = {
+		languageId: languageId,
+		path: fileSelected,
+		content: codeSelected
+	};
+	const jsonData = JSON.stringify(data);
 
     // save markdownCodeBlock to temp file
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(markdownCodeBlock));
+    await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(jsonData));
 
     return `[context|${tempFile}]`;
 }

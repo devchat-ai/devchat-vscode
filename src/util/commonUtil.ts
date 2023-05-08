@@ -76,7 +76,13 @@ interface CommandResult {
       // 使用exec执行命令行字符串
       const childProcess = exec(commandString, { cwd: workspaceDir }, (error, stdout, stderr) => {
         // 将命令输出结果写入到文件
-        fs.writeFileSync(outputFile, stdout);
+		const data = {
+			command: commandString,
+			content: stdout
+		};
+		const jsonData = JSON.stringify(data);
+
+        fs.writeFileSync(outputFile, jsonData);
   
         // 返回结果
         resolve({
