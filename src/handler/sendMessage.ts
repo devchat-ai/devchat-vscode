@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import DevChat from '../toolwrapper/devchat';
+import DevChat, { ChatResponse } from '../toolwrapper/devchat';
 import CommandManager from '../command/commandManager';
 import { logger } from '../util/logger';
 import { MessageHandler } from './messageHandler';
@@ -70,14 +70,22 @@ function getInstructionFiles(): string[] {
 }
 
 
-let lastPromptHash: string | undefined;
 
+// message: { command: 'sendMessage', text: 'xxx', parent_hash: 'xxx'}
+// return message: 
+//     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
+//     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
 export async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const devChat = new DevChat();
 
 	const newText2 = await CommandManager.getInstance().processText(message.text);
 	const parsedMessage = parseMessage(newText2);
-	const chatOptions: any = lastPromptHash ? { parent: lastPromptHash } : {};
+	const chatOptions: any = {};
+
+	logger.channel()?.info(`parent_hash: ${message.parent_hash}`)
+	if (message.parent_hash) {
+		chatOptions.parent = message.parent_hash;
+	}
 
 	if (parsedMessage.context.length > 0) {
 		chatOptions.context = parsedMessage.context;
@@ -92,25 +100,13 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 		chatOptions.reference = parsedMessage.reference;
 	}
 
-	let partialData = "";
-	const onData = (partialResponse: string) => {
-		partialData += partialResponse;
-		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: partialData }, false);
+	const onData = (partialResponse: ChatResponse) => {
+		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: partialResponse.response, user: partialResponse.user, date: partialResponse.date }, false);
 	};
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
-	if (chatResponse && typeof chatResponse === 'object' && !Array.isArray(chatResponse) && !(chatResponse instanceof String)) {
-		// 检查 "prompt-hash" 是否在 chatResponse 中
-		if ('prompt-hash' in chatResponse) {
-			// 检查 chatResponse['prompt-hash'] 是否不为空
-			if (chatResponse['prompt-hash']) {
-				// 如果 "prompt-hash" 在 chatResponse 中且不为空，则更新 lastPromptHash 的值
-				lastPromptHash = chatResponse['prompt-hash'];
-			}
-		}
-	}
-	const response = chatResponse.response;
-	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: response });
+	
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: chatResponse.response, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
 }
 
