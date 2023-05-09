@@ -1,6 +1,7 @@
 import { spawn } from "child_process";
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 
 import { logger } from "../util/logger";
 
@@ -35,6 +36,10 @@ class DtmWrapper {
 		}
 
 		this.binaryPath = path.join(__dirname, '..', 'bin', process.platform, process.arch, binaryName);
+		if (!fs.existsSync(this.binaryPath)) {
+			logger.channel()?.error(`Binary not found: ${this.binaryPath}`);
+			logger.channel()?.show();
+		}
 	}
 
 	private async runCommand(command: string, args: string[]): Promise<DtmResponse> {
