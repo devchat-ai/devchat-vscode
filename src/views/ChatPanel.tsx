@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Avatar, Center, Container, CopyButton, Divider, Flex, Grid, Stack, TypographyStylesProvider } from '@mantine/core';
+import { Avatar, Center, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -70,6 +70,7 @@ const chatPanel = () => {
 
     const inputRef = useRef(null);
     const [messages, handlers] = useListState<{ type: string; message: string; }>([]);
+    const [currentMessage, setCurrentMessage] = useState('');
     const [showCursor, setShowCursor] = useState(false);
     const [registed, setRegisted] = useState(false);
     const [opened, setOpened] = useState(false);
@@ -107,31 +108,34 @@ const chatPanel = () => {
         inputRef?.current?.focus();
     }, []);
 
+
+    // Add the received message to the chat UI as a bot message
+    useEffect(() => {
+        const lastIndex = messages?.length - 1;
+        const lastMessage = messages[lastIndex];
+        if (currentMessage) {
+            if (lastMessage?.type === 'bot') {
+                handlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
+            }
+            else {
+                handlers.append({ type: 'bot', message: currentMessage });
+            }
+        }
+    }, [currentMessage]);
+
+    // Add the received message to the chat UI as a bot message
     useEffect(() => {
         if (registed) return;
-        // Add the received message to the chat UI as a bot message
+        setRegisted(true);
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            console.log(`receiveMessagePartial: ${message.text}`);
-            handlers.append({ type: 'bot', message: message.text });
-            setRegisted(true);
+            setCurrentMessage(message.text);
+        });
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
+            setCurrentMessage('');
         });
     }, [registed]);
 
-    // useEffect(() => {
-    //     let current = 0;
-    //     const interval = setInterval(() => {
-    //         if (current >= message.length) {
-    //             clearInterval(interval);
-    //             setShowCursor(false);
-    //             return;
-    //         }
-    //         setMarkdown(message.slice(0, current + 1));
-    //         current++;
-    //     }, 25);
-    //     return () => clearInterval(interval);
-    // }, [message]);
-
-    const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
         // if value start with '/' command show menu
         if (value === '/') {
@@ -142,8 +146,8 @@ const chatPanel = () => {
         setInput(value);
     };
 
-    const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-        if (event.key === 'Enter') {
+    const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+        if (event.key === 'Enter' && event.ctrlKey) {
             handleSendClick(event as any);
         }
     };
@@ -297,13 +301,21 @@ const chatPanel = () => {
                     </Menu.Item>
                 </Menu.Dropdown>
             </Menu>
-            <Input
+            <Textarea
+                value={input}
                 ref={inputRef}
-                multiline={true}
+                onKeyDown={handleKeyDown}
+                onChange={handleInputChange}
+                autosize
+                minRows={1}
+                maxRows={10}
                 radius="md"
-                placeholder="Send a message."
+                size="md"
+                sx={{ pointerEvents: 'all' }}
+                placeholder="Ctrl + Enter Send a message."
+                styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
                 icon={
-                    <ActionIcon className={classes.icon} onClick={handlePlusClick}>
+                    <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
                         <IconSquareRoundedPlus size="1rem" />
                     </ActionIcon>
                 }
@@ -312,9 +324,6 @@ const chatPanel = () => {
                         <IconSend size="1rem" />
                     </ActionIcon>
                 }
-                value={input}
-                onKeyDown={handleKeyDown}
-                onChange={handleInputChange}
             />
         </Container>
     );
