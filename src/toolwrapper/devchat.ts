@@ -56,7 +56,10 @@ export interface LogEntry {
 	date: string;
 	request: string;
 	response: string;
-	context: string[];
+	context: Array<{
+		content: string;
+		role: string;
+	}>;
 }
 
 export interface ChatResponse {
@@ -233,7 +236,8 @@ class DevChat {
 				return [];
 			}
 
-			return JSON.parse(stdout.trim());
+			const stdoutNew = "[" + stdout.replace(/\}\n\]\n\[\n  \{\n/g, "}\n],\n[\n  {\n") + "]";
+            return JSON.parse(stdoutNew.trim());
 		} catch (error) {
 			logger.channel()?.error(`Error getting log: ${error}`);
 			logger.channel()?.show();
