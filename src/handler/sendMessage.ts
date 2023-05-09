@@ -69,15 +69,13 @@ function getInstructionFiles(): string[] {
 	return instructionFiles;
 }
 
-
+const devChat = new DevChat();
 
 // message: { command: 'sendMessage', text: 'xxx', parent_hash: 'xxx'}
 // return message: 
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
 export async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
-	const devChat = new DevChat();
-
 	const newText2 = await CommandManager.getInstance().processText(message.text);
 	const parsedMessage = parseMessage(newText2);
 	const chatOptions: any = {};
@@ -108,6 +106,11 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	
 	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: chatResponse.response, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
+}
+
+export async function stopDevChat(message: any, panel: vscode.WebviewPanel): Promise<void> {
+	logger.channel()?.info(`Stopping devchat`);
+	devChat.stop();
 }
 
 
