@@ -69,7 +69,7 @@ export interface ChatResponse {
 
   
 class DevChat {
-	async chat(content: string, options: ChatOptions = {}, onData: (data: string) => void): Promise<ChatResponse> {
+	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
 		let args = ["prompt"];
 
 		if (options.reference) {
@@ -123,6 +123,64 @@ class DevChat {
 		fs.writeFileSync(configPath, configJson);
 
 		try {
+			const parseOutData = (stdout: string, isPartial: boolean) => {
+				const responseLines = stdout.trim().split("\n");
+				
+				if (responseLines.length < 2) {
+					return {
+						"prompt-hash": "",
+						user: "",
+						date: "",
+						response: "",
+						isError: isPartial ? false : true,
+					};
+				}
+
+				const userLine = responseLines.shift()!;
+				const user = (userLine.match(/User: (.+)/)?.[1]) ?? "";
+
+				const dateLine = responseLines.shift()!;
+				const date = (dateLine.match(/Date: (.+)/)?.[1]) ?? "";
+
+
+				let promptHashLine = "";
+				for (let i = responseLines.length - 1; i >= 0; i--) {
+					if (responseLines[i].startsWith("prompt")) {
+						promptHashLine = responseLines[i];
+						responseLines.splice(i, 1);
+						break;
+					}
+				}
+
+				if (!promptHashLine) {
+					return {
+						"prompt-hash": "",
+						user: user,
+						date: date,
+						response: responseLines.join("\n"),
+						isError: isPartial ? false : true,
+					};
+				}
+
+				const promptHash = promptHashLine.split(" ")[1];
+				const response = responseLines.join("\n");
+
+				return {
+					"prompt-hash": promptHash,
+					user,
+					date,
+					response,
+					isError: false,
+				};
+			};
+
+			let receviedStdout = "";
+			const onStdoutPartial = (stdout: string) => {
+				receviedStdout += stdout;
+				const data = parseOutData(receviedStdout, true);
+				onData(data);
+			};
+
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
 			const { code, stdout, stderr } = await spawnAsync('devchat', args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
@@ -131,7 +189,7 @@ class DevChat {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
 				},
-			}, onData);
+			}, onStdoutPartial);
 
 			if (stderr) {
 				const errorMessage = stderr.trim().match(/Error：(.+)/)?.[1];
@@ -144,54 +202,8 @@ class DevChat {
 				};
 			}
 
-			const responseLines = stdout.trim().split("\n");
-			
-			if (responseLines.length === 0) {
-				return {
-					"prompt-hash": "",
-					user: "",
-					date: "",
-					response: "",
-					isError: true,
-				};
-			}
-
-			let promptHashLine = "";
-			for (let i = responseLines.length - 1; i >= 0; i--) {
-				if (responseLines[i].startsWith("prompt")) {
-					promptHashLine = responseLines[i];
-					responseLines.splice(i, 1);
-					break;
-				}
-			}
-
-			if (!promptHashLine) {
-				return {
-					"prompt-hash": "",
-					user: "",
-					date: "",
-					response: responseLines.join("\n"),
-					isError: true,
-				};
-			}
-
-			const promptHash = promptHashLine.split(" ")[1];
-
-			const userLine = responseLines.shift()!;
-			const user = (userLine.match(/User: (.+)/)?.[1]) ?? "";
-
-			const dateLine = responseLines.shift()!;
-			const date = (dateLine.match(/Date: (.+)/)?.[1]) ?? "";
-
-			const response = responseLines.join("\n");
-
-			return {
-				"prompt-hash": promptHash,
-				user,
-				date,
-				response,
-				isError: false,
-			};
+			const response = parseOutData(stdout, false);
+			return response;
 		} catch (error: any) {
 			return {
 				"prompt-hash": "",
