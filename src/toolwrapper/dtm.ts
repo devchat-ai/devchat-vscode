@@ -16,6 +16,7 @@ class DtmWrapper {
 
 	constructor() {
 		this.workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
+		this.binaryPath = 'dtm';
 
 		let binaryName: string;
 		switch (process.platform) {
