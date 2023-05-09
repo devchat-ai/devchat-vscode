@@ -7,6 +7,8 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 
+import { logger } from '../util/logger';
+
 const spawnAsync = async (command: string, args: string[], options: any, onData: (data: string) => void): Promise<{ code: number, stdout: string; stderr: string }> => {
 	return new Promise((resolve, reject) => {
 		const child = spawn(command, args, options);
@@ -121,6 +123,7 @@ class DevChat {
 		fs.writeFileSync(configPath, configJson);
 
 		try {
+			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
 			const { code, stdout, stderr } = await spawnAsync('devchat', args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
@@ -142,8 +145,7 @@ class DevChat {
 			}
 
 			const responseLines = stdout.trim().split("\n");
-			console.log(responseLines)
-
+			
 			if (responseLines.length === 0) {
 				return {
 					"prompt-hash": "",
@@ -215,6 +217,7 @@ class DevChat {
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
 		try {
+			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
 			const { code, stdout, stderr } = await spawnAsync('devchat', args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
@@ -225,13 +228,15 @@ class DevChat {
 			}, (partialResponse: string) => { });
 
 			if (stderr) {
-				console.error(stderr);
+				logger.channel()?.error(`Error getting log: ${stderr}`);
+				logger.channel()?.show();
 				return [];
 			}
 
 			return JSON.parse(stdout.trim());
 		} catch (error) {
-			console.error(error)
+			logger.channel()?.error(`Error getting log: ${error}`);
+			logger.channel()?.show();
 			return [];
 		}
 	}
