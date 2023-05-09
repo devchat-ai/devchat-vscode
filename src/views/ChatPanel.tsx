@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Avatar, Center, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider } from '@mantine/core';
+import { Avatar, Center, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
-import { useListState, useViewportSize } from '@mantine/hooks';
+import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
 import { IconCheck, IconClick, IconCopy, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
@@ -22,10 +22,6 @@ const blink = keyframes({
 });
 
 const useStyles = createStyles((theme, _params, classNames) => ({
-    panel: {
-        height: '100%',
-        backgroundColor: theme.colors.gray[0],
-    },
     plusMenu: {
         top: 'unset !important',
         left: '31px !important',
@@ -63,7 +59,9 @@ const useStyles = createStyles((theme, _params, classNames) => ({
 
 const chatPanel = () => {
 
-    const inputRef = useRef(null);
+    const theme = useMantineTheme();
+    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const scrollViewport = useRef<HTMLDivElement>(null);
     const [messages, handlers] = useListState<{ type: string; message: string; }>([]);
     const [currentMessage, setCurrentMessage] = useState('');
     const [generating, setGenerating] = useState(false);
@@ -74,6 +72,7 @@ const chatPanel = () => {
     const [commandOpened, setCommandOpened] = useState(false);
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
+    const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setOpened(!opened);
@@ -102,6 +101,8 @@ const chatPanel = () => {
             setCurrentMessage('');
         }
     };
+    const scrollToBottom = () =>
+        scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     useEffect(() => {
         if (generating) {
@@ -127,11 +128,13 @@ const chatPanel = () => {
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             setCurrentMessage(message.text);
             setResponsed(true);
+            scrollToBottom();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
             setCurrentMessage(message.text);
             setGenerating(false);
             setResponsed(true);
+            scrollToBottom();
         });
     }, [registed]);
 
@@ -242,10 +245,46 @@ const chatPanel = () => {
     });
 
     return (
-        <Container className={classes.panel} onClick={handleContainerClick}>
-            <ScrollArea h={height - 70} type="never">
-                {messageList.length > 0 ? messageList : defaultMessages}
-            </ScrollArea>
+        <>
+            <Container
+                ref={chatContainerRef}
+                sx={{
+                    height: '100%',
+                    backgroundColor: theme.colors.gray[0],
+                }}
+                onClick={handleContainerClick}>
+                <ScrollArea
+                    h={height - px('4rem')}
+                    type="never"
+                    viewportRef={scrollViewport}>
+                    {messageList.length > 0 ? messageList : defaultMessages}
+                </ScrollArea>
+                <Textarea
+                    disabled={generating}
+                    value={input}
+                    ref={inputRef}
+                    onKeyDown={handleKeyDown}
+                    onChange={handleInputChange}
+                    autosize
+                    minRows={1}
+                    maxRows={10}
+                    radius="md"
+                    size="md"
+                    sx={{ pointerEvents: 'all', position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}
+                    placeholder="Ctrl + Enter Send a message."
+                    styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
+                    icon={
+                        <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
+                            <IconSquareRoundedPlus size="1rem" />
+                        </ActionIcon>
+                    }
+                    rightSection={
+                        <ActionIcon onClick={handleSendClick}>
+                            <IconSend size="1rem" />
+                        </ActionIcon>
+                    }
+                />
+            </Container >
             <Menu id='plusMenu' shadow="md" width={300} opened={opened} onChange={setOpened} >
                 <Menu.Dropdown className={classes.plusMenu}>
                     <Menu.Item icon={<IconClick size={14} />}>Select code or file & right click</Menu.Item>
@@ -305,32 +344,7 @@ const chatPanel = () => {
                     </Menu.Item>
                 </Menu.Dropdown>
             </Menu>
-            <Textarea
-                disabled={generating}
-                value={input}
-                ref={inputRef}
-                onKeyDown={handleKeyDown}
-                onChange={handleInputChange}
-                autosize
-                minRows={1}
-                maxRows={10}
-                radius="md"
-                size="md"
-                sx={{ pointerEvents: 'all' }}
-                placeholder="Ctrl + Enter Send a message."
-                styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
-                icon={
-                    <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
-                        <IconSquareRoundedPlus size="1rem" />
-                    </ActionIcon>
-                }
-                rightSection={
-                    <ActionIcon onClick={handleSendClick}>
-                        <IconSend size="1rem" />
-                    </ActionIcon>
-                }
-            />
-        </Container>
+        </>
     );
 };
 

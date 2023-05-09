@@ -50,7 +50,6 @@ class MessageUtil {
 
   // Handle a received message
   handleMessage(message: { command: string | number; }) {
-    console.log("handleMessage", message);
     const handlers = this.handlers[message.command];
     if (handlers) {
       handlers.forEach((handler: (arg0: { command: string | number; }) => any) => handler(message));
@@ -59,7 +58,6 @@ class MessageUtil {
 
   // Send a message to the VSCode API
   sendMessage(message: { command: string; text: string; }) {
-    console.log("sendMessage", message);
     vscodeApi.postMessage(message);
   }
 }
