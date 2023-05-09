@@ -3,6 +3,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as ncp from 'ncp';
 
+import { logger } from '../util/logger';
+
 export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.Uri) {
   
     const workspaceFolders = vscode.workspace.workspaceFolders;
@@ -25,10 +27,12 @@ export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.
       // 将 instructions 目录复制到 .chat 目录中
       ncp.ncp(instructionsSrcPath, path.join(chatDirPath, 'instructions'), (err) => {
         if (err) {
-          console.error('Error copying instructions:', err);
+			logger.channel()?.error('Error copying instructions:', err);
+			logger.channel()?.show();
         }
       });
     } catch (error) {
-      console.error('Error creating .chat directory and copying instructions:', error);
+		logger.channel()?.error('Error creating .chat directory and copying instructions:', error);
+		logger.channel()?.show();
     }
 }
