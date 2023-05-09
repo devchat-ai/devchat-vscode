@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { ChatContext } from './contextManager';
 import { createTempSubdirectory, runCommandStringAndWriteOutput } from '../util/commonUtil';
+import { logger } from '../util/logger';
 
 export const customCommandContext: ChatContext = {
     name: '<custom command>',
@@ -17,10 +18,13 @@ export const customCommandContext: ChatContext = {
         if (customCommand) {
             const tempDir = await createTempSubdirectory('devchat/context');
             const diff_file = path.join(tempDir, 'custom.txt');
+
+			logger.channel()?.info(`custom command: ${customCommand}`);
             const result = await runCommandStringAndWriteOutput(customCommand, diff_file);
-            console.log(result.exitCode);
-            console.log(result.stdout);
-            console.log(result.stderr);
+			logger.channel()?.info(`custom command: ${customCommand} exit code:`, result.exitCode);
+
+			logger.channel()?.debug(`custom command: ${customCommand} stdout:`, result.stdout);
+			logger.channel()?.debug(`custom command: ${customCommand} stderr:`, result.stderr);
             return `[context|${diff_file}]`;
         }
         return '';

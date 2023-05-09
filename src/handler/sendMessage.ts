@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import DevChat from '../toolwrapper/devchat';
 import CommandManager from '../command/commandManager';
+import { logger } from '../util/logger';
+import { MessageHandler } from './messageHandler';
 
 
 // Add this function to messageHandler.ts
@@ -60,7 +62,8 @@ function getInstructionFiles(): string[] {
 				}
 			}
 		} catch (error) {
-			console.error('Error reading instruction files:', error);
+			logger.channel()?.error(`Error reading instruction files: ${error}`);
+			logger.channel()?.show();
 		}
 	}
 	return instructionFiles;
@@ -73,8 +76,6 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	const devChat = new DevChat();
 
 	const newText2 = await CommandManager.getInstance().processText(message.text);
-	panel.webview.postMessage({ command: 'convertCommand', result: newText2 });
-
 	const parsedMessage = parseMessage(newText2);
 	const chatOptions: any = lastPromptHash ? { parent: lastPromptHash } : {};
 
@@ -94,7 +95,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	let partialData = "";
 	const onData = (partialResponse: string) => {
 		partialData += partialResponse;
-		panel.webview.postMessage({ command: 'receiveMessagePartial', text: partialData });
+		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: partialData }, false);
 	};
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
@@ -109,7 +110,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 		}
 	}
 	const response = chatResponse.response;
-	panel.webview.postMessage({ command: 'receiveMessage', text: response });
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: response });
 	return;
 }
 
