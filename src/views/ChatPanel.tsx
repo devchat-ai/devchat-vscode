@@ -59,11 +59,6 @@ const useStyles = createStyles((theme, _params, classNames) => ({
         marginTop: 8,
         marginLeft: 8,
     },
-    messageBody: {
-    },
-    cursor: {
-        animation: `${blink} 0.5s infinite;`
-    }
 }));
 
 const chatPanel = () => {
@@ -71,7 +66,8 @@ const chatPanel = () => {
     const inputRef = useRef(null);
     const [messages, handlers] = useListState<{ type: string; message: string; }>([]);
     const [currentMessage, setCurrentMessage] = useState('');
-    const [showCursor, setShowCursor] = useState(false);
+    const [generating, setGenerating] = useState(false);
+    const [responsed, setResponsed] = useState(false);
     const [registed, setRegisted] = useState(false);
     const [opened, setOpened] = useState(false);
     const [input, setInput] = useState('');
@@ -93,33 +89,34 @@ const chatPanel = () => {
 
             // Clear the input field
             setInput('');
-            setShowCursor(true);
 
             // Process and send the message to the extension
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: input
             });
+
+            // start generating
+            setGenerating(true);
+            setResponsed(false);
+            setCurrentMessage('');
         }
     };
 
     useEffect(() => {
-        // @ts-ignore
-        inputRef?.current?.focus();
-    }, []);
-
+        if (generating) {
+            // new a bot message
+            handlers.append({ type: 'bot', message: currentMessage });
+        }
+    }, [generating]);
 
     // Add the received message to the chat UI as a bot message
     useEffect(() => {
         const lastIndex = messages?.length - 1;
         const lastMessage = messages[lastIndex];
-        if (currentMessage) {
-            if (lastMessage?.type === 'bot') {
-                handlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
-            }
-            else {
-                handlers.append({ type: 'bot', message: currentMessage });
-            }
+        if (currentMessage && lastMessage?.type === 'bot') {
+            // update the last one bot message
+            handlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
         }
     }, [currentMessage]);
 
@@ -129,9 +126,12 @@ const chatPanel = () => {
         setRegisted(true);
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             setCurrentMessage(message.text);
+            setResponsed(true);
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
-            setCurrentMessage('');
+            setCurrentMessage(message.text);
+            setGenerating(false);
+            setResponsed(true);
         });
     }, [registed]);
 
@@ -167,7 +167,6 @@ const chatPanel = () => {
                 align="flex-start"
                 direction="row"
                 wrap="wrap"
-                className={classes.messageBody}
             >
                 {
                     messageType === 'bot'
@@ -230,7 +229,12 @@ const chatPanel = () => {
                     >
                         {messageText}
                     </ReactMarkdown>
-                    {/* {markdown}{showCursor && <span className={classes.cursor}>|</span>} */}
+                    {(generating && messageType === 'bot' && index === messages.length - 1) ? <Text sx={{
+                        animation: `${blink} 0.5s infinite;`,
+                        width: 5,
+                        marginTop: responsed ? 0 : '1em',
+                        backgroundColor: 'black'
+                    }}>|</Text> : ''}
                 </Container>
             </Flex>
             {index !== messages.length - 1 && <Divider my="sm" />}
@@ -302,6 +306,7 @@ const chatPanel = () => {
                 </Menu.Dropdown>
             </Menu>
             <Textarea
+                disabled={generating}
                 value={input}
                 ref={inputRef}
                 onKeyDown={handleKeyDown}
