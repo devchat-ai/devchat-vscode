@@ -150,7 +150,7 @@ const chatPanel = () => {
     </Center>);
 
     const commandMenus = commands.map(({ pattern, description, name }, index) => {
-        return (<>
+        return (
             <Menu.Item
                 onClick={() => { setInput(`/${pattern} `); }}
                 icon={<IconTerminal2 size={16} />}
@@ -167,19 +167,28 @@ const chatPanel = () => {
                 }}>
                     {description}
                 </Text>
-            </Menu.Item>
-        </>);
+            </Menu.Item>);
     });
 
-    const contextMenus = commands.map(({ pattern, description, name }, index) => {
-        return (<>
+    const contextMenus = contexts.map(({ pattern, description, name }, index) => {
+        return (
             <Menu.Item
-                onClick={() => { setInput(`/${pattern} `); }}
+                onClick={() => { setInput(`/${name} `); }}
                 icon={<IconMessagePlus size={16} />}
             >
-                {description}
-            </Menu.Item>
-        </>);
+                <Text sx={{
+                    fontSize: 'sm',
+                    fontWeight: 'bolder',
+                }}>
+                    /{name}
+                </Text>
+                <Text sx={{
+                    fontSize: 'sm',
+                    color: theme.colors.gray[6],
+                }}>
+                    {description}
+                </Text>
+            </Menu.Item>);
     });
 
 
