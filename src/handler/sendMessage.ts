@@ -6,6 +6,7 @@ import DevChat, { ChatResponse } from '../toolwrapper/devchat';
 import CommandManager from '../command/commandManager';
 import { logger } from '../util/logger';
 import { MessageHandler } from './messageHandler';
+import messageHistory from '../util/messageHistory';
 
 
 // Add this function to messageHandler.ts
@@ -71,7 +72,8 @@ function getInstructionFiles(): string[] {
 
 const devChat = new DevChat();
 
-// message: { command: 'sendMessage', text: 'xxx', parent_hash: 'xxx'}
+
+// message: { command: 'sendMessage', text: 'xxx', hash: 'xxx'}
 // return message: 
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
@@ -80,10 +82,19 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	const parsedMessage = parseMessage(newText2);
 	const chatOptions: any = {};
 
-	logger.channel()?.info(`parent_hash: ${message.parent_hash}`)
-	if (message.parent_hash) {
-		chatOptions.parent = message.parent_hash;
+	let parent_hash = undefined;
+	logger.channel()?.info(`request message hash: ${message.hash}`)
+	if (message.hash) {
+		const hmessage = messageHistory.find(panel, message.hash);
+		parent_hash = hmessage ? message.parent_hash : undefined;
+	} else {
+		const hmessage = messageHistory.findLast(panel);
+		parent_hash = hmessage ? hmessage.hash : undefined;
 	}
+	if (parent_hash) {
+		chatOptions.parent = parent_hash;
+	}
+	logger.channel()?.info(`parent hash: ${parent_hash}`);
 
 	if (parsedMessage.context.length > 0) {
 		chatOptions.context = parsedMessage.context;
@@ -104,6 +115,10 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
 	
+	if (!chatResponse.isError) {
+		messageHistory.add(panel, {request: message.text, text: parsedMessage.text, parent_hash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+	}
+
 	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: chatResponse.response, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
 }

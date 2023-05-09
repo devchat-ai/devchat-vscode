@@ -5,6 +5,8 @@ import '../handler/loadHandlers';
 import handleMessage from '../handler/messageHandler';
 import WebviewManager from './webviewManager';
 
+import messageHistory from '../util/messageHistory';
+
 export default class ChatPanel {
 	private static _instance: ChatPanel | undefined;
 	private readonly _panel: vscode.WebviewPanel;
@@ -16,6 +18,9 @@ export default class ChatPanel {
 			ChatPanel._instance._panel.reveal();
 		} else {
 			const panel = ChatPanel.createWebviewPanel(extensionUri);
+			panel.onDidDispose(() => {
+				messageHistory.remove(panel);
+			});
 			ChatPanel._instance = new ChatPanel(panel, extensionUri);
 		}
 	}
