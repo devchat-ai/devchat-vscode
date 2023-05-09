@@ -4,9 +4,10 @@ import * as vscode from 'vscode';
 
 import '../command/loadCommands';
 import '../context/loadContexts'
+import { logger } from '../util/logger';
 
 
-class MessageHandler {
+export class MessageHandler {
 	private handlers: { [command: string]: (message: any, panel: vscode.WebviewPanel) => Promise<void> } = {};
 
 	constructor() {
@@ -19,14 +20,20 @@ class MessageHandler {
 	async handleMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
 		const handler = this.handlers[message.command];
 		if (handler) {
+			logger.channel()?.info(`Handling command "${message.command}"`);
 			await handler(message, panel);
+			logger.channel()?.info(`Handling command "${message.command}" done`);
 		} else {
-			console.error(`No handler found for command "${message.command}"`);
+			logger.channel()?.error(`No handler found for command "${message.command}"`);
+			logger.channel()?.show();
 		}
 	}
 
-	sendMessage(panel: vscode.WebviewPanel, command: string, data: any): void {
-		panel.webview.postMessage({ command, ...data });
+	public static sendMessage(panel: vscode.WebviewPanel, message: object, log: boolean = true): void {
+		if (log) {
+			logger.channel()?.info(`Sending message "${JSON.stringify(message)}"`);
+		}
+		panel.webview.postMessage(message);
 	}
 }
 

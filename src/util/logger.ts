@@ -1,15 +1,13 @@
 import * as vscode from 'vscode'
 
 export class logger {
-	private static _channel: vscode.OutputChannel | undefined;
+	private static _channel: vscode.LogOutputChannel | undefined;
 	public static init(context: vscode.ExtensionContext): void {
-		this._channel = vscode.window.createOutputChannel('DevChat');
-		this.log('DevChat is active');
+		this._channel = vscode.window.createOutputChannel('DevChat', { log: true });
 	}
-	public static log(text: string): void {
-		if (this._channel) {
-			this._channel.appendLine(text);
-		}
+
+	public static channel(): vscode.LogOutputChannel | undefined {
+		return this._channel;
 	}
 }
 
