@@ -31,7 +31,10 @@ export interface LogEntry {
 	date: string;
 	request: string;
 	response: string;
-	context: string[];
+	context: Array<{
+		content: string;
+		role: string;
+	}>;
 }
 
 export interface ChatResponse {
@@ -231,9 +234,15 @@ class DevChat {
 
 		if (options.skip) {
 			args.push('--skip', `${options.skip}`);
+		} else {
+			const skipLogCount = vscode.workspace.getConfiguration('DevChat').get('logSkip');
+			args.push('--skip', `${skipLogCount}`);
 		}
 		if (options.maxCount) {
 			args.push('--max-count', `${options.maxCount}`);
+		} else {
+			const maxLogCount = vscode.workspace.getConfiguration('DevChat').get('maxLogCount');
+			args.push('--max-count', `${maxLogCount}`);
 		}
 
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
@@ -256,7 +265,8 @@ class DevChat {
 				return [];
 			}
 
-			return JSON.parse(stdout.trim());
+			const stdoutNew = "[" + stdout.replace(/\}\n\]\n\[\n  \{\n/g, "}\n],\n[\n  {\n") + "]";
+            return JSON.parse(stdoutNew.trim());
 		} catch (error) {
 			logger.channel()?.error(`Error getting log: ${error}`);
 			logger.channel()?.show();
