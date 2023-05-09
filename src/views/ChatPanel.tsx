@@ -8,7 +8,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
-import { IconCheck, IconClick, IconCopy, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconRobot, IconSend, IconSquareRoundedPlus, IconUser } from '@tabler/icons-react';
+import { IconBulb, IconCheck, IconClick, IconCopy, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrompt, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import ReactMarkdown from 'react-markdown';
@@ -22,34 +22,8 @@ const blink = keyframes({
 });
 
 const useStyles = createStyles((theme, _params, classNames) => ({
-    plusMenu: {
-        top: 'unset !important',
-        left: '31px !important',
-        bottom: 60,
-    },
-    commandMenu: {
-        top: 'unset !important',
-        left: '31px !important',
-        bottom: 60,
-    },
-    commandText: {
-        fontSize: '1.0rem',
-        fontWeight: 'bolder',
-    },
-    commandDesc: {
-        fontSize: '0.8rem',
-        color: theme.colors.gray[6],
-    },
-    responseContent: {
-        marginTop: 0,
-        marginLeft: 0,
-        marginRight: 0,
-        paddingLeft: 0,
-        paddingRight: 0,
-        width: 'calc(100% - 62px)',
-    },
-    icon: {
-        pointerEvents: 'all',
+    menu: {
+
     },
     avatar: {
         marginTop: 8,
@@ -62,29 +36,30 @@ const chatPanel = () => {
     const theme = useMantineTheme();
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const scrollViewport = useRef<HTMLDivElement>(null);
-    const [messages, handlers] = useListState<{ type: string; message: string; }>([]);
+    const [messages, messageHandlers] = useListState<{ type: string; message: string; }>([]);
+    const [commands, commandHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
+    const [contexts, contextHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [currentMessage, setCurrentMessage] = useState('');
     const [generating, setGenerating] = useState(false);
     const [responsed, setResponsed] = useState(false);
     const [registed, setRegisted] = useState(false);
-    const [opened, setOpened] = useState(false);
     const [input, setInput] = useState('');
-    const [commandOpened, setCommandOpened] = useState(false);
+    const [menuOpend, setMenuOpend] = useState(false);
+    const [menuType, setMenuType] = useState(''); // contexts or commands
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
     const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setOpened(!opened);
+        setMenuType('contexts');
+        setMenuOpend(!menuOpend);
         event.stopPropagation();
     };
-    const handleContainerClick = (event: React.MouseEvent<HTMLDivElement>) => {
-        if (opened) { setOpened(false); }
-    };
+
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
             // Add the user's message to the chat UI
-            handlers.append({ type: 'user', message: input });
+            messageHandlers.append({ type: 'user', message: input });
 
             // Clear the input field
             setInput('');
@@ -106,12 +81,14 @@ const chatPanel = () => {
 
     useEffect(() => {
         inputRef.current.focus();
+        messageUtil.sendMessage({ command: 'regContextList' });
+        messageUtil.sendMessage({ command: 'regCommandList' });
     }, []);
 
     useEffect(() => {
         if (generating) {
             // new a bot message
-            handlers.append({ type: 'bot', message: currentMessage });
+            messageHandlers.append({ type: 'bot', message: currentMessage });
         }
     }, [generating]);
 
@@ -121,7 +98,7 @@ const chatPanel = () => {
         const lastMessage = messages[lastIndex];
         if (currentMessage && lastMessage?.type === 'bot') {
             // update the last one bot message
-            handlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
+            messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
         }
     }, [currentMessage]);
 
@@ -140,15 +117,24 @@ const chatPanel = () => {
             setResponsed(true);
             scrollToBottom();
         });
+        messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
+            commandHandlers.append(...message.result);
+            console.log(`commands:${commands}`);
+        });
+        messageUtil.registerHandler('regContextList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
+            contextHandlers.append(...message.result);
+            console.log(`contexts:${commands}`);
+        });
     }, [registed]);
 
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
         // if value start with '/' command show menu
         if (value === '/') {
-            setCommandOpened(true);
+            setMenuOpend(true);
+            setMenuType('commands');
         } else {
-            setCommandOpened(false);
+            setMenuOpend(false);
         }
         setInput(value);
     };
@@ -162,6 +148,40 @@ const chatPanel = () => {
     const defaultMessages = (<Center>
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
     </Center>);
+
+    const commandMenus = commands.map(({ pattern, description, name }, index) => {
+        return (<>
+            <Menu.Item
+                onClick={() => { setInput(`/${pattern} `); }}
+                icon={<IconTerminal2 size={16} />}
+            >
+                <Text sx={{
+                    fontSize: 'sm',
+                    fontWeight: 'bolder',
+                }}>
+                    /{pattern}
+                </Text>
+                <Text sx={{
+                    fontSize: 'sm',
+                    color: theme.colors.gray[6],
+                }}>
+                    {description}
+                </Text>
+            </Menu.Item>
+        </>);
+    });
+
+    const contextMenus = commands.map(({ pattern, description, name }, index) => {
+        return (<>
+            <Menu.Item
+                onClick={() => { setInput(`/${pattern} `); }}
+                icon={<IconMessagePlus size={16} />}
+            >
+                {description}
+            </Menu.Item>
+        </>);
+    });
+
 
     const messageList = messages.map(({ message: messageText, type: messageType }, index) => {
         // setMessage(messageText);
@@ -181,7 +201,14 @@ const chatPanel = () => {
                         : <Avatar color="cyan" size='md' radius="xl" className={classes.avatar}><IconUser size="1.5rem" /></Avatar>
                 }
 
-                <Container className={classes.responseContent}>
+                <Container sx={{
+                    marginTop: 0,
+                    marginLeft: 0,
+                    marginRight: 0,
+                    paddingLeft: 0,
+                    paddingRight: 0,
+                    width: 'calc(100% - 62px)',
+                }}>
                     <ReactMarkdown
                         components={{
                             code({ node, inline, className, children, ...props }) {
@@ -243,113 +270,92 @@ const chatPanel = () => {
                         backgroundColor: 'black'
                     }}>|</Text> : ''}
                 </Container>
-            </Flex>
-            {index !== messages.length - 1 && <Divider my="sm" />}
+            </Flex >
+            {index !== messages.length - 1 && <Divider my="sm" />
+            }
         </>);
     });
 
     return (
-        <>
-            <Container
-                ref={chatContainerRef}
-                sx={{
-                    height: '100%',
-                    paddingTop: 10,
-                    backgroundColor: theme.colors.gray[0],
-                }}
-                onClick={handleContainerClick}>
-                <ScrollArea
-                    h={height - px('5rem')}
-                    type="never"
-                    viewportRef={scrollViewport}>
-                    {messageList.length > 0 ? messageList : defaultMessages}
-                </ScrollArea>
-                <Textarea
-                    disabled={generating}
-                    value={input}
-                    ref={inputRef}
-                    onKeyDown={handleKeyDown}
-                    onChange={handleInputChange}
-                    autosize
-                    minRows={1}
-                    maxRows={10}
-                    radius="md"
-                    size="md"
-                    sx={{ pointerEvents: 'all', position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}
-                    placeholder="Ctrl + Enter Send a message."
-                    styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
-                    icon={
-                        <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
-                            <IconSquareRoundedPlus size="1rem" />
-                        </ActionIcon>
-                    }
-                    rightSection={
-                        <ActionIcon onClick={handleSendClick}>
-                            <IconSend size="1rem" />
-                        </ActionIcon>
-                    }
-                />
-            </Container >
-            <Menu id='plusMenu' shadow="md" width={300} opened={opened} onChange={setOpened} >
-                <Menu.Dropdown className={classes.plusMenu}>
-                    <Menu.Item icon={<IconClick size={14} />}>Select code or file & right click</Menu.Item>
-                    <Menu.Item icon={<IconGitCompare size={14} />}>Add `git diff --cached`</Menu.Item>
-                    <Menu.Item icon={<IconGitCompare size={14} />}>Add `git diff HEAD`</Menu.Item>
-                    <Menu.Item icon={<IconFolder size={14} />}>Add folder structure</Menu.Item>
-                    <Menu.Item icon={<IconMessageDots size={14} />}>Select previous chat</Menu.Item>
-                </Menu.Dropdown>
+        <Container
+            id='chat-container'
+            ref={chatContainerRef}
+            sx={{
+                height: '100%',
+                paddingTop: 10,
+                backgroundColor: theme.colors.gray[0],
+            }}>
+            <ScrollArea
+                id='chat-scroll-area'
+                h={height - px('5rem')}
+                type="never"
+                viewportRef={scrollViewport}>
+                {messageList.length > 0 ? messageList : defaultMessages}
+            </ScrollArea>
+            <Menu
+                id='commandMenu'
+                position='top-start'
+                closeOnClickOutside={true}
+                shadow="xs"
+                width={scrollViewport.current?.clientWidth}
+                opened={menuOpend}
+                onChange={setMenuOpend}
+                onClose={() => setMenuType('')}
+                onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
+                returnFocus={true}>
+                <Menu.Target>
+                    <Textarea
+                        id='chat-textarea'
+                        disabled={generating}
+                        value={input}
+                        ref={inputRef}
+                        onKeyDown={handleKeyDown}
+                        onChange={handleInputChange}
+                        autosize
+                        minRows={1}
+                        maxRows={10}
+                        radius="md"
+                        size="md"
+                        sx={{ pointerEvents: 'all', position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}
+                        placeholder="Ctrl + Enter Send a message."
+                        styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
+                        icon={
+                            <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
+                                <IconSquareRoundedPlus size="1rem" />
+                            </ActionIcon>
+                        }
+                        rightSection={
+                            <ActionIcon onClick={handleSendClick}>
+                                <IconSend size="1rem" />
+                            </ActionIcon>
+                        }
+                    />
+                </Menu.Target>
+
+                {
+                    menuType === 'contexts'
+                        ? (<Menu.Dropdown>
+                            <Text
+                                c="dimmed"
+                                ta="left"
+                                fz='sm'
+                                m='12px'>
+                                <IconBulb size={14} style={{ marginTop: '2px', marginRight: '2px' }} />
+                                Tips: Select code or file & right click
+                            </Text>
+                            <Divider />
+                            <Menu.Label>DevChat Contexts</Menu.Label>
+                            {contextMenus}
+                        </Menu.Dropdown>)
+                        : menuType === 'commands'
+                            ? <Menu.Dropdown>
+                                <Menu.Label>DevChat Commands</Menu.Label>
+                                {commandMenus}
+                            </Menu.Dropdown>
+                            : <></>
+                }
             </Menu>
-            <Menu id='commandMenu' shadow="md" width={500} opened={commandOpened} onChange={setCommandOpened} returnFocus={true}>
-                <Menu.Dropdown className={classes.commandMenu}>
-                    <Menu.Label>Context Commands</Menu.Label>
-                    <Menu.Item onClick={() => { setInput('/ref ') }}>
-                        <Text className={classes.commandText}>
-                            /ref
-                        </Text>
-                        <Text className={classes.commandDesc}>
-                            Run a local CLI and add its output to the context (e.g., pytest .).
-                        </Text>
-                    </Menu.Item>
-                    <Menu.Item onClick={() => { setInput('/local ') }}>
-                        <Text className={classes.commandText}>
-                            /local
-                        </Text>
-                        <Text className={classes.commandDesc}>
-                            Bypass AI and run a local CLI to check its output (e.g., git status).
-                        </Text>
-                    </Menu.Item>
-
-                    <Menu.Divider />
-
-                    <Menu.Label>DevChat Bots</Menu.Label>
-
-                    <Menu.Item onClick={() => { setInput('/code ') }}>
-                        <Text className={classes.commandText}>
-                            /code
-                        </Text>
-                        <Text className={classes.commandDesc}>
-                            Generate or update code.
-                        </Text>
-                    </Menu.Item>
-                    <Menu.Item onClick={() => { setInput('/commit_message ') }}>
-                        <Text className={classes.commandText}>
-                            /commit_message
-                        </Text>
-                        <Text className={classes.commandDesc}>
-                            Write a commit message.
-                        </Text>
-                    </Menu.Item>
-                    <Menu.Item onClick={() => { setInput('/doc ') }}>
-                        <Text className={classes.commandText}>
-                            /doc
-                        </Text>
-                        <Text className={classes.commandDesc}>
-                            Write a doc for reference, wiki, or discussion.
-                        </Text>
-                    </Menu.Item>
-                </Menu.Dropdown>
-            </Menu>
-        </>
+        </Container >
     );
 };
 
