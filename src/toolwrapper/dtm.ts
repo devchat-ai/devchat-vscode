@@ -1,5 +1,6 @@
 import { spawn } from "child_process";
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { logger } from "../util/logger";
 
@@ -11,9 +12,28 @@ interface DtmResponse {
 
 class DtmWrapper {
 	private workspaceDir: string;
+	private binaryPath: string;
 
 	constructor() {
 		this.workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
+
+		let binaryName: string;
+		switch (process.platform) {
+		case 'win32':
+			binaryName = 'dtm.exe';
+			break;
+		case 'darwin':
+			binaryName = 'dtm';
+			break;
+		case 'linux':
+			binaryName = 'dtm';
+			break;
+		default:
+			vscode.window.showErrorMessage(`Unsupported platform: ${process.platform}`);
+			return;
+		}
+
+		this.binaryPath = path.join(__dirname, '..', 'bin', process.platform, process.arch, binaryName);
 	}
 
 	private async runCommand(command: string, args: string[]): Promise<DtmResponse> {
@@ -49,16 +69,16 @@ class DtmWrapper {
 	}
 
 	async scaffold(directoryTree: string): Promise<DtmResponse> {
-		return await this.runCommand('dtm', ['scaffold', directoryTree, '-o', 'json']);
+		return await this.runCommand(this.binaryPath, ['scaffold', directoryTree, '-o', 'json']);
 	}
 
 	async patch(patchFilePath: string): Promise<DtmResponse> {
-		return await this.runCommand('dtm', ['patch', patchFilePath, '-o', 'json']);
+		return await this.runCommand(this.binaryPath, ['patch', patchFilePath, '-o', 'json']);
 	}
 
 	async commit(commitMsg: string): Promise<DtmResponse> {
 		try {
-			return await this.runCommand('dtm', ['commit', '-m', commitMsg, '-o', 'json']);
+			return await this.runCommand(this.binaryPath, ['commit', '-m', commitMsg, '-o', 'json']);
 		} catch (error) {
 			// 处理 runCommand 中的 reject 错误
 			logger.channel()?.error(`Error in commit: ${error}`);

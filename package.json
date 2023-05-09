@@ -13,6 +13,7 @@
   "main": "./dist/extension.js",
   "files": [
     "dist/*",
+	"bin/*",
     "assets/*",
     "LICENSE",
     "README.md"
