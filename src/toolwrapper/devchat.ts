@@ -9,31 +9,6 @@ import * as fs from 'fs';
 
 import { logger } from '../util/logger';
 
-const spawnAsync = async (command: string, args: string[], options: any, onData: (data: string) => void): Promise<{ code: number, stdout: string; stderr: string }> => {
-	return new Promise((resolve, reject) => {
-		const child = spawn(command, args, options);
-		let stdout = '';
-		let stderr = '';
-
-		child.stdout.on('data', (data) => {
-			const dataStr = data.toString();
-			onData(dataStr);
-			stdout += dataStr;
-		});
-
-		child.stderr.on('data', (data) => {
-			stderr += data;
-		});
-
-		child.on('close', (code) => {
-			if (code === 0) {
-				resolve({ code, stdout, stderr });
-			} else {
-				reject({ code, stdout, stderr });
-			}
-		});
-	});
-};
 
 const envPath = path.join(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
@@ -69,6 +44,42 @@ export interface ChatResponse {
 
   
 class DevChat {
+	private childProcess: any;
+
+	async spawnAsync(command: string, args: string[], options: any, onData: (data: string) => void): Promise<{ code: number, stdout: string; stderr: string }> {
+		return new Promise((resolve, reject) => {
+			this.childProcess = spawn(command, args, options);
+			
+			let stdout = '';
+			let stderr = '';
+	
+			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
+				const dataStr = data.toString();
+				onData(dataStr);
+				stdout += dataStr;
+			});
+	
+			this.childProcess.stderr.on('data', (data: string) => {
+				stderr += data;
+			});
+	
+			this.childProcess.on('close', (code: number) => {
+				if (code === 0) {
+					resolve({ code, stdout, stderr });
+				} else {
+					reject({ code, stdout, stderr });
+				}
+			});
+		});
+	};
+
+	public stop() {
+		if (this.childProcess) {
+		  	this.childProcess.kill();
+		  	this.childProcess = null;
+		}
+	}
+
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
 		let args = ["prompt"];
 
@@ -182,7 +193,7 @@ class DevChat {
 			};
 
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await spawnAsync('devchat', args, {
+			const { code, stdout, stderr } = await this.spawnAsync('devchat', args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
@@ -230,7 +241,7 @@ class DevChat {
 
 		try {
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await spawnAsync('devchat', args, {
+			const { code, stdout, stderr } = await this.spawnAsync('devchat', args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
