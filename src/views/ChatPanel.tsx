@@ -105,6 +105,10 @@ const chatPanel = () => {
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     useEffect(() => {
+        inputRef.current.focus();
+    }, []);
+
+    useEffect(() => {
         if (generating) {
             // new a bot message
             handlers.append({ type: 'bot', message: currentMessage });
@@ -250,11 +254,12 @@ const chatPanel = () => {
                 ref={chatContainerRef}
                 sx={{
                     height: '100%',
+                    paddingTop: 10,
                     backgroundColor: theme.colors.gray[0],
                 }}
                 onClick={handleContainerClick}>
                 <ScrollArea
-                    h={height - px('4rem')}
+                    h={height - px('5rem')}
                     type="never"
                     viewportRef={scrollViewport}>
                     {messageList.length > 0 ? messageList : defaultMessages}
