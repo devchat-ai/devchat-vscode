@@ -32,7 +32,7 @@ class MessageUtil {
   }
 
   // Register a message handler for a specific message type
-  registerHandler(messageType: string, handler: { (message: { text: string; }): void; (message: { text: string; }): void; }) {
+  registerHandler(messageType: string, handler: any) {
     if (!this.handlers[messageType]) {
       this.handlers[messageType] = [];
     }
@@ -57,7 +57,7 @@ class MessageUtil {
   }
 
   // Send a message to the VSCode API
-  sendMessage(message: { command: string; text: string; }) {
+  sendMessage(message: any) {
     vscodeApi.postMessage(message);
   }
 }
