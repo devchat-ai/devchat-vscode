@@ -340,18 +340,33 @@ const chatPanel = () => {
                                                     </Tooltip>
                                                 )}
                                             </CopyButton>
-                                            <Tooltip label='View-diff' withArrow position="left" color="gray">
-                                                <ActionIcon>
+                                            <Tooltip label='View Diff' withArrow position="left" color="gray">
+                                                <ActionIcon onClick={() => {
+                                                    messageUtil.sendMessage({
+                                                        command: 'show_diff',
+                                                        content: value
+                                                    });
+                                                }}>
                                                     <IconFileDiff size="1.125rem" />
                                                 </ActionIcon>
                                             </Tooltip>
                                             <Tooltip label='Insert Code' withArrow position="left" color="gray">
-                                                <ActionIcon>
+                                                <ActionIcon onClick={() => {
+                                                    messageUtil.sendMessage({
+                                                        command: 'code_apply',
+                                                        content: value
+                                                    });
+                                                }}>
                                                     <IconColumnInsertRight size="1.125rem" />
                                                 </ActionIcon>
                                             </Tooltip>
                                             <Tooltip label='Replace' withArrow position="left" color="gray">
-                                                <ActionIcon>
+                                                <ActionIcon onClick={() => {
+                                                    messageUtil.sendMessage({
+                                                        command: 'code_file_apply',
+                                                        content: value
+                                                    });
+                                                }}>
                                                     <IconReplace size="1.125rem" />
                                                 </ActionIcon>
                                             </Tooltip>
@@ -443,7 +458,10 @@ const chatPanel = () => {
                     shadow="xs"
                     width={scrollViewport.current?.clientWidth}
                     opened={menuOpend}
-                    onChange={setMenuOpend}
+                    onChange={() => {
+                        setMenuOpend(!menuOpend);
+                        inputRef.current.focus();
+                    }}
                     onClose={() => setMenuType('')}
                     onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
                     returnFocus={true}>
