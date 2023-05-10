@@ -13,7 +13,7 @@ export const gitDiffContext: ChatContext = {
     const diff_file = path.join(tempDir, 'diff_all.txt');
     
 	logger.channel()?.info(`git diff`);
-	const result = await runCommandStringAndWriteOutput('git diff', diff_file);
+	const result = await runCommandStringAndWriteOutput('git diff HEAD', diff_file);
 	logger.channel()?.info(`git diff exit code:`, result.exitCode);
 
 	logger.channel()?.debug(`git diff stdout:`, result.stdout);

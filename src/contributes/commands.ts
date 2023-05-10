@@ -1,10 +1,54 @@
 import * as vscode from 'vscode';
 import ChatPanel from '../panel/chatPanel';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
+import { logger } from '../util/logger';
+import * as childProcess from 'child_process';
+
+
+function checkDependency() {
+	// 执行系统命令，检查依赖程序是否已经安装
+	try {
+	  const result = childProcess.execSync('devchat --help');
+	  // 命令执行成功，依赖程序已经安装
+	  return true;
+	} catch (error) {
+	  // 命令执行失败，依赖程序未安装
+	  return false;
+	}
+}
+
+function checkOpenAIKey() {
+	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+	if (!openaiApiKey) {
+		openaiApiKey = process.env.OPENAI_API_KEY;
+	}
+	if (!openaiApiKey) {
+		logger.channel()?.error('openAI key is invalid!');
+		logger.channel()?.info('You can set openAI key in Settings/DevChat, or export OPENAI_API_KEY to env.');
+		logger.channel()?.show();
+		vscode.window.showErrorMessage('openAI key is invalid!');
+		return false;
+	}
+	return true;
+}
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('devchat.openChatPanel', () => {
-        if (vscode.workspace.workspaceFolders) {
+        const dependencyInstalled = checkDependency();
+		if (!dependencyInstalled) {
+			// 依赖程序未安装，显示提示信息
+			logger.channel()?.error('devchat package is not installed.');
+			logger.channel()?.info('Please install devchat package first. Use command: pip install devchat');
+			logger.channel()?.show();
+			vscode.window.showErrorMessage('devchat package is not installed.');
+			return;
+		}
+
+		if (!checkOpenAIKey()) {
+			return;
+		}
+
+		if (vscode.workspace.workspaceFolders) {
             ChatPanel.createOrShow(context.extensionUri);
         } else {
             vscode.window.showErrorMessage('Please open a directory before using the chat panel.');
@@ -26,14 +70,14 @@ function ensureChatPanel(context: vscode.ExtensionContext): boolean {
 }
 
 function registerAddContextCommand(context: vscode.ExtensionContext) {
-    const disposable_add_context = vscode.commands.registerCommand('devchat.addConext', async (uri: { path: any; }) => {
+    const disposableAddContext = vscode.commands.registerCommand('devchat.addConext', async (uri: { path: any; }) => {
         if (!ensureChatPanel(context)) {
             return;
         }
 
         await sendFileSelectMessage(ChatPanel.currentPanel()!.panel(), uri.path);
     });
-    context.subscriptions.push(disposable_add_context);
+    context.subscriptions.push(disposableAddContext);
 }
 
 function registerAskForCodeCommand(context: vscode.ExtensionContext) {
