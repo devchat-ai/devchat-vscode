@@ -1,6 +1,7 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { createTempSubdirectory, getLanguageIdByFileName } from '../util/commonUtil';
 
 export async function handleFileSelected(fileSelected: string) {
@@ -12,8 +13,7 @@ export async function handleFileSelected(fileSelected: string) {
     const tempFile = path.join(tempDir, fileName);
 
     // load content in fileSelected
-    const fileContent = await vscode.workspace.fs.readFile(vscode.Uri.file(fileSelected));
-
+    const fileContent = fs.readFileSync(fileSelected, 'utf-8');
     // get the language from fileSelected
     const languageId = await getLanguageIdByFileName(fileSelected);
 
