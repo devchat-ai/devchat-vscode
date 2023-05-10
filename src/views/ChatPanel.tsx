@@ -443,7 +443,10 @@ const chatPanel = () => {
                     shadow="xs"
                     width={scrollViewport.current?.clientWidth}
                     opened={menuOpend}
-                    onChange={setMenuOpend}
+                    onChange={() => {
+                        setMenuOpend(!menuOpend);
+                        inputRef.current.focus();
+                    }}
                     onClose={() => setMenuType('')}
                     onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
                     returnFocus={true}>
