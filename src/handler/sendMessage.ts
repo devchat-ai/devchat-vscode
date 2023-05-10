@@ -7,6 +7,7 @@ import CommandManager from '../command/commandManager';
 import { logger } from '../util/logger';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
+import CustomCommands from '../command/customCommand';
 
 
 // Add this function to messageHandler.ts
@@ -48,25 +49,17 @@ function parseMessage(message: string): { context: string[]; instruction: string
 
 function getInstructionFiles(): string[] {
 	const instructionFiles: string[] = [];
-	const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	if (workspaceDir) {
-		const chatInstructionsPath = path.join(workspaceDir, '.chat', 'instructions', 'default');
-		try {
-			// 读取 chatInstructionsPath 目录下的所有文件和目录
-			const files = fs.readdirSync(chatInstructionsPath);
-			// 过滤出文件，忽略目录
-			for (const file of files) {
-				const filePath = path.join(chatInstructionsPath, file);
-				const fileStats = fs.statSync(filePath);
-				if (fileStats.isFile()) {
-					instructionFiles.push(filePath);
-				}
+
+	const customCommands = CustomCommands.getInstance().getCommands();
+	// visit customCommands, get default command
+	for (const command of customCommands) {
+		if (command.default) {
+			for (const instruction of command.instructions) {
+				instructionFiles.push(`./.chat/workflows/${command.name}/${instruction}`);
 			}
-		} catch (error) {
-			logger.channel()?.error(`Error reading instruction files: ${error}`);
-			logger.channel()?.show();
 		}
 	}
+
 	return instructionFiles;
 }
 
