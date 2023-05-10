@@ -16,7 +16,7 @@ function activate(context: vscode.ExtensionContext) {
   ExtensionContextHolder.context = context;
   logger.init(context);
 
-  // 创建 .chat 目录并复制 instructions
+  // 创建 .chat 目录并复制 workflows
   createChatDirectoryAndCopyInstructionsSync(context.extensionUri);
 
   registerOpenChatPanelCommand(context);

@@ -5,3 +5,8 @@ node_modules
 *.vsix
 .env
 .chatconfig.json
+
+# DevChat
+.chat/prompts.graphml
+.chat/prompts.db
+

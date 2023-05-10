@@ -13,8 +13,9 @@
   "main": "./dist/extension.js",
   "files": [
     "dist/*",
-	"bin/*",
+    "bin/*",
     "assets/*",
+    "workflows/*",
     "LICENSE",
     "README.md"
   ],
@@ -30,16 +31,16 @@
           ],
           "description": "Select whose llm to use."
         },
-		"DevChat.maxLogCount": {
-			"type": "number",
-			"default": 20,
-			"description": "Limit the number of prompts to output"
-		  },
-		"DevChat.logSkip": {
-			"type": "number",
-			"default": 0,
-			"description": "Skip number prompts before showing the prompt history"
-		  },
+        "DevChat.maxLogCount": {
+          "type": "number",
+          "default": 20,
+          "description": "Limit the number of prompts to output"
+        },
+        "DevChat.logSkip": {
+          "type": "number",
+          "default": 0,
+          "description": "Skip number prompts before showing the prompt history"
+        },
         "DevChat.OpenAI.model": {
           "type": "string",
           "default": "gpt-4",
@@ -58,18 +59,18 @@
           "description": "Specify llm stream",
           "when": "DevChat.llmModel == 'OpenAI'"
         },
-		"DevChat.OpenAI.tokensPerPrompt": {
-			"type": "number",
-			"default": 6000,
-			"description": "token for each prompt",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		},
-		"DevChat.OpenAI.useHistoryPrompt": {
-			"type": "boolean",
-			"default": true,
-			"description": "use history prompts as context",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		},
+        "DevChat.OpenAI.tokensPerPrompt": {
+          "type": "number",
+          "default": 6000,
+          "description": "token for each prompt",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        },
+        "DevChat.OpenAI.useHistoryPrompt": {
+          "type": "boolean",
+          "default": true,
+          "description": "use history prompts as context",
+          "when": "DevChat.llmModel == 'OpenAI'"
+        },
         "DevChat.OpenAI.apiKey": {
           "type": "string",
           "default": "",
