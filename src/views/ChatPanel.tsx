@@ -8,7 +8,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
-import { IconBulb, IconCheck, IconClick, IconCopy, IconEdit, IconFolder, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrompt, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser } from '@tabler/icons-react';
+import { IconAdjustments, IconBulb, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconEdit, IconFileDiff, IconFolder, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrompt, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import ReactMarkdown from 'react-markdown';
@@ -247,17 +247,33 @@ const chatPanel = () => {
                                                 </div>
                                             )}
                                         </div>
-                                        <div style={{ position: 'absolute', top: 3, right: 5 }}>
+                                        <Flex
+                                            gap="5px"
+                                            justify="flex-start"
+                                            align="flex-start"
+                                            direction="row"
+                                            wrap="wrap"
+                                            style={{ position: 'absolute', top: 8, right: 10 }}>
                                             <CopyButton value={value} timeout={2000}>
                                                 {({ copied, copy }) => (
-                                                    <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="right">
+                                                    <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="left" color="gray">
                                                         <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
                                                             {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
                                                         </ActionIcon>
                                                     </Tooltip>
                                                 )}
                                             </CopyButton>
-                                        </div>
+                                            <Tooltip label='View-diff' withArrow position="left" color="gray">
+                                                <ActionIcon>
+                                                    <IconFileDiff size="1.125rem" />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                            <Tooltip label='Insert' withArrow position="left" color="gray">
+                                                <ActionIcon>
+                                                    <IconColumnInsertRight size="1.125rem" />
+                                                </ActionIcon>
+                                            </Tooltip>
+                                        </Flex>
                                         <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '2em 1em 1em 2em' }} style={okaidia} PreTag="div">
                                             {value}
                                         </SyntaxHighlighter>
