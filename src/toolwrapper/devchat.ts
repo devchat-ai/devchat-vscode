@@ -109,6 +109,10 @@ class DevChat {
 		if (!openaiApiKey) {
 			openaiApiKey = process.env.OPENAI_API_KEY;
 		}
+		if (!openaiApiKey) {
+			logger.channel()?.error('openAI key is invalid!');
+			logger.channel()?.show();
+		}
 
 		const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
 		const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
