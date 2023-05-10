@@ -1,11 +1,14 @@
 // chatPanel.ts
 
 import * as vscode from 'vscode';
+import * as path from 'path';
 import '../handler/loadHandlers';
 import handleMessage from '../handler/messageHandler';
 import WebviewManager from './webviewManager';
 
 import messageHistory from '../util/messageHistory';
+import CustomCommands from '../command/customCommand';
+import CommandManager from '../command/commandManager';
 
 export default class ChatPanel {
 	private static _instance: ChatPanel | undefined;
@@ -14,6 +17,12 @@ export default class ChatPanel {
 	private _disposables: vscode.Disposable[] = [];
 
 	public static createOrShow(extensionUri: vscode.Uri) {
+		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		if (workspaceDir) {
+			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
+			CustomCommands.getInstance().parseCommands(workflowsDir);
+		}
+
 		if (ChatPanel._instance) {
 			ChatPanel._instance._panel.reveal();
 		} else {

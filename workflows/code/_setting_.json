@@ -1,0 +1,7 @@
+{
+	"pattern": "code",
+	"description": "work for generate code",
+	"message": "",
+	"default": true,
+	"instructions": ["instruct.txt", "python.txt"]
+}
