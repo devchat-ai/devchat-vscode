@@ -244,6 +244,7 @@ const chatPanel = () => {
             <Flex
                 key={`message-${index}`}
                 mih={50}
+                miw={300}
                 gap="md"
                 justify="flex-start"
                 align="flex-start"
@@ -263,32 +264,37 @@ const chatPanel = () => {
                     paddingLeft: 0,
                     paddingRight: 0,
                     width: 'calc(100% - 62px)',
+                    pre: {
+                        whiteSpace: 'break-spaces'
+                    }
                 }}>
-                    <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
-                        {
-                            contexts?.map(({ context }, index) => {
-                                return (
-                                    <Accordion.Item value={`item-${index}`} mah='200'>
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <Accordion.Control >
-                                                {'command' in context ? context.command : context.path}
-                                            </Accordion.Control>
-                                        </Box>
-                                        <Accordion.Panel>
-                                            {
-                                                context.content
-                                                    ? context.content
-                                                    : <Center>
-                                                        <Text c='gray.3'>No content</Text>
-                                                    </Center>
-                                            }
+                    {contexts &&
+                        <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
+                            {
+                                contexts?.map(({ context }, index) => {
+                                    return (
+                                        <Accordion.Item value={`item-${index}`} mah='200'>
+                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                <Accordion.Control >
+                                                    {'command' in context ? context.command : context.path}
+                                                </Accordion.Control>
+                                            </Box>
+                                            <Accordion.Panel>
+                                                {
+                                                    context.content
+                                                        ? context.content
+                                                        : <Center>
+                                                            <Text c='gray.3'>No content</Text>
+                                                        </Center>
+                                                }
 
-                                        </Accordion.Panel>
-                                    </Accordion.Item>
-                                );
-                            })
-                        }
-                    </Accordion>
+                                            </Accordion.Panel>
+                                        </Accordion.Item>
+                                    );
+                                })
+                            }
+                        </Accordion>
+                    }
                     <ReactMarkdown
                         components={{
                             code({ node, inline, className, children, ...props }) {
@@ -393,40 +399,43 @@ const chatPanel = () => {
                 viewportRef={scrollViewport}>
                 {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
-            <Stack sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
-                <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
-                    {
-                        contexts.map(({ context }, index) => {
-                            return (
-                                <Accordion.Item value={`item-${index}`} mah='200'>
-                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                        <Accordion.Control >
-                                            {'command' in context ? context.command : context.path}
-                                        </Accordion.Control>
-                                        <ActionIcon
-                                            mr={8}
-                                            size="lg"
-                                            onClick={() => {
-                                                contextsHandlers.remove(index);
-                                            }}>
-                                            <IconX size="1rem" />
-                                        </ActionIcon>
-                                    </Box>
-                                    <Accordion.Panel>
-                                        {
-                                            context.content
-                                                ? context.content
-                                                : <Center>
-                                                    <Text c='gray.3'>No content</Text>
-                                                </Center>
-                                        }
+            <Stack
+                sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
+                {contexts &&
+                    <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
+                        {
+                            contexts.map(({ context }, index) => {
+                                return (
+                                    <Accordion.Item value={`item-${index}`} mah='200'>
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Accordion.Control >
+                                                {'command' in context ? context.command : context.path}
+                                            </Accordion.Control>
+                                            <ActionIcon
+                                                mr={8}
+                                                size="lg"
+                                                onClick={() => {
+                                                    contextsHandlers.remove(index);
+                                                }}>
+                                                <IconX size="1rem" />
+                                            </ActionIcon>
+                                        </Box>
+                                        <Accordion.Panel>
+                                            {
+                                                context.content
+                                                    ? context.content
+                                                    : <Center>
+                                                        <Text c='gray.3'>No content</Text>
+                                                    </Center>
+                                            }
 
-                                    </Accordion.Panel>
-                                </Accordion.Item>
-                            );
-                        })
-                    }
-                </Accordion>
+                                        </Accordion.Panel>
+                                    </Accordion.Item>
+                                );
+                            })
+                        }
+                    </Accordion>
+                }
                 <Menu
                     id='commandMenu'
                     position='top-start'
