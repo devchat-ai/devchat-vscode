@@ -1,7 +1,11 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import { MessageHandler } from './messageHandler';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
 
+
+regInMessage({command: 'contextDetail', file: ''});
+regOutMessage({command: 'contextDetailResponse', file: '', result: ''});
 // message: { command: 'contextDetail', file: string }
 // read detail context information from file
 // return json string

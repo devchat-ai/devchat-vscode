@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { createTempSubdirectory } from '../util/commonUtil';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
+
 
 
 export  async function diffView(code: string) {
@@ -47,11 +49,13 @@ export  async function diffView(code: string) {
   }
 
 
+regInMessage({command: 'show_diff', content: ''});
 export async function showDiff(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	diffView(message.content);
     return;
 }
 
+regInMessage({command: 'block_apply', content: ''});
 export async function blockApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	diffView(message.content);
     return;

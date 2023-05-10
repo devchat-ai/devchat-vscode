@@ -8,6 +8,8 @@ import { logger } from '../util/logger';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import CustomCommands from '../command/customCommand';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
+
 
 
 // Add this function to messageHandler.ts
@@ -66,6 +68,9 @@ function getInstructionFiles(): string[] {
 const devChat = new DevChat();
 
 
+regInMessage({command: 'sendMessage', text: '', hash: undefined});
+regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
+regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
 // message: { command: 'sendMessage', text: 'xxx', hash: 'xxx'}
 // return message: 
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
@@ -116,6 +121,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	return;
 }
 
+regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	logger.channel()?.info(`Stopping devchat`);
 	devChat.stop();

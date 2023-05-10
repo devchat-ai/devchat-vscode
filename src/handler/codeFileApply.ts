@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
 
 
 async function replaceFileContent(uri: vscode.Uri, newContent: string) {
@@ -58,6 +59,7 @@ export async function applyCodeFile(text: string, fileName: string): Promise<voi
 	});
 }
 
+regInMessage({command: 'code_file_apply', content: '', fileName: ''});
 export async function codeFileApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	await applyCodeFile(message.content, message.fileName);
 	return;

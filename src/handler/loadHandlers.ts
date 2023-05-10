@@ -12,6 +12,7 @@ import { showDiff } from './showDiff';
 import { addConext } from './addContext';
 import { addRefCommandContext } from './addRefCommandContext';
 import { contextDetail } from './contextDetail';
+import { listAllMessages } from './listMessages';
 
 
 // 根据用户选择的context菜单，添加对应的context文件
@@ -61,4 +62,6 @@ messageHandler.registerHandler('addRefCommandContext', addRefCommandContext);
 // 应答消息： { command: 'contextDetailResponse', 'file':<context file>, result: <context file content> }
 //  <context file content>是一个JSON字符串
 messageHandler.registerHandler('contextDetail', contextDetail);
+// Debug handler
+messageHandler.registerHandler('listAllMessages', listAllMessages);
 

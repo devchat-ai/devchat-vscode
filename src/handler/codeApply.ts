@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
 
 
 export async function applyCode(text: string) {
@@ -24,6 +25,7 @@ export async function applyCode(text: string) {
 }
 
 
+regInMessage({command: 'code_apply', content: ''});
 export async function codeApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	await applyCode(message.content);
 	return;
