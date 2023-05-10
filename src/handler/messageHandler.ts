@@ -18,6 +18,19 @@ export class MessageHandler {
 	}
 
 	async handleMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
+		let isNeedSendResponse = false;
+		if (message.command === 'sendMessage') {
+			try {
+				const messageText = message.text;
+				const messageObject = JSON.parse(messageText);
+				if (messageObject && messageObject.user && messageObject.user == 'merico-devchat') {
+					message = messageObject;
+					isNeedSendResponse = true;
+				}
+			} catch (e) {
+			}
+		}
+
 		const handler = this.handlers[message.command];
 		if (handler) {
 			logger.channel()?.info(`Handling command "${message.command}"`);
@@ -26,6 +39,10 @@ export class MessageHandler {
 		} else {
 			logger.channel()?.error(`No handler found for command "${message.command}"`);
 			logger.channel()?.show();
+		}
+
+		if (isNeedSendResponse) {
+			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'finish', hash: '', user: '', date: 1, isError: false });
 		}
 	}
 

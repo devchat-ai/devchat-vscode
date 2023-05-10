@@ -2,12 +2,16 @@ import * as vscode from 'vscode';
 import DevChat, { LogOptions, LogEntry } from '../toolwrapper/devchat';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
+
 
 interface LoadHistoryMessages {
 	command: string;
 	entries: Array<LogEntry>;
 }
 
+regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
+regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
 export async function historyMessages(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const devChat = new DevChat();
 

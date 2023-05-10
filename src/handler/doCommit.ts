@@ -1,7 +1,9 @@
 import * as vscode from 'vscode';
 import DtmWrapper from '../toolwrapper/dtm';
+import { regInMessage, regOutMessage } from '../util/reg_messages';
 
 
+regInMessage({command: 'doCommit', content: ''});
 export async function doCommit(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	const dtmWrapper = new DtmWrapper();
 
