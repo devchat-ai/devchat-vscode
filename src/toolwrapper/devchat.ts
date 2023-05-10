@@ -114,6 +114,9 @@ class DevChat {
 			logger.channel()?.show();
 		}
 
+		const openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('OpenAI.EndPoint');
+		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
+
 		const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
 		const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
 		const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
@@ -206,6 +209,7 @@ class DevChat {
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
+					...openAiApiBaseObject,
 				},
 			}, onStdoutPartial);
 

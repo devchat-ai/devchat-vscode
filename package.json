@@ -76,7 +76,13 @@
           "default": "",
           "description": "Open API Key",
           "when": "DevChat.llmModel == 'OpenAI'"
-        }
+        },
+		"DevChat.OpenAI.EndPoint": {
+			"type": "string",
+			"default": "",
+			"description": "OpenAI api server",
+			"when": "DevChat.llmModel == 'OpenAI'"
+		}
       }
     },
     "views": {
@@ -94,15 +100,15 @@
       },
       {
         "command": "devchat.addConext",
-        "title": "add to DevChat"
+        "title": "Add to DevChat"
       },
       {
         "command": "devchat.askForCode",
-        "title": "add to DevChat"
+        "title": "Add to DevChat"
       },
       {
         "command": "devchat.askForFile",
-        "title": "add to DevChat"
+        "title": "Add to DevChat"
       }
     ],
     "menus": {
@@ -118,13 +124,13 @@
           "command": "devchat.askForCode",
           "when": "editorTextFocus && editorHasSelection",
           "group": "navigation",
-          "title": "add to DevChat"
+          "title": "Add to DevChat"
         },
         {
           "command": "devchat.askForFile",
           "when": "editorTextFocus && !editorHasSelection",
           "group": "navigation",
-          "title": "add to DevChat"
+          "title": "Add to DevChat"
         }
       ]
     }
