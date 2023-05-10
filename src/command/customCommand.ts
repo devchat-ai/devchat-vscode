@@ -70,7 +70,7 @@ class CustomCommands {
 
     // 构建instructions列表字符串
     const instructions = command!.instructions
-      .map((instruction: string) => `[instruction|./workflows/${command.name}/${instruction}]`)
+      .map((instruction: string) => `[instruction|./.chat/workflows/${command.name}/${instruction}]`)
       .join(' ');
 
     // 返回结果字符串
