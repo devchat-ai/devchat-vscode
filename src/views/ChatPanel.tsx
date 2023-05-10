@@ -36,7 +36,7 @@ const chatPanel = () => {
     const theme = useMantineTheme();
     const chatContainerRef = useRef<HTMLDivElement>(null);
     const scrollViewport = useRef<HTMLDivElement>(null);
-    const [messages, messageHandlers] = useListState<{ type: string; message: string; }>([]);
+    const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contexts, contextsHandlers] = useListState<any>([]);
@@ -60,16 +60,22 @@ const chatPanel = () => {
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
             // Add the user's message to the chat UI
-            messageHandlers.append({ type: 'user', message: input });
+            messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
+
+            // Process and send the message to the extension
+            const contextStrs = contexts.map(({ file, context }, index) => {
+                return `[context|${file}]`;
+            });
+            const text = input + contextStrs.join(' ');
+            console.log(`message text: ${text}`);
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: text
+            });
 
             // Clear the input field
             setInput('');
-
-            // Process and send the message to the extension
-            messageUtil.sendMessage({
-                command: 'sendMessage',
-                text: input
-            });
+            contexts.length = 0;
 
             // start generating
             setGenerating(true);
@@ -157,7 +163,10 @@ const chatPanel = () => {
             // };
             const context = JSON.parse(message.result);
             if (typeof context !== 'undefined' && context) {
-                contextsHandlers.append(context);
+                contextsHandlers.append({
+                    file: message.file,
+                    context: context,
+                });
                 console.log(context);
             }
         });
@@ -229,7 +238,7 @@ const chatPanel = () => {
             </Menu.Item>);
     });
 
-    const messageList = messages.map(({ message: messageText, type: messageType }, index) => {
+    const messageList = messages.map(({ message: messageText, type: messageType, contexts }, index) => {
         // setMessage(messageText);
         return (<>
             <Flex
@@ -255,6 +264,31 @@ const chatPanel = () => {
                     paddingRight: 0,
                     width: 'calc(100% - 62px)',
                 }}>
+                    <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
+                        {
+                            contexts?.map(({ context }, index) => {
+                                return (
+                                    <Accordion.Item value={`item-${index}`} mah='200'>
+                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                            <Accordion.Control >
+                                                {'command' in context ? context.command : context.path}
+                                            </Accordion.Control>
+                                        </Box>
+                                        <Accordion.Panel>
+                                            {
+                                                context.content
+                                                    ? context.content
+                                                    : <Center>
+                                                        <Text c='gray.3'>No content</Text>
+                                                    </Center>
+                                            }
+
+                                        </Accordion.Panel>
+                                    </Accordion.Item>
+                                );
+                            })
+                        }
+                    </Accordion>
                     <ReactMarkdown
                         components={{
                             code({ node, inline, className, children, ...props }) {
@@ -362,7 +396,7 @@ const chatPanel = () => {
             <Stack sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
                 <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
                     {
-                        contexts.map((context, index) => {
+                        contexts.map(({ context }, index) => {
                             return (
                                 <Accordion.Item value={`item-${index}`} mah='200'>
                                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
