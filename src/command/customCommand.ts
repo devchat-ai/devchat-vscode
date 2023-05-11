@@ -28,26 +28,32 @@ class CustomCommands {
   public parseCommands(workflowsDir: string): void {
 	this.commands = [];
 
-    const subDirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
-      .filter(dirent => dirent.isDirectory())
-      .map(dirent => dirent.name);
+	try {
+		const subDirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
+		.filter(dirent => dirent.isDirectory())
+		.map(dirent => dirent.name);
 
-    for (const dir of subDirs) {
-      const settingsPath = path.join(workflowsDir, dir, '_setting_.json');
-      if (fs.existsSync(settingsPath)) {
-        const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-        const command: Command = {
-          name: dir,
-          pattern: settings.pattern,
-          description: settings.description,
-          message: settings.message,
-          default: settings.default,
-          instructions: settings.instructions
-        };
-        this.commands.push(command);
-      }
-    }
-  }
+		for (const dir of subDirs) {
+		const settingsPath = path.join(workflowsDir, dir, '_setting_.json');
+		if (fs.existsSync(settingsPath)) {
+			const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+			const command: Command = {
+			name: dir,
+			pattern: settings.pattern,
+			description: settings.description,
+			message: settings.message,
+			default: settings.default,
+			instructions: settings.instructions
+			};
+			this.commands.push(command);
+		}
+		}
+	} catch (error) {
+		// 显示错误消息
+		logger.channel()?.error(`Failed to parse commands: ${error}`);
+		logger.channel()?.show();
+	}	
+}
 
   public getCommands(): Command[] {
     return this.commands;

@@ -39,19 +39,19 @@ export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.
     }
   
     const workspaceRoot = workspaceFolders[0].uri.fsPath;
-    const chatDirPath = path.join(workspaceRoot, '.chat');
+    const chatWorkflowsDirPath = path.join(workspaceRoot, '.chat', 'workflows');
     const instructionsSrcPath = path.join(extensionUri.fsPath, 'workflows');
   
     try {
       // 检查 .chat 目录是否存在，如果不存在，则创建它
-      if (!fs.existsSync(chatDirPath)) {
-        fs.mkdirSync(chatDirPath);
+      if (!fs.existsSync(chatWorkflowsDirPath)) {
+        fs.mkdirSync(chatWorkflowsDirPath, {recursive: true});
       } else {
         return;
       }
   
       // 将 workflows 目录复制到 .chat 目录中
-	  copyDirSync(instructionsSrcPath, path.join(chatDirPath, 'workflows'));
+	  copyDirSync(instructionsSrcPath, chatWorkflowsDirPath);
     } catch (error) {
 		logger.channel()?.error('Error creating .chat directory and copying workflows:', error);
 		logger.channel()?.show();
