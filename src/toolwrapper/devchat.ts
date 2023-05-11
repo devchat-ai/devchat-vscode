@@ -96,10 +96,12 @@ class DevChat {
 				args.push("-i", header);
 			}
 		}
-
 		if (options.context) {
-			args.push("-c", options.context.join(","));
+			for (const context of options.context) {
+				args.push("-c", context);
+			}
 		}
+
 		args.push(content)
 
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
