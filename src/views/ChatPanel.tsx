@@ -96,14 +96,13 @@ const chatPanel = () => {
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     useEffect(() => {
-        scrollToBottom();
-    });
-
-    useEffect(() => {
         inputRef.current.focus();
         messageUtil.sendMessage({ command: 'regContextList' });
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
+        setTimeout(() => {
+            scrollToBottom();
+        }, 2000);
     }, []);
 
     useEffect(() => {
@@ -176,10 +175,13 @@ const chatPanel = () => {
         });
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
             console.log(JSON.stringify(message));
-            message.entries?.forEach(({ hash, user, date, request, response, context }) => {
+            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
                 const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
                 messageHandlers.append({ type: 'user', message: request, contexts: contexts });
                 messageHandlers.append({ type: 'bot', message: response });
+                if (index === message.entries.length - 1) {
+                    scrollToBottom();
+                }
             });
         });
     }, [registed]);
@@ -416,7 +418,9 @@ const chatPanel = () => {
                         animation: `${blink} 0.5s infinite;`,
                         width: 5,
                         marginTop: responsed ? 0 : '1em',
-                        backgroundColor: 'black'
+                        backgroundColor: 'black',
+                        display: 'block'
+
                     }}>|</Text> : ''}
                 </Container >
             </Flex >
@@ -436,14 +440,29 @@ const chatPanel = () => {
             }}>
             <ScrollArea
                 id='chat-scroll-area'
-                h={height - px('5rem')}
+                h={generating ? height - px('8rem') : height - px('5rem')}
                 type="never"
                 viewportRef={scrollViewport}>
                 {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
             <Stack
                 sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
-                {contexts &&
+                {generating &&
+                    <Center>
+                        <Button
+                            leftIcon={<IconPlayerStop />}
+                            variant="white"
+                            onClick={() => {
+                                messageUtil.sendMessage({
+                                    command: 'stopDevChat'
+                                });
+                                setGenerating(false);
+                            }}>
+                            Stop generating
+                        </Button>
+                    </Center>
+                }
+                {contexts && contexts.length > 0 &&
                     <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
                         {
                             contexts.map(({ context }, index) => {
@@ -477,21 +496,6 @@ const chatPanel = () => {
                             })
                         }
                     </Accordion>
-                }
-                {generating &&
-                    <Center>
-                        <Button
-                            leftIcon={<IconPlayerStop />}
-                            variant="white"
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'stopDevChat'
-                                });
-                                setGenerating(false);
-                            }}>
-                            Stop generating
-                        </Button>
-                    </Center>
                 }
                 <Menu
                     id='commandMenu'
