@@ -32,22 +32,24 @@ function checkOpenAIKey() {
 	return true;
 }
 
+function checkDependencyPackage() {
+	const dependencyInstalled = checkDependency();
+	if (!dependencyInstalled) {
+		// 依赖程序未安装，显示提示信息
+		logger.channel()?.error('devchat package is not installed.');
+		logger.channel()?.info('Please install devchat package first. Use command: pip install devchat');
+		logger.channel()?.show();
+		vscode.window.showErrorMessage('devchat package is not installed.');
+		return;
+	}
+
+	if (!checkOpenAIKey()) {
+		return;
+	}
+}
+
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('devchat.openChatPanel', () => {
-        const dependencyInstalled = checkDependency();
-		if (!dependencyInstalled) {
-			// 依赖程序未安装，显示提示信息
-			logger.channel()?.error('devchat package is not installed.');
-			logger.channel()?.info('Please install devchat package first. Use command: pip install devchat');
-			logger.channel()?.show();
-			vscode.window.showErrorMessage('devchat package is not installed.');
-			return;
-		}
-
-		if (!checkOpenAIKey()) {
-			return;
-		}
-
 		if (vscode.workspace.workspaceFolders) {
             ChatPanel.createOrShow(context.extensionUri);
         } else {
@@ -110,6 +112,7 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 }
 
 export {
+	checkDependencyPackage,
     registerOpenChatPanelCommand,
     registerAddContextCommand,
     registerAskForCodeCommand,
