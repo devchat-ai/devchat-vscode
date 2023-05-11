@@ -8,7 +8,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
-import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
+import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import ReactMarkdown from 'react-markdown';
@@ -266,7 +266,7 @@ const chatPanel = () => {
                     width: 'calc(100% - 62px)',
                     pre: {
                         whiteSpace: 'break-spaces'
-                    }
+                    },
                 }}>
                     {contexts &&
                         <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
@@ -301,11 +301,7 @@ const chatPanel = () => {
 
                                 const match = /language-(\w+)/.exec(className || '');
                                 const value = String(children).replace(/\n$/, '');
-                                const [copied, setCopied] = useState(false);
-                                const handleCopy = () => {
-                                    setCopied(true);
-                                    setTimeout(() => setCopied(false), 2000);
-                                };
+                                const [commited, setCommited] = useState(false);
 
                                 return !inline && match ? (
                                     <div style={{ position: 'relative' }}>
@@ -340,41 +336,60 @@ const chatPanel = () => {
                                                     </Tooltip>
                                                 )}
                                             </CopyButton>
-                                            <Tooltip label='View Diff' withArrow position="left" color="gray">
-                                                <ActionIcon onClick={() => {
-                                                    messageUtil.sendMessage({
-                                                        command: 'show_diff',
-                                                        content: value
-                                                    });
-                                                }}>
-                                                    <IconFileDiff size="1.125rem" />
-                                                </ActionIcon>
-                                            </Tooltip>
-                                            <Tooltip label='Insert Code' withArrow position="left" color="gray">
-                                                <ActionIcon onClick={() => {
-                                                    messageUtil.sendMessage({
-                                                        command: 'code_apply',
-                                                        content: value
-                                                    });
-                                                }}>
-                                                    <IconColumnInsertRight size="1.125rem" />
-                                                </ActionIcon>
-                                            </Tooltip>
-                                            <Tooltip label='Replace' withArrow position="left" color="gray">
-                                                <ActionIcon onClick={() => {
-                                                    messageUtil.sendMessage({
-                                                        command: 'code_file_apply',
-                                                        content: value
-                                                    });
-                                                }}>
-                                                    <IconReplace size="1.125rem" />
-                                                </ActionIcon>
-                                            </Tooltip>
+                                            {match[1] && match[1] === 'commitmsg'
+                                                ? (<>
+                                                    <Tooltip label={commited ? 'Committing' : 'Commit'} withArrow position="left" color="gray">
+                                                        <ActionIcon
+                                                            color={commited ? 'teal' : 'gray'}
+                                                            onClick={() => {
+                                                                messageUtil.sendMessage({
+                                                                    command: 'doCommit',
+                                                                    content: value
+                                                                });
+                                                                setCommited(true);
+                                                                setTimeout(() => { setCommited(false); }, 2000);
+                                                            }}>
+                                                            {commited ? <IconCheck size="1rem" /> : <IconGitCommit size="1rem" />}
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </>)
+                                                : (<>
+                                                    <Tooltip label='View Diff' withArrow position="left" color="gray">
+                                                        <ActionIcon onClick={() => {
+                                                            messageUtil.sendMessage({
+                                                                command: 'show_diff',
+                                                                content: value
+                                                            });
+                                                        }}>
+                                                            <IconFileDiff size="1.125rem" />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                    <Tooltip label='Insert Code' withArrow position="left" color="gray">
+                                                        <ActionIcon onClick={() => {
+                                                            messageUtil.sendMessage({
+                                                                command: 'code_apply',
+                                                                content: value
+                                                            });
+                                                        }}>
+                                                            <IconColumnInsertRight size="1.125rem" />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                    <Tooltip label='Replace' withArrow position="left" color="gray">
+                                                        <ActionIcon onClick={() => {
+                                                            messageUtil.sendMessage({
+                                                                command: 'code_file_apply',
+                                                                content: value
+                                                            });
+                                                        }}>
+                                                            <IconReplace size="1.125rem" />
+                                                        </ActionIcon>
+                                                    </Tooltip>
+                                                </>)}
                                         </Flex>
-                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '2em 1em 1em 2em' }} style={okaidia} PreTag="div">
+                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '2em 1em 1em 2em', }} style={okaidia} PreTag="div">
                                             {value}
                                         </SyntaxHighlighter>
-                                    </div>
+                                    </div >
                                 ) : (
                                     <code {...props} className={className}>
                                         {children}
@@ -384,14 +399,14 @@ const chatPanel = () => {
                         }}
                     >
                         {messageText}
-                    </ReactMarkdown>
+                    </ReactMarkdown >
                     {(generating && messageType === 'bot' && index === messages.length - 1) ? <Text sx={{
                         animation: `${blink} 0.5s infinite;`,
                         width: 5,
                         marginTop: responsed ? 0 : '1em',
                         backgroundColor: 'black'
                     }}>|</Text> : ''}
-                </Container>
+                </Container >
             </Flex >
             {index !== messages.length - 1 && <Divider my="sm" />
             }
