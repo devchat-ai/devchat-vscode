@@ -273,7 +273,7 @@ class DevChat {
 				return [];
 			}
 
-            return JSON.parse(stdout.trim());
+            return JSON.parse(stdout.trim()).reverse();
 		} catch (error) {
 			logger.channel()?.error(`Error getting log: ${error}`);
 			logger.channel()?.show();
