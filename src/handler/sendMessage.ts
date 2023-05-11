@@ -66,6 +66,7 @@ function getInstructionFiles(): string[] {
 }
 
 const devChat = new DevChat();
+let userStop = false;
 
 
 regInMessage({command: 'sendMessage', text: '', hash: undefined});
@@ -115,10 +116,17 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
 	
 	if (!chatResponse.isError) {
-		messageHistory.add(panel, {request: message.text, text: parsedMessage.text, parent_hash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+		messageHistory.add(panel, {request: message.text, text: chatResponse.response, parent_hash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
 	}
 
-	const responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+	if (userStop) {
+		userStop = false;
+		if (responseText.indexOf('Exit code: null') >= 0) {
+			return;
+		}
+	}
+
 	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: responseText, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
 }
@@ -126,6 +134,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel): Promise<void> {
 	logger.channel()?.info(`Stopping devchat`);
+	userStop = true;
 	devChat.stop();
 }
 
