@@ -273,8 +273,7 @@ class DevChat {
 				return [];
 			}
 
-			const stdoutNew = "[" + stdout.replace(/\}\n\]\n\[\n  \{\n/g, "}\n],\n[\n  {\n") + "]";
-            return JSON.parse(stdoutNew.trim());
+            return JSON.parse(stdout.trim());
 		} catch (error) {
 			logger.channel()?.error(`Error getting log: ${error}`);
 			logger.channel()?.show();

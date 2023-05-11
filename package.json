@@ -4,6 +4,7 @@
   "description": "devchat",
   "version": "0.0.27",
   "icon": "assets/devchat.png",
+  "publisher": "merico",
   "engines": {
     "vscode": "^1.77.0"
   },
