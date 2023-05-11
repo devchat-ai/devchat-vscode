@@ -23,10 +23,15 @@ function checkOpenAIKey() {
 		openaiApiKey = process.env.OPENAI_API_KEY;
 	}
 	if (!openaiApiKey) {
-		logger.channel()?.error('openAI key is invalid!');
-		logger.channel()?.info('You can set openAI key in Settings/DevChat, or export OPENAI_API_KEY to env.');
-		logger.channel()?.show();
-		vscode.window.showErrorMessage('openAI key is invalid!');
+		// openAI key 未设置，请用户输入API Key
+		vscode.window.showInputBox({
+			placeHolder: 'Please input your openAI API Key'
+		}).then((value) => {
+			if (value) {
+				// 设置用户输入的API Key
+				vscode.workspace.getConfiguration('DevChat').update('OpenAI.apiKey', value, true);
+			}
+		});
 		return false;
 	}
 	return true;
