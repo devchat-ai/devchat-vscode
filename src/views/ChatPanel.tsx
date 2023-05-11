@@ -8,7 +8,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
 import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
-import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
+import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPlayerStop, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
 import ReactMarkdown from 'react-markdown';
@@ -96,9 +96,14 @@ const chatPanel = () => {
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     useEffect(() => {
+        scrollToBottom();
+    });
+
+    useEffect(() => {
         inputRef.current.focus();
         messageUtil.sendMessage({ command: 'regContextList' });
         messageUtil.sendMessage({ command: 'regCommandList' });
+        messageUtil.sendMessage({ command: 'historyMessages' });
     }, []);
 
     useEffect(() => {
@@ -167,8 +172,15 @@ const chatPanel = () => {
                     file: message.file,
                     context: context,
                 });
-                console.log(context);
             }
+        });
+        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
+            console.log(JSON.stringify(message));
+            message.entries?.forEach(({ hash, user, date, request, response, context }) => {
+                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
+                messageHandlers.append({ type: 'bot', message: response });
+            });
         });
     }, [registed]);
 
@@ -466,6 +478,21 @@ const chatPanel = () => {
                         }
                     </Accordion>
                 }
+                {generating &&
+                    <Center>
+                        <Button
+                            leftIcon={<IconPlayerStop />}
+                            variant="white"
+                            onClick={() => {
+                                messageUtil.sendMessage({
+                                    command: 'stopDevChat'
+                                });
+                                setGenerating(false);
+                            }}>
+                            Stop generating
+                        </Button>
+                    </Center>
+                }
                 <Menu
                     id='commandMenu'
                     position='top-start'
@@ -497,12 +524,12 @@ const chatPanel = () => {
                             placeholder="Ctrl + Enter Send a message."
                             styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
                             icon={
-                                <ActionIcon onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
+                                <ActionIcon disabled={generating} onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
                                     <IconSquareRoundedPlus size="1rem" />
                                 </ActionIcon>
                             }
                             rightSection={
-                                <ActionIcon onClick={handleSendClick}>
+                                <ActionIcon disabled={generating} onClick={handleSendClick}>
                                     <IconSend size="1rem" />
                                 </ActionIcon>
                             }
