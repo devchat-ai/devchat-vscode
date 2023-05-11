@@ -481,15 +481,16 @@ const chatPanel = () => {
                                                 <IconX size="1rem" />
                                             </ActionIcon>
                                         </Box>
-                                        <Accordion.Panel mah='300'>
-                                            {
-                                                context.content
-                                                    ? context.content
-                                                    : <Center>
-                                                        <Text c='gray.3'>No content</Text>
-                                                    </Center>
-                                            }
-
+                                        <Accordion.Panel mah={300}>
+                                            <ScrollArea h={300} type="never">
+                                                {
+                                                    context.content
+                                                        ? context.content
+                                                        : <Center>
+                                                            <Text c='gray.3'>No content</Text>
+                                                        </Center>
+                                                }
+                                            </ScrollArea>
                                         </Accordion.Panel>
                                     </Accordion.Item>
                                 );
