@@ -467,9 +467,9 @@ const chatPanel = () => {
                         {
                             contexts.map(({ context }, index) => {
                                 return (
-                                    <Accordion.Item value={`item-${index}`} mah='200'>
+                                    <Accordion.Item value={`item-${index}`} >
                                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <Accordion.Control >
+                                            <Accordion.Control w={'calc(100% - 40px)'}>
                                                 {'command' in context ? context.command : context.path}
                                             </Accordion.Control>
                                             <ActionIcon
@@ -481,7 +481,7 @@ const chatPanel = () => {
                                                 <IconX size="1rem" />
                                             </ActionIcon>
                                         </Box>
-                                        <Accordion.Panel>
+                                        <Accordion.Panel mah='300'>
                                             {
                                                 context.content
                                                     ? context.content
