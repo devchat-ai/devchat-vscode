@@ -17,10 +17,14 @@ export async function handleFileSelected(fileSelected: string) {
     // get the language from fileSelected
     const languageId = await getLanguageIdByFileName(fileSelected);
 
+	// get relative path of workspace
+	const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	const relativePath = path.relative(workspaceDir!, fileSelected);
+
     // convert fileContent to markdown code block with languageId and file path
     const data = {
 		languageId: languageId,
-		path: fileSelected,
+		path: relativePath,
 		content: fileContent
 	};
 	const jsonData = JSON.stringify(data);
