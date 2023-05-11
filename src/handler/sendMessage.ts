@@ -108,7 +108,8 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	}
 
 	const onData = (partialResponse: ChatResponse) => {
-		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: partialResponse.response, user: partialResponse.user, date: partialResponse.date }, false);
+		const responseText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: responseText, user: partialResponse.user, date: partialResponse.date }, false);
 	};
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
@@ -117,7 +118,8 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 		messageHistory.add(panel, {request: message.text, text: parsedMessage.text, parent_hash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
 	}
 
-	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: chatResponse.response, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
+	const responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: responseText, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
 }
 
