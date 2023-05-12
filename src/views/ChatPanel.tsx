@@ -50,6 +50,7 @@ const chatPanel = () => {
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
     const [inputRef, inputRect] = useResizeObserver();
+    const messageCount = 5;
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMenuType('contexts');
@@ -122,6 +123,13 @@ const chatPanel = () => {
         }
     }, [currentMessage]);
 
+    useEffect(() => {
+        console.log(`message length: ${messages.length}`);
+        if (messages.length > messageCount * 2) {
+            messageHandlers.remove(0, 1);
+        }
+    }, [messages]);
+
     // Add the received message to the chat UI as a bot message
     useEffect(() => {
         if (registed) return;
@@ -174,8 +182,8 @@ const chatPanel = () => {
             }
         });
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
-            console.log(JSON.stringify(message));
             message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
+                if (index < message.entries.length - messageCount) return;
                 const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
                 messageHandlers.append({ type: 'user', message: request, contexts: contexts });
                 messageHandlers.append({ type: 'bot', message: response });
