@@ -40,12 +40,18 @@ function checkOpenAIKey() {
 function checkDependencyPackage() {
 	const dependencyInstalled = checkDependency();
 	if (!dependencyInstalled) {
-		// 依赖程序未安装，显示提示信息
-		logger.channel()?.error('devchat package is not installed.');
-		logger.channel()?.info('Please install devchat package first. Use command: pip install devchat');
-		logger.channel()?.show();
-		vscode.window.showErrorMessage('devchat package is not installed.');
-		return;
+		// Prompt the user, whether to install devchat using pip3 install devchat
+		const installPrompt = 'devchat is not installed. Do you want to install it using pip3 install devchat?';
+		const installAction = 'Install';
+
+		vscode.window.showInformationMessage(installPrompt, installAction).then((selectedAction) => {
+			if (selectedAction === installAction) {
+				// Install devchat using pip3 install devchat
+				const terminal = vscode.window.createTerminal("DevChat Install");
+				terminal.sendText("pip3 install devchat");
+				terminal.show();
+			}
+		});
 	}
 
 	if (!checkOpenAIKey()) {
