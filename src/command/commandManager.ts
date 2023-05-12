@@ -62,7 +62,7 @@ export interface Command {
               return await commandObj.handler(commandObj.name, matchedUserInput);
             })
           );
-          let result = text;
+          let result = userInput;
           for (let i = 0; i < matches.length; i++) {
             result = result.replace(matches[i][0], replacements[i]);
           }
