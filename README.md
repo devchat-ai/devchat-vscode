@@ -1,8 +1,16 @@
-# DevChat
+<div align="center">
+<br/>
+<img src="assets/devchat.png" width="100px" alt="">
+<br/>
 
-![DevChat Logo](assets/devchat.png)
+# DevChat Visual Studio Code Extension
 
-DevChat is a Visual Studio Code extension that allows you to chat with an AI-powered bot to help you with your coding tasks. Write prompts, not code.
+
+</div>
+<br>
+<div align="left">
+
+DevChat provides a Visual Studio Code extension, enabling you to interact with an AI-powered bot for coding assistance. Designed for **prompt-centric** software development, it allows you to create your own personalized dev copilot.
 
 ## Features
 
