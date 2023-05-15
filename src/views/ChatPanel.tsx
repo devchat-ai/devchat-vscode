@@ -266,7 +266,7 @@ const chatPanel = () => {
             <Flex
                 key={`message-${index}`}
                 mih={50}
-                miw={300}
+                w={scrollViewport.current?.clientWidth}
                 gap="md"
                 justify="flex-start"
                 align="flex-start"
@@ -449,6 +449,7 @@ const chatPanel = () => {
             <ScrollArea
                 id='chat-scroll-area'
                 h={generating ? height - px('8rem') : height - px('5rem')}
+                w={width - px('2rem')}
                 type="never"
                 viewportRef={scrollViewport}>
                 {messageList.length > 0 ? messageList : defaultMessages}
