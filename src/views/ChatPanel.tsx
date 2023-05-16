@@ -207,7 +207,7 @@ const chatPanel = () => {
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (event.key === 'Enter' && event.ctrlKey) {
+        if (event.key === 'Enter' && !event.shiftKey) {
             handleSendClick(event as any);
         }
     };
@@ -535,7 +535,7 @@ const chatPanel = () => {
                             radius="md"
                             size="md"
                             sx={{ pointerEvents: 'all' }}
-                            placeholder="Ctrl + Enter Send a message."
+                            placeholder="Send a message."
                             styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
                             icon={
                                 <ActionIcon disabled={generating} onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
