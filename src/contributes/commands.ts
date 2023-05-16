@@ -3,9 +3,10 @@ import ChatPanel from '../panel/chatPanel';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
 import { logger } from '../util/logger';
 import * as childProcess from 'child_process';
+import ExtensionContextHolder from '../util/extensionContext';
 
 
-function checkDependency() {
+export function checkDevChatDependency() {
 	// 执行系统命令，检查依赖程序是否已经安装
 	try {
 	  const result = childProcess.execSync('devchat --help');
@@ -15,6 +16,21 @@ function checkDependency() {
 	  // 命令执行失败，依赖程序未安装
 	  return false;
 	}
+}
+
+export async function checkOpenAiAPIKey() {
+	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
+	let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
+	if (!openaiApiKey) {
+		openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+	}
+	if (!openaiApiKey) {
+		openaiApiKey = process.env.OPENAI_API_KEY;
+	}
+	if (!openaiApiKey) {
+		return false;
+	}
+	return true;
 }
 
 function checkOpenAIKey() {
@@ -38,7 +54,7 @@ function checkOpenAIKey() {
 }
 
 function checkDependencyPackage() {
-	const dependencyInstalled = checkDependency();
+	const dependencyInstalled = checkDevChatDependency();
 	if (!dependencyInstalled) {
 		// Prompt the user, whether to install devchat using pip3 install devchat
 		const installPrompt = 'devchat is not installed. Do you want to install it using pip3 install devchat?';
