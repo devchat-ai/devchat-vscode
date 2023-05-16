@@ -1,13 +1,17 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import WebviewManager from './webviewManager';
 
 import '../handler/loadHandlers';
 import handleMessage from '../handler/messageHandler';
+import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
+import ExtensionContextHolder from '../util/extensionContext';
+import CustomCommands from '../command/customCommand';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
 	private _view?: vscode.WebviewView;
-	private _webviewManager: WebviewManager|undefined;
+	private _webviewManager: WebviewManager | undefined;
 
 	constructor(private readonly _context: vscode.ExtensionContext) {
 		// Subscribe to the onDidChangeWorkspaceFolders event
@@ -17,13 +21,22 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 	public view() {
 		return this._view;
 	}
-  
+
 	resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken): void {
-	  this._view = webviewView;
-  
-	  this._webviewManager = new WebviewManager(webviewView.webview, this._context.extensionUri);
-	  
-	  this.registerEventListeners();
+		// 创建 .chat 目录并复制 workflows
+		createChatDirectoryAndCopyInstructionsSync(ExtensionContextHolder.context?.extensionUri!);
+
+		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		if (workspaceDir) {
+			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
+			CustomCommands.getInstance().parseCommands(workflowsDir);
+		}
+
+		this._view = webviewView;
+
+		this._webviewManager = new WebviewManager(webviewView.webview, this._context.extensionUri);
+
+		this.registerEventListeners();
 	}
 
 	private registerEventListeners() {
@@ -41,9 +54,9 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 	private onDidChangeWorkspaceFolders(event: vscode.WorkspaceFoldersChangeEvent): void {
 		// Check if any folder was added or removed
 		if (event.added.length > 0 || event.removed.length > 0) {
-		  // Update the webviewView content
-		  vscode.window.showInformationMessage(`onDidChangeWorkspaceFolders`);
-		//   this.updateWebviewContent();
+			// Update the webviewView content
+			vscode.window.showInformationMessage(`onDidChangeWorkspaceFolders`);
+			//   this.updateWebviewContent();
 		}
 	}
 
@@ -58,4 +71,4 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 	// 	}
 	// }
 
-  }
+}

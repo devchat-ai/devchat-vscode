@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.0.33",
+	"version": "0.0.34",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {

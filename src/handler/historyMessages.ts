@@ -10,6 +10,22 @@ interface LoadHistoryMessages {
 	entries: Array<LogEntry>;
 }
 
+function welcomeMessage(): LogEntry {
+	// create default logEntry to show welcome message
+	return {
+		hash: 'message',
+		user: 'system',
+		date: '',
+		request: 'How to use DevChat?',
+		response: `
+DevChat provides an editing operation method through problem driven development. You can start the journey of using DevChat from the following aspects.
+1. Right click to select a file or a piece of code to add to DevChat and try asking AI about the file/code.
+2. Use the+button in DevChat to select a git diff message and try using "/commit_message" command to generate a commit message.
+		`,
+		context: []
+	} as LogEntry;
+}
+
 regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
 export async function historyMessages(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
@@ -50,7 +66,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 
 	const loadHistoryMessages: LoadHistoryMessages = {
 		command: 'loadHistoryMessages',
-		entries: logEntriesFlat,
+		entries: logEntries.length>0? logEntriesFlat : [welcomeMessage()],
 	};
 
 	MessageHandler.sendMessage(panel, loadHistoryMessages);

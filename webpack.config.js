@@ -159,6 +159,11 @@ const webviewConfig = {
       filename: 'index.html',
       chunks: ['index']
     }),
+	new HtmlWebpackPlugin({
+		template: path.resolve(__dirname, 'src', 'welcome.html'),
+		filename: 'welcome.html',
+		chunks: ['welcome']
+	}),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'assets', to: 'assets' },
