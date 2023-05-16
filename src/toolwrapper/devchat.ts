@@ -8,6 +8,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 
 import { logger } from '../util/logger';
+import ExtensionContextHolder from '../util/extensionContext';
+
 
 
 const envPath = path.join(__dirname, '..', '.env');
@@ -107,7 +109,11 @@ class DevChat {
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		// const openaiApiKey = process.env.OPENAI_API_KEY;
 
-		let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
+		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
+		if (!openaiApiKey) {
+			openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+		}
 		if (!openaiApiKey) {
 			openaiApiKey = process.env.OPENAI_API_KEY;
 		}
@@ -125,7 +131,12 @@ class DevChat {
 		const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
 		const tokensPerPrompt = vscode.workspace.getConfiguration('DevChat').get('OpenAI.tokensPerPrompt');
 		const userHistoryPrompts = vscode.workspace.getConfiguration('DevChat').get('OpenAI.useHistoryPrompt');
-		
+
+		let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		if (!devChat) {
+			devChat = 'devchat';
+		}
+
 		if (userHistoryPrompts && options.parent) {
 			args.push("-p", options.parent);
 		}
@@ -205,13 +216,13 @@ class DevChat {
 			};
 
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await this.spawnAsync('devchat', args, {
+			const { code, stdout, stderr } = await this.spawnAsync(devChat, args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
-					...openAiApiBaseObject,
+					...openAiApiBaseObject
 				},
 			}, onStdoutPartial);
 
@@ -255,12 +266,17 @@ class DevChat {
 			args.push('--max-count', `${maxLogCount}`);
 		}
 
+		let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		if (!devChat) {
+			devChat = 'devchat';
+		}
+
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
 		try {
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await this.spawnAsync('devchat', args, {
+			const { code, stdout, stderr } = await this.spawnAsync(devChat, args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
