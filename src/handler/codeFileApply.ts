@@ -60,7 +60,7 @@ export async function applyCodeFile(text: string, fileName: string): Promise<voi
 }
 
 regInMessage({command: 'code_file_apply', content: '', fileName: ''});
-export async function codeFileApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function codeFileApply(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	await applyCodeFile(message.content, message.fileName);
 	return;
 }

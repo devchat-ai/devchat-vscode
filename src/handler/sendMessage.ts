@@ -76,24 +76,24 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 // return message: 
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
-export async function sendMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const newText2 = await CommandManager.getInstance().processText(message.text);
 	const parsedMessage = parseMessage(newText2);
 	const chatOptions: any = {};
 
-	let parent_hash = undefined;
-	logger.channel()?.info(`request message hash: ${message.hash}`)
+	let parentHash = undefined;
+	logger.channel()?.info(`request message hash: ${message.hash}`);
 	if (message.hash) {
 		const hmessage = messageHistory.find(panel, message.hash);
-		parent_hash = hmessage ? message.parent_hash : undefined;
+		parentHash = hmessage ? message.parentHash : undefined;
 	} else {
 		const hmessage = messageHistory.findLast(panel);
-		parent_hash = hmessage ? hmessage.hash : undefined;
+		parentHash = hmessage ? hmessage.hash : undefined;
 	}
-	if (parent_hash) {
-		chatOptions.parent = parent_hash;
+	if (parentHash) {
+		chatOptions.parent = parentHash;
 	}
-	logger.channel()?.info(`parent hash: ${parent_hash}`);
+	logger.channel()?.info(`parent hash: ${parentHash}`);
 
 	if (parsedMessage.context.length > 0) {
 		chatOptions.context = parsedMessage.context;
@@ -116,7 +116,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
 	
 	if (!chatResponse.isError) {
-		messageHistory.add(panel, {request: message.text, text: chatResponse.response, parent_hash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+		messageHistory.add(panel, {request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
 	}
 
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
@@ -132,7 +132,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel): Pro
 }
 
 regInMessage({command: 'stopDevChat'});
-export async function stopDevChat(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	logger.channel()?.info(`Stopping devchat`);
 	userStop = true;
 	devChat.stop();

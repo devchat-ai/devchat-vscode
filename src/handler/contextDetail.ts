@@ -9,7 +9,7 @@ regOutMessage({command: 'contextDetailResponse', file: '', result: ''});
 // message: { command: 'contextDetail', file: string }
 // read detail context information from file
 // return json string
-export async function contextDetail(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function contextDetail(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const fileContent = fs.readFileSync(message.file, 'utf-8');
     MessageHandler.sendMessage(panel, { command: 'contextDetailResponse', 'file':message.file, result: fileContent });
 	return;

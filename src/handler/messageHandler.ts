@@ -3,27 +3,27 @@
 import * as vscode from 'vscode';
 
 import '../command/loadCommands';
-import '../context/loadContexts'
+import '../context/loadContexts';
 import { logger } from '../util/logger';
 
 
 export class MessageHandler {
-	private handlers: { [command: string]: (message: any, panel: vscode.WebviewPanel) => Promise<void> } = {};
+	private handlers: { [command: string]: (message: any, panel: vscode.WebviewPanel|vscode.WebviewView) => Promise<void> } = {};
 
 	constructor() {
 	}
 
-	registerHandler(command: string, handler: (message: any, panel: vscode.WebviewPanel) => Promise<void>): void {
+	registerHandler(command: string, handler: (message: any, panel: vscode.WebviewPanel|vscode.WebviewView) => Promise<void>): void {
 		this.handlers[command] = handler;
 	}
 
-	async handleMessage(message: any, panel: vscode.WebviewPanel): Promise<void> {
+	async handleMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 		let isNeedSendResponse = false;
 		if (message.command === 'sendMessage') {
 			try {
 				const messageText = message.text;
 				const messageObject = JSON.parse(messageText);
-				if (messageObject && messageObject.user && messageObject.user == 'merico-devchat') {
+				if (messageObject && messageObject.user && messageObject.user === 'merico-devchat') {
 					message = messageObject;
 					isNeedSendResponse = true;
 				}
@@ -46,7 +46,7 @@ export class MessageHandler {
 		}
 	}
 
-	public static sendMessage(panel: vscode.WebviewPanel, message: object, log: boolean = true): void {
+	public static sendMessage(panel: vscode.WebviewPanel|vscode.WebviewView, message: object, log: boolean = true): void {
 		if (log) {
 			logger.channel()?.info(`Sending message "${JSON.stringify(message)}"`);
 		}
