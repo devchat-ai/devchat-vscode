@@ -19,8 +19,9 @@ export default function App() {
         <AppShell
             styles={{
                 main: {
-                    background: theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0],
-                    padding: 0
+                    padding: 0,
+                    fontFamily: 'var(--vscode-editor-font-familyy)',
+                    fontSize: 'var(--vscode-editor-font-size)',
                 },
             }}
         >
