@@ -91,6 +91,15 @@ function registerAddContextCommand(context: vscode.ExtensionContext) {
         await sendFileSelectMessage(ChatPanel.currentPanel()!.panel(), uri.path);
     });
     context.subscriptions.push(disposableAddContext);
+
+	const disposableAddContextChinese = vscode.commands.registerCommand('devchat.addConext_chinese', async (uri: { path: any; }) => {
+        if (!ensureChatPanel(context)) {
+            return;
+        }
+
+        await sendFileSelectMessage(ChatPanel.currentPanel()!.panel(), uri.path);
+    });
+    context.subscriptions.push(disposableAddContextChinese);
 }
 
 function registerAskForCodeCommand(context: vscode.ExtensionContext) {
@@ -106,6 +115,19 @@ function registerAskForCodeCommand(context: vscode.ExtensionContext) {
         }
     });
     context.subscriptions.push(disposableCodeContext);
+
+	const disposableCodeContextChinese = vscode.commands.registerCommand('devchat.askForCode_chinese', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            if (!ensureChatPanel(context)) {
+                return;
+            }
+
+            const selectedText = editor.document.getText(editor.selection);
+            await sendCodeSelectMessage(ChatPanel.currentPanel()!.panel(), editor.document.fileName, selectedText);
+        }
+    });
+    context.subscriptions.push(disposableCodeContextChinese);
 }
 
 function registerAskForFileCommand(context: vscode.ExtensionContext) {
@@ -120,6 +142,18 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
         }
     });
     context.subscriptions.push(disposableAskFile);
+
+	const disposableAskFileChinese = vscode.commands.registerCommand('devchat.askForFile_chinese', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (editor) {
+            if (!ensureChatPanel(context)) {
+                return;
+            }
+
+            await sendFileSelectMessage(ChatPanel.currentPanel()!.panel(), editor.document.fileName);
+        }
+    });
+    context.subscriptions.push(disposableAskFileChinese);
 }
 
 export {
