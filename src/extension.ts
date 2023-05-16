@@ -120,10 +120,11 @@ function activate(context: vscode.ExtensionContext) {
 		})
 	);
 
+	ExtensionContextHolder.provider = new DevChatViewProvider(context), {
+		webviewOptions: { retainContextWhenHidden: true }
+	};
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider('devchat-view', new DevChatViewProvider(context), {
-			webviewOptions: { retainContextWhenHidden: true }
-		})
+		vscode.window.registerWebviewViewProvider('devchat-view', ExtensionContextHolder.provider)
 	);
 }
 exports.activate = activate;

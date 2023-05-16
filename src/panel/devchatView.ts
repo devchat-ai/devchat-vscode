@@ -12,7 +12,11 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 	constructor(private readonly _context: vscode.ExtensionContext) {
 		// Subscribe to the onDidChangeWorkspaceFolders event
 		vscode.workspace.onDidChangeWorkspaceFolders(this.onDidChangeWorkspaceFolders, this, _context.subscriptions);
-	  }
+	}
+
+	public view() {
+		return this._view;
+	}
   
 	resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken): void {
 	  this._view = webviewView;
