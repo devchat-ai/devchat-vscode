@@ -219,12 +219,20 @@ const chatPanel = () => {
     const commandMenusNode = commandMenus.map(({ pattern, description, name }, index) => {
         return (
             <Menu.Item
+                sx={{
+                    '&:hover, &[data-hovered]': {
+                        color: 'var(--vscode-menu-selectionForeground)',
+                        border: 'var(--vscode-menu-selectionBorder)',
+                        backgroundColor: 'var(--vscode-menu-selectionBackground)'
+                    }
+                }}
                 onClick={() => { setInput(`/${pattern} `); }}
-                icon={<IconTerminal2 size={16} />}
+                icon={<IconTerminal2 size={16} color='var(--vscode-menu-foreground)' />}
             >
                 <Text sx={{
                     fontSize: 'sm',
                     fontWeight: 'bolder',
+                    color: 'var(--vscode-menu-foreground)'
                 }}>
                     /{pattern}
                 </Text>
@@ -240,14 +248,22 @@ const chatPanel = () => {
     const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
         return (
             <Menu.Item
+                sx={{
+                    '&:hover, &[data-hovered]': {
+                        color: 'var(--vscode-menu-selectionForeground)',
+                        border: 'var(--vscode-menu-selectionBorder)',
+                        backgroundColor: 'var(--vscode-menu-selectionBackground)'
+                    }
+                }}
                 onClick={() => {
                     handleContextClick(name);
                 }}
-                icon={<IconMessagePlus size={16} />}
+                icon={<IconMessagePlus size={16} color='var(--vscode-menu-foreground)' />}
             >
                 <Text sx={{
                     fontSize: 'sm',
                     fontWeight: 'bolder',
+                    color: 'var(--vscode-menu-foreground)'
                 }}>
                     {name}
                 </Text>
@@ -291,7 +307,39 @@ const chatPanel = () => {
                     },
                 }}>
                     {contexts &&
-                        <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
+                        <Accordion variant="contained" chevronPosition="left"
+                            sx={{
+                                backgroundColor: 'var(--vscode-menu-background)',
+                            }}
+                            styles={{
+                                item: {
+                                    border: 'var(--vscode-menu-border)',
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                },
+                                control: {
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                    '&:hover': {
+                                        backgroundColor: 'var(--vscode-menu-background)',
+                                    }
+                                },
+                                chevron: {
+                                    color: 'var(--vscode-menu-foreground)',
+                                },
+                                icon: {
+                                    color: 'var(--vscode-menu-foreground)',
+                                },
+                                label: {
+                                    color: 'var(--vscode-menu-foreground)',
+                                },
+                                panel: {
+                                    color: 'var(--vscode-menu-foreground)',
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                },
+                                content: {
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                }
+                            }}
+                        >
                             {
                                 contexts?.map(({ context }, index) => {
                                     return (
@@ -444,7 +492,8 @@ const chatPanel = () => {
             sx={{
                 height: '100%',
                 paddingTop: 10,
-                backgroundColor: theme.colors.gray[0],
+                background: 'var(--vscode-editor-background)',
+                color: 'var(--vscode-editor-foreground)'
             }}>
             <ScrollArea
                 id='chat-scroll-area'
@@ -459,7 +508,18 @@ const chatPanel = () => {
                 {generating &&
                     <Center>
                         <Button
-                            leftIcon={<IconPlayerStop />}
+                            leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
+                            sx={{
+                                backgroundColor: 'var(--vscode-button-background)',
+                            }}
+                            styles={{
+                                icon: {
+                                    color: 'var(--vscode-button-foreground)'
+                                },
+                                label: {
+                                    color: 'var(--vscode-button-foreground)'
+                                }
+                            }}
                             variant="white"
                             onClick={() => {
                                 messageUtil.sendMessage({
@@ -472,18 +532,59 @@ const chatPanel = () => {
                     </Center>
                 }
                 {contexts && contexts.length > 0 &&
-                    <Accordion variant="contained" chevronPosition="left" style={{ backgroundColor: '#FFF' }}>
+                    <Accordion variant="contained" chevronPosition="left"
+                        sx={{
+                            backgroundColor: 'var(--vscode-menu-background)',
+                        }}
+                        styles={{
+                            item: {
+                                border: 'var(--vscode-menu-border)',
+                                backgroundColor: 'var(--vscode-menu-background)',
+                            },
+                            control: {
+                                backgroundColor: 'var(--vscode-menu-background)',
+                                '&:hover': {
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                }
+                            },
+                            chevron: {
+                                color: 'var(--vscode-menu-foreground)',
+                            },
+                            icon: {
+                                color: 'var(--vscode-menu-foreground)',
+                            },
+                            label: {
+                                color: 'var(--vscode-menu-foreground)',
+                            },
+                            panel: {
+                                color: 'var(--vscode-menu-foreground)',
+                                backgroundColor: 'var(--vscode-menu-background)',
+                            },
+                            content: {
+                                backgroundColor: 'var(--vscode-menu-background)',
+                            }
+                        }}
+                    >
                         {
                             contexts.map(({ context }, index) => {
                                 return (
                                     <Accordion.Item value={`item-${index}`} >
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                        <Box sx={{
+                                            display: 'flex', alignItems: 'center',
+                                            backgroundColor: 'var(--vscode-menu-background)',
+                                        }}>
                                             <Accordion.Control w={'calc(100% - 40px)'}>
                                                 {'command' in context ? context.command : context.path}
                                             </Accordion.Control>
                                             <ActionIcon
                                                 mr={8}
                                                 size="lg"
+                                                sx={{
+                                                    color: 'var(--vscode-menu-foreground)',
+                                                    '&:hover': {
+                                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                                    }
+                                                }}
                                                 onClick={() => {
                                                     contextsHandlers.remove(index);
                                                 }}>
@@ -520,7 +621,8 @@ const chatPanel = () => {
                     }}
                     onClose={() => setMenuType('')}
                     onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
-                    returnFocus={true}>
+                    returnFocus={true}
+                >
                     <Menu.Target>
                         <Textarea
                             id='chat-textarea'
@@ -536,14 +638,51 @@ const chatPanel = () => {
                             size="md"
                             sx={{ pointerEvents: 'all' }}
                             placeholder="Send a message."
-                            styles={{ icon: { alignItems: 'flex-start', paddingTop: '9px' }, rightSection: { alignItems: 'flex-start', paddingTop: '9px' } }}
+                            styles={{
+                                icon: { alignItems: 'flex-start', paddingTop: '9px' },
+                                rightSection: { alignItems: 'flex-start', paddingTop: '9px' },
+                                input: {
+                                    backgroundColor: 'var(--vscode-input-background)',
+                                    border: 'var(--vscode-input-border)',
+                                    color: 'var(--vscode-input-foreground)',
+                                    '&[data-disabled]': {
+                                        color: 'var(--vscode-disabledForeground)'
+                                    }
+                                }
+                            }}
                             icon={
-                                <ActionIcon disabled={generating} onClick={handlePlusClick} sx={{ pointerEvents: 'all' }}>
+                                <ActionIcon
+                                    disabled={generating}
+                                    onClick={handlePlusClick}
+                                    sx={{
+                                        pointerEvents: 'all',
+                                        '&:hover': {
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        },
+                                        '&[data-disabled]': {
+                                            border: 'var(--vscode-input-border)',
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        }
+                                    }}
+                                >
                                     <IconSquareRoundedPlus size="1rem" />
                                 </ActionIcon>
                             }
                             rightSection={
-                                <ActionIcon disabled={generating} onClick={handleSendClick}>
+                                <ActionIcon
+                                    disabled={generating}
+                                    onClick={handleSendClick}
+                                    sx={{
+                                        pointerEvents: 'all',
+                                        '&:hover': {
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        },
+                                        '&[data-disabled]': {
+                                            border: 'var(--vscode-input-border)',
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        }
+                                    }}
+                                >
                                     <IconSend size="1rem" />
                                 </ActionIcon>
                             }
@@ -551,7 +690,12 @@ const chatPanel = () => {
                     </Menu.Target>
                     {
                         menuType === 'contexts'
-                            ? (<Menu.Dropdown>
+                            ? (<Menu.Dropdown
+                                sx={{
+                                    color: 'var(--vscode-menu-foreground)',
+                                    border: 'var(--vscode-menu-border)',
+                                    backgroundColor: 'var(--vscode-menu-background)'
+                                }}>
                                 <Text
                                     c="dimmed"
                                     ta="left"
@@ -565,7 +709,12 @@ const chatPanel = () => {
                                 {contextMenusNode}
                             </Menu.Dropdown>)
                             : menuType === 'commands'
-                                ? <Menu.Dropdown>
+                                ? <Menu.Dropdown
+                                    sx={{
+                                        color: 'var(--vscode-menu-foreground)',
+                                        border: 'var(--vscode-menu-border)',
+                                        backgroundColor: 'var(--vscode-menu-background)'
+                                    }}>
                                     <Menu.Label>DevChat Commands</Menu.Label>
                                     {commandMenusNode}
                                 </Menu.Dropdown>
