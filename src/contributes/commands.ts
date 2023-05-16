@@ -77,28 +77,14 @@ function checkDependencyPackage() {
 }
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('devchat.openChatPanel', () => {
-		if (vscode.workspace.workspaceFolders) {
-            ChatPanel.createOrShow(context.extensionUri);
-        } else {
-            vscode.window.showErrorMessage('Please open a directory before using the chat panel.');
-        }
+    let disposable = vscode.commands.registerCommand('devchat.openChatPanel',async () => {
+		await vscode.commands.executeCommand('devchat-view.focus');
     });
     context.subscriptions.push(disposable);
 }
 
 async function ensureChatPanel(context: vscode.ExtensionContext): Promise<boolean> {
-    console.log('Executing command to open devchat-sidebar');
-    await vscode.commands.executeCommand('workbench.view.extension.devchat-sidebar');
-    console.log('Command executed');
-	// if (!ChatPanel.currentPanel()) {
-    //     if (vscode.workspace.workspaceFolders) {
-    //         ChatPanel.createOrShow(context.extensionUri);
-    //     } else {
-    //         vscode.window.showErrorMessage('Please open a directory before using the chat panel.');
-    //         return false;
-    //     }
-    // }
+    await vscode.commands.executeCommand('devchat-view.focus');
     return true;
 }
 

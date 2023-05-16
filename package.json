@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.0.32",
+	"version": "0.0.33",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -129,8 +129,9 @@
 		  },
 		  {
 			"command": "DevChat.OPENAI_API_KEY",
-			"title": "DevChat: OPENAI_API_KEY"
-		},
+			"title": "OPENAI_API_KEY",
+			"category": "DevChat"
+		  },
 		{
 		  "command": "devchat.openChatPanel",
 		  "title": "DevChat"
@@ -161,13 +162,6 @@
 		}
 	  ],
 	  "menus": {
-		  "view/title": [
-			  {
-				"command": "devchat.createEntry",
-				"when": "view == devchat-view",
-				"group": "navigation"
-			  }
-		  ],
 		  "commandPalette": [
 			{
 				"command": "devchat.addConext",

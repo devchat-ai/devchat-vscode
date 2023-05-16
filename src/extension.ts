@@ -106,7 +106,7 @@ function activate(context: vscode.ExtensionContext) {
 
 		statusBarItem.text = `$(pass)DevChat`;
 		statusBarItem.tooltip = `ready to chat`;
-		statusBarItem.command = 'devchat.openChatPanel';
+		statusBarItem.command = 'devcaht.onStatusBarClick';
 	}, 3000);
 
 	// Add the status bar item to the status bar
@@ -115,16 +115,16 @@ function activate(context: vscode.ExtensionContext) {
 
 	// Register the command
 	context.subscriptions.push(
-		vscode.commands.registerCommand('devcaht.onStatusBarClick', () => {
-			vscode.window.showInformationMessage('My Status Bar Item was clicked!');
+		vscode.commands.registerCommand('devcaht.onStatusBarClick',async () => {
+			await vscode.commands.executeCommand('devchat-view.focus');
 		})
 	);
 
-	ExtensionContextHolder.provider = new DevChatViewProvider(context), {
-		webviewOptions: { retainContextWhenHidden: true }
-	};
+	ExtensionContextHolder.provider = new DevChatViewProvider(context);
 	context.subscriptions.push(
-		vscode.window.registerWebviewViewProvider('devchat-view', ExtensionContextHolder.provider)
+		vscode.window.registerWebviewViewProvider('devchat-view', ExtensionContextHolder.provider, {
+			webviewOptions: { retainContextWhenHidden: true }
+		})
 	);
 }
 exports.activate = activate;
