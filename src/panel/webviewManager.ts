@@ -25,8 +25,14 @@ export default class WebviewManager {
 	}
 
 	private _getHtmlContent(): string {
+		let mainHtml = 'welcome.html';
+		// if open a folder, then load index.html
+		if (vscode.workspace.workspaceFolders) {
+			mainHtml = 'index.html';
+		}
+
 		// const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'assets', 'chatPanel.html');
-		const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'index.html');
+		const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', mainHtml);
 		const htmlContent = fs.readFileSync(htmlPath.fsPath, 'utf8');
 
 		return htmlContent.replace(/<vscode-resource:(\/.+?)>/g, (_, resourcePath) => {

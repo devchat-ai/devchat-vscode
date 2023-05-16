@@ -4,7 +4,7 @@ import { regInMessage, regOutMessage } from '../util/reg_messages';
 
 
 regInMessage({command: 'doCommit', content: ''});
-export async function doCommit(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function doCommit(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const dtmWrapper = new DtmWrapper();
 
 	const commitResult = await dtmWrapper.commit(message.content);

@@ -12,7 +12,7 @@ interface LoadHistoryMessages {
 
 regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
-export async function historyMessages(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function historyMessages(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const devChat = new DevChat();
 
 	const logOptions: LogOptions = message.options || {};
@@ -28,7 +28,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel):
 			request: entry.request,
 			text: entry.response,
 			user: entry.user,
-			parent_hash: '',
+			parentHash: '',
 		};
     });
 
@@ -40,10 +40,10 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel):
 			request: entryOld.request,
 			text: entryOld.response,
 			user: entryOld.user,
-			parent_hash: '',
+			parentHash: '',
 		};
 		if (i > 0) {
-			entryNew.parent_hash = logEntriesFlat[i - 1].hash;
+			entryNew.parentHash = logEntriesFlat[i - 1].hash;
 		}
 		messageHistory.add(panel, entryNew);
 	}

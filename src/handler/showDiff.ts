@@ -48,15 +48,14 @@ export  async function diffView(code: string) {
     }
   }
 
-
 regInMessage({command: 'show_diff', content: ''});
-export async function showDiff(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function showDiff(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	diffView(message.content);
     return;
 }
 
 regInMessage({command: 'block_apply', content: ''});
-export async function blockApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function blockApply(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	diffView(message.content);
     return;
 }

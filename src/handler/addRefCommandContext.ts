@@ -8,7 +8,7 @@ regInMessage({command: 'addRefCommandContext', refCommand: ''});
 regOutMessage({command: 'appendContext', context: ''});
 // message: { command: 'addRefCommandContext', refCommand: string }
 // User input: /ref ls . then "ls ." will be passed to refCommand
-export async function addRefCommandContext(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function addRefCommandContext(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const contextStr = await handleRefCommand(message.refCommand);
     MessageHandler.sendMessage(panel, { command: 'appendContext', context: contextStr });
 	return;

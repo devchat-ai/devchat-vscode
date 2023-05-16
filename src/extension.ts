@@ -13,6 +13,9 @@ import {
 
 import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
+import { DevChatViewProvider } from './panel/devchatView';
+import path from 'path';
+
 
 
 function activate(context: vscode.ExtensionContext) {
@@ -109,5 +112,18 @@ function activate(context: vscode.ExtensionContext) {
 	// Add the status bar item to the status bar
 	statusBarItem.show();
 	context.subscriptions.push(statusBarItem);
+
+	// Register the command
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devcaht.onStatusBarClick', () => {
+			vscode.window.showInformationMessage('My Status Bar Item was clicked!');
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.window.registerWebviewViewProvider('devchat-view', new DevChatViewProvider(context), {
+			webviewOptions: { retainContextWhenHidden: true }
+		})
+	);
 }
 exports.activate = activate;

@@ -26,7 +26,7 @@ export async function applyCode(text: string) {
 
 
 regInMessage({command: 'code_apply', content: ''});
-export async function codeApply(message: any, panel: vscode.WebviewPanel): Promise<void> {
+export async function codeApply(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	await applyCode(message.content);
 	return;
 }
