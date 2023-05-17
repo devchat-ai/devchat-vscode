@@ -4,6 +4,7 @@ import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { checkOpenAiAPIKey } from '../contributes/commands';
+import ExtensionContextHolder from '../util/extensionContext';
 
 let isApiSetted: boolean = false;
 
@@ -41,6 +42,7 @@ I can't find OPENAI_API_KEY in your environment variables or vscode settings. Yo
 		context: []
 	} as LogEntry;
 }
+
 
 regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
@@ -80,12 +82,17 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 		messageHistory.add(panel, entryNew);
 	}
 
-	let startMessage = [ welcomeMessage() ];
 	const isApiKeyReady = await checkOpenAiAPIKey();
 	isApiSetted = true;
 	if (!isApiKeyReady) {
-		startMessage = [ apiKeyMissedMessage() ];
+		const startMessage = [ apiKeyMissedMessage() ];
 		isApiSetted = false;
+
+		MessageHandler.sendMessage(panel, {
+			command: 'loadHistoryMessages',
+			entries: startMessage,
+		} as LoadHistoryMessages);
+		return;
 	}
 
 	const loadHistoryMessages: LoadHistoryMessages = {
@@ -98,13 +105,30 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 }
 
 
+export function isValidApiKey(apiKey: string) {
+	let apiKeyStrim = apiKey.trim();
+	if (apiKeyStrim.indexOf('sk-') !== 0) {
+		return false;
+	}
+	return true;
+}
+
+export function isWaitForApiKey() {
+	return !isApiSetted;
+}
+
 export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	if (!isValidApiKey(apiKey)) {
+		MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'It is not a valid OPENAI_API_KEY, you should input the key like this: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, please set the key again?', hash: '', user: 'system', date: '', isError: false });
+		return;
+	}
+
 	isApiSetted = true;
 
-	const loadHistoryMessages: LoadHistoryMessages = {
-		command: 'loadHistoryMessages',
-		entries: [welcomeMessage()],
-	};
+	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context?.secrets!;
+	secretStorage.store("devchat_OPENAI_API_KEY", apiKey);
 
-	MessageHandler.sendMessage(panel, loadHistoryMessages);
+	const welcomeMessageText =  welcomeMessage().response;
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `OPENAI_API_KEY is setted, you can use DevChat now.\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false });
 }
+
