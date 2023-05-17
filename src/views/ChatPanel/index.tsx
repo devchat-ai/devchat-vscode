@@ -14,7 +14,7 @@ import { Prism } from '@mantine/prism';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
-import messageUtil from '../util/MessageUtil';
+import messageUtil from '../../util/MessageUtil';
 
 
 const blink = keyframes({
