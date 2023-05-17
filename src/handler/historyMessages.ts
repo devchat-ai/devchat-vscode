@@ -3,7 +3,9 @@ import DevChat, { LogOptions, LogEntry } from '../toolwrapper/devchat';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
+import { checkOpenAiAPIKey } from '../contributes/commands';
 
+let isApiSetted: boolean = false;
 
 interface LoadHistoryMessages {
 	command: string;
@@ -21,6 +23,20 @@ function welcomeMessage(): LogEntry {
 DevChat provides an editing operation method through problem driven development. You can start the journey of using DevChat from the following aspects.
 1. Right click to select a file or a piece of code to add to DevChat and try asking AI about the file/code.
 2. Use the+button in DevChat to select a git diff message and try using "/commit_message" command to generate a commit message.
+		`,
+		context: []
+	} as LogEntry;
+}
+
+function apiKeyMissedMessage(): LogEntry {
+	// create default logEntry to show welcome message
+	return {
+		hash: 'message',
+		user: 'system',
+		date: '',
+		request: 'Is OPENAI_API_KEY ready?',
+		response: `
+I can't find OPENAI_API_KEY in your environment variables or vscode settings. You can enter your OPENAI_API_KEY, then I can config it for you.
 		`,
 		context: []
 	} as LogEntry;
@@ -64,6 +80,14 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 		messageHistory.add(panel, entryNew);
 	}
 
+	let startMessage = [ welcomeMessage() ];
+	const isApiKeyReady = await checkOpenAiAPIKey();
+	isApiSetted = true;
+	if (!isApiKeyReady) {
+		startMessage = [ apiKeyMissedMessage() ];
+		isApiSetted = false;
+	}
+
 	const loadHistoryMessages: LoadHistoryMessages = {
 		command: 'loadHistoryMessages',
 		entries: logEntries.length>0? logEntriesFlat : [welcomeMessage()],
@@ -74,3 +98,13 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 }
 
 
+export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	isApiSetted = true;
+
+	const loadHistoryMessages: LoadHistoryMessages = {
+		command: 'loadHistoryMessages',
+		entries: [welcomeMessage()],
+	};
+
+	MessageHandler.sendMessage(panel, loadHistoryMessages);
+}
