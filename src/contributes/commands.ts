@@ -65,7 +65,7 @@ function checkDependencyPackage() {
 			if (selectedAction === installAction) {
 				// Install devchat using pip3 install devchat
 				const terminal = vscode.window.createTerminal("DevChat Install");
-				terminal.sendText("pip3 install devchat");
+				terminal.sendText("pip3 install --upgrade devchat");
 				terminal.show();
 			}
 		});
