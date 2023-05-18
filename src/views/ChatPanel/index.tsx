@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Accordion, AccordionControlProps, Avatar, Box, Center, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
+import { Accordion, AccordionControlProps, Avatar, Box, Center, Code, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Menu, Button, Text } from '@mantine/core';
-import { useElementSize, useListState, useResizeObserver, useViewportSize } from '@mantine/hooks';
+import { useElementSize, useInterval, useListState, useResizeObserver, useTimeout, useViewportSize, useWindowScroll } from '@mantine/hooks';
 import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPlayerStop, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
 import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
 import { Prism } from '@mantine/prism';
@@ -50,7 +50,9 @@ const chatPanel = () => {
     const { classes } = useStyles();
     const { height, width } = useViewportSize();
     const [inputRef, inputRect] = useResizeObserver();
-    const messageCount = 5;
+    const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
+    const [stopScrolling, setStopScrolling] = useState(false);
+    const messageCount = 10;
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMenuType('contexts');
@@ -68,7 +70,7 @@ const chatPanel = () => {
                 return `[context|${file}]`;
             });
             const text = input + contextStrs.join(' ');
-            console.log(`message text: ${text}`);
+            // console.log(`message text: ${text}`);
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: text
@@ -96,15 +98,34 @@ const chatPanel = () => {
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
+    const timer = useTimeout(() => {
+        // console.log(`stopScrolling:${stopScrolling}`);
+        if (!stopScrolling) {
+            scrollToBottom();
+        }
+    }, 1000);
+
     useEffect(() => {
         inputRef.current.focus();
         messageUtil.sendMessage({ command: 'regContextList' });
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
-        setTimeout(() => {
-            scrollToBottom();
-        }, 2000);
+        timer.start();
+        return () => {
+            timer.clear();
+        };
     }, []);
+
+    useEffect(() => {
+        const sh = scrollViewport.current?.scrollHeight || 0;
+        const vh = scrollViewport.current?.clientHeight || 0;
+        const isBottom = sh < vh ? true : sh - vh - scrollPosition.y < 3;
+        if (isBottom) {
+            setStopScrolling(false);
+        } else {
+            setStopScrolling(true);
+        }
+    }, [scrollPosition]);
 
     useEffect(() => {
         if (generating) {
@@ -121,13 +142,14 @@ const chatPanel = () => {
             // update the last one bot message
             messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
         }
+        timer.start();
     }, [currentMessage]);
 
     useEffect(() => {
-        console.log(`message length: ${messages.length}`);
         if (messages.length > messageCount * 2) {
             messageHandlers.remove(0, 1);
         }
+        timer.start();
     }, [messages]);
 
     // Add the received message to the chat UI as a bot message
@@ -137,13 +159,11 @@ const chatPanel = () => {
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             setCurrentMessage(message.text);
             setResponsed(true);
-            scrollToBottom();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
             setCurrentMessage(message.text);
             setGenerating(false);
             setResponsed(true);
-            scrollToBottom();
         });
         messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
             commandMenusHandlers.append(...message.result);
@@ -187,9 +207,6 @@ const chatPanel = () => {
                 const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
                 messageHandlers.append({ type: 'user', message: request, contexts: contexts });
                 messageHandlers.append({ type: 'bot', message: response });
-                if (index === message.entries.length - 1) {
-                    scrollToBottom();
-                }
             });
         });
     }, [registed]);
@@ -500,6 +517,7 @@ const chatPanel = () => {
                 h={generating ? height - px('8rem') : height - px('5rem')}
                 w={width - px('2rem')}
                 type="never"
+                onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
