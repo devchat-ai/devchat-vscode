@@ -64,7 +64,12 @@ function activate(context: vscode.ExtensionContext) {
 		// 2. dependence is invalid
 		// 3. ready
 		if (devchatStatus === '' || devchatStatus === 'waitting install devchat') {
-			const bOk = checkDevChatDependency();
+			let bOk = true;
+			let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+			if (!devChat) {
+				bOk = false;
+			}
+
 			if (bOk) {
 				devchatStatus = 'ready';
 			} else {
@@ -76,7 +81,7 @@ function activate(context: vscode.ExtensionContext) {
 		if (devchatStatus === 'not ready') {
 			// auto install devchat
 			const terminal = vscode.window.createTerminal("DevChat Install");
-			terminal.sendText("pip3 install devchat");
+			terminal.sendText("pip3 install --upgrade devchat");
 			terminal.show();
 			devchatStatus = 'waitting install devchat';
 		}
