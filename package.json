@@ -6,298 +6,315 @@
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
-	  "vscode": "^1.77.0"
+		"vscode": "^1.77.0"
 	},
 	"repository": {
-	  "type": "git",
-	  "url": "https://github.com/covespace/devchat-vscode.git"
+		"type": "git",
+		"url": "https://github.com/covespace/devchat-vscode.git"
 	},
 	"categories": [
-	  "Other"
+		"Other"
 	],
-	"activationEvents": ["*"],
+	"activationEvents": [
+		"*"
+	],
 	"main": "./dist/extension.js",
 	"files": [
-	  "dist/*",
-	  "bin/*",
-	  "assets/*",
-	  "workflows/*",
-	  "LICENSE",
-	  "README.md"
+		"dist/*",
+		"bin/*",
+		"assets/*",
+		"workflows/*",
+		"LICENSE",
+		"README.md"
 	],
 	"contributes": {
-	  "configuration": {
-		"title": "DevChat",
-		"properties": {
-		  "DevChat.llmModel": {
-			"type": "string",
-			"default": "OpenAI",
-			"enum": [
-			  "OpenAI"
+		"configuration": {
+			"title": "DevChat",
+			"properties": {
+				"DevChat.llmModel": {
+					"type": "string",
+					"default": "OpenAI",
+					"enum": [
+						"OpenAI"
+					],
+					"description": "Select whose llm to use."
+				},
+				"DevChat.maxLogCount": {
+					"type": "number",
+					"default": 20,
+					"description": "Limit the number of prompts to output"
+				},
+				"DevChat.logSkip": {
+					"type": "number",
+					"default": 0,
+					"description": "Skip number prompts before showing the prompt history"
+				},
+				"DevChat.OpenAI.model": {
+					"type": "string",
+					"default": "gpt-4",
+					"description": "Specify llm model",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.temperature": {
+					"type": "number",
+					"default": 0.2,
+					"description": "Specify llm temperature",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.stream": {
+					"type": "boolean",
+					"default": true,
+					"description": "Specify llm stream",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.tokensPerPrompt": {
+					"type": "number",
+					"default": 6000,
+					"description": "token for each prompt",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.useHistoryPrompt": {
+					"type": "boolean",
+					"default": true,
+					"description": "use history prompts as context",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.apiKey": {
+					"type": "string",
+					"default": "",
+					"description": "Open API Key",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.OpenAI.EndPoint": {
+					"type": "string",
+					"default": "",
+					"description": "OpenAI api server",
+					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.DevChatPath": {
+					"type": "string",
+					"default": "",
+					"input": {
+						"type": "file",
+						"filter": {
+							"All files": [
+								"devchat"
+							]
+						}
+					},
+					"description": "Where is DevChat?"
+				}
+			}
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "devchat-sidebar",
+					"title": "DevChat",
+					"icon": "assets/devchat_icon.svg"
+				}
+			]
+		},
+		"views": {
+			"devchat-sidebar": [
+				{
+					"type": "webview",
+					"id": "devchat-view",
+					"name": "DevChat"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "devchat.applyDiffResult",
+				"title": "Apply Diff Result",
+				"icon": "assets/devchat_apply.svg"
+			},
+			{
+				"command": "devchat.createEntry",
+				"title": "Create Entry"
+			},
+			{
+				"command": "DevChat.OPENAI_API_KEY",
+				"title": "OPENAI_API_KEY",
+				"category": "DevChat"
+			},
+			{
+				"command": "devchat.openChatPanel",
+				"title": "DevChat"
+			},
+			{
+				"command": "devchat.addConext",
+				"title": "As DevChat Context"
+			},
+			{
+				"command": "devchat.askForCode",
+				"title": "As DevChat Context"
+			},
+			{
+				"command": "devchat.askForFile",
+				"title": "As DevChat Context"
+			},
+			{
+				"command": "devchat.addConext_chinese",
+				"title": "作为DevChat上下文"
+			},
+			{
+				"command": "devchat.askForCode_chinese",
+				"title": "作为DevChat上下文"
+			},
+			{
+				"command": "devchat.askForFile_chinese",
+				"title": "作为DevChat上下文"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"command": "devchat.applyDiffResult",
+					"group": "navigation",
+					"when": "editorTextFocus && isInDiffEditor"
+				}
 			],
-			"description": "Select whose llm to use."
-		  },
-		  "DevChat.maxLogCount": {
-			"type": "number",
-			"default": 20,
-			"description": "Limit the number of prompts to output"
-		  },
-		  "DevChat.logSkip": {
-			"type": "number",
-			"default": 0,
-			"description": "Skip number prompts before showing the prompt history"
-		  },
-		  "DevChat.OpenAI.model": {
-			"type": "string",
-			"default": "gpt-4",
-			"description": "Specify llm model",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.temperature": {
-			"type": "number",
-			"default": 0.2,
-			"description": "Specify llm temperature",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.stream": {
-			"type": "boolean",
-			"default": true,
-			"description": "Specify llm stream",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.tokensPerPrompt": {
-			"type": "number",
-			"default": 6000,
-			"description": "token for each prompt",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.useHistoryPrompt": {
-			"type": "boolean",
-			"default": true,
-			"description": "use history prompts as context",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.apiKey": {
-			"type": "string",
-			"default": "",
-			"description": "Open API Key",
-			"when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.OpenAI.EndPoint": {
-			  "type": "string",
-			  "default": "",
-			  "description": "OpenAI api server",
-			  "when": "DevChat.llmModel == 'OpenAI'"
-		  },
-		  "DevChat.DevChatPath": {
-			  "type": "string",
-			  "default": "",
-			  "input": {
-				  "type": "file",
-				  "filter": {
-					  "All files": [
-						  "devchat"
-					  ]
-				  }
-			  },
-			  "description": "Where is DevChat?"
-		  }
+			"commandPalette": [
+				{
+					"command": "devchat.applyDiffResult",
+					"title": "false"
+				},
+				{
+					"command": "devchat.addConext",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForCode",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForFile",
+					"when": "false"
+				},
+				{
+					"command": "devchat.addConext_chinese",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForCode_chinese",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForFile_chinese",
+					"when": "false"
+				}
+			],
+			"explorer/context": [
+				{
+					"when": "isChineseLocale && resourceLangId != 'git'",
+					"command": "devchat.addConext_chinese",
+					"group": "navigation"
+				},
+				{
+					"when": "!isChineseLocale && resourceLangId != 'git'",
+					"command": "devchat.addConext",
+					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "devchat.askForCode_chinese",
+					"when": "isChineseLocale && editorTextFocus && editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForCode",
+					"when": "!isChineseLocale && editorTextFocus && editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForFile",
+					"when": "!isChineseLocale && editorTextFocus && !editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForFile_chinese",
+					"when": "isChineseLocale && editorTextFocus && !editorHasSelection",
+					"group": "navigation"
+				}
+			]
 		}
-	  },
-	  "viewsContainers":{
-		  "activitybar": [
-			  {
-				  "id": "devchat-sidebar",
-				  "title": "DevChat",
-				  "icon": "assets/devchat_icon.svg"
-			  }
-		  ]
-	  },
-	  "views": {
-		"devchat-sidebar": [
-		  {
-			  "type": "webview",
-			  "id": "devchat-view",
-			  "name": "DevChat"
-		  }
-		]
-	  },
-	  "commands": [
-		  {
-			  "command": "devchat.createEntry",
-			  "title": "Create Entry"
-		  },
-		  {
-			"command": "DevChat.OPENAI_API_KEY",
-			"title": "OPENAI_API_KEY",
-			"category": "DevChat"
-		  },
-		{
-		  "command": "devchat.openChatPanel",
-		  "title": "DevChat"
-		},
-		{
-			"command": "devchat.addConext",
-			"title": "As DevChat Context"
-		},
-		{
-			"command": "devchat.askForCode",
-			"title": "As DevChat Context"
-		},
-		{
-			"command": "devchat.askForFile",
-			"title": "As DevChat Context"
-		},
-		{
-			"command": "devchat.addConext_chinese",
-			"title": "作为DevChat上下文"
-		},
-		{
-			"command": "devchat.askForCode_chinese",
-			"title": "作为DevChat上下文"
-		},
-		{
-			"command": "devchat.askForFile_chinese",
-			"title": "作为DevChat上下文"
-		}
-	  ],
-	  "menus": {
-		  "commandPalette": [
-			{
-				"command": "devchat.addConext",
-				"when": "false"
-			},
-			{
-				"command": "devchat.askForCode",
-				"when": "false"
-			},
-			{
-				"command": "devchat.askForFile",
-				"when": "false"
-			},
-			{
-				"command": "devchat.addConext_chinese",
-				"when": "false"
-			},
-			{
-				"command": "devchat.askForCode_chinese",
-				"when": "false"
-			},
-			{
-				"command": "devchat.askForFile_chinese",
-				"when": "false"
-			}
-		],
-		"explorer/context": [
-			{
-				"when": "isChineseLocale && resourceLangId != 'git'",
-				"command": "devchat.addConext_chinese",
-				"group": "navigation"
-			},
-			{
-				"when": "!isChineseLocale && resourceLangId != 'git'",
-				"command": "devchat.addConext",
-				"group": "navigation"
-			}
-		],
-		"editor/context": [
-			{
-				"command": "devchat.askForCode_chinese",
-				"when": "isChineseLocale && editorTextFocus && editorHasSelection",
-				"group": "navigation"
-			},
-			{
-				"command": "devchat.askForCode",
-				"when": "!isChineseLocale && editorTextFocus && editorHasSelection",
-				"group": "navigation"
-			},
-			{
-				"command": "devchat.askForFile",
-				"when": "!isChineseLocale && editorTextFocus && !editorHasSelection",
-				"group": "navigation"
-			},
-			{
-				"command": "devchat.askForFile_chinese",
-				"when": "isChineseLocale && editorTextFocus && !editorHasSelection",
-				"group": "navigation"
-			}
-		]
-	  }
 	},
 	"scripts": {
-	  "vscode:prepublish": "npm run package",
-	  "compile": "webpack",
-	  "watch": "webpack --watch",
-	  "package": "webpack --mode production --devtool hidden-source-map",
-	  "compile-tests": "tsc -p . --outDir out",
-	  "watch-tests": "tsc -p . -w --outDir out",
-	  "pretest": "npm run compile-tests && npm run compile && npm run lint",
-	  "lint": "eslint src --ext ts",
-	  "test": "node ./out/test/runTest.js",
-	  "build": "webpack --config webpack.config.js",
-	  "dev": "webpack serve --config webpack.config.js --open"
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"compile-tests": "tsc -p . --outDir out",
+		"watch-tests": "tsc -p . -w --outDir out",
+		"pretest": "npm run compile-tests && npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "node ./out/test/runTest.js",
+		"build": "webpack --config webpack.config.js",
+		"dev": "webpack serve --config webpack.config.js --open"
 	},
 	"devDependencies": {
-	  "@babel/core": "^7.21.8",
-	  "@babel/preset-env": "^7.21.5",
-	  "@babel/preset-react": "^7.18.6",
-	  "@babel/preset-typescript": "^7.21.5",
-	  "@types/glob": "^8.1.0",
-	  "@types/jest": "^29.5.1",
-	  "@types/ncp": "^2.0.5",
-	  "@types/node": "16.x",
-	  "@types/react-dom": "^18.2.3",
-	  "@types/react-syntax-highlighter": "^15.5.6",
-	  "@types/shell-escape": "^0.2.1",
-	  "@types/vscode": "^1.77.0",
-	  "@typescript-eslint/eslint-plugin": "^5.56.0",
-	  "@typescript-eslint/parser": "^5.56.0",
-	  "@vscode/test-electron": "^2.3.0",
-	  "babel-loader": "^9.1.2",
-	  "copy-webpack-plugin": "^11.0.0",
-	  "css-loader": "^6.7.3",
-	  "dotenv": "^16.0.3",
-	  "eslint": "^8.36.0",
-	  "file-loader": "^6.2.0",
-	  "glob": "^8.1.0",
-	  "html-webpack-plugin": "^5.5.1",
-	  "jest": "^29.5.0",
-	  "json-loader": "^0.5.7",
-	  "react": "^18.2.0",
-	  "react-dom": "^18.2.0",
-	  "react-redux": "^8.0.5",
-	  "redux": "^4.2.1",
-	  "style-loader": "^3.3.2",
-	  "ts-jest": "^29.1.0",
-	  "ts-loader": "^9.4.2",
-	  "typescript": "^4.9.5",
-	  "url-loader": "^4.1.1",
-	  "webpack": "^5.76.3",
-	  "webpack-cli": "^5.0.1",
-	  "webpack-dev-server": "^4.13.3"
+		"@babel/core": "^7.21.8",
+		"@babel/preset-env": "^7.21.5",
+		"@babel/preset-react": "^7.18.6",
+		"@babel/preset-typescript": "^7.21.5",
+		"@types/glob": "^8.1.0",
+		"@types/jest": "^29.5.1",
+		"@types/ncp": "^2.0.5",
+		"@types/node": "16.x",
+		"@types/react-dom": "^18.2.3",
+		"@types/react-syntax-highlighter": "^15.5.6",
+		"@types/shell-escape": "^0.2.1",
+		"@types/vscode": "^1.77.0",
+		"@typescript-eslint/eslint-plugin": "^5.56.0",
+		"@typescript-eslint/parser": "^5.56.0",
+		"@vscode/test-electron": "^2.3.0",
+		"babel-loader": "^9.1.2",
+		"copy-webpack-plugin": "^11.0.0",
+		"css-loader": "^6.7.3",
+		"dotenv": "^16.0.3",
+		"eslint": "^8.36.0",
+		"file-loader": "^6.2.0",
+		"glob": "^8.1.0",
+		"html-webpack-plugin": "^5.5.1",
+		"jest": "^29.5.0",
+		"json-loader": "^0.5.7",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"react-redux": "^8.0.5",
+		"redux": "^4.2.1",
+		"style-loader": "^3.3.2",
+		"ts-jest": "^29.1.0",
+		"ts-loader": "^9.4.2",
+		"typescript": "^4.9.5",
+		"url-loader": "^4.1.1",
+		"webpack": "^5.76.3",
+		"webpack-cli": "^5.0.1",
+		"webpack-dev-server": "^4.13.3"
 	},
 	"dependencies": {
-	  "@emotion/react": "^11.10.8",
-	  "@mantine/core": "^6.0.10",
-	  "@mantine/dropzone": "^6.0.10",
-	  "@mantine/hooks": "^6.0.10",
-	  "@mantine/prism": "^6.0.10",
-	  "@mantine/tiptap": "^6.0.10",
-	  "@tabler/icons-react": "^2.17.0",
-	  "@tiptap/extension-link": "^2.0.3",
-	  "@tiptap/react": "^2.0.3",
-	  "@tiptap/starter-kit": "^2.0.3",
-	  "axios": "^1.3.6",
-	  "dotenv": "^16.0.3",
-	  "ncp": "^2.0.0",
-	  "node-fetch": "^3.3.1",
-	  "nonce": "^1.0.4",
-	  "openai": "^3.2.1",
-	  "quote": "^0.4.0",
-	  "react-markdown": "^8.0.7",
-	  "react-syntax-highlighter": "^15.5.0",
-	  "shell-escape": "^0.2.0",
-	  "uuid": "^9.0.0"
+		"@emotion/react": "^11.10.8",
+		"@mantine/core": "^6.0.10",
+		"@mantine/dropzone": "^6.0.10",
+		"@mantine/hooks": "^6.0.10",
+		"@mantine/prism": "^6.0.10",
+		"@mantine/tiptap": "^6.0.10",
+		"@tabler/icons-react": "^2.17.0",
+		"@tiptap/extension-link": "^2.0.3",
+		"@tiptap/react": "^2.0.3",
+		"@tiptap/starter-kit": "^2.0.3",
+		"axios": "^1.3.6",
+		"dotenv": "^16.0.3",
+		"ncp": "^2.0.0",
+		"node-fetch": "^3.3.1",
+		"nonce": "^1.0.4",
+		"openai": "^3.2.1",
+		"quote": "^0.4.0",
+		"react-markdown": "^8.0.7",
+		"react-syntax-highlighter": "^15.5.0",
+		"shell-escape": "^0.2.0",
+		"uuid": "^9.0.0"
 	}
-  }
-  
+}

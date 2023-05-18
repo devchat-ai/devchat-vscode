@@ -1,3 +1,4 @@
+import { logger } from "./logger";
 
 
 
@@ -54,14 +55,17 @@ export function isValidActionString(actionString: string): boolean {
       }
 
       if (action.action === "delete" && !action.content) {
+		logger.channel()?.error(`Invalid action string: ${action}`);
         return false;
       }
 
       if (action.action === "insert" && (!action.content || !action.insert_after)) {
+		logger.channel()?.error(`Invalid action string: ${action}`);
         return false;
       }
 
       if (action.action === "modify" && (!action.original_content || !action.new_content)) {
+		logger.channel()?.error(`Invalid action string: ${action}`);
         return false;
       }
     }

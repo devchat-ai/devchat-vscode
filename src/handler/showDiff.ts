@@ -4,6 +4,8 @@ import { createTempSubdirectory } from '../util/commonUtil';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { applyCodeChanges, isValidActionString } from '../util/appyDiff';
 import { logger } from '../util/logger';
+import { FilePairManager } from '../util/diffFilePairs';
+
 
 
 async function getDocumentText(): Promise<{ text: string; beforSelect: string; select: string, afterSelect: string } | undefined> {
@@ -56,7 +58,8 @@ export  async function diffView(code: string) {
     await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(code));
 
     // open diff view
-    vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(tempFile), vscode.Uri.file(curFile), 'Diff View');
+	FilePairManager.getInstance().addFilePair(curFile, tempFile);
+    vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
 }
 
 async function getNewCode(message: any) : Promise<string | undefined> {
