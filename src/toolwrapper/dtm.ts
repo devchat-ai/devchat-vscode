@@ -74,6 +74,30 @@ class DtmWrapper {
 		});
 	}
 
+	private async runCommand2(command: string, args: string[]): Promise<DtmResponse> {
+		return new Promise((resolve, reject) => {
+			logger.channel()?.info(`Running command: ${command} ${args.join(' ')}`);
+			const child = spawn(command, args, { cwd: this.workspaceDir });
+			let stdout = '';
+			let stderr = '';
+
+			child.stdout.on('data', (data) => {
+				stdout += data;
+			});
+
+			child.stderr.on('data', (data) => {
+				stderr += data;
+			});
+
+			child.on('close', (code) => {
+				if (code === null) {
+					code = 0;
+				}
+				resolve({ status: code, message: stdout, log: stderr });
+			});
+		});
+	}
+
 	async scaffold(directoryTree: string): Promise<DtmResponse> {
 		return await this.runCommand(this.binaryPath, ['scaffold', directoryTree, '-o', 'json']);
 	}
@@ -85,6 +109,18 @@ class DtmWrapper {
 	async commit(commitMsg: string): Promise<DtmResponse> {
 		try {
 			return await this.runCommand(this.binaryPath, ['commit', '-m', commitMsg, '-o', 'json']);
+		} catch (error) {
+			// 处理 runCommand 中的 reject 错误
+			logger.channel()?.error(`Error in commit: ${error}`);
+			logger.channel()?.show();
+			return error as DtmResponse;
+		}
+	}
+
+	async commitall(commitMsg: string): Promise<DtmResponse> {
+		try {
+			logger.channel()?.info(`Running command: git commit -am ${commitMsg}`);
+			return await this.runCommand2("git", ['commit', '-am', commitMsg]);
 		} catch (error) {
 			// 处理 runCommand 中的 reject 错误
 			logger.channel()?.error(`Error in commit: ${error}`);

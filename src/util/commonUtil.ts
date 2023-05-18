@@ -54,7 +54,9 @@ interface CommandResult {
       // 监听进程退出事件
       childProcess.on('exit', (exitCode) => {
         // 将命令输出结果写入到文件
-        fs.writeFileSync(outputFile, stdout);
+		if (outputFile !== '') {
+	        fs.writeFileSync(outputFile, stdout);
+		}
   
         // 返回结果
         resolve({
