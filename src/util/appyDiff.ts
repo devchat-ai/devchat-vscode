@@ -19,29 +19,23 @@ export function applyCodeChanges(originalCode: string, actionsString: string): s
     for (const action of actions) {
         switch (action.action) {
             case 'delete':
-                const deleteIndex = lines.findIndex(line => line.trim() === action.content);
-                if (deleteIndex !== -1) {
-                    lines.splice(deleteIndex, 1);
-                }
+                const deleteRegex = new RegExp(action.content!.replace(/\n/g, '\\n'), 'g');
+                originalCode = originalCode.replace(deleteRegex, '');
                 break;
 
             case 'insert':
-                const insertIndex = lines.findIndex(line => line.trim() === action.insert_after);
-                if (insertIndex !== -1) {
-                    lines.splice(insertIndex + 1, 0, action.content!);
-                }
+                const insertRegex = new RegExp(action.insert_after!.replace(/\n/g, '\\n'), 'g');
+                originalCode = originalCode.replace(insertRegex, `${action.insert_after}\n${action.content}`);
                 break;
 
             case 'modify':
-                const modifyIndex = lines.findIndex(line => line.trim() === action.original_content);
-                if (modifyIndex !== -1) {
-                    lines[modifyIndex] = lines[modifyIndex].replace(lines[modifyIndex].trim(), action.new_content!);
-                }
+                const modifyRegex = new RegExp(action.original_content!.replace(/\n/g, '\\n'), 'g');
+                originalCode = originalCode.replace(modifyRegex, action.new_content!);
                 break;
         }
     }
 
-    return lines.join('\n');
+    return originalCode;
 }
 
 
