@@ -37,7 +37,7 @@ function apiKeyMissedMessage(): LogEntry {
 		date: '',
 		request: 'Is OPENAI_API_KEY ready?',
 		response: `
-I can't find OPENAI_API_KEY in your environment variables or vscode settings. You can enter your OPENAI_API_KEY, then I can config it for you.
+It seems the OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI API key, and I'll ensure DevChat is all set for you.
 		`,
 		context: []
 	} as LogEntry;
