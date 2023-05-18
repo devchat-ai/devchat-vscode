@@ -6,7 +6,7 @@ import { logger } from '../util/logger';
 
 
 export const gitDiffContext: ChatContext = {
-  name: 'git diff',
+  name: 'git diff HEAD',
   description: 'diff for all changes',
   handler: async () => {
     const tempDir = await createTempSubdirectory('devchat/context');
