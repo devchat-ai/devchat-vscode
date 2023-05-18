@@ -15,7 +15,10 @@ import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../../util/MessageUtil';
-
+// @ts-ignore
+import avatarDevChat from './avatar_devchat.svg';
+// @ts-ignore
+import avatarUser from './avatar_user.svg';
 
 const blink = keyframes({
     '50%': { opacity: 0 },
@@ -26,8 +29,8 @@ const useStyles = createStyles((theme, _params, classNames) => ({
 
     },
     avatar: {
-        marginTop: 8,
-        marginLeft: 8,
+        marginTop: 10,
+        marginLeft: 3,
     },
 }));
 
@@ -368,7 +371,7 @@ const chatPanel = () => {
                 key={`message-${index}`}
                 mih={50}
                 w={scrollViewport.current?.clientWidth}
-                gap="md"
+                gap="xs"
                 justify="flex-start"
                 align="flex-start"
                 direction="row"
@@ -376,8 +379,8 @@ const chatPanel = () => {
             >
                 {
                     messageType === 'bot'
-                        ? <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}><IconRobot size="1.5rem" /></Avatar>
-                        : <Avatar color="cyan" size='md' radius="xl" className={classes.avatar}><IconUser size="1.5rem" /></Avatar>
+                        ? <Avatar color="indigo" size='sm' radius="xl" className={classes.avatar} src={avatarDevChat} />
+                        : <Avatar color="cyan" size='sm' radius="xl" className={classes.avatar} src={avatarUser} />
                 }
 
                 <Container sx={{
@@ -565,8 +568,7 @@ const chatPanel = () => {
                     }}>|</Text> : ''}
                 </Container >
             </Flex >
-            {index !== messages.length - 1 && <Divider my="sm" />
-            }
+            {index !== messages.length - 1 && <Divider my={3} />}
         </>);
     });
 
