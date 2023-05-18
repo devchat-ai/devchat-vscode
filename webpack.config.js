@@ -136,12 +136,13 @@ const webviewConfig = {
         type: 'asset/source'
       },
       {
-        test: /\.(png|jpe?g|gif|svg)$/i,
+        test: /\.(png|jpg|jpeg|gif|svg)$/, // 匹配文件类型
         use: [
           {
-            loader: 'url-loader',
+            loader: 'file-loader', // 使用file-loader
             options: {
-              limit: 8192,
+              name: '[name].[ext]', // 输出文件的名称和扩展名
+              outputPath: 'assets/', // 输出文件的路径
             },
           },
         ],
@@ -159,11 +160,11 @@ const webviewConfig = {
       filename: 'index.html',
       chunks: ['index']
     }),
-	new HtmlWebpackPlugin({
-		template: path.resolve(__dirname, 'src', 'welcome.html'),
-		filename: 'welcome.html',
-		chunks: ['welcome']
-	}),
+    new HtmlWebpackPlugin({
+      template: path.resolve(__dirname, 'src', 'welcome.html'),
+      filename: 'welcome.html',
+      chunks: ['welcome']
+    }),
     new CopyWebpackPlugin({
       patterns: [
         { from: 'assets', to: 'assets' },

@@ -1,21 +1,21 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Accordion, AccordionControlProps, Avatar, Box, Center, Code, Container, CopyButton, Divider, Flex, Grid, Popover, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
-import { Input, Tooltip } from '@mantine/core';
-import { List } from '@mantine/core';
+import { Image, Accordion, Avatar, Box, Center, Container, CopyButton, Divider, Flex, Popover, Stack, Textarea, px, useMantineTheme } from '@mantine/core';
+import { Tooltip } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
-import { Menu, Button, Text } from '@mantine/core';
-import { useElementSize, useInterval, useListState, useResizeObserver, useTimeout, useViewportSize, useWindowScroll } from '@mantine/hooks';
-import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPlayerStop, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
-import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
-import { Prism } from '@mantine/prism';
+import { Button, Text } from '@mantine/core';
+import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerStop, IconReplace, IconSend, IconSquareRoundedPlus, IconTerminal2, IconX } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../../util/MessageUtil';
-
+// @ts-ignore
+import SvgAvatarDevChat from './avatar_devchat.svg';
+// @ts-ignore
+import SvgAvatarUser from './avatar_user.svg';
 
 const blink = keyframes({
     '50%': { opacity: 0 },
@@ -26,8 +26,8 @@ const useStyles = createStyles((theme, _params, classNames) => ({
 
     },
     avatar: {
-        marginTop: 8,
-        marginLeft: 8,
+        marginTop: 10,
+        marginLeft: 3,
     },
 }));
 
@@ -368,7 +368,7 @@ const chatPanel = () => {
                 key={`message-${index}`}
                 mih={50}
                 w={scrollViewport.current?.clientWidth}
-                gap="md"
+                gap="xs"
                 justify="flex-start"
                 align="flex-start"
                 direction="row"
@@ -376,8 +376,8 @@ const chatPanel = () => {
             >
                 {
                     messageType === 'bot'
-                        ? <Avatar color="indigo" size='md' radius="xl" className={classes.avatar}><IconRobot size="1.5rem" /></Avatar>
-                        : <Avatar color="cyan" size='md' radius="xl" className={classes.avatar}><IconUser size="1.5rem" /></Avatar>
+                        ? <Avatar color="indigo" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarDevChat} />
+                        : <Avatar color="cyan" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarUser} />
                 }
 
                 <Container sx={{
@@ -565,8 +565,7 @@ const chatPanel = () => {
                     }}>|</Text> : ''}
                 </Container >
             </Flex >
-            {index !== messages.length - 1 && <Divider my="sm" />
-            }
+            {index !== messages.length - 1 && <Divider my={3} />}
         </>);
     });
 
