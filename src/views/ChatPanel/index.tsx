@@ -17,6 +17,8 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from './avatar_user.svg';
 
+import { IconMouseRightClick, IconBook, IconGitBranch, IconGitBranchChecked, IconShellCommand } from './Icons';
+
 const blink = keyframes({
     '50%': { opacity: 0 },
 });
@@ -213,6 +215,24 @@ const chatPanel = () => {
         });
     }, [registed]);
 
+    const commandMenuIcon = (pattern: string) => {
+        if (pattern === 'code') {
+            return (<IconShellCommand size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+        if (pattern === 'commit_message') {
+            return (<IconBook size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+    };
     useEffect(() => {
         let filtered = commandMenus;
         if (input) {
@@ -242,13 +262,7 @@ const chatPanel = () => {
                     aria-checked={index === currentMenuIndex}
                     data-pattern={pattern}
                 >
-                    <IconTerminal2
-                        size={16}
-                        color='var(--vscode-menu-foreground)'
-                        style={{
-                            marginTop: 8,
-                            marginLeft: 8,
-                        }} />
+                    {commandMenuIcon(pattern)}
                     <Stack spacing={0}>
                         <Text sx={{
                             fontSize: 'sm',
@@ -314,6 +328,32 @@ const chatPanel = () => {
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
     </Center>);
 
+    const contextMenuIcon = (name: string) => {
+        if (name === 'git diff cached') {
+            return (<IconGitBranch size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+        if (name === 'git diff') {
+            return (<IconGitBranchChecked size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+        if (name === '<custom command>') {
+            return (<IconShellCommand size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+    };
     const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
         return (
             <Flex
@@ -336,13 +376,7 @@ const chatPanel = () => {
                     setMenuOpend(false);
                 }}
             >
-                <IconMessagePlus
-                    size={16}
-                    color='var(--vscode-menu-foreground)'
-                    style={{
-                        marginTop: 8,
-                        marginLeft: 8,
-                    }} />
+                {contextMenuIcon(name)}
                 <Stack spacing={0}>
                     <Text sx={{
                         fontSize: 'sm',
@@ -782,14 +816,21 @@ const chatPanel = () => {
                                     borderColor: 'var(--vscode-menu-border)',
                                     backgroundColor: 'var(--vscode-menu-background)'
                                 }}>
-                                <Text
-                                    c="dimmed"
-                                    ta="left"
-                                    fz='sm'
-                                    m='12px'>
-                                    <IconBulb size={14} style={{ marginTop: '2px', marginRight: '2px' }} />
-                                    Tips: Select code or file & right click
-                                </Text>
+                                <Flex
+                                    gap="3px"
+                                    justify="flex-start"
+                                    align="center"
+                                    direction="row"
+                                    wrap="wrap">
+                                    <IconMouseRightClick size={14} color={'var(--vscode-menu-foreground)'} style={{ marginLeft: '12px' }} />
+                                    <Text
+                                        c="dimmed"
+                                        ta="left"
+                                        fz='sm'
+                                        m='12px 5px'>
+                                        Tips: Select code or file & right click
+                                    </Text>
+                                </Flex>
                                 <Divider />
                                 <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
                                 {contextMenusNode}
