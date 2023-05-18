@@ -430,16 +430,25 @@ const chatPanel = () => {
                         <Accordion variant="contained" chevronPosition="left"
                             sx={{
                                 marginTop: 5,
+                                borderRadius: 5,
                                 backgroundColor: 'var(--vscode-menu-background)',
                             }}
                             styles={{
                                 item: {
                                     borderColor: 'var(--vscode-menu-border)',
                                     backgroundColor: 'var(--vscode-menu-background)',
+                                    '&[data-active]': {
+                                        backgroundColor: 'var(--vscode-menu-background)',
+                                    }
                                 },
                                 control: {
                                     height: 30,
+                                    borderRadius: 3,
                                     backgroundColor: 'var(--vscode-menu-background)',
+                                    '&[aria-expanded="true"]': {
+                                        borderBottomLeftRadius: 0,
+                                        borderBottomRightRadius: 0,
+                                    },
                                     '&:hover': {
                                         backgroundColor: 'var(--vscode-menu-background)',
                                     }
@@ -458,6 +467,7 @@ const chatPanel = () => {
                                     backgroundColor: 'var(--vscode-menu-background)',
                                 },
                                 content: {
+                                    borderRadius: 3,
                                     backgroundColor: 'var(--vscode-menu-background)',
                                 }
                             }}
@@ -669,10 +679,18 @@ const chatPanel = () => {
                             item: {
                                 borderColor: 'var(--vscode-menu-border)',
                                 backgroundColor: 'var(--vscode-menu-background)',
+                                '&[data-active]': {
+                                    backgroundColor: 'var(--vscode-menu-background)',
+                                }
                             },
                             control: {
                                 height: 30,
+                                borderRadius: 3,
                                 backgroundColor: 'var(--vscode-menu-background)',
+                                '&[aria-expanded="true"]': {
+                                    borderBottomLeftRadius: 0,
+                                    borderBottomRightRadius: 0,
+                                },
                                 '&:hover': {
                                     backgroundColor: 'var(--vscode-menu-background)',
                                 }
@@ -689,8 +707,10 @@ const chatPanel = () => {
                             panel: {
                                 color: 'var(--vscode-menu-foreground)',
                                 backgroundColor: 'var(--vscode-menu-background)',
+                                overflow: 'hidden',
                             },
                             content: {
+                                borderRadius: 3,
                                 backgroundColor: 'var(--vscode-menu-background)',
                             }
                         }}
