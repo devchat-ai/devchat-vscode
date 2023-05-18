@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.0.38",
+	"version": "0.0.39",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -145,27 +145,27 @@
 			},
 			{
 				"command": "devchat.addConext",
-				"title": "As DevChat Context"
+				"title": "Add to DevChat"
 			},
 			{
 				"command": "devchat.askForCode",
-				"title": "As DevChat Context"
+				"title": "Add to DevChat"
 			},
 			{
 				"command": "devchat.askForFile",
-				"title": "As DevChat Context"
+				"title": "Add to DevChat"
 			},
 			{
 				"command": "devchat.addConext_chinese",
-				"title": "作为DevChat上下文"
+				"title": "添加到DevChat"
 			},
 			{
 				"command": "devchat.askForCode_chinese",
-				"title": "作为DevChat上下文"
+				"title": "添加到DevChat"
 			},
 			{
 				"command": "devchat.askForFile_chinese",
-				"title": "作为DevChat上下文"
+				"title": "添加到DevChat"
 			}
 		],
 		"menus": {
