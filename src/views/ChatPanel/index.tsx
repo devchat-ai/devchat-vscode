@@ -13,9 +13,9 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../../util/MessageUtil';
 // @ts-ignore
-import SvgAvatarDevChat from './assets/avatar_devchat.svg';
+import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
-import SvgAvatarUser from './assets/avatar_user.svg';
+import SvgAvatarUser from './avatar_user.svg';
 
 const blink = keyframes({
     '50%': { opacity: 0 },
