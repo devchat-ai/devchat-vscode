@@ -855,13 +855,20 @@ const chatPanel = () => {
                                     justify="flex-start"
                                     align="center"
                                     direction="row"
-                                    wrap="wrap">
-                                    <IconMouseRightClick size={14} color={'var(--vscode-menu-foreground)'} style={{ marginLeft: '12px' }} />
+                                    wrap="wrap"
+                                    sx={{ overflow: 'hidden' }}
+                                >
+                                    <IconMouseRightClick
+                                        size={14}
+                                        color={'var(--vscode-menu-foreground)'}
+                                        style={{ marginLeft: '12px' }} />
                                     <Text
                                         c="dimmed"
                                         ta="left"
                                         fz='sm'
-                                        m='12px 5px'>
+                                        m='12px 5px'
+                                        truncate='end'
+                                        w={chatContainerRect.width - 60}>
                                         Tips: Select code or file & right click
                                     </Text>
                                 </Flex>
