@@ -387,43 +387,41 @@ const chatPanel = () => {
     const messageList = messages.map(({ message: messageText, type: messageType, contexts }, index) => {
         // setMessage(messageText);
         return (<>
-            <Flex
+            <Stack
+                spacing={0}
                 key={`message-${index}`}
-                gap={0}
-                justify="flex-start"
-                align="flex-start"
-                direction="row"
-                wrap="wrap"
                 sx={{
-                    width: chatContainerRect.width - 10,
+                    width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
                 }}
             >
-                {
-                    messageType === 'bot'
-                        ? <Avatar
-                            color="indigo"
-                            size={25}
-                            radius="xl"
-                            style={{
-                                marginTop: 8,
-                                marginLeft: 5
-                            }} src={SvgAvatarDevChat} />
-                        : <Avatar
-                            color="cyan"
-                            size={25}
-                            radius="xl"
-                            style={{
-                                marginTop: 8,
-                                marginLeft: 5
-                            }} src={SvgAvatarUser} />
-                }
-
+                <Flex
+                    m={10}
+                    gap="sm"
+                    justify="flex-start"
+                    align="center"
+                    direction="row"
+                    wrap="wrap">
+                    {
+                        messageType === 'bot'
+                            ? <Avatar
+                                color="indigo"
+                                size={25}
+                                radius="xl"
+                                src={SvgAvatarDevChat} />
+                            : <Avatar
+                                color="cyan"
+                                size={25}
+                                radius="xl"
+                                src={SvgAvatarUser} />
+                    }
+                    <Text weight='bold'>{messageType === 'bot' ? 'DevChat' : 'User'}</Text>
+                </Flex>
                 <Container sx={{
-                    margin: '0 0 0 10px',
+                    margin: 0,
                     padding: 0,
-                    width: chatContainerRect.width - 50,
+                    width: chatContainerRect.width,
                     pre: {
                         whiteSpace: 'break-spaces'
                     },
@@ -603,7 +601,7 @@ const chatPanel = () => {
 
                     }}>|</Text> : ''}
                 </Container >
-            </Flex >
+            </Stack >
             {index !== messages.length - 1 && <Divider my={3} />}
         </>);
     });
@@ -615,8 +613,8 @@ const chatPanel = () => {
             sx={{
                 height: '100%',
                 margin: 0,
-                padding: 5,
-                background: 'var(--vscode-editor-background)',
+                padding: 10,
+                background: 'var(--vscode-sideBar-background)',
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
