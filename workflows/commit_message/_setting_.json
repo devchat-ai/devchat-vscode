@@ -1,5 +1,5 @@
 {
-	"pattern": "commit_message",
+	"pattern": "$commit_message",
 	"description": "generate commit message",
 	"message": "write a commit message",
 	"default": false,

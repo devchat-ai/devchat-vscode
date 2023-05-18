@@ -15,6 +15,7 @@ import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
 import { DevChatViewProvider } from './panel/devchatView';
 import path from 'path';
+import { FilePairManager } from './util/diffFilePairs';
 
 
 
@@ -124,6 +125,32 @@ function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.window.registerWebviewViewProvider('devchat-view', ExtensionContextHolder.provider, {
 			webviewOptions: { retainContextWhenHidden: true }
+		})
+	);
+
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat.applyDiffResult', async (data) => {
+			const activeEditor = vscode.window.activeTextEditor;
+			const fileName = activeEditor!.document.fileName;
+
+			const [leftUri, rightUri] = FilePairManager.getInstance().findPair(fileName) || [undefined, undefined];
+			if (leftUri && rightUri) {
+				// 获取对比的两个文件
+				const leftDoc = await vscode.workspace.openTextDocument(leftUri);
+				const rightDoc = await vscode.workspace.openTextDocument(rightUri);
+
+				// 将右边文档的内容替换到左边文档
+				const leftEditor = await vscode.window.showTextDocument(leftDoc);
+				await leftEditor.edit(editBuilder => {
+					const fullRange = new vscode.Range(0, 0, leftDoc.lineCount, 0);
+					editBuilder.replace(fullRange, rightDoc.getText());
+				});
+
+				// 保存左边文档
+				await leftDoc.save();
+			} else {
+				vscode.window.showErrorMessage('No file to apply diff result.');
+			}
 		})
 	);
 }

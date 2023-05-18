@@ -51,23 +51,27 @@ export interface Command {
     async processText(text: string): Promise<string> {
         // 定义一个异步函数来处理单个命令
         const processCommand = async (commandObj: Command, userInput: string) => {
-          const commandPattern = new RegExp(
-            `\\/(${commandObj.pattern.replace('{{prompt}}', '(.+?)')})`,
-            'g'
-          );
-          const matches = Array.from(text.matchAll(commandPattern));
-          const replacements = await Promise.all(
-            matches.map(async (match) => {
-              const matchedUserInput = match[1];
-              return await commandObj.handler(commandObj.name, matchedUserInput);
-            })
-          );
-          let result = userInput;
-          for (let i = 0; i < matches.length; i++) {
-            result = result.replace(matches[i][0], replacements[i]);
-          }
-          return result;
-        };
+		// 转义特殊字符
+		const escapedPattern = commandObj.pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		const commandPattern = new RegExp(
+			`\\/(${escapedPattern.replace('{{prompt}}', '(.+?)')})`,
+			'g'
+		);
+
+		const matches = Array.from(text.matchAll(commandPattern));
+		const replacements = await Promise.all(
+			matches.map(async (match) => {
+			const matchedUserInput = match[1];
+			return await commandObj.handler(commandObj.name, matchedUserInput);
+			})
+		);
+
+		let result = userInput;
+		for (let i = 0; i < matches.length; i++) {
+			result = result.replace(matches[i][0], replacements[i]);
+		}
+		return result;
+		};
       
         // 处理所有命令
         let result = text;
