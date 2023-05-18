@@ -69,6 +69,11 @@ class DevChat {
 			});
 	
 			this.childProcess.on('close', (code: number) => {
+				if (stderr) {
+					logger.channel()?.error(stderr);
+					logger.channel()?.show();
+				}
+
 				if (code === 0) {
 					resolve({ code, stdout, stderr });
 				} else {
