@@ -1,24 +1,21 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Accordion, AccordionControlProps, Avatar, Box, Center, Code, Container, CopyButton, Divider, Flex, Grid, Popover, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
-import { Input, Tooltip } from '@mantine/core';
-import { List } from '@mantine/core';
+import { Image, Accordion, Avatar, Box, Center, Container, CopyButton, Divider, Flex, Popover, Stack, Textarea, px, useMantineTheme } from '@mantine/core';
+import { Tooltip } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
-import { Menu, Button, Text } from '@mantine/core';
-import { useElementSize, useInterval, useListState, useResizeObserver, useTimeout, useViewportSize, useWindowScroll } from '@mantine/hooks';
-import { IconAdjustments, IconBulb, IconCameraSelfie, IconCheck, IconClick, IconColumnInsertRight, IconCopy, IconDots, IconEdit, IconFileDiff, IconFolder, IconGitCommit, IconGitCompare, IconMessageDots, IconMessagePlus, IconPlayerStop, IconPrinter, IconPrompt, IconReplace, IconRobot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUser, IconX } from '@tabler/icons-react';
-import { IconSettings, IconSearch, IconPhoto, IconMessageCircle, IconTrash, IconArrowsLeftRight } from '@tabler/icons-react';
-import { Prism } from '@mantine/prism';
+import { Button, Text } from '@mantine/core';
+import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerStop, IconReplace, IconSend, IconSquareRoundedPlus, IconTerminal2, IconX } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
 import messageUtil from '../../util/MessageUtil';
 // @ts-ignore
-import avatarDevChat from './avatar_devchat.svg';
+import SvgAvatarDevChat from './assets/avatar_devchat.svg';
 // @ts-ignore
-import avatarUser from './avatar_user.svg';
+import SvgAvatarUser from './assets/avatar_user.svg';
 
 const blink = keyframes({
     '50%': { opacity: 0 },
@@ -379,8 +376,8 @@ const chatPanel = () => {
             >
                 {
                     messageType === 'bot'
-                        ? <Avatar color="indigo" size='sm' radius="xl" className={classes.avatar} src={avatarDevChat} />
-                        : <Avatar color="cyan" size='sm' radius="xl" className={classes.avatar} src={avatarUser} />
+                        ? <Avatar color="indigo" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarDevChat} />
+                        : <Avatar color="cyan" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarUser} />
                 }
 
                 <Container sx={{
