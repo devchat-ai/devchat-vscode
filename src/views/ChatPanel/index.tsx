@@ -50,6 +50,7 @@ const chatPanel = () => {
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMenuType('contexts');
         setMenuOpend(!menuOpend);
+        inputRef.current.focus();
         event.stopPropagation();
     };
 
@@ -289,22 +290,27 @@ const chatPanel = () => {
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (menuOpend && menuType === 'commands') {
-            if (event.key === 'ArrowDown') {
-                const newIndex = currentMenuIndex + 1;
-                setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
-                event.preventDefault();
-            }
-            if (event.key === 'ArrowUp') {
-                const newIndex = currentMenuIndex - 1;
-                setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
-                event.preventDefault();
-            }
-            if (event.key === 'Enter' && !event.shiftKey) {
-                const commandNode = commandMenusNode[currentMenuIndex];
-                setInput(`/${commandNode.props['data-pattern']} `);
+        if (menuOpend) {
+            if (event.key === 'Escape') {
                 setMenuOpend(false);
-                event.preventDefault();
+            }
+            if (menuType === 'commands') {
+                if (event.key === 'ArrowDown') {
+                    const newIndex = currentMenuIndex + 1;
+                    setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
+                    event.preventDefault();
+                }
+                if (event.key === 'ArrowUp') {
+                    const newIndex = currentMenuIndex - 1;
+                    setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
+                    event.preventDefault();
+                }
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    const commandNode = commandMenusNode[currentMenuIndex];
+                    setInput(`/${commandNode.props['data-pattern']} `);
+                    setMenuOpend(false);
+                    event.preventDefault();
+                }
             }
         } else {
             if (event.key === 'Enter' && !event.shiftKey) {
