@@ -7,7 +7,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Button, Text } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerStop, IconReplace, IconSend, IconSquareRoundedPlus, IconTerminal2, IconX } from '@tabler/icons-react';
+import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerStop, IconReplace, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUserCircle, IconX } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
@@ -15,7 +15,7 @@ import messageUtil from '../../util/MessageUtil';
 // @ts-ignore
 import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
-import SvgAvatarUser from './avatar_user.svg';
+import SvgAvatarUser from './avatar_spaceman.png';
 
 import { IconMouseRightClick, IconBook, IconGitBranch, IconGitBranchChecked, IconShellCommand } from './Icons';
 
@@ -23,20 +23,10 @@ const blink = keyframes({
     '50%': { opacity: 0 },
 });
 
-const useStyles = createStyles((theme, _params, classNames) => ({
-    menu: {
-
-    },
-    avatar: {
-        marginTop: 10,
-        marginLeft: 3,
-    },
-}));
-
 const chatPanel = () => {
 
     const theme = useMantineTheme();
-    const chatContainerRef = useRef<HTMLDivElement>(null);
+    const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -51,7 +41,6 @@ const chatPanel = () => {
     const [input, setInput] = useState('');
     const [menuOpend, setMenuOpend] = useState(false);
     const [menuType, setMenuType] = useState(''); // contexts or commands
-    const { classes } = useStyles();
     const { height, width } = useViewportSize();
     const [inputRef, inputRect] = useResizeObserver();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
@@ -400,27 +389,41 @@ const chatPanel = () => {
         return (<>
             <Flex
                 key={`message-${index}`}
-                mih={50}
-                w={scrollViewport.current?.clientWidth}
-                gap="xs"
+                gap={0}
                 justify="flex-start"
                 align="flex-start"
                 direction="row"
                 wrap="wrap"
+                sx={{
+                    width: chatContainerRect.width - 10,
+                    padding: 0,
+                    margin: 0,
+                }}
             >
                 {
                     messageType === 'bot'
-                        ? <Avatar color="indigo" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarDevChat} />
-                        : <Avatar color="cyan" size='sm' radius="xl" className={classes.avatar} src={SvgAvatarUser} />
+                        ? <Avatar
+                            color="indigo"
+                            size={25}
+                            radius="xl"
+                            style={{
+                                marginTop: 8,
+                                marginLeft: 5
+                            }} src={SvgAvatarDevChat} />
+                        : <Avatar
+                            color="cyan"
+                            size={25}
+                            radius="xl"
+                            style={{
+                                marginTop: 8,
+                                marginLeft: 5
+                            }} src={SvgAvatarUser} />
                 }
 
                 <Container sx={{
-                    marginTop: 0,
-                    marginLeft: 0,
-                    marginRight: 0,
-                    paddingLeft: 0,
-                    paddingRight: 0,
-                    width: 'calc(100% - 62px)',
+                    margin: '0 0 0 10px',
+                    padding: 0,
+                    width: chatContainerRect.width - 50,
                     pre: {
                         whiteSpace: 'break-spaces'
                     },
@@ -520,8 +523,8 @@ const chatPanel = () => {
                                             style={{ position: 'absolute', top: 8, right: 10 }}>
                                             <CopyButton value={value} timeout={2000}>
                                                 {({ copied, copy }) => (
-                                                    <Tooltip label={copied ? 'Copied' : 'Copy'} withArrow position="left" color="gray">
-                                                        <ActionIcon color={copied ? 'teal' : 'gray'} onClick={copy}>
+                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy'} withArrow position="left" color="gray">
+                                                        <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy}>
                                                             {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
                                                         </ActionIcon>
                                                     </Tooltip>
@@ -529,8 +532,8 @@ const chatPanel = () => {
                                             </CopyButton>
                                             {match[1] && match[1] === 'commitmsg'
                                                 ? (<>
-                                                    <Tooltip label={commited ? 'Committing' : 'Commit'} withArrow position="left" color="gray">
-                                                        <ActionIcon
+                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={commited ? 'Committing' : 'Commit'} withArrow position="left" color="gray">
+                                                        <ActionIcon size='xs'
                                                             color={commited ? 'teal' : 'gray'}
                                                             onClick={() => {
                                                                 messageUtil.sendMessage({
@@ -545,8 +548,8 @@ const chatPanel = () => {
                                                     </Tooltip>
                                                 </>)
                                                 : (<>
-                                                    <Tooltip label='View Diff' withArrow position="left" color="gray">
-                                                        <ActionIcon onClick={() => {
+                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='View Diff' withArrow position="left" color="gray">
+                                                        <ActionIcon size='xs' onClick={() => {
                                                             messageUtil.sendMessage({
                                                                 command: 'show_diff',
                                                                 content: value
@@ -555,8 +558,8 @@ const chatPanel = () => {
                                                             <IconFileDiff size="1.125rem" />
                                                         </ActionIcon>
                                                     </Tooltip>
-                                                    <Tooltip label='Insert Code' withArrow position="left" color="gray">
-                                                        <ActionIcon onClick={() => {
+                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Insert Code' withArrow position="left" color="gray">
+                                                        <ActionIcon size='xs' onClick={() => {
                                                             messageUtil.sendMessage({
                                                                 command: 'code_apply',
                                                                 content: value
@@ -565,8 +568,8 @@ const chatPanel = () => {
                                                             <IconColumnInsertRight size="1.125rem" />
                                                         </ActionIcon>
                                                     </Tooltip>
-                                                    <Tooltip label='Replace' withArrow position="left" color="gray">
-                                                        <ActionIcon onClick={() => {
+                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Replace' withArrow position="left" color="gray">
+                                                        <ActionIcon size='xs' onClick={() => {
                                                             messageUtil.sendMessage({
                                                                 command: 'code_file_apply',
                                                                 content: value
@@ -577,7 +580,7 @@ const chatPanel = () => {
                                                     </Tooltip>
                                                 </>)}
                                         </Flex>
-                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '2em 1em 1em 2em', }} style={okaidia} PreTag="div">
+                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
                                             {value}
                                         </SyntaxHighlighter>
                                     </div >
@@ -611,22 +614,28 @@ const chatPanel = () => {
             ref={chatContainerRef}
             sx={{
                 height: '100%',
-                paddingTop: 10,
+                margin: 0,
+                padding: 5,
                 background: 'var(--vscode-editor-background)',
-                color: 'var(--vscode-editor-foreground)'
+                color: 'var(--vscode-editor-foreground)',
+                minWidth: 240
             }}>
             <ScrollArea
                 id='chat-scroll-area'
-                h={generating ? height - px('8rem') : height - px('5rem')}
-                w={width - px('2rem')}
                 type="never"
+                sx={{
+                    height: generating ? height - px('8rem') : height - px('5rem'),
+                    width: chatContainerRect.width,
+                    padding: 0,
+                    margin: 0,
+                }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
             <Stack
                 spacing={5}
-                sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
+                sx={{ position: 'absolute', bottom: 10, width: chatContainerRect.width }}>
                 {generating &&
                     <Center>
                         <Button
@@ -736,7 +745,7 @@ const chatPanel = () => {
                     position='top-start'
                     closeOnClickOutside={true}
                     shadow="sm"
-                    width={scrollViewport.current?.clientWidth}
+                    width={chatContainerRect.width}
                     opened={menuOpend}
                     onChange={() => {
                         setMenuOpend(!menuOpend);
@@ -758,13 +767,14 @@ const chatPanel = () => {
                             minRows={1}
                             maxRows={10}
                             radius="md"
-                            size="md"
+                            size="xs"
                             sx={{ pointerEvents: 'all' }}
                             placeholder="Send a message."
                             styles={{
-                                icon: { alignItems: 'flex-start', paddingTop: '9px' },
-                                rightSection: { alignItems: 'flex-start', paddingTop: '9px' },
+                                icon: { alignItems: 'center', paddingLeft: '5px' },
+                                rightSection: { alignItems: 'center', paddingRight: '5px' },
                                 input: {
+                                    fontSize: 'var(--vscode-editor-font-size)',
                                     backgroundColor: 'var(--vscode-input-background)',
                                     borderColor: 'var(--vscode-input-border)',
                                     color: 'var(--vscode-input-foreground)',
@@ -775,6 +785,7 @@ const chatPanel = () => {
                             }}
                             icon={
                                 <ActionIcon
+                                    size='sm'
                                     disabled={generating}
                                     onClick={handlePlusClick}
                                     sx={{
@@ -793,6 +804,7 @@ const chatPanel = () => {
                             }
                             rightSection={
                                 <ActionIcon
+                                    size='sm'
                                     disabled={generating}
                                     onClick={handleSendClick}
                                     sx={{
