@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Accordion, AccordionControlProps, Avatar, Box, Center, Code, Container, CopyButton, Divider, Flex, Grid, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
+import { Accordion, AccordionControlProps, Avatar, Box, Center, Code, Container, CopyButton, Divider, Flex, Grid, Popover, Stack, Textarea, TypographyStylesProvider, px, rem, useMantineTheme } from '@mantine/core';
 import { Input, Tooltip } from '@mantine/core';
 import { List } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
@@ -39,6 +39,8 @@ const chatPanel = () => {
     const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
+    const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
+    const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
     const [contexts, contextsHandlers] = useListState<any>([]);
     const [currentMessage, setCurrentMessage] = useState('');
     const [generating, setGenerating] = useState(false);
@@ -211,12 +213,72 @@ const chatPanel = () => {
         });
     }, [registed]);
 
+    useEffect(() => {
+        let filtered = commandMenus;
+        if (input) {
+            filtered = commandMenus.filter((item) => `/${item.pattern}`.startsWith(input));
+        }
+        const node = filtered.map(({ pattern, description, name }, index) => {
+            return (
+                <Flex
+                    mih={40}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    sx={{
+                        padding: '5px 0',
+                        '&:hover,&[aria-checked=true]': {
+                            cursor: 'pointer',
+                            color: 'var(--vscode-commandCenter-activeForeground)',
+                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
+                        }
+                    }}
+                    onClick={() => {
+                        setInput(`/${pattern} `);
+                        setMenuOpend(false);
+                    }}
+                    aria-checked={index === currentMenuIndex}
+                    data-pattern={pattern}
+                >
+                    <IconTerminal2
+                        size={16}
+                        color='var(--vscode-menu-foreground)'
+                        style={{
+                            marginTop: 8,
+                            marginLeft: 8,
+                        }} />
+                    <Stack spacing={0}>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            fontWeight: 'bolder',
+                            color: 'var(--vscode-menu-foreground)'
+                        }}>
+                            /{pattern}
+                        </Text>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            color: theme.colors.gray[6],
+                        }}>
+                            {description}
+                        </Text>
+                    </Stack>
+                </Flex>);
+        });
+        setCommandMenusNode(node);
+        if (node.length === 0) {
+            setMenuOpend(false);
+        }
+    }, [input, commandMenus, currentMenuIndex]);
+
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
         // if value start with '/' command show menu
-        if (value === '/') {
+        if (value.startsWith('/')) {
             setMenuOpend(true);
             setMenuType('commands');
+            setCurrentMenuIndex(0);
         } else {
             setMenuOpend(false);
         }
@@ -224,8 +286,27 @@ const chatPanel = () => {
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (event.key === 'Enter' && !event.shiftKey) {
-            handleSendClick(event as any);
+        if (menuOpend && menuType === 'commands') {
+            if (event.key === 'ArrowDown') {
+                const newIndex = currentMenuIndex + 1;
+                setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
+                event.preventDefault();
+            }
+            if (event.key === 'ArrowUp') {
+                const newIndex = currentMenuIndex - 1;
+                setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
+                event.preventDefault();
+            }
+            if (event.key === 'Enter' && !event.shiftKey) {
+                const commandNode = commandMenusNode[currentMenuIndex];
+                setInput(`/${commandNode.props['data-pattern']} `);
+                setMenuOpend(false);
+                event.preventDefault();
+            }
+        } else {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                handleSendClick(event as any);
+            }
         }
     };
 
@@ -233,64 +314,51 @@ const chatPanel = () => {
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
     </Center>);
 
-    const commandMenusNode = commandMenus.map(({ pattern, description, name }, index) => {
-        return (
-            <Menu.Item
-                sx={{
-                    '&:hover, &[data-hovered]': {
-                        color: 'var(--vscode-menu-selectionForeground)',
-                        border: 'var(--vscode-menu-selectionBorder)',
-                        backgroundColor: 'var(--vscode-menu-selectionBackground)'
-                    }
-                }}
-                onClick={() => { setInput(`/${pattern} `); }}
-                icon={<IconTerminal2 size={16} color='var(--vscode-menu-foreground)' />}
-            >
-                <Text sx={{
-                    fontSize: 'sm',
-                    fontWeight: 'bolder',
-                    color: 'var(--vscode-menu-foreground)'
-                }}>
-                    /{pattern}
-                </Text>
-                <Text sx={{
-                    fontSize: 'sm',
-                    color: theme.colors.gray[6],
-                }}>
-                    {description}
-                </Text>
-            </Menu.Item>);
-    });
-
     const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
         return (
-            <Menu.Item
+            <Flex
+                mih={40}
+                gap="md"
+                justify="flex-start"
+                align="flex-start"
+                direction="row"
+                wrap="wrap"
                 sx={{
-                    '&:hover, &[data-hovered]': {
-                        color: 'var(--vscode-menu-selectionForeground)',
-                        border: 'var(--vscode-menu-selectionBorder)',
-                        backgroundColor: 'var(--vscode-menu-selectionBackground)'
+                    padding: '5px 0',
+                    '&:hover': {
+                        cursor: 'pointer',
+                        color: 'var(--vscode-commandCenter-activeForeground)',
+                        backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
                     }
                 }}
                 onClick={() => {
                     handleContextClick(name);
+                    setMenuOpend(false);
                 }}
-                icon={<IconMessagePlus size={16} color='var(--vscode-menu-foreground)' />}
             >
-                <Text sx={{
-                    fontSize: 'sm',
-                    fontWeight: 'bolder',
-                    color: 'var(--vscode-menu-foreground)'
-                }}>
-                    {name}
-                </Text>
-                <Text sx={{
-                    fontSize: 'sm',
-                    color: theme.colors.gray[6],
-                }}>
-                    {description}
-                </Text>
-            </Menu.Item>);
+                <IconMessagePlus
+                    size={16}
+                    color='var(--vscode-menu-foreground)'
+                    style={{
+                        marginTop: 8,
+                        marginLeft: 8,
+                    }} />
+                <Stack spacing={0}>
+                    <Text sx={{
+                        fontSize: 'sm',
+                        fontWeight: 'bolder',
+                        color: 'var(--vscode-menu-foreground)'
+                    }}>
+                        {name}
+                    </Text>
+                    <Text sx={{
+                        fontSize: 'sm',
+                        color: theme.colors.gray[6],
+                    }}>
+                        {description}
+                    </Text>
+                </Stack>
+            </Flex>);
     });
 
     const messageList = messages.map(({ message: messageText, type: messageType, contexts }, index) => {
@@ -330,7 +398,7 @@ const chatPanel = () => {
                             }}
                             styles={{
                                 item: {
-                                    border: 'var(--vscode-menu-border)',
+                                    borderColor: 'var(--vscode-menu-border)',
                                     backgroundColor: 'var(--vscode-menu-background)',
                                 },
                                 control: {
@@ -556,7 +624,7 @@ const chatPanel = () => {
                         }}
                         styles={{
                             item: {
-                                border: 'var(--vscode-menu-border)',
+                                borderColor: 'var(--vscode-menu-border)',
                                 backgroundColor: 'var(--vscode-menu-background)',
                             },
                             control: {
@@ -626,7 +694,7 @@ const chatPanel = () => {
                         }
                     </Accordion>
                 }
-                <Menu
+                <Popover
                     id='commandMenu'
                     position='top-start'
                     closeOnClickOutside={true}
@@ -641,7 +709,7 @@ const chatPanel = () => {
                     onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
                     returnFocus={true}
                 >
-                    <Menu.Target>
+                    <Popover.Target>
                         <Textarea
                             id='chat-textarea'
                             disabled={generating}
@@ -661,7 +729,7 @@ const chatPanel = () => {
                                 rightSection: { alignItems: 'flex-start', paddingTop: '9px' },
                                 input: {
                                     backgroundColor: 'var(--vscode-input-background)',
-                                    border: 'var(--vscode-input-border)',
+                                    borderColor: 'var(--vscode-input-border)',
                                     color: 'var(--vscode-input-foreground)',
                                     '&[data-disabled]': {
                                         color: 'var(--vscode-disabledForeground)'
@@ -678,7 +746,7 @@ const chatPanel = () => {
                                             backgroundColor: 'var(--vscode-toolbar-activeBackground)'
                                         },
                                         '&[data-disabled]': {
-                                            border: 'var(--vscode-input-border)',
+                                            borderColor: 'var(--vscode-input-border)',
                                             backgroundColor: 'var(--vscode-toolbar-activeBackground)'
                                         }
                                     }}
@@ -696,7 +764,7 @@ const chatPanel = () => {
                                             backgroundColor: 'var(--vscode-toolbar-activeBackground)'
                                         },
                                         '&[data-disabled]': {
-                                            border: 'var(--vscode-input-border)',
+                                            borderColor: 'var(--vscode-input-border)',
                                             backgroundColor: 'var(--vscode-toolbar-activeBackground)'
                                         }
                                     }}
@@ -705,13 +773,14 @@ const chatPanel = () => {
                                 </ActionIcon>
                             }
                         />
-                    </Menu.Target>
+                    </Popover.Target>
                     {
                         menuType === 'contexts'
-                            ? (<Menu.Dropdown
+                            ? (<Popover.Dropdown
                                 sx={{
+                                    padding: 0,
                                     color: 'var(--vscode-menu-foreground)',
-                                    border: 'var(--vscode-menu-border)',
+                                    borderColor: 'var(--vscode-menu-border)',
                                     backgroundColor: 'var(--vscode-menu-background)'
                                 }}>
                                 <Text
@@ -723,22 +792,23 @@ const chatPanel = () => {
                                     Tips: Select code or file & right click
                                 </Text>
                                 <Divider />
-                                <Menu.Label>DevChat Contexts</Menu.Label>
+                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
                                 {contextMenusNode}
-                            </Menu.Dropdown>)
-                            : menuType === 'commands'
-                                ? <Menu.Dropdown
+                            </Popover.Dropdown>)
+                            : menuType === 'commands' && commandMenusNode.length > 0
+                                ? <Popover.Dropdown
                                     sx={{
+                                        padding: 0,
                                         color: 'var(--vscode-menu-foreground)',
-                                        border: 'var(--vscode-menu-border)',
+                                        borderColor: 'var(--vscode-menu-border)',
                                         backgroundColor: 'var(--vscode-menu-background)'
                                     }}>
-                                    <Menu.Label>DevChat Commands</Menu.Label>
+                                    <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
                                     {commandMenusNode}
-                                </Menu.Dropdown>
+                                </Popover.Dropdown>
                                 : <></>
                     }
-                </Menu>
+                </Popover>
             </Stack>
         </Container >
     );
