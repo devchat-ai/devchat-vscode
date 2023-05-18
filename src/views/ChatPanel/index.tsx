@@ -215,6 +215,24 @@ const chatPanel = () => {
         });
     }, [registed]);
 
+    const commandMenuIcon = (pattern: string) => {
+        if (pattern === 'code') {
+            return (<IconShellCommand size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+        if (pattern === 'commit_message') {
+            return (<IconBook size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+    };
     useEffect(() => {
         let filtered = commandMenus;
         if (input) {
@@ -244,13 +262,7 @@ const chatPanel = () => {
                     aria-checked={index === currentMenuIndex}
                     data-pattern={pattern}
                 >
-                    <IconTerminal2
-                        size={16}
-                        color='var(--vscode-menu-foreground)'
-                        style={{
-                            marginTop: 8,
-                            marginLeft: 8,
-                        }} />
+                    {commandMenuIcon(pattern)}
                     <Stack spacing={0}>
                         <Text sx={{
                             fontSize: 'sm',
