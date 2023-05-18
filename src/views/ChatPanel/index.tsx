@@ -397,7 +397,7 @@ const chatPanel = () => {
                 }}
             >
                 <Flex
-                    m={10}
+                    m='10px 0 10px 0'
                     gap="sm"
                     justify="flex-start"
                     align="center"
