@@ -19,11 +19,11 @@ function welcomeMessage(): LogEntry {
 		hash: 'message',
 		user: 'system',
 		date: '',
-		request: 'How to use DevChat?',
+		request: 'How do I use DevChat?',
 		response: `
-DevChat provides an editing operation method through problem driven development. You can start the journey of using DevChat from the following aspects.
-1. Right click to select a file or a piece of code to add to DevChat and try asking AI about the file/code.
-2. Use the+button in DevChat to select a git diff message and try using "/commit_message" command to generate a commit message.
+Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
+
+Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
 		`,
 		context: []
 	} as LogEntry;
