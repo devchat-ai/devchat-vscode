@@ -70,6 +70,10 @@ function activate(context: vscode.ExtensionContext) {
 				bOk = false;
 			}
 
+			if (!bOk && devchatStatus === 'waitting install devchat') {
+				bOk = checkDevChatDependency();
+			}
+
 			if (bOk) {
 				devchatStatus = 'ready';
 			} else {
