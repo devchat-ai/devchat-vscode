@@ -17,25 +17,50 @@ export function applyCodeChanges(originalCode: string, actionsString: string): s
     const lines = originalCode.split('\n');
 
     for (const action of actions) {
+        const contentLines = action.content?.split('\n') || [];
+        const insertAfterLines = action.insert_after?.split('\n') || [];
+        const originalContentLines = action.original_content?.split('\n') || [];
+
         switch (action.action) {
             case 'delete':
-                const deleteRegex = new RegExp(action.content!.replace(/\n/g, '\\n'), 'g');
-                originalCode = originalCode.replace(deleteRegex, '');
+                const deleteIndices = lines.reduce((indices, line, index) => {
+                    if (contentLines.includes(line.trim())) {
+                        indices.push(index);
+                    }
+                    return indices;
+                }, [] as number[]);
+                for (const deleteIndex of deleteIndices.reverse()) {
+                    lines.splice(deleteIndex, contentLines.length);
+                }
                 break;
 
             case 'insert':
-                const insertRegex = new RegExp(action.insert_after!.replace(/\n/g, '\\n'), 'g');
-                originalCode = originalCode.replace(insertRegex, `${action.insert_after}\n${action.content}`);
+                const insertIndices = lines.reduce((indices, line, index) => {
+                    if (insertAfterLines.includes(line.trim())) {
+                        indices.push(index);
+                    }
+                    return indices;
+                }, [] as number[]);
+                for (const insertIndex of insertIndices.reverse()) {
+                    lines.splice(insertIndex + 1, 0, ...contentLines);
+                }
                 break;
 
             case 'modify':
-                const modifyRegex = new RegExp(action.original_content!.replace(/\n/g, '\\n'), 'g');
-                originalCode = originalCode.replace(modifyRegex, action.new_content!);
+                const modifyIndices = lines.reduce((indices, line, index) => {
+                    if (originalContentLines.includes(line.trim())) {
+                        indices.push(index);
+                    }
+                    return indices;
+                }, [] as number[]);
+                for (const modifyIndex of modifyIndices) {
+                    lines.splice(modifyIndex, originalContentLines.length, ...action.new_content!.split('\n'));
+                }
                 break;
         }
     }
 
-    return originalCode;
+    return lines.join('\n');
 }
 
 
