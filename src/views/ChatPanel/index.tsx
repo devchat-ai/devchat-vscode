@@ -329,16 +329,16 @@ const chatPanel = () => {
     </Center>);
 
     const contextMenuIcon = (name: string) => {
-        if (name === 'git diff cached') {
-            return (<IconGitBranch size={16}
+        if (name === 'git diff --cached') {
+            return (<IconGitBranchChecked size={16}
                 color='var(--vscode-menu-foreground)'
                 style={{
                     marginTop: 8,
                     marginLeft: 12,
                 }} />);
         }
-        if (name === 'git diff') {
-            return (<IconGitBranchChecked size={16}
+        if (name === 'git diff HEAD') {
+            return (<IconGitBranch size={16}
                 color='var(--vscode-menu-foreground)'
                 style={{
                     marginTop: 8,
