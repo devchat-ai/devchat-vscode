@@ -428,6 +428,7 @@ const chatPanel = () => {
                     {contexts &&
                         <Accordion variant="contained" chevronPosition="left"
                             sx={{
+                                marginTop: 5,
                                 backgroundColor: 'var(--vscode-menu-background)',
                             }}
                             styles={{
@@ -436,6 +437,7 @@ const chatPanel = () => {
                                     backgroundColor: 'var(--vscode-menu-background)',
                                 },
                                 control: {
+                                    height: 30,
                                     backgroundColor: 'var(--vscode-menu-background)',
                                     '&:hover': {
                                         backgroundColor: 'var(--vscode-menu-background)',
@@ -623,6 +625,7 @@ const chatPanel = () => {
                 {messageList.length > 0 ? messageList : defaultMessages}
             </ScrollArea>
             <Stack
+                spacing={5}
                 sx={{ position: 'absolute', bottom: 10, width: scrollViewport.current?.clientWidth }}>
                 {generating &&
                     <Center>
@@ -661,6 +664,7 @@ const chatPanel = () => {
                                 backgroundColor: 'var(--vscode-menu-background)',
                             },
                             control: {
+                                height: 30,
                                 backgroundColor: 'var(--vscode-menu-background)',
                                 '&:hover': {
                                     backgroundColor: 'var(--vscode-menu-background)',
@@ -697,7 +701,7 @@ const chatPanel = () => {
                                             </Accordion.Control>
                                             <ActionIcon
                                                 mr={8}
-                                                size="lg"
+                                                size="sm"
                                                 sx={{
                                                     color: 'var(--vscode-menu-foreground)',
                                                     '&:hover': {
@@ -731,7 +735,7 @@ const chatPanel = () => {
                     id='commandMenu'
                     position='top-start'
                     closeOnClickOutside={true}
-                    shadow="xs"
+                    shadow="sm"
                     width={scrollViewport.current?.clientWidth}
                     opened={menuOpend}
                     onChange={() => {
