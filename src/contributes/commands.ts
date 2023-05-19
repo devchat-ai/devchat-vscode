@@ -6,17 +6,32 @@ import * as childProcess from 'child_process';
 import { DevChatViewProvider } from '../panel/devchatView';
 import ExtensionContextHolder from '../util/extensionContext';
 
+import * as process from 'process';
 
-export function checkDevChatDependency() {
-	// 执行系统命令，检查依赖程序是否已经安装
-	try {
-	  const result = childProcess.execSync('devchat --help');
-	  // 命令执行成功，依赖程序已经安装
-	  return true;
-	} catch (error) {
-	  // 命令执行失败，依赖程序未安装
-	  return false;
-	}
+export function checkDevChatDependency(): boolean {
+  try {
+    // 获取pipx环境信息
+    const pipxEnvOutput = childProcess.execSync('python3 -m pipx environment').toString();
+    const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
+
+    // 提取BIN路径
+    const match = pipxEnvOutput.match(binPathRegex);
+    if (match && match[1]) {
+      const binPath = match[1];
+
+      // 将BIN路径添加到环境变量中
+      process.env.PATH = `${binPath}:${process.env.PATH}`;
+
+      // 检查devchat是否已经安装
+      childProcess.execSync('devchat --help');
+      return true;
+    } else {
+      return false;
+    }
+  } catch (error) {
+    // 命令执行失败，依赖程序未安装或其他异常
+    return false;
+  }
 }
 
 export async function checkOpenAiAPIKey() {

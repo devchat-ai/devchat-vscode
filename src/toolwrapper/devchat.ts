@@ -57,17 +57,17 @@ class DevChat {
 			
 			let stdout = '';
 			let stderr = '';
-	
+
 			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
 				const dataStr = data.toString();
 				onData(dataStr);
 				stdout += dataStr;
 			});
-	
+
 			this.childProcess.stderr.on('data', (data: string) => {
 				stderr += data;
 			});
-	
+
 			this.childProcess.on('close', (code: number) => {
 				if (stderr) {
 					logger.channel()?.error(stderr);
@@ -79,6 +79,18 @@ class DevChat {
 				} else {
 					reject({ code, stdout, stderr });
 				}
+			});
+
+			// Add error event listener to handle command not found exception
+			this.childProcess.on('error', (error: any) => {
+				if (error.code === 'ENOENT') {
+					logger.channel()?.error(`Command not found: ${command}`);
+					logger.channel()?.show();
+				} else {
+					logger.channel()?.error(`Error occurred: ${error.message}`);
+					logger.channel()?.show();
+				}
+				reject({ code: error.code, stdout: "", stderr: error.message });
 			});
 		});
 	};
@@ -290,6 +302,7 @@ class DevChat {
 				},
 			}, (partialResponse: string) => { });
 
+			logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
 			if (stderr) {
 				logger.channel()?.error(`Error getting log: ${stderr}`);
 				logger.channel()?.show();
