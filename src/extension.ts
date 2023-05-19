@@ -85,7 +85,7 @@ function activate(context: vscode.ExtensionContext) {
 		if (devchatStatus === 'not ready') {
 			// auto install devchat
 			const terminal = vscode.window.createTerminal("DevChat Install");
-			terminal.sendText("pip3 install --upgrade devchat");
+			terminal.sendText(`python ${context.extensionUri.fsPath+"/tools/install.py"}`);
 			terminal.show();
 			devchatStatus = 'waiting install devchat';
 		}
