@@ -1,5 +1,5 @@
 {
-	"pattern": "$code_actions",
+	"pattern": "code_actions",
 	"description": "work for generate code",
 	"message": "",
 	"default": true,

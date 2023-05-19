@@ -1,5 +1,5 @@
 {
-	"pattern": "$code",
+	"pattern": "code",
 	"description": "work for generate code",
 	"message": "",
 	"default": false,
