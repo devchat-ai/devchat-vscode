@@ -13,15 +13,18 @@
 [![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![VS Code Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![GitHub license](https://img.shields.io/github/license/covespace/devchat-vscode.svg)](https://github.com/covespace/devchat-vscode/blob/main/LICENSE)
-[![Discord Chat](https://img.shields.io/discord/784885193774350337?logo=discord)](https://discord.gg/9t3yrbBUXD)
+[![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/9t3yrbBUXD)
 
-DevChat provides a Visual Studio Code extension, enabling you to interact with an AI-powered bot for coding assistance. Designed for **prompt-centric** software development, it allows you to create your own personalized dev copilot.
+:point_right: Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI :clap:
 
+https://github.com/covespace/devchat-vscode/assets/592493/cd721182-688b-43de-8d86-99ab3786f979
+
+  
 ***
 
 ## What is DevChat?
 
-DevChat is a powerful tool that helps you write prompts to generate code and documentation.
+DevChat is an open-source tool that helps you write prompts to generate code and documentation.
 It is _not_ limited to performing predefined operations on short code snippets.
   
 DevChat is the way developers interact and collaborate with AI.
@@ -34,9 +37,13 @@ DevChat is the way developers interact and collaborate with AI.
   
   Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
 
+  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/415df4aa-66d6-46e4-a30d-8bba6277028c">
+ 
 - To apply AI-generated code, DevChat streamlines your **actions to take**.
 
   View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
+  
+  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/bcccbf20-0d30-46f4-b19f-5f532c1caf85">
   
 - To guide AI in your work, define **your own workflows** with DevChat.
   
@@ -59,43 +66,36 @@ DevChat is the way developers interact and collaborate with AI.
 
 ***
 
-## Installation
+## Quick Start
 
-1. Open Visual Studio Code
-2. Press `Ctrl+P` to open the Quick Open dialog
-3. Type `ext install merico.devchat` and press `Enter`
-4. Install devchat package by `pip install devchat`
-5. setting your OPENAI_API_KEY in setting/DevChat
+  - Install [Visual Studio Code](https://code.visualstudio.com/download).
+  - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
+  
+  <img width="200" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/28bff4d8-a1cf-4e07-abe8-7c0aa4fc90ee">
+ 
+  - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, open a Git project.
+  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="sk-..."`.
+  - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
-## Usage
+  <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
 
-1. Open the chat panel by clicking on the "Chat with Bot" view in the Explorer or by running the "DevChat" command from the Command Palette (`Ctrl+Shift+P`).
-2. Type your question or prompt in the input field and press `Enter` to send it to the AI bot.
-3. To add code snippets or files to the chat, right-click on the selected code or file in the editor and choose "Add to DevChat" from the context menu.
+  - We recommend dragging the DevChat logo from the left sidebar to the right sidebar to avoid overlapping with the Explorer.
 
-## Configuration
+## Community
 
-You can configure the following settings in your `settings.json` file:
-
-- `DevChat.llmModel`: Select the AI model to use (default: "OpenAI").
-- `DevChat.maxLogCount`: Limit the number of prompts to output (default: 20).
-- `DevChat.OpenAI.model`: Specify the AI model (default: "gpt-4").
-- `DevChat.OpenAI.temperature`: Specify the AI model temperature (default: 0.2).
-- `DevChat.OpenAI.stream`: Specify the AI model stream (default: true).
-- `DevChat.OpenAI.tokensPerPrompt`: Specify the number of tokens for each prompt (default: 6000).
-- `DevChat.OpenAI.useHistoryPrompt`: Use history prompts as context (default: true).
-- `DevChat.OpenAI.apiKey`: OpenAI API Key (default: "").
-- `DevChat.OpenAI.EndPoint`: OpenAI API server (default: "").
+- Join our [Discord](https://discord.gg/9t3yrbBUXD)!
+- Participate in [discussions](https://github.com/covespace/devchat/discussions)!
 
 ## Contributing
 
-If you have any suggestions or issues, please feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/covespace/devchat-vscode.git).
+Issues and pull request are welcome: https://github.com/covespace/devchat-vscode/issues
 
 ## Automated Publishing Process
 
 Check out our [Automated Publishing Process](./docs/publish.md) for a detailed walkthrough of how we manage the automated release of new versions for the DevChat VSCode Extension.
 
-
 ## Contact Information
   
 hello@merico.dev
+
+We are creators of Apache DevLake and CNCF DevStream.
