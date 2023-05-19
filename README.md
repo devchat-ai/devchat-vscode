@@ -37,6 +37,8 @@ DevChat is the way developers interact and collaborate with AI.
   
   Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
 
+  <img width="600" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/fa66d71e-9ccb-4527-ad2d-d930109769d3">
+
 - To apply AI-generated code, DevChat streamlines your **actions to take**.
 
   View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
