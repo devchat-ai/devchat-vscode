@@ -135,14 +135,14 @@ class DevChat {
 		const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
 		const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
 		const tokensPerPrompt = vscode.workspace.getConfiguration('DevChat').get('OpenAI.tokensPerPrompt');
-		const userHistoryPrompts = vscode.workspace.getConfiguration('DevChat').get('OpenAI.useHistoryPrompt');
+		// const userHistoryPrompts = vscode.workspace.getConfiguration('DevChat').get('OpenAI.useHistoryPrompt');
 
 		let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
 		if (!devChat) {
 			devChat = 'devchat';
 		}
 
-		if (userHistoryPrompts && options.parent) {
+		if (options.parent) {
 			args.push("-p", options.parent);
 		}
 		
@@ -261,8 +261,8 @@ class DevChat {
 		if (options.skip) {
 			args.push('--skip', `${options.skip}`);
 		} else {
-			const skipLogCount = vscode.workspace.getConfiguration('DevChat').get('logSkip');
-			args.push('--skip', `${skipLogCount}`);
+			// const skipLogCount = vscode.workspace.getConfiguration('DevChat').get('logSkip');
+			// args.push('--skip', `${skipLogCount}`);
 		}
 		if (options.maxCount) {
 			args.push('--max-count', `${options.maxCount}`);
