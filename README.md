@@ -17,7 +17,10 @@
 
 :point_right: Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI :clap:
 
-https://github.com/covespace/devchat-vscode/assets/592493/cd721182-688b-43de-8d86-99ab3786f979
+
+
+https://github.com/covespace/devchat-vscode/assets/592493/ebcc19b5-50c8-41d7-8666-0c7b6533256c
+
 
   
 ***
