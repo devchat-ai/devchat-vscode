@@ -13,15 +13,18 @@
 [![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![VS Code Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![GitHub license](https://img.shields.io/github/license/covespace/devchat-vscode.svg)](https://github.com/covespace/devchat-vscode/blob/main/LICENSE)
-[![Discord Chat](https://img.shields.io/discord/784885193774350337?logo=discord)](https://discord.gg/9t3yrbBUXD)
+[![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/9t3yrbBUXD)
 
-DevChat provides a Visual Studio Code extension, enabling you to interact with an AI-powered bot for coding assistance. Designed for **prompt-centric** software development, it allows you to create your own personalized dev copilot.
+:point_right: Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI :clap:
 
+https://github.com/covespace/devchat-vscode/assets/592493/cd721182-688b-43de-8d86-99ab3786f979
+
+  
 ***
 
 ## What is DevChat?
 
-DevChat is a powerful tool that helps you write prompts to generate code and documentation.
+DevChat is an open-source tool that helps you write prompts to generate code and documentation.
 It is _not_ limited to performing predefined operations on short code snippets.
   
 DevChat is the way developers interact and collaborate with AI.
