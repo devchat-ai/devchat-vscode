@@ -71,11 +71,13 @@ DevChat is the way developers interact and collaborate with AI.
   - Install [Visual Studio Code](https://code.visualstudio.com/download).
   - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
   
+  <img width="200" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/28bff4d8-a1cf-4e07-abe8-7c0aa4fc90ee">
  
   - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, open a Git project.
   - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="sk-..."`.
   - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
+  <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
 
   - We recommend dragging the DevChat logo from the left sidebar to the right sidebar to avoid overlapping with the Explorer.
 
