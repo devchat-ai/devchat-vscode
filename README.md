@@ -37,13 +37,13 @@ DevChat is the way developers interact and collaborate with AI.
   
   Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
 
-  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/fa66d71e-9ccb-4527-ad2d-d930109769d3">
-
+  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/415df4aa-66d6-46e4-a30d-8bba6277028c">
+ 
 - To apply AI-generated code, DevChat streamlines your **actions to take**.
 
   View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
   
-  <img width="600" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/eca1b840-5e48-42d9-a23f-879744531e9f">
+  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/bcccbf20-0d30-46f4-b19f-5f532c1caf85">
   
 - To guide AI in your work, define **your own workflows** with DevChat.
   
@@ -71,13 +71,11 @@ DevChat is the way developers interact and collaborate with AI.
   - Install [Visual Studio Code](https://code.visualstudio.com/download).
   - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
   
-  <img width="200" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/415df4aa-66d6-46e4-a30d-8bba6277028c">
-  
+ 
   - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, open a Git project.
   - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="sk-..."`.
   - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
- <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/bcccbf20-0d30-46f4-b19f-5f532c1caf85">
 
   - We recommend dragging the DevChat logo from the left sidebar to the right sidebar to avoid overlapping with the Explorer.
 
