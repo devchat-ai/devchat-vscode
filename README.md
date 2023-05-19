@@ -50,6 +50,10 @@ You can configure the following settings in your `settings.json` file:
 
 If you have any suggestions or issues, please feel free to open an issue or submit a pull request on the [GitHub repository](https://github.com/covespace/devchat-vscode.git).
 
+## Automated Publishing Process
+
+Check out our [Automated Publishing Process](./docs/publish.md) for a detailed walkthrough of how we manage the automated release of new versions for the DevChat VSCode Extension.
+
 ## License
 
 *Specify the license here*
