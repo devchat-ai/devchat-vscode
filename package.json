@@ -37,46 +37,35 @@
 					"enum": [
 						"OpenAI"
 					],
-					"description": "Select whose llm to use."
+					"description": "Select which LLM to use."
 				},
 				"DevChat.maxLogCount": {
 					"type": "number",
 					"default": 20,
-					"description": "Limit the number of prompts to output"
-				},
-				"DevChat.logSkip": {
-					"type": "number",
-					"default": 0,
-					"description": "Skip number prompts before showing the prompt history"
+					"description": "Limit the number of prompts in the chat view."
 				},
 				"DevChat.OpenAI.model": {
 					"type": "string",
 					"default": "gpt-4",
-					"description": "Specify llm model",
+					"description": "Specify the model ID.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.OpenAI.temperature": {
 					"type": "number",
-					"default": 0.2,
-					"description": "Specify llm temperature",
+					"default": 0,
+					"description": "The sampling temperature to use, between 0 and 2. Lower values like 0.2 will make it more focused and deterministic.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.OpenAI.stream": {
 					"type": "boolean",
 					"default": true,
-					"description": "Specify llm stream",
+					"description": "Whether to stream a response.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.OpenAI.tokensPerPrompt": {
 					"type": "number",
 					"default": 6000,
-					"description": "token for each prompt",
-					"when": "DevChat.llmModel == 'OpenAI'"
-				},
-				"DevChat.OpenAI.useHistoryPrompt": {
-					"type": "boolean",
-					"default": true,
-					"description": "use history prompts as context",
+					"description": "The max number of tokens of a prompt.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.OpenAI.apiKey": {
@@ -88,7 +77,7 @@
 				"DevChat.OpenAI.EndPoint": {
 					"type": "string",
 					"default": "",
-					"description": "OpenAI api server",
+					"description": "The OpenAI API endpoint URL.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.DevChatPath": {
@@ -102,7 +91,7 @@
 							]
 						}
 					},
-					"description": "Where is DevChat?"
+					"description": "Where is the devchat binary located?"
 				}
 			}
 		},
@@ -127,7 +116,7 @@
 		"commands": [
 			{
 				"command": "devchat.applyDiffResult",
-				"title": "Apply Diff Result",
+				"title": "Apply Diff",
 				"icon": "assets/devchat_apply.svg"
 			},
 			{
