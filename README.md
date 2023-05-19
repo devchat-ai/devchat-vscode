@@ -38,7 +38,6 @@ You can configure the following settings in your `settings.json` file:
 
 - `DevChat.llmModel`: Select the AI model to use (default: "OpenAI").
 - `DevChat.maxLogCount`: Limit the number of prompts to output (default: 20).
-- `DevChat.logSkip`: Skip a number of prompts before showing the prompt history (default: 0).
 - `DevChat.OpenAI.model`: Specify the AI model (default: "gpt-4").
 - `DevChat.OpenAI.temperature`: Specify the AI model temperature (default: 0.2).
 - `DevChat.OpenAI.stream`: Specify the AI model stream (default: true).

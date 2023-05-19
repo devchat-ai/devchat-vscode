@@ -1,7 +1,0 @@
-{
-	"pattern": "code_actions",
-	"description": "work for generate code",
-	"message": "",
-	"default": true,
-	"instructions": ["instruct.txt", "python.txt"]
-}

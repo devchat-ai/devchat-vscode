@@ -1,7 +1,7 @@
 {
 	"pattern": "code",
-	"description": "work for generate code",
+	"description": "write code (default)",
 	"message": "",
-	"default": false,
+	"default": true,
 	"instructions": ["instruct.txt", "python.txt"]
 }
