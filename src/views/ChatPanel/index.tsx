@@ -206,14 +206,6 @@ const chatPanel = () => {
     }, [registed]);
 
     const commandMenuIcon = (pattern: string) => {
-        if (pattern === 'code') {
-            return (<IconShellCommand size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
-        }
         if (pattern === 'commit_message') {
             return (<IconBook size={16}
                 color='var(--vscode-menu-foreground)'
@@ -222,6 +214,12 @@ const chatPanel = () => {
                     marginLeft: 12,
                 }} />);
         }
+        return (<IconShellCommand size={16}
+            color='var(--vscode-menu-foreground)'
+            style={{
+                marginTop: 8,
+                marginLeft: 12,
+            }} />);
     };
     useEffect(() => {
         let filtered = commandMenus;
