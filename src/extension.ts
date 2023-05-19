@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-
+import * as fs from 'fs';
 
 import {
 	checkOpenAiAPIKey,
@@ -18,9 +18,18 @@ import path from 'path';
 import { FilePairManager } from './util/diffFilePairs';
 
 
+function getExtensionVersion(context: vscode.ExtensionContext): string {
+    const packageJsonPath = path.join(context.extensionUri.fsPath, 'package.json');
+	const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
+	const packageJson = JSON.parse(packageJsonContent);
+
+	return packageJson.version;
+}
+
 
 function activate(context: vscode.ExtensionContext) {
 	ExtensionContextHolder.context = context;
+	const extensionVersion = getExtensionVersion(context);
 	logger.init(context);
 
 	const secretStorage: vscode.SecretStorage = context.secrets;
@@ -59,6 +68,11 @@ function activate(context: vscode.ExtensionContext) {
 	let devchatStatus = '';
 	let apiKeyStatus = '';
 	setInterval(async () => {
+		const versionOld = await secretStorage.get("devchat_version_old");
+		const versionNew = extensionVersion;
+		const versionChanged = versionOld !== versionNew;
+		secretStorage.store("devchat_version_old", versionNew!);
+
 		// status item has three status type
 		// 1. not in a folder
 		// 2. dependence is invalid
@@ -70,8 +84,11 @@ function activate(context: vscode.ExtensionContext) {
 				bOk = false;
 			}
 
-			if (!bOk && devchatStatus === 'waiting install devchat') {
+			if (!bOk) {
 				bOk = checkDevChatDependency();
+			}
+			if (bOk && versionChanged) {
+				bOk = false;
 			}
 
 			if (bOk) {
