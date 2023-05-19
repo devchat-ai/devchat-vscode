@@ -651,6 +651,7 @@ const chatPanel = () => {
                 {generating &&
                     <Center>
                         <Button
+                            size='xs'
                             leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
                             sx={{
                                 backgroundColor: 'var(--vscode-button-background)',
@@ -660,7 +661,8 @@ const chatPanel = () => {
                                     color: 'var(--vscode-button-foreground)'
                                 },
                                 label: {
-                                    color: 'var(--vscode-button-foreground)'
+                                    color: 'var(--vscode-button-foreground)',
+                                    fontSize: 'var(--vscode-editor-font-size)',
                                 }
                             }}
                             variant="white"
