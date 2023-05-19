@@ -12,11 +12,47 @@
 
 DevChat provides a Visual Studio Code extension, enabling you to interact with an AI-powered bot for coding assistance. Designed for **prompt-centric** software development, it allows you to create your own personalized dev copilot.
 
-## Features
+***
 
-- Chat with an AI-powered bot to get coding assistance
-- Add code snippets or files to the chat for context
-- Configure AI model settings
+## What is DevChat?
+
+DevChat is a powerful tool that helps you write prompts to generate code and documentation.
+It is _not_ limited to performing predefined operations on short code snippets.
+  
+DevChat is the way developers interact and collaborate with AI.
+
+:speech_balloon: Build the future with prompts, _not_ code.
+
+## Why DevChat?
+
+- To enable AI to write code, DevChat assists you in providing **the right context** for AI.
+  
+  Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
+
+- To apply AI-generated code, DevChat streamlines your **actions to take**.
+
+  View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
+  
+- To guide AI in your work, define **your own workflows** with DevChat.
+  
+  Prompt templates, iterative calls to AI, and program operations.
+
+- To suit your preferences, customize **your own experiences** with DevChat.
+  
+  Open-source, no waiting for opaque feature schedules. Access GPT-4 today and more models in the future.
+  
+## What is Prompt-Centric Software Development (PSSD)?
+
+- The traditional code-centric paradigm is evolving.
+
+- Write prompts to create code. Transform prompts into everything.
+
+- It is DevPromptOps
+  
+  <img width="500" alt="image" src="https://github.com/covespace/devchat/assets/592493/e8e1215b-53b0-4473-ab00-0665d33f204a">
+
+
+***
 
 ## Installation
 
@@ -54,10 +90,7 @@ If you have any suggestions or issues, please feel free to open an issue or subm
 
 Check out our [Automated Publishing Process](./docs/publish.md) for a detailed walkthrough of how we manage the automated release of new versions for the DevChat VSCode Extension.
 
-## License
-
-*Specify the license here*
 
 ## Contact Information
-
-*Provide your contact information, such as an email address or a link to a GitHub repository*
+  
+hello@merico.dev
