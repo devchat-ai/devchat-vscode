@@ -17,11 +17,6 @@
 
 :point_right: Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI :clap:
 
-
-
-https://github.com/covespace/devchat-vscode/assets/592493/ebcc19b5-50c8-41d7-8666-0c7b6533256c
-
-
   
 ***
 
@@ -38,19 +33,21 @@ DevChat is the way developers interact and collaborate with AI.
 
 - To enable AI to write code, DevChat assists you in providing **the right context** for AI.
   
+  ![20230519-231038-00 00 00 000-00 00 20 989](https://github.com/covespace/devchat-vscode/assets/592493/cfb96c7f-bd45-4573-810e-17148aac79d1)
+  
   Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
 
-  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/415df4aa-66d6-46e4-a30d-8bba6277028c">
- 
 - To apply AI-generated code, DevChat streamlines your **actions to take**.
 
-  View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
+  ![20230519-231038-00 00 24 989-00 00 44 688](https://github.com/covespace/devchat-vscode/assets/592493/2a0c4acf-6801-409c-bb18-ac75bae96938)
   
-  <img width="500" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/bcccbf20-0d30-46f4-b19f-5f532c1caf85">
+  View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
   
 - To guide AI in your work, define **your own workflows** with DevChat.
   
-  Prompt templates, iterative calls to AI, and program operations.
+  ![20230519-231038-00 00 45 034-00 01 00 000](https://github.com/covespace/devchat-vscode/assets/592493/5a72e43f-0ed9-446a-81be-3e5f00009961)
+  
+  More prompt templates, iterative calls to AI, and program operations.
 
 - To suit your preferences, customize **your own experiences** with DevChat.
   
@@ -74,13 +71,13 @@ DevChat is the way developers interact and collaborate with AI.
   - Install [Visual Studio Code](https://code.visualstudio.com/download).
   - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
   
-  <img width="200" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/28bff4d8-a1cf-4e07-abe8-7c0aa4fc90ee">
- 
+  &nbsp; &nbsp; <img width="220" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/c30f76fe-321a-4145-88fa-a0ef3d36bde5">
+
   - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, open a Git project.
   - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="sk-..."`.
   - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
-  <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
+  &nbsp; &nbsp; <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
 
   - We recommend dragging the DevChat logo from the left sidebar to the right sidebar to avoid overlapping with the Explorer.
 
@@ -101,4 +98,4 @@ Check out our [Automated Publishing Process](./docs/publish.md) for a detailed w
   
 hello@merico.dev
 
-We are creators of Apache DevLake and CNCF DevStream.
+We are creators of [Apache DevLake](https://devlake.apache.org/).
