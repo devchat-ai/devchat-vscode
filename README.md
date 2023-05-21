@@ -15,7 +15,7 @@
 [![GitHub license](https://img.shields.io/github/license/covespace/devchat-vscode.svg)](https://github.com/covespace/devchat-vscode/blob/main/LICENSE)
 [![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/9t3yrbBUXD)
 
-👉 Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI 👏
+👉 Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI 👏
 
   
 ***
@@ -59,11 +59,15 @@ DevChat is the way developers interact and collaborate with AI.
 
 - Write prompts to create code. Transform prompts into everything.
 
+  <img width="600" alt="image" src="https://github.com/covespace/devchat/assets/592493/dd32e900-92fd-4fa4-8489-96ed17ab5e0e">
+
+  <sub>(This image is licensed by devchat.ai under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.)</sub>
+  
 - It is DevPromptOps
   
   <img width="500" alt="image" src="https://github.com/covespace/devchat/assets/592493/e8e1215b-53b0-4473-ab00-0665d33f204a">
   
-  <sub>(This work is licensed by devchat.ai under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.)</sub>
+  <sub>(This image is licensed by devchat.ai under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.)</sub>
 
 ***
 
@@ -75,12 +79,12 @@ DevChat is the way developers interact and collaborate with AI.
   &nbsp; &nbsp; <img width="220" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/c30f76fe-321a-4145-88fa-a0ef3d36bde5">
 
   - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, open a Git project.
-  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="sk-..."`.
+  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="[sk-...]"`.
   - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
   &nbsp; &nbsp; <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
 
-  - We recommend dragging the DevChat logo from the left sidebar to the right sidebar to avoid overlapping with the Explorer.
+  - We recommend dragging the DevChat logo from the left sidebar to **the right sidebar** to avoid overlapping with the Explorer.
 
 ## Community
 
