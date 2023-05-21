@@ -32,8 +32,10 @@ workflows:
     jobs:
       - build:
           filters:
+            tags:
+              only: /.*/
             branches:
-              only: main
+              ignore: []
       - publish:
           requires:
             - build
