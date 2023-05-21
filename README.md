@@ -15,7 +15,7 @@
 [![GitHub license](https://img.shields.io/github/license/covespace/devchat-vscode.svg)](https://github.com/covespace/devchat-vscode/blob/main/LICENSE)
 [![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/9t3yrbBUXD)
 
-:point_right: Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI :clap:
+👉 Install [Visual Studio Code extension](https://github.com/covespace/devchat-vscode) on [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy the enhanced UI 👏
 
   
 ***
@@ -27,7 +27,7 @@ It is _not_ limited to performing predefined operations on short code snippets.
   
 DevChat is the way developers interact and collaborate with AI.
 
-:speech_balloon: Build the future with prompts, _not_ code.
+💬 Build the future with prompts, _not_ code.
 
 ## Why DevChat?
 
@@ -62,7 +62,8 @@ DevChat is the way developers interact and collaborate with AI.
 - It is DevPromptOps
   
   <img width="500" alt="image" src="https://github.com/covespace/devchat/assets/592493/e8e1215b-53b0-4473-ab00-0665d33f204a">
-
+  
+  <sub>(This work is licensed by devchat.ai under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.)</sub>
 
 ***
 
