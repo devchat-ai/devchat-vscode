@@ -1,13 +1,11 @@
 // devchat.ts
-
-import { spawn } from "child_process";
-import { promisify } from "util";
 import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 
 import { logger } from '../util/logger';
+import { CommandRun } from "../util/commonUtil";
 import ExtensionContextHolder from '../util/extensionContext';
 
 
@@ -47,59 +45,16 @@ export interface ChatResponse {
 	isError: boolean;
 }
 
-  
+
 class DevChat {
-	private childProcess: any;
+	private commandRun: CommandRun;
 
-	async spawnAsync(command: string, args: string[], options: any, onData: (data: string) => void): Promise<{ code: number, stdout: string; stderr: string }> {
-		return new Promise((resolve, reject) => {
-			this.childProcess = spawn(command, args, options);
-			
-			let stdout = '';
-			let stderr = '';
-
-			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
-				const dataStr = data.toString();
-				onData(dataStr);
-				stdout += dataStr;
-			});
-
-			this.childProcess.stderr.on('data', (data: string) => {
-				stderr += data;
-			});
-
-			this.childProcess.on('close', (code: number) => {
-				if (stderr) {
-					logger.channel()?.error(stderr);
-					logger.channel()?.show();
-				}
-
-				if (code === 0) {
-					resolve({ code, stdout, stderr });
-				} else {
-					reject({ code, stdout, stderr });
-				}
-			});
-
-			// Add error event listener to handle command not found exception
-			this.childProcess.on('error', (error: any) => {
-				if (error.code === 'ENOENT') {
-					logger.channel()?.error(`Command not found: ${command}`);
-					logger.channel()?.show();
-				} else {
-					logger.channel()?.error(`Error occurred: ${error.message}`);
-					logger.channel()?.show();
-				}
-				reject({ code: error.code, stdout: "", stderr: error.message });
-			});
-		});
-	};
+	constructor() {
+		this.commandRun = new CommandRun();
+	}
 
 	public stop() {
-		if (this.childProcess) {
-		  	this.childProcess.kill();
-		  	this.childProcess = null;
-		}
+		this.commandRun.stop();
 	}
 
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
@@ -124,7 +79,6 @@ class DevChat {
 		args.push(content)
 
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-		// const openaiApiKey = process.env.OPENAI_API_KEY;
 
 		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
@@ -147,9 +101,8 @@ class DevChat {
 		const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
 		const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
 		const tokensPerPrompt = vscode.workspace.getConfiguration('DevChat').get('OpenAI.tokensPerPrompt');
-		// const userHistoryPrompts = vscode.workspace.getConfiguration('DevChat').get('OpenAI.useHistoryPrompt');
 
-		let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
 		if (!devChat) {
 			devChat = 'devchat';
 		}
@@ -157,7 +110,7 @@ class DevChat {
 		if (options.parent) {
 			args.push("-p", options.parent);
 		}
-		
+
 		const devchatConfig = {
 			model: openaiModel,
 			provider: llmModel,
@@ -176,7 +129,7 @@ class DevChat {
 		try {
 			const parseOutData = (stdout: string, isPartial: boolean) => {
 				const responseLines = stdout.trim().split("\n");
-				
+
 				if (responseLines.length < 2) {
 					return {
 						"prompt-hash": "",
@@ -233,7 +186,7 @@ class DevChat {
 			};
 
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await this.spawnAsync(devChat, args, {
+			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
@@ -241,7 +194,7 @@ class DevChat {
 					OPENAI_API_KEY: openaiApiKey,
 					...openAiApiBaseObject
 				},
-			}, onStdoutPartial);
+			}, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
 				const errorMessage = stderr.trim().match(/Error：(.+)/)?.[1];
@@ -268,39 +221,21 @@ class DevChat {
 	}
 
 	async log(options: LogOptions = {}): Promise<LogEntry[]> {
-		let args = ["log"];
-
-		if (options.skip) {
-			args.push('--skip', `${options.skip}`);
-		} else {
-			// const skipLogCount = vscode.workspace.getConfiguration('DevChat').get('logSkip');
-			// args.push('--skip', `${skipLogCount}`);
-		}
-		if (options.maxCount) {
-			args.push('--max-count', `${options.maxCount}`);
-		} else {
-			const maxLogCount = vscode.workspace.getConfiguration('DevChat').get('maxLogCount');
-			args.push('--max-count', `${maxLogCount}`);
-		}
-
-		let devChat : string|undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
-		if (!devChat) {
-			devChat = 'devchat';
-		}
-
+		const args = this.buildLogArgs(options);
+		const devChat = this.getDevChatPath();
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
 		try {
 			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { code, stdout, stderr } = await this.spawnAsync(devChat, args, {
+			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
 				},
-			}, (partialResponse: string) => { });
+			}, undefined, undefined, undefined, undefined);
 
 			logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
 			if (stderr) {
@@ -309,12 +244,36 @@ class DevChat {
 				return [];
 			}
 
-            return JSON.parse(stdout.trim()).reverse();
+			return JSON.parse(stdout.trim()).reverse();
 		} catch (error) {
 			logger.channel()?.error(`Error getting log: ${error}`);
 			logger.channel()?.show();
 			return [];
 		}
+	}
+
+	private buildLogArgs(options: LogOptions): string[] {
+		let args = ["log"];
+
+		if (options.skip) {
+			args.push('--skip', `${options.skip}`);
+		}
+		if (options.maxCount) {
+			args.push('--max-count', `${options.maxCount}`);
+		} else {
+			const maxLogCount = vscode.workspace.getConfiguration('DevChat').get('maxLogCount');
+			args.push('--max-count', `${maxLogCount}`);
+		}
+
+		return args;
+	}
+
+	private getDevChatPath(): string {
+		let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		if (!devChat) {
+			devChat = 'devchat';
+		}
+		return devChat;
 	}
 }
 
