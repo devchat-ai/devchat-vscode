@@ -2,109 +2,154 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { parseArgsStringToArgv } from 'string-argv';
 
+import { logger } from './logger';
 import { spawn, exec } from 'child_process';
 
 export function createTempSubdirectory(subdir: string): string {
-  // 获取系统临时目录
-  const tempDir = os.tmpdir();
-  // 构建完整的目录路径
-  let targetDir = path.join(tempDir, subdir, Date.now().toString());
-  // 检查目录是否存在，如果存在则重新生成目录名称
-  while (fs.existsSync(targetDir)) {
-    targetDir = path.join(tempDir, subdir, Date.now().toString());
-  }
-  // 递归创建目录
-  fs.mkdirSync(targetDir, { recursive: true });
-  // 返回创建的目录的绝对路径
-  return targetDir;
+	// 获取系统临时目录
+	const tempDir = os.tmpdir();
+	// 构建完整的目录路径
+	let targetDir = path.join(tempDir, subdir, Date.now().toString());
+	// 检查目录是否存在，如果存在则重新生成目录名称
+	while (fs.existsSync(targetDir)) {
+		targetDir = path.join(tempDir, subdir, Date.now().toString());
+	}
+	// 递归创建目录
+	fs.mkdirSync(targetDir, { recursive: true });
+	// 返回创建的目录的绝对路径
+	return targetDir;
 }
 
 interface CommandResult {
-    exitCode: number | null;
-    stdout: string;
-    stderr: string;
-  }
-  
-  export async function runCommandAndWriteOutput(
-    command: string,
-    args: string[],
-    outputFile: string
-  ): Promise<CommandResult> {
-    return new Promise((resolve) => {
-        // 获取当前工作区目录
-        const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
-    
-      // 使用spawn执行命令
-      const childProcess = spawn(command, args, { cwd: workspaceDir });
-  
-      let stdout = '';
-      let stderr = '';
-  
-      // 监听stdout数据
-      childProcess.stdout.on('data', (data) => {
-        stdout += data.toString();
-      });
-  
-      // 监听stderr数据
-      childProcess.stderr.on('data', (data) => {
-        stderr += data.toString();
-      });
-  
-      // 监听进程退出事件
-      childProcess.on('exit', (exitCode) => {
-        // 将命令输出结果写入到文件
-		if (outputFile !== '') {
-	        fs.writeFileSync(outputFile, stdout);
-		}
-  
-        // 返回结果
-        resolve({
-          exitCode,
-          stdout,
-          stderr,
-        });
-      });
-    });
-  }
+	exitCode: number | null;
+	stdout: string;
+	stderr: string;
+}
 
-  export async function runCommandStringAndWriteOutput(
+export class CommandRun {
+	private childProcess: any;
+
+	// init childProcess in construction function
+	constructor() {
+		this.childProcess = null;
+	}
+
+	public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
+		return new Promise((resolve, reject) => {
+			this.childProcess = spawn(command, args, options);
+
+			let stdout = '';
+			let stderr = '';
+
+			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
+				const dataStr = data.toString();
+				if (onData) {
+					onData(dataStr);
+				}
+				stdout += dataStr;
+			});
+
+			this.childProcess.stderr.on('data', (data: string) => {
+				const dataStr = data.toString();
+				if (onError) {
+					onError(dataStr);
+				}
+				stderr += dataStr;
+			});
+
+			this.childProcess.on('close', (code: number) => {
+				let outputData = stdout;
+				if (onOutputFile) {
+					outputData = onOutputFile(command + " " + args.join(" "), stdout, stderr);
+				}
+
+				if (outputFile) {
+					fs.writeFileSync(outputFile, outputData);
+				}
+
+				if (stderr) {
+					logger.channel()?.error(stderr);
+					logger.channel()?.show();
+				}
+
+				if (code === 0) {
+					resolve({ exitCode: code, stdout, stderr });
+				} else {
+					reject({ exitCode: code, stdout, stderr });
+				}
+			});
+
+			// Add error event listener to handle command not found exception
+			this.childProcess.on('error', (error: any) => {
+				if (error.code === 'ENOENT') {
+					logger.channel()?.error(`Command not found: ${command}`);
+					logger.channel()?.show();
+				} else {
+					logger.channel()?.error(`Error occurred: ${error.message}`);
+					logger.channel()?.show();
+				}
+				reject({ exitCode: error.code, stdout: "", stderr: error.message });
+			});
+		});
+	};
+
+	public stop() {
+		if (this.childProcess) {
+			this.childProcess.kill();
+			this.childProcess = null;
+		}
+	}
+}
+
+export async function runCommandAndWriteOutput(
+	command: string,
+	args: string[],
+	outputFile: string
+): Promise<CommandResult> {
+	const run = new CommandRun();
+	const options = {
+		cwd: vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.',
+	};
+
+	return run.spawnAsync(command, args, options, undefined, undefined, undefined, outputFile);
+}
+
+export async function runCommandStringAndWriteOutput(
     commandString: string,
     outputFile: string
-  ): Promise<CommandResult> {
-    return new Promise((resolve) => {
-        const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
-    
-      // 使用exec执行命令行字符串
-      const childProcess = exec(commandString, { cwd: workspaceDir }, (error, stdout, stderr) => {
-        // 将命令输出结果写入到文件
-		const data = {
-			command: commandString,
-			content: stdout
-		};
-		const jsonData = JSON.stringify(data);
+): Promise<CommandResult> {
+    const run = new CommandRun();
+    const options = {
+        cwd: vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.'
+    };
 
-        fs.writeFileSync(outputFile, jsonData);
-  
-        // 返回结果
-        resolve({
-          exitCode: error && error.code? error.code : 0,
-          stdout,
-          stderr,
-        });
-      });
-    });
-  }
+    // Split the commandString into command and args array using string-argv
+    const commandParts = parseArgsStringToArgv(commandString);
+    const command = commandParts[0];
+    const args = commandParts.slice(1);
 
-  export async function getLanguageIdByFileName(fileName: string): Promise<string | undefined> {
-    try {
-      // 打开指定的文件
-      const document = await vscode.workspace.openTextDocument(fileName);
-      // 获取文件的语言标识符
-      const languageId = document.languageId;
-      return languageId;
-    } catch (error) {
-      // 如果无法打开文件或发生其他错误，返回undefined
-      return undefined;
-    }
-  }
+    const onOutputFile = (command: string, stdout: string, stderr: string): string => {
+        const data = {
+            command: commandString,
+            content: stdout,
+        };
+        return JSON.stringify(data);
+    };
+
+    return run.spawnAsync(command, args, options, undefined, undefined, onOutputFile, outputFile);
+}
+
+export async function getLanguageIdByFileName(fileName: string): Promise<string | undefined> {
+	try {
+		// 打开指定的文件
+		const document = await vscode.workspace.openTextDocument(fileName);
+		// 获取文件的语言标识符
+		const languageId = document.languageId;
+		return languageId;
+	} catch (error) {
+		// 如果无法打开文件或发生其他错误，返回undefined
+		return undefined;
+	}
+}
