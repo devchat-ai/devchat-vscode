@@ -6,7 +6,7 @@ import { doCommit } from './doCommit';
 import { historyMessages } from './historyMessages';
 import { regCommandList } from './regCommandList';
 import { regContextList } from './regContextList';
-import { sendMessage, stopDevChat } from './sendMessage';
+import { sendMessage, stopDevChat, regeneration } from './sendMessage';
 import { blockApply } from './showDiff';
 import { showDiff } from './showDiff';
 import { addConext } from './addContext';
@@ -64,4 +64,6 @@ messageHandler.registerHandler('addRefCommandContext', addRefCommandContext);
 messageHandler.registerHandler('contextDetail', contextDetail);
 // Debug handler
 messageHandler.registerHandler('listAllMessages', listAllMessages);
-
+// regeneration
+// 应答与sendMessage相同
+messageHandler.registerHandler('regeneration', regeneration);
