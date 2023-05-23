@@ -7,7 +7,7 @@ import { createStyles, keyframes } from '@mantine/core';
 import { ActionIcon } from '@mantine/core';
 import { Button, Text } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerStop, IconReplace, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUserCircle, IconX } from '@tabler/icons-react';
+import { IconBulb, IconCheck, IconColumnInsertRight, IconCopy, IconFileDiff, IconGitCommit, IconMessagePlus, IconPlayerPlay, IconPlayerStop, IconReplace, IconRotateDot, IconSend, IconSquareRoundedPlus, IconTerminal2, IconUserCircle, IconX } from '@tabler/icons-react';
 import ReactMarkdown from 'react-markdown';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import okaidia from 'react-syntax-highlighter/dist/esm/styles/prism/okaidia';
@@ -40,6 +40,7 @@ const chatPanel = () => {
     const [registed, setRegisted] = useState(false);
     const [input, setInput] = useState('');
     const [menuOpend, setMenuOpend] = useState(false);
+    const [hasError, setHasError] = useState(false);
     const [menuType, setMenuType] = useState(''); // contexts or commands
     const { height, width } = useViewportSize();
     const [inputRef, inputRect] = useResizeObserver();
@@ -154,10 +155,13 @@ const chatPanel = () => {
             setCurrentMessage(message.text);
             setResponsed(true);
         });
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; }) => {
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
             setCurrentMessage(message.text);
             setGenerating(false);
             setResponsed(true);
+            if (message.isError) {
+                setHasError(true);
+            }
         });
         messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
             commandMenusHandlers.append(...message.result);
@@ -673,6 +677,38 @@ const chatPanel = () => {
                                 setGenerating(false);
                             }}>
                             Stop generating
+                        </Button>
+                    </Center>
+                }
+                {hasError &&
+                    <Center>
+                        <Button
+                            size='xs'
+                            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
+                            sx={{
+                                backgroundColor: 'var(--vscode-button-background)',
+                            }}
+                            styles={{
+                                icon: {
+                                    color: 'var(--vscode-button-foreground)'
+                                },
+                                label: {
+                                    color: 'var(--vscode-button-foreground)',
+                                    fontSize: 'var(--vscode-editor-font-size)',
+                                }
+                            }}
+                            variant="white"
+                            onClick={() => {
+                                messageUtil.sendMessage({
+                                    command: 'regeneration'
+                                });
+                                messageHandlers.pop();
+                                setHasError(false);
+                                setGenerating(true);
+                                setResponsed(false);
+                                setCurrentMessage('');
+                            }}>
+                            Regeneration
                         </Button>
                     </Center>
                 }
