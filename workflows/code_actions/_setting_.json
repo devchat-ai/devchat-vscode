@@ -1,0 +1,8 @@
+{
+	"pattern": "modify_actions",
+	"description": "generate modify action list",
+	"message": "output modify action list.",
+	"default": false,
+	"show": false,
+	"instructions": ["instruct.txt"]
+}
