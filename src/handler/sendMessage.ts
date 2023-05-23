@@ -122,7 +122,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	if (userStop) {
 		userStop = false;
-		if (responseText.indexOf('Exit code: null') >= 0) {
+		if (responseText.indexOf('Exit code: undefined') >= 0) {
 			return;
 		}
 	}
