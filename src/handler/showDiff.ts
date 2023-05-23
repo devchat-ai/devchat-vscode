@@ -71,7 +71,12 @@ async function getNewCode(message: any) : Promise<string | undefined> {
 
 	let newCode = message.content;
 	if (isValidActionString(message.content)) {
-		newCode = applyCodeChanges(codeTextObj.text, message.content);
+		if (codeTextObj.select) {
+			const diffResult = applyCodeChanges(codeTextObj.select, message.content);
+			newCode = codeTextObj.beforSelect + diffResult + codeTextObj.afterSelect;
+		} else {
+			newCode = applyCodeChanges(codeTextObj.text, message.content);
+		}
 	} else {
 		// if select some text, then reconstruct the code
 		if (codeTextObj.select) {

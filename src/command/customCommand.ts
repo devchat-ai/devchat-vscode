@@ -8,6 +8,7 @@ interface Command {
   description: string;
   message: string;
   default: boolean;
+  show: boolean;
   instructions: string[];
 }
 
@@ -43,6 +44,7 @@ class CustomCommands {
 			description: settings.description,
 			message: settings.message,
 			default: settings.default,
+			show: settings.show === undefined ? "true": settings.show,
 			instructions: settings.instructions
 			};
 			this.commands.push(command);

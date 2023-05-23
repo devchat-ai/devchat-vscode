@@ -29,7 +29,7 @@ export interface Command {
       this.commands.push(command);
     }
   
-    getCommandList(): Command[] {
+    getCommandList(includeHide: boolean = false): Command[] {
 		// load commands from CustomCommands
 		let newCommands: Command[] = [...this.commands];
 		const customCommands = CustomCommands.getInstance();
@@ -43,7 +43,9 @@ export interface Command {
 					return CustomCommands.getInstance().handleCommand(commandName);
 				}
 			};
-			newCommands.push(commandObj);
+			if (command.show || includeHide) {
+				newCommands.push(commandObj);
+			}
 		});
       return newCommands;
     }
@@ -75,7 +77,7 @@ export interface Command {
       
         // 处理所有命令
         let result = text;
-        for (const commandObj of this.getCommandList()) {
+        for (const commandObj of this.getCommandList(true)) {
           result = await processCommand(commandObj, result);
         }
       
