@@ -57,7 +57,7 @@ class DevChat {
 		this.commandRun.stop();
 	}
 
-	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
+	async buildArgs(options: ChatOptions): Promise<string[]> {
 		let args = ["prompt"];
 
 		if (options.reference) {
@@ -76,10 +76,14 @@ class DevChat {
 			}
 		}
 
-		args.push(content)
+		if (options.parent) {
+			args.push("-p", options.parent);
+		}
 
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		return args;
+	}
 
+	async getOpenAiApiKey(): Promise<string | undefined> {
 		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 		if (!openaiApiKey) {
@@ -88,10 +92,70 @@ class DevChat {
 		if (!openaiApiKey) {
 			openaiApiKey = process.env.OPENAI_API_KEY;
 		}
+		return openaiApiKey;
+	}
+
+	private parseOutData(stdout: string, isPartial: boolean): ChatResponse {
+		const responseLines = stdout.trim().split("\n");
+
+		if (responseLines.length < 2) {
+			return {
+				"prompt-hash": "",
+				user: "",
+				date: "",
+				response: "",
+				isError: isPartial ? false : true,
+			};
+		}
+
+		const userLine = responseLines.shift()!;
+		const user = (userLine.match(/User: (.+)/)?.[1]) ?? "";
+
+		const dateLine = responseLines.shift()!;
+		const date = (dateLine.match(/Date: (.+)/)?.[1]) ?? "";
+
+
+		let promptHashLine = "";
+		for (let i = responseLines.length - 1; i >= 0; i--) {
+			if (responseLines[i].startsWith("prompt")) {
+				promptHashLine = responseLines[i];
+				responseLines.splice(i, 1);
+				break;
+			}
+		}
+
+		if (!promptHashLine) {
+			return {
+				"prompt-hash": "",
+				user: user,
+				date: date,
+				response: responseLines.join("\n"),
+				isError: isPartial ? false : true,
+			};
+		}
+
+		const promptHash = promptHashLine.split(" ")[1];
+		const response = responseLines.join("\n");
+
+		return {
+			"prompt-hash": promptHash,
+			user,
+			date,
+			response,
+			isError: false,
+		};
+	}
+	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
+		const args = await this.buildArgs(options);
+		args.push(content);
+
+		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		let openaiApiKey = await this.getOpenAiApiKey();
 		if (!openaiApiKey) {
 			logger.channel()?.error('openAI key is invalid!');
 			logger.channel()?.show();
 		}
+
 
 		const openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('OpenAI.EndPoint');
 		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
@@ -105,10 +169,6 @@ class DevChat {
 		let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
 		if (!devChat) {
 			devChat = 'devchat';
-		}
-
-		if (options.parent) {
-			args.push("-p", options.parent);
 		}
 
 		const devchatConfig = {
@@ -127,61 +187,11 @@ class DevChat {
 		fs.writeFileSync(configPath, configJson);
 
 		try {
-			const parseOutData = (stdout: string, isPartial: boolean) => {
-				const responseLines = stdout.trim().split("\n");
-
-				if (responseLines.length < 2) {
-					return {
-						"prompt-hash": "",
-						user: "",
-						date: "",
-						response: "",
-						isError: isPartial ? false : true,
-					};
-				}
-
-				const userLine = responseLines.shift()!;
-				const user = (userLine.match(/User: (.+)/)?.[1]) ?? "";
-
-				const dateLine = responseLines.shift()!;
-				const date = (dateLine.match(/Date: (.+)/)?.[1]) ?? "";
-
-
-				let promptHashLine = "";
-				for (let i = responseLines.length - 1; i >= 0; i--) {
-					if (responseLines[i].startsWith("prompt")) {
-						promptHashLine = responseLines[i];
-						responseLines.splice(i, 1);
-						break;
-					}
-				}
-
-				if (!promptHashLine) {
-					return {
-						"prompt-hash": "",
-						user: user,
-						date: date,
-						response: responseLines.join("\n"),
-						isError: isPartial ? false : true,
-					};
-				}
-
-				const promptHash = promptHashLine.split(" ")[1];
-				const response = responseLines.join("\n");
-
-				return {
-					"prompt-hash": promptHash,
-					user,
-					date,
-					response,
-					isError: false,
-				};
-			};
 
 			let receviedStdout = "";
 			const onStdoutPartial = (stdout: string) => {
 				receviedStdout += stdout;
-				const data = parseOutData(receviedStdout, true);
+				const data = this.parseOutData(receviedStdout, true);
 				onData(data);
 			};
 
@@ -207,7 +217,7 @@ class DevChat {
 				};
 			}
 
-			const response = parseOutData(stdout, false);
+			const response = this.parseOutData(stdout, false);
 			return response;
 		} catch (error: any) {
 			return {
@@ -226,30 +236,25 @@ class DevChat {
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
-		try {
-			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, {
-				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-				cwd: workspaceDir,
-				env: {
-					...process.env,
-					OPENAI_API_KEY: openaiApiKey,
-				},
-			}, undefined, undefined, undefined, undefined);
+		logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env,
+				OPENAI_API_KEY: openaiApiKey,
+			},
+		};
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
 
-			logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
-			if (stderr) {
-				logger.channel()?.error(`Error getting log: ${stderr}`);
-				logger.channel()?.show();
-				return [];
-			}
-
-			return JSON.parse(stdout.trim()).reverse();
-		} catch (error) {
-			logger.channel()?.error(`Error getting log: ${error}`);
+		logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error getting log: ${stderr}`);
 			logger.channel()?.show();
 			return [];
 		}
+
+		return JSON.parse(stdout.trim()).reverse();
 	}
 
 	private buildLogArgs(options: LogOptions): string[] {
