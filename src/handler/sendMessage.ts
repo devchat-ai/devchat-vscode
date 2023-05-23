@@ -10,6 +10,7 @@ import messageHistory from '../util/messageHistory';
 import CustomCommands from '../command/customCommand';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 
+let _lastMessage: any = undefined;
 
 
 // Add this function to messageHandler.ts
@@ -77,6 +78,8 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
 export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	_lastMessage = message;
+
 	const newText2 = await CommandManager.getInstance().processText(message.text);
 	const parsedMessage = parseMessage(newText2);
 	const chatOptions: any = {};
@@ -122,13 +125,22 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	if (userStop) {
 		userStop = false;
-		if (responseText.indexOf('Exit code: null') >= 0) {
+		if (responseText.indexOf('Exit code: undefined') >= 0) {
 			return;
 		}
 	}
 
 	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: responseText, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });
 	return;
+}
+
+// regeneration last message again
+regInMessage({command: 'regeneration'});
+export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	// call sendMessage to send last message again
+	if (_lastMessage) {
+		sendMessage(_lastMessage, panel);
+	}
 }
 
 regInMessage({command: 'stopDevChat'});
