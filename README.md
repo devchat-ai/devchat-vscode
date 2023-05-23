@@ -57,11 +57,11 @@ DevChat is the way developers interact and collaborate with AI.
   
   Open-source, no waiting for opaque feature schedules. Access GPT-4 today and more models in the future.
   
-## What is Prompt-Centric Software Development (PSSD)?
+## What is Prompt-Centric Software Development (PCSD)?
 
 - The traditional code-centric paradigm is evolving.
 
-- Write prompts to create code. Transform prompts into all artifacts in software engineering.
+- Write prompts to create code. Transform prompts into all the artifacts in software engineering.
 
   <img width="600" alt="image" src="https://github.com/covespace/devchat/assets/592493/dd32e900-92fd-4fa4-8489-96ed17ab5e0e">
 
