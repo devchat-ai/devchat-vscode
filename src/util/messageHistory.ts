@@ -1,38 +1,33 @@
 import * as vscode from 'vscode';
 
 class MessageHistory {
-	private history: WeakMap<vscode.WebviewPanel|vscode.WebviewView, any[]>;
-	private lastmessage: WeakMap<vscode.WebviewPanel|vscode.WebviewView, any>;
+	private history: any[];
+	private lastmessage: any | null;
 
 	constructor() {
-		this.history = new WeakMap();
-		this.lastmessage = new WeakMap();
+		this.history = [];
+		this.lastmessage = null;
 	}
 
-	add(panel: vscode.WebviewPanel|vscode.WebviewView, message: any) {
-		if (!this.history.has(panel)) {
-			this.history.set(panel, []);
-		}
-		this.history.get(panel)!.push(message);
-		this.lastmessage.set(panel, message);
+	add(message: any) {
+		this.history.push(message);
+		this.lastmessage = message;
 	}
 
-	find(panel: vscode.WebviewPanel|vscode.WebviewView, hash: string) {
-		if (!this.history.has(panel)) {
-			return null;
-		}
-		return this.history.get(panel)!.find(message => message.hash === hash);
+	find(hash: string) {
+		return this.history.find(message => message.hash === hash);
 	}
-	findLast(panel: vscode.WebviewPanel|vscode.WebviewView) {
-		if (!this.history.has(panel)) {
-			return null;
-		}
-		return this.lastmessage.get(panel);
+	findLast() {
+		return this.lastmessage;
 	}
 
-	remove(panel: vscode.WebviewPanel|vscode.WebviewView) {
-		this.history.delete(panel);
-		this.lastmessage.delete(panel);
+	remove() {
+		return;
+	}
+
+	clear() {
+		this.history = [];
+		this.lastmessage = null;
 	}
 }
 

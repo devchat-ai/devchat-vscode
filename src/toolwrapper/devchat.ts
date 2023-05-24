@@ -27,6 +27,7 @@ export interface LogOptions {
 
 export interface LogEntry {
 	hash: string;
+	parent: string;
 	user: string;
 	date: string;
 	request: string;

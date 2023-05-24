@@ -24,6 +24,11 @@ export default class WebviewManager {
 		this._webview.html = this._getHtmlContent();
 	}
 
+	public reloadWebviewContent() {
+		this._webview.html = '';
+		this.setWebviewContent();
+	}
+
 	private _getHtmlContent(): string {
 		let mainHtml = 'welcome.html';
 		// if open a folder, then load index.html

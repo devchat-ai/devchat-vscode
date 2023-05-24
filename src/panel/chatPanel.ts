@@ -6,7 +6,6 @@ import '../handler/loadHandlers';
 import handleMessage from '../handler/messageHandler';
 import WebviewManager from './webviewManager';
 
-import messageHistory from '../util/messageHistory';
 import CustomCommands from '../command/customCommand';
 import CommandManager from '../command/commandManager';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
@@ -31,9 +30,6 @@ export default class ChatPanel {
 			ChatPanel._instance._panel.reveal();
 		} else {
 			const panel = ChatPanel.createWebviewPanel(extensionUri);
-			panel.onDidDispose(() => {
-				messageHistory.remove(panel);
-			});
 			ChatPanel._instance = new ChatPanel(panel, extensionUri);
 		}
 	}

@@ -7,6 +7,7 @@ import handleMessage from '../handler/messageHandler';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
 import ExtensionContextHolder from '../util/extensionContext';
 import CustomCommands from '../command/customCommand';
+import { TopicManager } from '../topic/topicManager';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -39,7 +40,14 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		this.registerEventListeners();
 	}
 
+	public reloadWebview(): void {
+		if (this._webviewManager) {
+			this._webviewManager.reloadWebviewContent();
+		}
+	}
+	
 	private registerEventListeners() {
+
 		// this._view?.onDidDispose(() => this.dispose(), null, this._disposables);
 
 		this._view?.webview.onDidReceiveMessage(
@@ -49,6 +57,8 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			null,
 			this._context.subscriptions
 		);
+
+		TopicManager.getInstance().addOnCurrentTopicIdChangeListener((topicId) => {this.reloadWebview();});
 	}
 
 	private onDidChangeWorkspaceFolders(event: vscode.WorkspaceFoldersChangeEvent): void {

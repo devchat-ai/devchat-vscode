@@ -5,8 +5,10 @@ import messageHistory from '../util/messageHistory';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { checkOpenAiAPIKey } from '../contributes/commands';
 import ExtensionContextHolder from '../util/extensionContext';
+import { TopicManager } from '../topic/topicManager';
 
-let isApiSetted: boolean = false;
+
+let isApiSetted: boolean | undefined = undefined;
 
 interface LoadHistoryMessages {
 	command: string;
@@ -17,6 +19,7 @@ function welcomeMessage(): LogEntry {
 	// create default logEntry to show welcome message
 	return {
 		hash: 'message',
+		parent: '',
 		user: 'system',
 		date: '',
 		request: 'How do I use DevChat?',
@@ -33,6 +36,7 @@ function apiKeyMissedMessage(): LogEntry {
 	// create default logEntry to show welcome message
 	return {
 		hash: 'message',
+		parent: '',
 		user: 'system',
 		date: '',
 		request: 'Is OPENAI_API_KEY ready?',
@@ -47,14 +51,14 @@ It seems the OPENAI_API_KEY is missing from your environment or settings. Kindly
 regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
 export async function historyMessages(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	const devChat = new DevChat();
+	const topicId = TopicManager.getInstance().currentTopicId;
+	let logEntriesFlat: Array<LogEntry> = [];
+	if (topicId) {
+		logEntriesFlat = await TopicManager.getInstance().getTopicHistory(topicId);
+	}
+	messageHistory.clear();
 
-	const logOptions: LogOptions = message.options || {};
-	const logEntries = await devChat.log(logOptions);
-	
-	const logEntriesFlat = logEntries.flat();
-	// TODO handle context
-    
+	// TODO handle context    
 	const logEntriesFlatFiltered = logEntriesFlat.map((entry) => {
         return {
 			date: entry.date,
@@ -79,7 +83,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 		if (i > 0) {
 			entryNew.parentHash = logEntriesFlat[i - 1].hash;
 		}
-		messageHistory.add(panel, entryNew);
+		messageHistory.add(entryNew);
 	}
 
 	const isApiKeyReady = await checkOpenAiAPIKey();
@@ -97,7 +101,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 
 	const loadHistoryMessages: LoadHistoryMessages = {
 		command: 'loadHistoryMessages',
-		entries: logEntries.length>0? logEntriesFlat : [welcomeMessage()],
+		entries: logEntriesFlat.length>0? logEntriesFlat : [welcomeMessage()],
 	};
 
 	MessageHandler.sendMessage(panel, loadHistoryMessages);
@@ -107,13 +111,16 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 
 export function isValidApiKey(apiKey: string) {
 	let apiKeyStrim = apiKey.trim();
-	if (apiKeyStrim.indexOf('sk-') !== 0) {
+	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('dc-') !== 0) {
 		return false;
 	}
 	return true;
 }
 
-export function isWaitForApiKey() {
+export async function isWaitForApiKey() {
+	if (isApiSetted === undefined) {
+		isApiSetted = await checkOpenAiAPIKey();
+	}
 	return !isApiSetted;
 }
 
