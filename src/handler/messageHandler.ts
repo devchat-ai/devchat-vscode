@@ -33,7 +33,7 @@ export class MessageHandler {
 			}
 		}
 		if (message.command === 'sendMessage') {
-			if (isWaitForApiKey()) {
+			if (await isWaitForApiKey()) {
 				onApiKey(message.text, panel);
 				return;
 			}

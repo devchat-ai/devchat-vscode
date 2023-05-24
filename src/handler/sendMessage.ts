@@ -9,6 +9,7 @@ import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import CustomCommands from '../command/customCommand';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
+import { TopicManager } from '../topic/topicManager';
 
 let _lastMessage: any = undefined;
 
@@ -87,10 +88,10 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 	let parentHash = undefined;
 	logger.channel()?.info(`request message hash: ${message.hash}`);
 	if (message.hash) {
-		const hmessage = messageHistory.find(panel, message.hash);
+		const hmessage = messageHistory.find(message.hash);
 		parentHash = hmessage ? message.parentHash : undefined;
 	} else {
-		const hmessage = messageHistory.findLast(panel);
+		const hmessage = messageHistory.findLast();
 		parentHash = hmessage ? hmessage.hash : undefined;
 	}
 	if (parentHash) {
@@ -119,7 +120,16 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
 	
 	if (!chatResponse.isError) {
-		messageHistory.add(panel, {request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+		messageHistory.add({request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+		
+		let topicId = TopicManager.getInstance().currentTopicId;
+		if (!topicId) {
+			// create new topic
+			const topic = TopicManager.getInstance().createTopic();
+			topicId = topic.topicId;
+		}
+
+		TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], Number(chatResponse.date), message.text, chatResponse.response);
 	}
 
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
