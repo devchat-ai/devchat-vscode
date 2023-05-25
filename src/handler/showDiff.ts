@@ -1,5 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as util from 'util';
+
 import { createTempSubdirectory } from '../util/commonUtil';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { applyCodeChanges, isValidActionString } from '../util/appyDiff';
@@ -12,14 +15,14 @@ async function getDocumentText(): Promise<{ text: string; beforSelect: string; s
 	const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
 
 	if (validVisibleTextEditors.length > 1) {
-        vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
-        return undefined;
-    }
+		vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
+		return undefined;
+	}
 
-    const editor = validVisibleTextEditors[0];
-    if (!editor) {
-      return undefined;
-    }
+	const editor = validVisibleTextEditors[0];
+	if (!editor) {
+		return undefined;
+	}
 
 	// get whole text in editor
 	const text = editor.document.getText();
@@ -33,37 +36,67 @@ async function getDocumentText(): Promise<{ text: string; beforSelect: string; s
 	return { text, beforSelect: textBeforeSelection, select: selectedText, afterSelect: textAfterSelection };
 }
 
-export  async function diffView(code: string) {
-    const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+export async function diffView(code: string, tarFile: string) {
+	let curFile = '';
+	if (!tarFile) {
+		const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
 
-	if (validVisibleTextEditors.length > 1) {
-        vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
-        return;
-    }
+		if (validVisibleTextEditors.length > 1) {
+			vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
+			return;
+		}
 
-    const editor = validVisibleTextEditors[0];
-    if (!editor) {
-      return;
-    }
+		const editor = validVisibleTextEditors[0];
+		if (!editor) {
+			return;
+		}
 
-	const curFile = editor.document.fileName;
+		curFile = editor.document.fileName;
+	} else {
+		curFile = tarFile;
+	}
+	
 	// get file name from fileSelected
-    const fileName = path.basename(curFile);
+	const fileName = path.basename(curFile);
 
 	// create temp directory and file
-    const tempDir = await createTempSubdirectory('devchat/context');
-    const tempFile = path.join(tempDir, fileName);
+	const tempDir = await createTempSubdirectory('devchat/context');
+	const tempFile = path.join(tempDir, fileName);
 
-    // save code to temp file
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(code));
+	// save code to temp file
+	await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(code));
 
-    // open diff view
+	// open diff view
 	FilePairManager.getInstance().addFilePair(curFile, tempFile);
-    vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
+	vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
 }
 
-async function getNewCode(message: any) : Promise<string | undefined> {
-	const codeTextObj = await getDocumentText();
+async function getFileContent(fileName: string): Promise<string | undefined> {
+	const readFile = util.promisify(fs.readFile);
+	try {
+		// Read file content from fileName
+		const fileContent = await readFile(fileName, 'utf-8');
+		// Return the whole text in the file with name fileName
+		return fileContent;
+	} catch (error) {
+		logger.channel()!.error(`Error reading file ${fileName}:`, error);
+		return undefined;
+	}
+}
+
+async function getNewCode(message: any): Promise<string | undefined> {
+	let codeTextObj: { text: string; beforSelect: string; select: string; afterSelect: string; } | undefined = undefined;
+	if (message.fileName) {
+		const fileContent = await getFileContent(message.fileName);
+		if (!fileContent) {
+			logger.channel()!.error(`read file ${message.fileName} failed`);
+			return undefined;
+		}
+
+		codeTextObj = { text: fileContent!, beforSelect: fileContent, select: '', afterSelect: '' };
+	} else {
+		codeTextObj = await getDocumentText();
+	}
 	if (!codeTextObj) {
 		logger.channel()!.error('getDocumentText failed');
 		return undefined;
@@ -87,25 +120,25 @@ async function getNewCode(message: any) : Promise<string | undefined> {
 	return newCode;
 }
 
-regInMessage({command: 'show_diff', content: ''});
-export async function showDiff(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	const newCode = await getNewCode(message);	
+regInMessage({ command: 'show_diff', content: '', fileName: '' });
+export async function showDiff(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+	const newCode = await getNewCode(message);
 	if (!newCode) {
 		return;
 	}
 
-	diffView(newCode);
+	diffView(newCode, message.fileName);
 	return;
 }
 
-regInMessage({command: 'block_apply', content: ''});
-export async function blockApply(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	const newCode = await getNewCode(message);	
+regInMessage({ command: 'block_apply', content: '', fileName: '' });
+export async function blockApply(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+	const newCode = await getNewCode(message);
 	if (!newCode) {
 		return;
 	}
 
-	diffView(newCode);
+	diffView(newCode, message.fileName);
 	return;
 }
 
