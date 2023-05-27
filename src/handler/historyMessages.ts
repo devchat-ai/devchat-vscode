@@ -41,7 +41,7 @@ function apiKeyMissedMessage(): LogEntry {
 		date: '',
 		request: 'Is OPENAI_API_KEY ready?',
 		response: `
-It seems the OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI API key, and I'll ensure DevChat is all set for you.
+OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI or DevChat key, and I'll ensure DevChat is all set for you.
 		`,
 		context: []
 	} as LogEntry;
@@ -111,7 +111,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 
 export function isValidApiKey(apiKey: string) {
 	let apiKeyStrim = apiKey.trim();
-	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('dc-') !== 0) {
+	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('DC.') !== 0) {
 		return false;
 	}
 	return true;
@@ -126,7 +126,7 @@ export async function isWaitForApiKey() {
 
 export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	if (!isValidApiKey(apiKey)) {
-		MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'It is not a valid OPENAI_API_KEY, you should input the key like this: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, please set the key again?', hash: '', user: 'system', date: '', isError: false });
+		MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'Your API key is invalid. We support OpenAI and DevChat keys. Please reset the key.', hash: '', user: 'system', date: '', isError: false });
 		return;
 	}
 
@@ -136,6 +136,6 @@ export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode
 	secretStorage.store("devchat_OPENAI_API_KEY", apiKey);
 
 	const welcomeMessageText =  welcomeMessage().response;
-	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `OPENAI_API_KEY is setted, you can use DevChat now.\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false });
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false });
 }
 
