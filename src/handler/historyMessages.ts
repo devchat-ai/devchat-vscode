@@ -8,7 +8,7 @@ import ExtensionContextHolder from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 
 
-let isApiSetted: boolean | undefined = undefined;
+let isApiSet: boolean | undefined = undefined;
 
 interface LoadHistoryMessages {
 	command: string;
@@ -87,10 +87,10 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 	}
 
 	const isApiKeyReady = await checkOpenAiAPIKey();
-	isApiSetted = true;
+	isApiSet = true;
 	if (!isApiKeyReady) {
 		const startMessage = [ apiKeyMissedMessage() ];
-		isApiSetted = false;
+		isApiSet = false;
 
 		MessageHandler.sendMessage(panel, {
 			command: 'loadHistoryMessages',
@@ -118,10 +118,10 @@ export function isValidApiKey(apiKey: string) {
 }
 
 export async function isWaitForApiKey() {
-	if (isApiSetted === undefined) {
-		isApiSetted = await checkOpenAiAPIKey();
+	if (isApiSet === undefined) {
+		isApiSet = await checkOpenAiAPIKey();
 	}
-	return !isApiSetted;
+	return !isApiSet;
 }
 
 export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
@@ -130,7 +130,7 @@ export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode
 		return;
 	}
 
-	isApiSetted = true;
+	isApiSet = true;
 
 	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context?.secrets!;
 	secretStorage.store("devchat_OPENAI_API_KEY", apiKey);
