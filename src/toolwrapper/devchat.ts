@@ -154,8 +154,8 @@ class DevChat {
 			openAiApiBase = "";
 		}
 
-		if (vscode.workspace.getConfiguration('DevChat').get('API_BASE')) {
-			openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('API_BASE');
+		if (vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT')) {
+			openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT');
 		}
 
 		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};

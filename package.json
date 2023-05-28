@@ -72,13 +72,13 @@
 				"DevChat.API_KEY": {
 					"type": "string",
 					"default": "",
-					"description": "API key for llm model.",
+					"description": "API key for accessing the LLM model",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
-				"DevChat.API_BASE": {
+				"DevChat.API_ENDPOINT": {
 					"type": "string",
 					"default": "",
-					"description": "End point url setting",
+					"description": "API endpoint URL",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.DevChatPath": {
