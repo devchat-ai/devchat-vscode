@@ -177,7 +177,7 @@ function activate(context: vscode.ExtensionContext) {
 		const versionOld = await secretStorage.get("devchat_version_old");
 		const versionNew = extensionVersion;
 		const versionChanged = versionOld !== versionNew;
-		secretStorage.store("devchat_version_old", versionNew!);
+		await secretStorage.store("devchat_version_old", versionNew!);
 
 		// status item has three status type
 		// 1. not in a folder
@@ -217,7 +217,7 @@ function activate(context: vscode.ExtensionContext) {
 		if (devchatStatus !== 'ready') {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `${devchatStatus}`;
-			statusBarItem.command = '';
+			statusBarItem.command = undefined;
 			// set statusBarItem warning color
 			return;
 		}
