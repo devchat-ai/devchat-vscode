@@ -7,6 +7,7 @@ import '../context/loadContexts';
 import { logger } from '../util/logger';
 import { on } from 'events';
 import { isWaitForApiKey, onApiKey } from './historyMessages';
+import { checkOpenaiApiKey } from '../contributes/commands';
 
 
 export class MessageHandler {
@@ -33,7 +34,7 @@ export class MessageHandler {
 			}
 		}
 		if (message.command === 'sendMessage') {
-			if (await isWaitForApiKey()) {
+			if (await isWaitForApiKey() && !await checkOpenaiApiKey()) {
 				onApiKey(message.text, panel);
 				return;
 			}
