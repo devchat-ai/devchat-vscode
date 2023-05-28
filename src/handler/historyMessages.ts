@@ -3,12 +3,12 @@ import DevChat, { LogOptions, LogEntry } from '../toolwrapper/devchat';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { checkOpenAiAPIKey } from '../contributes/commands';
+import { checkOpenaiApiKey } from '../contributes/commands';
 import ExtensionContextHolder from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 
 
-let isApiSetted: boolean | undefined = undefined;
+let isApiSet: boolean | undefined = undefined;
 
 interface LoadHistoryMessages {
 	command: string;
@@ -41,7 +41,7 @@ function apiKeyMissedMessage(): LogEntry {
 		date: '',
 		request: 'Is OPENAI_API_KEY ready?',
 		response: `
-It seems the OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI API key, and I'll ensure DevChat is all set for you.
+OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI or DevChat key, and I'll ensure DevChat is all set for you.
 		`,
 		context: []
 	} as LogEntry;
@@ -86,11 +86,11 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 		messageHistory.add(entryNew);
 	}
 
-	const isApiKeyReady = await checkOpenAiAPIKey();
-	isApiSetted = true;
+	const isApiKeyReady = await checkOpenaiApiKey();
+	isApiSet = true;
 	if (!isApiKeyReady) {
 		const startMessage = [ apiKeyMissedMessage() ];
-		isApiSetted = false;
+		isApiSet = false;
 
 		MessageHandler.sendMessage(panel, {
 			command: 'loadHistoryMessages',
@@ -111,31 +111,31 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 
 export function isValidApiKey(apiKey: string) {
 	let apiKeyStrim = apiKey.trim();
-	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('dc-') !== 0) {
+	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('DC.') !== 0) {
 		return false;
 	}
 	return true;
 }
 
 export async function isWaitForApiKey() {
-	if (isApiSetted === undefined) {
-		isApiSetted = await checkOpenAiAPIKey();
+	if (isApiSet === undefined) {
+		isApiSet = await checkOpenaiApiKey();
 	}
-	return !isApiSetted;
+	return !isApiSet;
 }
 
 export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	if (!isValidApiKey(apiKey)) {
-		MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'It is not a valid OPENAI_API_KEY, you should input the key like this: sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx, please set the key again?', hash: '', user: 'system', date: '', isError: false });
+		MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'Your API key is invalid. We support OpenAI and DevChat keys. Please reset the key.', hash: '', user: 'system', date: '', isError: false });
 		return;
 	}
 
-	isApiSetted = true;
+	isApiSet = true;
 
 	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context?.secrets!;
 	secretStorage.store("devchat_OPENAI_API_KEY", apiKey);
 
 	const welcomeMessageText =  welcomeMessage().response;
-	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `OPENAI_API_KEY is setted, you can use DevChat now.\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false });
+	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false });
 }
 

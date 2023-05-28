@@ -15,55 +15,53 @@ import { contextDetail } from './contextDetail';
 import { listAllMessages } from './listMessages';
 
 
-// 根据用户选择的context菜单，添加对应的context文件
-// 应答消息： 
-//   添加上下文文件信息： { command: 'appendContext', context: <context file> }
+// According to the context menu selected by the user, add the corresponding context file
+// Response: { command: 'appendContext', context: <context file> }
 messageHandler.registerHandler('addContext', addConext);
-// 将AI应答的代码块应用到当前激活视图中
-// 应答消息： 无
+// Apply the code block replied by AI to the currently active view
+// Response: none
 messageHandler.registerHandler('code_apply', codeApply);
-// 将AI应答的代码块应用到当前激活视图中，替换掉当前文件内容
-// 应答消息： 无
+// Apply the code block replied by AI to the currently active view, replacing the current file content
+// Response: none
 messageHandler.registerHandler('code_file_apply', codeFileApply);
-// 将command输入，转换为发送给AI的自然语言描述
-// 应答消息： { command: 'convertCommand', result: <自然语言描述> }
+// Convert the command input into a natural language description sent to AI
+// Response: { command: 'convertCommand', result: <natural language description> }
 messageHandler.registerHandler('convertCommand', convertCommand);
-// 执行提交操作
-// 应答消息： 无
+// Perform commit operation
+// Response: none
 messageHandler.registerHandler('doCommit', doCommit);
-// 获取历史消息，用户视图显示时调用
-// 应答消息： { command: 'historyMessages', result: <历史消息> }
-// <历史消息>是一个列表，具体属性信息添加接口时确定
+// Get the history messages, called when the user view is displayed
+// Response: { command: 'historyMessages', result: <history messages> }
+// <history messages> is a list, the specific attribute information is determined when the interface is added
 messageHandler.registerHandler('historyMessages', historyMessages);
-// 注册命令列表
-// 应答消息： { command: 'regCommandList', result: <命令列表> }
+// Register the command list
+// Response: { command: 'regCommandList', result: <command list> }
 messageHandler.registerHandler('regCommandList', regCommandList);
-// 注册context列表
-// 应答消息： { command: 'regContextList', result: <context列表> }
+// Register the context list
+// Response: { command: 'regContextList', result: <context list> }
 messageHandler.registerHandler('regContextList', regContextList);
-// 发送消息，将用户输入的消息发送给AI
-// 应答消息： 
-//    { command: 'receiveMessagePartial', text: <应答消息文本>, user: <user>, date: <date> }
-//    { command: 'receiveMessage', hash: <消息hash>, text: text: <应答消息文本>, user: <user>, date: <date> }
+// Send a message, send the message entered by the user to AI
+// Response:
+//    { command: 'receiveMessagePartial', text: <response message text>, user: <user>, date: <date> }
+//    { command: 'receiveMessagePartial', text: <response message text>, user: <user>, date: <date> }
 messageHandler.registerHandler('sendMessage', sendMessage);
-// 停止devchat，用于用户主动停止devchat
-// 应答消息： 无
+// Stop devchat, used to stop devchat by the user
+// Response: none
 messageHandler.registerHandler('stopDevChat', stopDevChat);
-// 显示diff
-// 应答消息： 无
+// Show diff
+// Response: none
 messageHandler.registerHandler('block_apply', blockApply);
-// 显示diff，由于历史原因，同上
-// 应答消息： 无
+// Show diff, for historical reasons, the same as above
 messageHandler.registerHandler('show_diff', showDiff);
-// 处理用户输入的ref命令
-// 应答消息： { command: 'appendContext', context: <context file> }
+// Process the ref command entered by the user
+// Response: { command: 'appendContext', context: <context file> }
 messageHandler.registerHandler('addRefCommandContext', addRefCommandContext);
-// 获取context详情
-// 应答消息： { command: 'contextDetailResponse', 'file':<context file>, result: <context file content> }
-//  <context file content>是一个JSON字符串
+// Get context details
+// Response: { command: 'contextDetailResponse', 'file':<context file>, result: <context file content> }
+// <context file content> is a JSON string
 messageHandler.registerHandler('contextDetail', contextDetail);
 // Debug handler
 messageHandler.registerHandler('listAllMessages', listAllMessages);
-// regeneration
-// 应答与sendMessage相同
+// Regeneration
+// The response is the same as sendMessage
 messageHandler.registerHandler('regeneration', regeneration);

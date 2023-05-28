@@ -10,31 +10,31 @@ import * as process from 'process';
 
 export function checkDevChatDependency(): boolean {
   try {
-    // 获取pipx环境信息
+    // Get pipx environment
     const pipxEnvOutput = childProcess.execSync('python3 -m pipx environment').toString();
     const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
 
-    // 提取BIN路径
+    // Get BIN path from pipx environment
     const match = pipxEnvOutput.match(binPathRegex);
     if (match && match[1]) {
       const binPath = match[1];
 
-      // 将BIN路径添加到环境变量中
+      // Add BIN path to PATH
       process.env.PATH = `${binPath}:${process.env.PATH}`;
 
-      // 检查devchat是否已经安装
+      // Check if DevChat is installed
       childProcess.execSync('devchat --help');
       return true;
     } else {
       return false;
     }
   } catch (error) {
-    // 命令执行失败，依赖程序未安装或其他异常
+    // DevChat dependency check failed
     return false;
   }
 }
 
-export async function checkOpenAiAPIKey() {
+export async function checkOpenaiApiKey() {
 	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 	let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 	if (!openaiApiKey) {
@@ -49,18 +49,18 @@ export async function checkOpenAiAPIKey() {
 	return true;
 }
 
-function checkOpenAIKey() {
+function checkOpenaiKey() {
 	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;
 	}
 	if (!openaiApiKey) {
-		// openAI key 未设置，请用户输入API Key
+		// OpenAI key not set
 		vscode.window.showInputBox({
-			placeHolder: 'Please input your openAI API Key'
+			placeHolder: 'Please input your OpenAI API key (or DevChat access key)'
 		}).then((value) => {
 			if (value) {
-				// 设置用户输入的API Key
+				// Set API Key
 				vscode.workspace.getConfiguration('DevChat').update('OpenAI.apiKey', value, true);
 			}
 		});
@@ -86,7 +86,7 @@ function checkDependencyPackage() {
 		});
 	}
 
-	if (!checkOpenAIKey()) {
+	if (!checkOpenaiKey()) {
 		return;
 	}
 }
