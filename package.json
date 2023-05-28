@@ -69,16 +69,16 @@
 					"description": "The max number of tokens of a prompt.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
-				"DevChat.OpenAI.apiKey": {
+				"DevChat.API_KEY": {
 					"type": "string",
 					"default": "",
-					"description": "Open API Key",
+					"description": "API key for llm model.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
-				"DevChat.OpenAI.EndPoint": {
+				"DevChat.API_BASE": {
 					"type": "string",
 					"default": "",
-					"description": "The OpenAI API endpoint URL.",
+					"description": "End point url setting",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.DevChatPath": {
@@ -155,7 +155,7 @@
 			},
 			{
 				"command": "DevChat.OPENAI_API_KEY",
-				"title": "OPENAI_API_KEY",
+				"title": "DEVCHAT_API_KEY",
 				"category": "DevChat"
 			},
 			{

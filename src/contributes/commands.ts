@@ -38,7 +38,7 @@ export async function checkOpenaiApiKey() {
 	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 	let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 	if (!openaiApiKey) {
-		openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+		openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
 	}
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;
@@ -49,8 +49,8 @@ export async function checkOpenaiApiKey() {
 	return true;
 }
 
-function checkOpenaiKey() {
-	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+function checkOpenAIKey() {
+	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;
 	}
@@ -60,8 +60,8 @@ function checkOpenaiKey() {
 			placeHolder: 'Please input your OpenAI API key (or DevChat access key)'
 		}).then((value) => {
 			if (value) {
-				// Set API Key
-				vscode.workspace.getConfiguration('DevChat').update('OpenAI.apiKey', value, true);
+				// 设置用户输入的API Key
+				vscode.workspace.getConfiguration('DevChat').update('API_KEY', value, true);
 			}
 		});
 		return false;
