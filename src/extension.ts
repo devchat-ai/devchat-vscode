@@ -174,11 +174,11 @@ function activate(context: vscode.ExtensionContext) {
 	let devchatStatus = '';
 	let apiKeyStatus = '';
 	setInterval(async () => {
-		const versionOld = await secretStorage.get("devchat_version_old");
+		const versionOld = await secretStorage.get("DevChatVersionOld");
 		const versionNew = extensionVersion;
 		const versionChanged = versionOld !== versionNew;
-		await secretStorage.store("devchat_version_old", versionNew!);
-
+		await secretStorage.store("DevChatVersionOld", versionNew!);
+		
 		// status item has three status type
 		// 1. not in a folder
 		// 2. dependence is invalid
