@@ -273,8 +273,10 @@ function activate(context: vscode.ExtensionContext) {
 	const topicDeleteCallback = async (item: TopicTreeItem) => {
 		const confirm = 'Delete';
 		const cancel = 'Cancel';
+		const label = typeof item.label === 'string' ? item.label : item.label!.label;
+		const truncatedLabel = label.substring(0, 20) + (label.length > 20 ? '...' : '');
 		const result = await vscode.window.showWarningMessage(
-			`Are you sure you want to delete the topic "${item.label}"?`,
+			`Are you sure you want to delete the topic "${truncatedLabel}"?`,
 			{ modal: true },
 			confirm,
 			cancel
@@ -283,7 +285,7 @@ function activate(context: vscode.ExtensionContext) {
 		if (result === confirm) {
 			TopicManager.getInstance().deleteTopic(item.id);
 		}
-	}
+	};
 	vscode.commands.registerCommand('devchat-topicview.deleteTopic', topicDeleteCallback);
 
 	context.subscriptions.push(
