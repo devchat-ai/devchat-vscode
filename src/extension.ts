@@ -173,6 +173,7 @@ function activate(context: vscode.ExtensionContext) {
 	// add a timer to update the status bar item
 	let devchatStatus = '';
 	let apiKeyStatus = '';
+	let isVersionChangeCompare: boolean|undefined = undefined;
 	setInterval(async () => {
 		const versionOld = await secretStorage.get("DevChatVersionOld");
 		const versionNew = extensionVersion;
@@ -193,7 +194,8 @@ function activate(context: vscode.ExtensionContext) {
 			if (!bOk) {
 				bOk = checkDevChatDependency();
 			}
-			if (bOk && versionChanged) {
+			if (bOk && versionChanged && !isVersionChangeCompare) {
+				logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
 				bOk = false;
 			}
 
@@ -212,6 +214,7 @@ function activate(context: vscode.ExtensionContext) {
 			terminal.sendText(`python ${context.extensionUri.fsPath + "/tools/install.py"}`);
 			terminal.show();
 			devchatStatus = 'waiting install devchat';
+			isVersionChangeCompare = true;
 		}
 
 		if (devchatStatus !== 'ready') {
