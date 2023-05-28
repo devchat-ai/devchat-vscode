@@ -84,7 +84,7 @@ class DevChat {
 		return args;
 	}
 
-	async getOpenAiApiKey(): Promise<string | undefined> {
+	async getOpenaiApiKey(): Promise<string | undefined> {
 		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 		if (!openaiApiKey) {
@@ -151,15 +151,15 @@ class DevChat {
 		args.push(content);
 
 		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-		let openaiApiKey = await this.getOpenAiApiKey();
+		let openaiApiKey = await this.getOpenaiApiKey();
 		if (!openaiApiKey) {
-			logger.channel()?.error('openAI key is invalid!');
+			logger.channel()?.error('OpenAI key is invalid!');
 			logger.channel()?.show();
 		}
 
 
-		const openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('OpenAI.EndPoint');
-		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
+		const openaiApiBase = vscode.workspace.getConfiguration('DevChat').get('OpenAI.EndPoint');
+		const openaiApiBaseObject = openaiApiBase ? { OPENAI_API_BASE: openaiApiBase } : {};
 
 		const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
 		const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
@@ -203,7 +203,7 @@ class DevChat {
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
-					...openAiApiBaseObject
+					...openaiApiBaseObject
 				},
 			}, onStdoutPartial, undefined, undefined, undefined);
 

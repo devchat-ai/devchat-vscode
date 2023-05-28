@@ -3,7 +3,7 @@ import DevChat, { LogOptions, LogEntry } from '../toolwrapper/devchat';
 import { MessageHandler } from './messageHandler';
 import messageHistory from '../util/messageHistory';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { checkOpenAiAPIKey } from '../contributes/commands';
+import { checkOpenaiApiKey } from '../contributes/commands';
 import ExtensionContextHolder from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 
@@ -86,7 +86,7 @@ export async function historyMessages(message: any, panel: vscode.WebviewPanel|v
 		messageHistory.add(entryNew);
 	}
 
-	const isApiKeyReady = await checkOpenAiAPIKey();
+	const isApiKeyReady = await checkOpenaiApiKey();
 	isApiSet = true;
 	if (!isApiKeyReady) {
 		const startMessage = [ apiKeyMissedMessage() ];
@@ -119,7 +119,7 @@ export function isValidApiKey(apiKey: string) {
 
 export async function isWaitForApiKey() {
 	if (isApiSet === undefined) {
-		isApiSet = await checkOpenAiAPIKey();
+		isApiSet = await checkOpenaiApiKey();
 	}
 	return !isApiSet;
 }

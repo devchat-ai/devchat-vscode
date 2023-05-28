@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 
 import {
-	checkOpenAiAPIKey,
+	checkOpenaiApiKey,
 	checkDevChatDependency,
 	checkDependencyPackage,
 	registerOpenChatPanelCommand,
@@ -224,7 +224,7 @@ function activate(context: vscode.ExtensionContext) {
 
 		// check api key
 		if (apiKeyStatus === '' || apiKeyStatus === 'please set api key') {
-			const bOk = await checkOpenAiAPIKey();
+			const bOk = await checkOpenaiApiKey();
 			if (bOk) {
 				apiKeyStatus = 'ready';
 			} else {

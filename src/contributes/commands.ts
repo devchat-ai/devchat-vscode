@@ -34,7 +34,7 @@ export function checkDevChatDependency(): boolean {
   }
 }
 
-export async function checkOpenAiAPIKey() {
+export async function checkOpenaiApiKey() {
 	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 	let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 	if (!openaiApiKey) {
@@ -49,7 +49,7 @@ export async function checkOpenAiAPIKey() {
 	return true;
 }
 
-function checkOpenAIKey() {
+function checkOpenaiKey() {
 	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;
@@ -57,7 +57,7 @@ function checkOpenAIKey() {
 	if (!openaiApiKey) {
 		// OpenAI key not set
 		vscode.window.showInputBox({
-			placeHolder: 'Please input your openAI API Key'
+			placeHolder: 'Please input your OpenAI API key (or DevChat access key)'
 		}).then((value) => {
 			if (value) {
 				// Set API Key
@@ -86,7 +86,7 @@ function checkDependencyPackage() {
 		});
 	}
 
-	if (!checkOpenAIKey()) {
+	if (!checkOpenaiKey()) {
 		return;
 	}
 }
