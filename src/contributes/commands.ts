@@ -49,7 +49,7 @@ export async function checkOpenaiApiKey() {
 	return true;
 }
 
-function checkOpenAIKey() {
+function checkOpenaiKey() {
 	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;

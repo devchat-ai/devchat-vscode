@@ -149,7 +149,7 @@ class DevChat {
 
 	apiEndpoint(apiKey: string | undefined): any {
 		let openAiApiBase: string | undefined = undefined;
-		if (apiKey?.startsWith("dc-")) {
+		if (apiKey?.startsWith("DC.")) {
 			// TODO add devchat proxy
 			openAiApiBase = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
 		}
@@ -218,7 +218,7 @@ class DevChat {
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
-					...openaiApiBaseObject
+					...openAiApiBaseObject
 				},
 			};
 
