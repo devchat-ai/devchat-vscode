@@ -88,7 +88,7 @@ class DevChat {
 		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
 		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
 		if (!openaiApiKey) {
-			openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('OpenAI.apiKey');
+			openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
 		}
 		if (!openaiApiKey) {
 			openaiApiKey = process.env.OPENAI_API_KEY;
@@ -146,6 +146,22 @@ class DevChat {
 			isError: false,
 		};
 	}
+
+	apiEndpoint(apiKey: string | undefined): any {
+		let openAiApiBase: string | undefined = undefined;
+		if (apiKey?.startsWith("DC.")) {
+			// TODO add devchat proxy
+			openAiApiBase = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
+		}
+
+		if (vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT')) {
+			openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT');
+		}
+
+		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
+		return openAiApiBaseObject;
+	}
+
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
 		const args = await this.buildArgs(options);
 		args.push(content);
@@ -158,8 +174,8 @@ class DevChat {
 		}
 
 
-		const openaiApiBase = vscode.workspace.getConfiguration('DevChat').get('OpenAI.EndPoint');
-		const openaiApiBaseObject = openaiApiBase ? { OPENAI_API_BASE: openaiApiBase } : {};
+		// 如果配置了devchat的TOKEN，那么就需要使用默认的代理
+		let openAiApiBaseObject = this.apiEndpoint(openaiApiKey);
 
 		const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
 		const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
@@ -196,16 +212,19 @@ class DevChat {
 				onData(data);
 			};
 
-			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, {
+			const spawnAsyncOptions = {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
-					...openaiApiBaseObject
+					...openAiApiBaseObject
 				},
-			}, onStdoutPartial, undefined, undefined, undefined);
+			};
+
+			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
+			logger.channel()?.info(`Running devchat with env: ${JSON.stringify(openAiApiBaseObject)}`);
+			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
 				const errorMessage = stderr.trim().match(/Error：(.+)/)?.[1];
