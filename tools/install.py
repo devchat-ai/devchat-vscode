@@ -12,7 +12,7 @@ def check_pipx_installed():
 def install_pipx():
     print("Installing pipx...")
     try:
-        subprocess.run(["python3", "-m", "pip", "install", "pipx"], check=True)
+        subprocess.run(["python3", "-m", "pip", "install", "pipx", "--force"], check=True)
         print("pipx installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing pipx:", e, file=sys.stderr)
