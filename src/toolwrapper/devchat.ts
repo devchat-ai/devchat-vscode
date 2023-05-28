@@ -151,7 +151,7 @@ class DevChat {
 		let openAiApiBase: string | undefined = undefined;
 		if (apiKey?.startsWith("dc-")) {
 			// TODO add devchat proxy
-			openAiApiBase = "";
+			openAiApiBase = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
 		}
 
 		if (vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT')) {
