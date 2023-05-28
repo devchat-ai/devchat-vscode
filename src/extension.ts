@@ -270,9 +270,23 @@ function activate(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(yourTreeView);
 
-	vscode.commands.registerCommand('devchat-topicview.deleteTopic', (item: TopicTreeItem) => {
-		TopicManager.getInstance().deleteTopic(item.id);
-	});
+	const topicDeleteCallback = async (item: TopicTreeItem) => {
+		const confirm = 'Delete';
+		const cancel = 'Cancel';
+		const label = typeof item.label === 'string' ? item.label : item.label!.label;
+		const truncatedLabel = label.substring(0, 20) + (label.length > 20 ? '...' : '');
+		const result = await vscode.window.showWarningMessage(
+			`Are you sure you want to delete the topic "${truncatedLabel}"?`,
+			{ modal: true },
+			confirm,
+			cancel
+		);
+
+		if (result === confirm) {
+			TopicManager.getInstance().deleteTopic(item.id);
+		}
+	};
+	vscode.commands.registerCommand('devchat-topicview.deleteTopic', topicDeleteCallback);
 
 	context.subscriptions.push(
 		vscode.languages.registerCodeActionsProvider(
@@ -300,7 +314,7 @@ function activate(context: vscode.ExtensionContext) {
 	vscode.commands.registerCommand('devchat-topicview.deleteSelectedTopic', () => {
 		const selectedItem = yourTreeDataProvider.selectedItem;
 		if (selectedItem) {
-			TopicManager.getInstance().deleteTopic(selectedItem.id);
+			topicDeleteCallback(selectedItem);
 		} else {
 			vscode.window.showErrorMessage('No item selected');
 		}
