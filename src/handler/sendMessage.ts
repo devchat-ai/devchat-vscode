@@ -112,8 +112,10 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 		chatOptions.reference = parsedMessage.reference;
 	}
 
+	let partialDataText = '';
 	const onData = (partialResponse: ChatResponse) => {
 		const responseText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+		partialDataText = responseText;
 		MessageHandler.sendMessage(panel, { command: 'receiveMessagePartial', text: responseText, user: partialResponse.user, date: partialResponse.date }, false);
 	};
 
@@ -138,6 +140,9 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 		if (responseText.indexOf('Exit code: undefined') >= 0) {
 			return;
 		}
+	}
+	if (chatResponse.isError) {
+		responseText = partialDataText + responseText;
 	}
 
 	MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: responseText, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError });

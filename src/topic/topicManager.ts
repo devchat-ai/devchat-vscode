@@ -83,7 +83,7 @@ export class TopicManager {
 		const topic = new Topic();
 		this._topics[topic.topicId] = topic;
 		this._notifyCreateTopicListeners(topic);
-		this.setCurrentTopic(topic.topicId);
+		//this.setCurrentTopic(topic.topicId);
 		return topic;
 	}
 
