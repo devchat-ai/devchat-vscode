@@ -4,6 +4,7 @@ import { TopicManager } from '../topic/topicManager';
 import { LogEntry } from '../toolwrapper/devchat';
 import messageHistory from '../util/messageHistory';
 import { ApiKeyManager } from '../util/apiKey';
+import { logger } from '../util/logger';
 
 let isApiSet: boolean | undefined = undefined;
 
@@ -60,13 +61,17 @@ export async function isWaitForApiKey() {
 	return !isApiSet;
 }
 
-export async function loadTopicHistoryLogs() : Promise<Array<LogEntry>>  {
+export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefined>  {
 	const topicId = TopicManager.getInstance().currentTopicId;
 	let logEntriesFlat: Array<LogEntry> = [];
 	if (topicId) {
 		logEntriesFlat = await TopicManager.getInstance().getTopicHistory(topicId);
 	}
 
+	if (topicId !== TopicManager.getInstance().currentTopicId) {
+		logger.channel()?.info(`Current topic changed dure load topic hsitory!`)
+		return undefined;
+	}
 	return logEntriesFlat;
 }
 
@@ -106,8 +111,12 @@ export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefi
 	}
 }
 
-export async function historyMessagesBase(): Promise<LoadHistoryMessages> {
+export async function historyMessagesBase(): Promise<LoadHistoryMessages | undefined> {
 	const logEntriesFlat = await loadTopicHistoryLogs();
+	if (!logEntriesFlat) {
+		return undefined;
+	}
+
 	updateCurrentMessageHistory(logEntriesFlat);
 	
 	const apiKeyMessage = await apiKeyInvalidMessage();

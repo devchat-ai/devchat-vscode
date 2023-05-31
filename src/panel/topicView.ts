@@ -13,6 +13,12 @@ export class TopicTreeItem extends vscode.TreeItem {
         this.iconPath = new vscode.ThemeIcon('symbol-variable');
         this.contextValue = 'yourTreeItem';
     }
+	uncheck() {
+		this.iconPath = new vscode.ThemeIcon('symbol-variable');
+	}
+	check() {
+		this.iconPath = new vscode.ThemeIcon('check');
+	}
 }
 
 export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeItem> {
@@ -81,7 +87,12 @@ export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeI
     }
 
     setSelectedItem(item: TopicTreeItem): void {
+		this.items.map((item) => {
+			item.uncheck();
+		});
+		item.check();
         this.selectedItem = item;
+		this._onDidChangeTreeData.fire();
     }
 
     getChildren(element?: TopicTreeItem): vscode.ProviderResult<TopicTreeItem[]> {
