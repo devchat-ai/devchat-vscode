@@ -208,12 +208,11 @@ class DevChat {
 			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
-				const errorMessage = stderr.trim().match(/Error：(.+)/)?.[1];
 				return {
 					"prompt-hash": "",
 					user: "",
 					date: "",
-					response: errorMessage ? `Error: ${errorMessage}` : "Unknown error",
+					response: stderr,
 					isError: true,
 				};
 			}

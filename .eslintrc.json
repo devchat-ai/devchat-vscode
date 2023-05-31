@@ -9,8 +9,6 @@
         "@typescript-eslint"
     ],
     "rules": {
-		"no-unused-vars": "warn",
-		"no-unused-expressions": "warn",
         "@typescript-eslint/naming-convention": "warn",
         "@typescript-eslint/semi": "warn",
         "curly": "warn",
