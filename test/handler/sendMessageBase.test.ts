@@ -2,6 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import { Context } from 'mocha';
 import sinon from 'sinon';
+import * as path from 'path';
 import { parseMessage, getInstructionFiles, parseMessageAndSetOptions, getParentHash, handleTopic, handlerResponseText, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
 import DevChat, { ChatResponse } from '../../src/toolwrapper/devchat';
 import CommandManager from '../../src/command/commandManager';
@@ -10,6 +11,10 @@ import { TopicManager } from '../../src/topic/topicManager';
 import CustomCommands from '../../src/command/customCommand';
 import { UiUtilWrapper } from '../../src/util/uiUtil';
 
+import * as dotenv from 'dotenv';
+
+const envPath = path.join(__dirname, '../../', '.env');
+dotenv.config({ path: envPath });
 
 describe('sendMessageBase', () => {
 	let workspaceFoldersFirstPathStub: sinon.SinonStub;
@@ -194,7 +199,7 @@ describe('sendMessageBase', () => {
 
 			workspaceFoldersFirstPathStub.returns('./');
 
-			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns('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');
+			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns(process.env.TEST_OPENAI_API_KEY);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
@@ -221,7 +226,7 @@ describe('sendMessageBase', () => {
 
 			workspaceFoldersFirstPathStub.returns('./');
 
-			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns('DC.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdfaWQiOjY2MTI0NDU1ODE2LCJqdGkiOjcyMzc4ODIzMjI3Mjc4MzI2NTJ9.qGWJ_NyWjjj66oa5mbfi3Hjawe-Yp8syCDLkpyu4yS0');
+			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns(process.env.TEST_DEVCHAT_KEY);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
@@ -277,7 +282,7 @@ describe('sendMessageBase', () => {
 
 			workspaceFoldersFirstPathStub.returns('./');
 
-			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns('DC.eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJvcmdfaWQiOjY2MTI0NDU1ODE2LCJqdGkiOjcyMzc4ODIzMjI3Mjc4MzI2NTJ9.qGWJ_NyWjjj66oa5mbfi3Hjawe-Yp8syCDLkpyu4yS0');
+			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns(process.env.TEST_DEVCHAT_KEY);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
