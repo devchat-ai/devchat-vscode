@@ -1,141 +1,64 @@
 import * as vscode from 'vscode';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
-import { logger } from '../util/logger';
-import * as childProcess from 'child_process';
 import ExtensionContextHolder from '../util/extensionContext';
-import { TopicManager, Topic } from '../topic/topicManager';
+import { TopicManager } from '../topic/topicManager';
 import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
 
 
-import * as process from 'process';
-import { UiUtilWrapper } from '../util/uiUtil';
-
-
-export function checkDevChatDependency(): boolean {
-  try {
-    // Get pipx environment
-    const pipxEnvOutput = childProcess.execSync('python3 -m pipx environment').toString();
-    const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
-
-    // Get BIN path from pipx environment
-    const match = pipxEnvOutput.match(binPathRegex);
-    if (match && match[1]) {
-      const binPath = match[1];
-
-      // Add BIN path to PATH
-      process.env.PATH = `${binPath}:${process.env.PATH}`;
-
-      // Check if DevChat is installed
-      childProcess.execSync('devchat --help');
-      return true;
-    } else {
-      return false;
-    }
-  } catch (error) {
-    // DevChat dependency check failed
-    return false;
-  }
-}
-
-export async function checkOpenAiAPIKey() {
-	let openaiApiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
-	if (!openaiApiKey) {
-		openaiApiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
-	}
-	if (!openaiApiKey) {
-		openaiApiKey = process.env.OPENAI_API_KEY;
-	}
-	if (!openaiApiKey) {
-		return false;
-	}
-	return true;
-}
-
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
-    let disposable = vscode.commands.registerCommand('devchat.openChatPanel',async () => {
+	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
 		await vscode.commands.executeCommand('devchat-view.focus');
-    });
-    context.subscriptions.push(disposable);
+	});
+	context.subscriptions.push(disposable);
 }
 
 async function ensureChatPanel(context: vscode.ExtensionContext): Promise<boolean> {
-    await vscode.commands.executeCommand('devchat-view.focus');
-    return true;
+	await vscode.commands.executeCommand('devchat-view.focus');
+	return true;
 }
 
 function registerAddContextCommand(context: vscode.ExtensionContext) {
-    const disposableAddContext = vscode.commands.registerCommand('devchat.addConext', async (uri: { path: any; }) => {
-        if (!await ensureChatPanel(context)) {
-            return;
-        }
+	const callback = async (uri: { path: any; }) => {
+		if (!await ensureChatPanel(context)) {
+			return;
+		}
 
-        await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.path);
-    });
-    context.subscriptions.push(disposableAddContext);
-
-	const disposableAddContextChinese = vscode.commands.registerCommand('devchat.addConext_chinese', async (uri: { path: any; }) => {
-        if (!await ensureChatPanel(context)) {
-            return;
-        }
-
-        await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.path);
-    });
-    context.subscriptions.push(disposableAddContextChinese);
+		await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.path);
+	};
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext', callback));
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext_chinese', callback));
 }
 
 function registerAskForCodeCommand(context: vscode.ExtensionContext) {
-    const disposableCodeContext = vscode.commands.registerCommand('devchat.askForCode', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            if (!await ensureChatPanel(context)) {
-                return;
-            }
+	const callback = async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			if (!await ensureChatPanel(context)) {
+				return;
+			}
 
-            const selectedText = editor.document.getText(editor.selection);
-            await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText);
-        }
-    });
-    context.subscriptions.push(disposableCodeContext);
-
-	const disposableCodeContextChinese = vscode.commands.registerCommand('devchat.askForCode_chinese', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            if (!await ensureChatPanel(context)) {
-                return;
-            }
-
-            const selectedText = editor.document.getText(editor.selection);
-            await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText);
-        }
-    });
-    context.subscriptions.push(disposableCodeContextChinese);
+			const selectedText = editor.document.getText(editor.selection);
+			await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText);
+		}
+	};
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForCode', callback));
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForCode_chinese', callback));
 }
 
 function registerAskForFileCommand(context: vscode.ExtensionContext) {
-    const disposableAskFile = vscode.commands.registerCommand('devchat.askForFile', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            if (!await ensureChatPanel(context)) {
-                return;
-            }
+	const callback = async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (editor) {
+			if (!await ensureChatPanel(context)) {
+				return;
+			}
 
-            await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName);
-        }
-    });
-    context.subscriptions.push(disposableAskFile);
-
-	const disposableAskFileChinese = vscode.commands.registerCommand('devchat.askForFile_chinese', async () => {
-        const editor = vscode.window.activeTextEditor;
-        if (editor) {
-            if (!await ensureChatPanel(context)) {
-                return;
-            }
-
-            await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName);
-        }
-    });
-    context.subscriptions.push(disposableAskFileChinese);
+			await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName);
+		}
+	};
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForFile', callback));
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForFile_chinese', callback));
 }
 
 export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
@@ -160,11 +83,27 @@ export function registerStatusBarItemClickCommand(context: vscode.ExtensionConte
 	);
 }
 
+const topicDeleteCallback = async (item: TopicTreeItem) => {
+	const confirm = 'Delete';
+	const cancel = 'Cancel';
+	const label = typeof item.label === 'string' ? item.label : item.label!.label;
+	const truncatedLabel = label.substring(0, 20) + (label.length > 20 ? '...' : '');
+	const result = await vscode.window.showWarningMessage(
+		`Are you sure you want to delete the topic "${truncatedLabel}"?`,
+		{ modal: true },
+		confirm,
+		cancel
+	);
+
+	if (result === confirm) {
+		TopicManager.getInstance().deleteTopic(item.id);
+	}
+};
+;
+
 export function regTopicDeleteCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.deleteTopic', (item: TopicTreeItem) => {
-			TopicManager.getInstance().deleteTopic(item.id);
-		})
+		vscode.commands.registerCommand('devchat-topicview.deleteTopic', topicDeleteCallback)
 	);
 }
 
@@ -182,7 +121,7 @@ export function regDeleteSelectTopicCommand(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('devchat-topicview.deleteSelectedTopic', () => {
 			const selectedItem = TopicTreeDataProvider.getInstance().selectedItem;
 			if (selectedItem) {
-				TopicManager.getInstance().deleteTopic(selectedItem.id);
+				topicDeleteCallback(selectedItem);
 			} else {
 				vscode.window.showErrorMessage('No item selected');
 			}
@@ -201,7 +140,7 @@ export function regSelectTopicCommand(context: vscode.ExtensionContext) {
 
 export function regReloadTopicCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.reloadTopic', async (item: TopicTreeItem) => {
+		vscode.commands.registerCommand('devchat-topicview.reloadTopic', async () => {
 			TopicManager.getInstance().loadTopics();
 		})
 	);
@@ -209,7 +148,7 @@ export function regReloadTopicCommand(context: vscode.ExtensionContext) {
 
 export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat.applyDiffResult', async (data) => {
+		vscode.commands.registerCommand('devchat.applyDiffResult', async () => {
 			const activeEditor = vscode.window.activeTextEditor;
 			const fileName = activeEditor!.document.fileName;
 
@@ -236,8 +175,8 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 }
 
 export {
-    registerOpenChatPanelCommand,
-    registerAddContextCommand,
-    registerAskForCodeCommand,
-    registerAskForFileCommand,
+	registerOpenChatPanelCommand,
+	registerAddContextCommand,
+	registerAskForCodeCommand,
+	registerAskForFileCommand,
 };

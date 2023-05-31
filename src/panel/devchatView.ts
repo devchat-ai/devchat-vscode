@@ -8,6 +8,7 @@ import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
 import ExtensionContextHolder from '../util/extensionContext';
 import CustomCommands from '../command/customCommand';
 import { TopicManager } from '../topic/topicManager';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {

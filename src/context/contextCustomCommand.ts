@@ -4,6 +4,7 @@ import { createTempSubdirectory, runCommandStringAndWriteOutput } from '../util/
 import { logger } from '../util/logger';
 import { UiUtilWrapper } from '../util/uiUtil';
 
+
 export const customCommandContext: ChatContext = {
     name: '<custom command>',
     description: 'custorm command',
@@ -17,15 +18,15 @@ export const customCommandContext: ChatContext = {
         // 检查用户是否输入了命令
         if (customCommand) {
             const tempDir = await createTempSubdirectory('devchat/context');
-            const diff_file = path.join(tempDir, 'custom.txt');
+            const diffFile = path.join(tempDir, 'custom.txt');
 
 			logger.channel()?.info(`custom command: ${customCommand}`);
-            const result = await runCommandStringAndWriteOutput(customCommand, diff_file);
+            const result = await runCommandStringAndWriteOutput(customCommand, diffFile);
 			logger.channel()?.info(`custom command: ${customCommand} exit code:`, result.exitCode);
 
 			logger.channel()?.debug(`custom command: ${customCommand} stdout:`, result.stdout);
 			logger.channel()?.debug(`custom command: ${customCommand} stderr:`, result.stderr);
-            return `[context|${diff_file}]`;
+            return `[context|${diffFile}]`;
         }
         return '';
   },

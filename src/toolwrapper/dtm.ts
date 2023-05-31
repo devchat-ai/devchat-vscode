@@ -4,6 +4,7 @@ import * as fs from 'fs';
 
 import { logger } from "../util/logger";
 import { CommandRun } from "../util/commonUtil";
+import { UiUtilWrapper  } from "../util/uiUtil";
 
 interface DtmResponse {
 	status: number;

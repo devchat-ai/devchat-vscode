@@ -1,19 +1,7 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
-import * as fs from 'fs';
 
-import { checkOpenAiAPIKey, checkDevChatDependency } from '../contributes/commands';
-import { logger } from '../util/logger';
-import { TopicManager } from '../topic/topicManager';
+import { dependencyCheck } from './statusBarViewBase';
 
-
-function getExtensionVersion(context: vscode.ExtensionContext): string {
-	const packageJsonPath = path.join(context.extensionUri.fsPath, 'package.json');
-	const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
-	const packageJson = JSON.parse(packageJsonContent);
-
-	return packageJson.version;
-}
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
@@ -24,70 +12,16 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     statusBarItem.command = '';
 
     // add a timer to update the status bar item
-    let devchatStatus = '';
-    let apiKeyStatus = '';
-
-	const extensionVersion = getExtensionVersion(context);
-	const secretStorage: vscode.SecretStorage = context.secrets;
-
-    setInterval(async () => {
-		const versionOld = await secretStorage.get("devchat_version_old");
-		const versionNew = extensionVersion;
-		const versionChanged = versionOld !== versionNew;
-		secretStorage.store("devchat_version_old", versionNew!);
-
-		// status item has three status type
-		// 1. not in a folder
-		// 2. dependence is invalid
-		// 3. ready
-		if (devchatStatus === '' || devchatStatus === 'waiting install devchat') {
-			let bOk = true;
-			let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-			if (!devChat) {
-				bOk = false;
-			}
-
-			if (!bOk) {
-				bOk = checkDevChatDependency();
-			}
-			if (bOk && versionChanged) {
-				bOk = false;
-			}
-
-			if (bOk) {
-				devchatStatus = 'ready';
-				TopicManager.getInstance().loadTopics();
-			} else {
-				if (devchatStatus === '') {
-					devchatStatus = 'not ready';
-				}
-			}
-		}
-		if (devchatStatus === 'not ready') {
-			// auto install devchat
-			const terminal = vscode.window.createTerminal("DevChat Install");
-			terminal.sendText(`python ${context.extensionUri.fsPath + "/tools/install.py"}`);
-			terminal.show();
-			devchatStatus = 'waiting install devchat';
-		}
-
+	setInterval(async () => {
+		const [devchatStatus, apiKeyStatus] = await dependencyCheck();
 		if (devchatStatus !== 'ready') {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `${devchatStatus}`;
-			statusBarItem.command = '';
+			statusBarItem.command = undefined;
 			// set statusBarItem warning color
 			return;
 		}
 
-		// check api key
-		if (apiKeyStatus === '' || apiKeyStatus === 'please set api key') {
-			const bOk = await checkOpenAiAPIKey();
-			if (bOk) {
-				apiKeyStatus = 'ready';
-			} else {
-				apiKeyStatus = 'please set api key';
-			}
-		}
 		if (apiKeyStatus !== 'ready') {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `${apiKeyStatus}`;

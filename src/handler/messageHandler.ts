@@ -5,9 +5,9 @@ import * as vscode from 'vscode';
 import '../command/loadCommands';
 import '../context/loadContexts';
 import { logger } from '../util/logger';
-import { on } from 'events';
-import { isWaitForApiKey, onApiKey } from './historyMessages';
-import { checkOpenaiApiKey } from '../contributes/commands';
+import { isWaitForApiKey } from './historyMessagesBase';
+import { onApiKey } from './historyMessages';
+import { checkOpenaiApiKey } from '../contributes/commandsBase';
 
 
 export class MessageHandler {
@@ -19,6 +19,8 @@ export class MessageHandler {
 	registerHandler(command: string, handler: (message: any, panel: vscode.WebviewPanel|vscode.WebviewView) => Promise<void>): void {
 		this.handlers[command] = handler;
 	}
+
+	
 
 	async handleMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 		let isNeedSendResponse = false;

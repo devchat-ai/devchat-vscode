@@ -1,3 +1,4 @@
+import ExtensionContextHolder from './extensionContext';
 
 export interface UiUtil {
 	languageId(uri: string): Promise<string>;
@@ -6,6 +7,9 @@ export interface UiUtil {
 	secretStorageGet(key: string): Promise<string | undefined>;
 	writeFile(uri: string, content: string): Promise<void>;
 	showInputBox(option: object): Promise<string | undefined>;
+	storeSecret(key: string, value: string): Promise<void>;
+	extensionPath(): string;
+	runTerminal(terminalName:string, command: string): void;
 }
 
 
@@ -31,10 +35,19 @@ export class UiUtilVscode implements UiUtil {
 		vscode.workspace.fs.writeFile(vscode.Uri.file(uri), Buffer.from(content));
 	}
 	public async showInputBox(option: object): Promise<string | undefined> {
-		return vscode.window.showInputBox({
-			prompt: 'Input your custom command',
-			placeHolder: 'for example: ls -l'
-		});		
+		return vscode.window.showInputBox(option);		
+	}
+	public async storeSecret(key: string, value: string): Promise<void> {
+		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
+		await secretStorage.store(key, value);
+	}
+	public extensionPath(): string {
+		return ExtensionContextHolder.context!.extensionUri.fsPath;
+	}
+	public runTerminal(terminalName: string, command: string): void {
+		const terminal = vscode.window.createTerminal(terminalName);
+		terminal.sendText(command);
+		terminal.show();
 	}
 }
 
@@ -62,4 +75,14 @@ export class UiUtilWrapper {
 	public static async showInputBox(option: object): Promise<string | undefined> {
 		return this._uiUtil?.showInputBox(option);
 	}
+	public static async storeSecret(key: string, value: string): Promise<void> {
+		return this._uiUtil?.storeSecret(key, value);
+	}
+	public static extensionPath(): string {
+		return this._uiUtil?.extensionPath()!;
+	}
+	public static runTerminal(terminalName: string, command: string): void {
+		this._uiUtil?.runTerminal(terminalName, command);
+	}
 }
+

@@ -9,6 +9,7 @@ import WebviewManager from './webviewManager';
 import CustomCommands from '../command/customCommand';
 import CommandManager from '../command/commandManager';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export default class ChatPanel {
 	private static _instance: ChatPanel | undefined;

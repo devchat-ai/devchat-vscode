@@ -84,7 +84,7 @@ class DevChat {
 		return args;
 	}
 
-	async getOpenAiApiKey(): Promise<string | undefined> {
+	async getOpenaiApiKey(): Promise<string | undefined> {
 		let openaiApiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
 		if (!openaiApiKey) {
 			openaiApiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
@@ -153,8 +153,9 @@ class DevChat {
 			openAiApiBase = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
 		}
 
-		if (vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT')) {
-			openAiApiBase = vscode.workspace.getConfiguration('DevChat').get('API_ENDPOINT');
+		
+		if (UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT')) {
+			openAiApiBase = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
 		}
 
 		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};

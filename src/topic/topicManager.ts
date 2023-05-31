@@ -5,6 +5,7 @@ import * as fs from 'fs';
 import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 
 import { loadTopicList } from './loadTopics';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export class Topic {
 	name: string | undefined;
