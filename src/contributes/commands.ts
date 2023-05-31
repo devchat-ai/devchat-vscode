@@ -68,7 +68,8 @@ export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
 		vscode.commands.registerCommand('DevChat.OPENAI_API_KEY', async () => {
 			const passwordInput: string = await vscode.window.showInputBox({
 				password: true,
-				title: "OPENAI_API_KEY"
+				title: "Input Access Key",
+				placeHolder: "Set OPENAI_API_KEY (or DevChat Access Key)"
 			}) ?? '';
 
 			ApiKeyManager.writeApiKeySecret(passwordInput);

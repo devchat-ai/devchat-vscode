@@ -155,7 +155,7 @@
 			},
 			{
 				"command": "DevChat.OPENAI_API_KEY",
-				"title": "DEVCHAT_API_KEY",
+				"title": "Input Access Key",
 				"category": "DevChat"
 			},
 			{
