@@ -13,5 +13,6 @@
 		"strict": true,
 		"jsx": "react",
 		"esModuleInterop": true
-	}
+	},
+	"exclude": ["test"]
 }

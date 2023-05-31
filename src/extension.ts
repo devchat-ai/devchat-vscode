@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 
 import {
 	checkOpenaiApiKey,
@@ -9,152 +8,33 @@ import {
 	registerAddContextCommand,
 	registerAskForCodeCommand,
 	registerAskForFileCommand,
+	registerApiKeySettingCommand,
+	registerStatusBarItemClickCommand,
+	regTopicDeleteCommand,
+	regAddTopicCommand,
+	regDeleteSelectTopicCommand,
+	regSelectTopicCommand,
+	regReloadTopicCommand,
+	regApplyDiffResultCommand,
 } from './contributes/commands';
+import { regLanguageContext } from './contributes/context';
+import { regDevChatView, regTopicView } from './contributes/views';
 
 import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
-import { DevChatViewProvider } from './panel/devchatView';
-import path from 'path';
-import { FilePairManager } from './util/diffFilePairs';
-import { Topic, TopicManager } from './topic/topicManager';
-
-
-class TopicTreeItem extends vscode.TreeItem {
-	id: string;
-	date: number | undefined;
-	constructor(label: string, id: string, date: number | undefined, collapsibleState: vscode.TreeItemCollapsibleState) {
-		super(label, collapsibleState);
-		this.id = id;
-		this.date = date;
-		this.iconPath = new vscode.ThemeIcon('symbol-variable');
-		this.contextValue = 'yourTreeItem'; // 添加这一行
-	}
-}
-
-class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeItem> {
-	private _onDidChangeTreeData: vscode.EventEmitter<TopicTreeItem | undefined | null | void> = new vscode.EventEmitter<TopicTreeItem | undefined | null | void>();
-	readonly onDidChangeTreeData: vscode.Event<TopicTreeItem | undefined | null | void> = this._onDidChangeTreeData.event;
-
-	public selectedItem: TopicTreeItem | null = null;
-	private items: TopicTreeItem[] = [];
-
-	// reg listeners to TopicManager in constructor
-	constructor() {
-		TopicManager.getInstance().addOnCreateTopicListener(this.addItem.bind(this));
-		TopicManager.getInstance().addOnDeleteTopicListener(this.onDeleteTopic.bind(this));
-		TopicManager.getInstance().addOnReloadTopicsListener(this.onReloadTopics.bind(this));
-		TopicManager.getInstance().addOnUpdateTopicListener(this.onUpdateTopics.bind(this));
-	}
-
-	// sort items
-	private sortItems() {
-		this.items.sort((a, b) => {
-			if (a.date && b.date) {
-				return b.date - a.date;
-			} else if (!a.date) {
-				return -1;
-			} else if (!b.date) {
-				return 1;
-			} else {
-				return 0;
-			}
-		});
-	}
-
-	onUpdateTopics(topicId: string) {
-		const items = this.items.filter(i => i.id === topicId);
-		const topic = TopicManager.getInstance().getTopic(topicId);
-		items.map((item) => {
-			item.label = topic?.name;
-			item.date = topic?.lastUpdated;
-		});
-		this.sortItems();
-		this._onDidChangeTreeData.fire();
-	}
-
-	onReloadTopics(topics: Topic[]) {
-		const items = topics.map((topic) => {
-			return new TopicTreeItem(topic.name ? topic.name : "new topic", topic.topicId, topic.lastUpdated, vscode.TreeItemCollapsibleState.None);
-		});
-		this.items = items;
-		this.sortItems();
-		this._onDidChangeTreeData.fire();
-	}
-
-	onDeleteTopic(topicId: string) {
-		this.items = this.items.filter(i => i.id !== topicId);
-		this.sortItems();
-		this._onDidChangeTreeData.fire();
-	}
-
-	setSelectedItem(item: TopicTreeItem): void {
-		this.selectedItem = item;
-	}
-
-	getChildren(element?: TopicTreeItem): vscode.ProviderResult<TopicTreeItem[]> {
-		return this.items;
-	}
-
-	getTreeItem(element: TopicTreeItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
-		element.command = {
-			title: 'Select Item',
-			command: 'devchat-topicview.selectTopic',
-			arguments: [element],
-		};
-		return element;
-	}
-
-	reload(): void {
-		const topicList = TopicManager.getInstance().getTopicList();
-		this.onReloadTopics(topicList);
-	}
-
-	addItem(topic: Topic): void {
-		const newItem = new TopicTreeItem(topic.name ? topic.name : "new topic", topic.topicId, topic.lastUpdated, vscode.TreeItemCollapsibleState.None);
-		this.items.push(newItem);
-		this.sortItems();
-		this._onDidChangeTreeData.fire();
-	}
-
-
-	deleteItem(item: TopicTreeItem): void {
-		this.items = this.items.filter(i => i !== item);
-		this.sortItems();
-		this._onDidChangeTreeData.fire();
-	}
-}
-
-function getExtensionVersion(context: vscode.ExtensionContext): string {
-	const packageJsonPath = path.join(context.extensionUri.fsPath, 'package.json');
-	const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
-	const packageJson = JSON.parse(packageJsonContent);
-
-	return packageJson.version;
-}
+import { createStatusBarItem } from './panel/statusBarView';
 
 
 function activate(context: vscode.ExtensionContext) {
 	ExtensionContextHolder.context = context;
-	const extensionVersion = getExtensionVersion(context);
 	logger.init(context);
 
-	const secretStorage: vscode.SecretStorage = context.secrets;
-	vscode.commands.registerCommand('DevChat.OPENAI_API_KEY', async () => {
-		const passwordInput: string = await vscode.window.showInputBox({
-			password: true,
-			title: "OPENAI_API_KEY"
-		}) ?? '';
+	regLanguageContext();
 
-		secretStorage.store("devchat_OPENAI_API_KEY", passwordInput);
-	});
+	regDevChatView(context);
+	regTopicView(context);
 
-	const currentLocale = vscode.env.language;
-	if (currentLocale === 'zh-cn' || currentLocale === 'zh-tw') {
-		vscode.commands.executeCommand('setContext', 'isChineseLocale', true);
-	} else {
-		vscode.commands.executeCommand('setContext', 'isChineseLocale', false);
-	}
-
+	registerApiKeySettingCommand(context);
 	registerOpenChatPanelCommand(context);
 	registerAddContextCommand(context);
 	registerAskForCodeCommand(context);

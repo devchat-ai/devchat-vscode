@@ -1,12 +1,15 @@
 import * as vscode from 'vscode';
-import ChatPanel from '../panel/chatPanel';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
 import { logger } from '../util/logger';
 import * as childProcess from 'child_process';
-import { DevChatViewProvider } from '../panel/devchatView';
 import ExtensionContextHolder from '../util/extensionContext';
+import { TopicManager, Topic } from '../topic/topicManager';
+import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
+import { FilePairManager } from '../util/diffFilePairs';
+
 
 import * as process from 'process';
+
 
 export function checkDevChatDependency(): boolean {
   try {
@@ -175,6 +178,103 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
         }
     });
     context.subscriptions.push(disposableAskFileChinese);
+}
+
+export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
+	const secretStorage: vscode.SecretStorage = context.secrets;
+	context.subscriptions.push(
+		vscode.commands.registerCommand('DevChat.OPENAI_API_KEY', async () => {
+			const passwordInput: string = await vscode.window.showInputBox({
+				password: true,
+				title: "OPENAI_API_KEY"
+			}) ?? '';
+
+			secretStorage.store("devchat_OPENAI_API_KEY", passwordInput);
+		})
+	);
+}
+
+export function registerStatusBarItemClickCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devcaht.onStatusBarClick', async () => {
+			await vscode.commands.executeCommand('devchat-view.focus');
+		})
+	);
+}
+
+export function regTopicDeleteCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat-topicview.deleteTopic', (item: TopicTreeItem) => {
+			TopicManager.getInstance().deleteTopic(item.id);
+		})
+	);
+}
+
+export function regAddTopicCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat-topicview.addTopic', () => {
+			const topic = TopicManager.getInstance().createTopic();
+			TopicManager.getInstance().setCurrentTopic(topic.topicId);
+		})
+	);
+}
+
+export function regDeleteSelectTopicCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat-topicview.deleteSelectedTopic', () => {
+			const selectedItem = TopicTreeDataProvider.getInstance().selectedItem;
+			if (selectedItem) {
+				TopicManager.getInstance().deleteTopic(selectedItem.id);
+			} else {
+				vscode.window.showErrorMessage('No item selected');
+			}
+		})
+	);
+}
+
+export function regSelectTopicCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat-topicview.selectTopic', (item: TopicTreeItem) => {
+			TopicTreeDataProvider.getInstance().setSelectedItem(item);
+			TopicManager.getInstance().setCurrentTopic(item.id);
+		})
+	);
+}
+
+export function regReloadTopicCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat-topicview.reloadTopic', async (item: TopicTreeItem) => {
+			TopicManager.getInstance().loadTopics();
+		})
+	);
+}
+
+export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat.applyDiffResult', async (data) => {
+			const activeEditor = vscode.window.activeTextEditor;
+			const fileName = activeEditor!.document.fileName;
+
+			const [leftUri, rightUri] = FilePairManager.getInstance().findPair(fileName) || [undefined, undefined];
+			if (leftUri && rightUri) {
+				// 获取对比的两个文件
+				const leftDoc = await vscode.workspace.openTextDocument(leftUri);
+				const rightDoc = await vscode.workspace.openTextDocument(rightUri);
+
+				// 将右边文档的内容替换到左边文档
+				const leftEditor = await vscode.window.showTextDocument(leftDoc);
+				await leftEditor.edit(editBuilder => {
+					const fullRange = new vscode.Range(0, 0, leftDoc.lineCount, 0);
+					editBuilder.replace(fullRange, rightDoc.getText());
+				});
+
+				// 保存左边文档
+				await leftDoc.save();
+			} else {
+				vscode.window.showErrorMessage('No file to apply diff result.');
+			}
+		})
+	);
 }
 
 export {
