@@ -122,7 +122,7 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 		}
 	}
 	if (chatResponse.isError) {
-		responseText = partialDataText + responseText;
+		responseText = partialDataText + '\n\n' + responseText;
 	}
 	return responseText;
 }
