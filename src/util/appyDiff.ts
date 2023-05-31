@@ -19,9 +19,10 @@ function findMatchingIndex(list1: string[], list2: string[]): number[] {
 		let isMatch = true;
 		for (let j = 0; j < list2.length; j++) {
 			if (list1[i + j].trim() !== list2[j].trim()) {
-				if (j > 0) {
+
+				//if (j > 0) {
 					logger.channel()?.info(`findMatchingIndex end at ${j} ${list1[i + j].trim()} != ${list2[j].trim()}`);
-				}
+				//}
 
 				isMatch = false;
 				break;

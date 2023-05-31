@@ -1,11 +1,13 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import * as vscode from 'vscode';
+import * as childProcess from 'child_process';
+
 import { parseArgsStringToArgv } from 'string-argv';
 
 import { logger } from './logger';
 import { spawn, exec } from 'child_process';
+import { UiUtilWrapper } from './uiUtil';
 
 export function createTempSubdirectory(subdir: string): string {
 	// 获取系统临时目录
@@ -77,7 +79,7 @@ export class CommandRun {
 				if (code === 0) {
 					resolve({ exitCode: code, stdout, stderr });
 				} else {
-					reject({ exitCode: code, stdout, stderr });
+					resolve({ exitCode: code, stdout, stderr });
 				}
 			});
 
@@ -90,7 +92,7 @@ export class CommandRun {
 					logger.channel()?.error(`Error occurred: ${error.message}`);
 					logger.channel()?.show();
 				}
-				reject({ exitCode: error.code, stdout: "", stderr: error.message });
+				resolve({ exitCode: error.code, stdout: "", stderr: error.message });
 			});
 		});
 	};
@@ -110,7 +112,7 @@ export async function runCommandAndWriteOutput(
 ): Promise<CommandResult> {
 	const run = new CommandRun();
 	const options = {
-		cwd: vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.',
+		cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
 	};
 
 	return run.spawnAsync(command, args, options, undefined, undefined, undefined, outputFile);
@@ -122,7 +124,7 @@ export async function runCommandStringAndWriteOutput(
 ): Promise<CommandResult> {
     const run = new CommandRun();
     const options = {
-        cwd: vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.'
+        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.'
     };
 
     // Split the commandString into command and args array using string-argv
@@ -143,13 +145,14 @@ export async function runCommandStringAndWriteOutput(
 
 export async function getLanguageIdByFileName(fileName: string): Promise<string | undefined> {
 	try {
-		// 打开指定的文件
-		const document = await vscode.workspace.openTextDocument(fileName);
-		// 获取文件的语言标识符
-		const languageId = document.languageId;
+		const languageId = await UiUtilWrapper.languageId(fileName);
 		return languageId;
 	} catch (error) {
 		// 如果无法打开文件或发生其他错误，返回undefined
 		return undefined;
 	}
+}
+
+export function runCommand(command: string): string {
+	return childProcess.execSync(command).toString();
 }

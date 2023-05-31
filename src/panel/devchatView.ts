@@ -8,6 +8,7 @@ import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
 import ExtensionContextHolder from '../util/extensionContext';
 import CustomCommands from '../command/customCommand';
 import { TopicManager } from '../topic/topicManager';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -27,7 +28,7 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		// 创建 .chat 目录并复制 workflows
 		createChatDirectoryAndCopyInstructionsSync(ExtensionContextHolder.context?.extensionUri!);
 
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
 			CustomCommands.getInstance().parseCommands(workflowsDir);

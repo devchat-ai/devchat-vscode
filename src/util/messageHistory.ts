@@ -1,6 +1,5 @@
-import * as vscode from 'vscode';
 
-class MessageHistory {
+export class MessageHistory {
 	private history: any[];
 	private lastmessage: any | null;
 
@@ -19,10 +18,6 @@ class MessageHistory {
 	}
 	findLast() {
 		return this.lastmessage;
-	}
-
-	remove() {
-		return;
 	}
 
 	clear() {

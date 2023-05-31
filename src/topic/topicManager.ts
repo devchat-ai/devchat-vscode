@@ -1,11 +1,11 @@
 import { v4 as uuidv4 } from 'uuid';
-import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
 import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 
 import { loadTopicList } from './loadTopics';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export class Topic {
 	name: string | undefined;
@@ -194,7 +194,7 @@ export class TopicManager {
 
 		if (topic.firstMessageHash) {
 			// get ${WORKSPACE_ROOT}/.chat/.deletedTopics
-			const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+			const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 			const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
 
 			// read ${WORKSPACE_ROOT}/.chat/.deletedTopics as String[]
@@ -218,7 +218,7 @@ export class TopicManager {
 	}
 
 	isDeleteTopic(topicId: string) {
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
 
 		if (!fs.existsSync(deletedTopicsPath)) {

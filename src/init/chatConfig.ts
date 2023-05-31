@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as ncp from 'ncp';
 
 import { logger } from '../util/logger';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 function copyFileSync(source: string, target: string) {
@@ -32,13 +32,11 @@ function copyFileSync(source: string, target: string) {
   }
 
 export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.Uri) {
-  
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) {
+  	const workspaceRoot = UiUtilWrapper.workspaceFoldersFirstPath();
+    if (!workspaceRoot) {
       return;
     }
   
-    const workspaceRoot = workspaceFolders[0].uri.fsPath;
     const chatWorkflowsDirPath = path.join(workspaceRoot, '.chat', 'workflows');
     const instructionsSrcPath = path.join(extensionUri.fsPath, 'workflows');
   

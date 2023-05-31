@@ -9,6 +9,7 @@ import WebviewManager from './webviewManager';
 import CustomCommands from '../command/customCommand';
 import CommandManager from '../command/commandManager';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export default class ChatPanel {
 	private static _instance: ChatPanel | undefined;
@@ -20,7 +21,7 @@ export default class ChatPanel {
 		// 创建 .chat 目录并复制 workflows
 		createChatDirectoryAndCopyInstructionsSync(extensionUri);
 
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
 			CustomCommands.getInstance().parseCommands(workflowsDir);

@@ -1,8 +1,8 @@
 
-import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { createTempSubdirectory, getLanguageIdByFileName } from '../util/commonUtil';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export async function handleFileSelected(fileSelected: string) {
     // get file name from fileSelected
@@ -18,7 +18,7 @@ export async function handleFileSelected(fileSelected: string) {
     const languageId = await getLanguageIdByFileName(fileSelected);
 
 	// get relative path of workspace
-	const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 	const relativePath = path.relative(workspaceDir!, fileSelected);
 
     // convert fileContent to markdown code block with languageId and file path
@@ -30,7 +30,7 @@ export async function handleFileSelected(fileSelected: string) {
 	const jsonData = JSON.stringify(data);
 
     // save markdownCodeBlock to temp file
-    await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(jsonData));
+    await UiUtilWrapper.writeFile(tempFile, jsonData);
 
     return `[context|${tempFile}]`;
 }
