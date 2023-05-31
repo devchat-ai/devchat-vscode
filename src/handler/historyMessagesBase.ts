@@ -1,10 +1,9 @@
 
 
-import { checkOpenaiApiKey } from '../contributes/commandsBase';
 import { TopicManager } from '../topic/topicManager';
 import { LogEntry } from '../toolwrapper/devchat';
 import messageHistory from '../util/messageHistory';
-import { UiUtilWrapper } from '../util/uiUtil';
+import { ApiKeyManager } from '../util/apiKey';
 
 let isApiSet: boolean | undefined = undefined;
 
@@ -47,7 +46,7 @@ OPENAI_API_KEY is missing from your environment or settings. Kindly input your O
 
 export function isValidApiKey(apiKey: string) {
 	let apiKeyStrim = apiKey.trim();
-	if (apiKeyStrim.indexOf('sk-') !== 0 && apiKeyStrim.indexOf('DC.') !== 0) {
+	if (ApiKeyManager.getKeyType(apiKeyStrim) === undefined) {
 		return false;
 	}
 	return true;
@@ -55,7 +54,8 @@ export function isValidApiKey(apiKey: string) {
 
 export async function isWaitForApiKey() {
 	if (isApiSet === undefined) {
-		isApiSet = await checkOpenaiApiKey();
+		const apiKey = await ApiKeyManager.getApiKey();
+		isApiSet = apiKey !== undefined;
 	}
 	return !isApiSet;
 }
@@ -91,9 +91,9 @@ export function updateCurrentMessageHistory(logEntries: Array<LogEntry>): void {
 }
 
 export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefined> {
-	const isApiKeyReady = await checkOpenaiApiKey();
+	const apiKey = await ApiKeyManager.getApiKey();
 	isApiSet = true;
-	if (!isApiKeyReady) {
+	if (!apiKey) {
 		const startMessage = [ apiKeyMissedMessage() ];
 		isApiSet = false;
 		
@@ -111,7 +111,7 @@ export async function historyMessagesBase(): Promise<LoadHistoryMessages> {
 	updateCurrentMessageHistory(logEntriesFlat);
 	
 	const apiKeyMessage = await apiKeyInvalidMessage();
-	if (apiKeyMessage) {
+	if (apiKeyMessage !== undefined) {
 		return apiKeyMessage;
 	}
 	
@@ -127,7 +127,7 @@ export async function onApiKeyBase(apiKey: string): Promise<{command: string, te
 	}
 
 	isApiSet = true;
-	UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
+	ApiKeyManager.writeApiKeySecret(apiKey);
 
 	const welcomeMessageText =  welcomeMessage().response;
 	return { command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false };

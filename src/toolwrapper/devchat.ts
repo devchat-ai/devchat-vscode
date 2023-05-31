@@ -7,6 +7,7 @@ import { logger } from '../util/logger';
 import { CommandRun } from "../util/commonUtil";
 import ExtensionContextHolder from '../util/extensionContext';
 import { UiUtilWrapper } from '../util/uiUtil';
+import { ApiKeyManager } from '../util/apiKey';
 
 
 
@@ -84,17 +85,6 @@ class DevChat {
 		return args;
 	}
 
-	async getOpenaiApiKey(): Promise<string | undefined> {
-		let openaiApiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
-		if (!openaiApiKey) {
-			openaiApiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
-		}
-		if (!openaiApiKey) {
-			openaiApiKey = process.env.OPENAI_API_KEY;
-		}
-		return openaiApiKey;
-	}
-
 	private parseOutData(stdout: string, isPartial: boolean): ChatResponse {
 		const responseLines = stdout.trim().split("\n");
 
@@ -147,16 +137,7 @@ class DevChat {
 	}
 
 	apiEndpoint(apiKey: string | undefined): any {
-		let openAiApiBase: string | undefined = undefined;
-		if (apiKey?.startsWith("DC.")) {
-			// TODO add devchat proxy
-			openAiApiBase = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
-		}
-
-		
-		if (UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT')) {
-			openAiApiBase = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
-		}
+		const openAiApiBase = ApiKeyManager.getEndPoint(apiKey);
 
 		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
 		return openAiApiBaseObject;
@@ -167,7 +148,7 @@ class DevChat {
 		args.push(content);
 
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		let openaiApiKey = await this.getOpenaiApiKey();
+		let openaiApiKey = await ApiKeyManager.getApiKey();
 		if (!openaiApiKey) {
 			logger.channel()?.error('OpenAI key is invalid!');
 			logger.channel()?.show();

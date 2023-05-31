@@ -7,7 +7,7 @@ import CustomCommands from '../command/customCommand';
 
 
 // Add this function to messageHandler.ts
-function parseMessage(message: string): { context: string[]; instruction: string[]; reference: string[]; text: string } {
+export function parseMessage(message: string): { context: string[]; instruction: string[]; reference: string[]; text: string } {
 	const contextRegex = /\[context\|(.*?)\]/g;
 	const instructionRegex = /\[instruction\|(.*?)\]/g;
 	const referenceRegex = /\[reference\|(.*?)\]/g;
@@ -43,7 +43,7 @@ function parseMessage(message: string): { context: string[]; instruction: string
 	return { context: contextPaths, instruction: instructionPaths, reference: referencePaths, text };
 }
 
-function getInstructionFiles(): string[] {
+export function getInstructionFiles(): string[] {
 	const instructionFiles: string[] = [];
 
 	const customCommands = CustomCommands.getInstance().getCommands();
@@ -64,7 +64,7 @@ let userStop = false;
 
 
 // 将解析消息的部分提取到一个单独的函数中
-async function parseMessageAndSetOptions(message: any, chatOptions: any): Promise<{ context: string[]; instruction: string[]; reference: string[]; text: string }> {
+export async function parseMessageAndSetOptions(message: any, chatOptions: any): Promise<{ context: string[]; instruction: string[]; reference: string[]; text: string }> {
 	const newText2 = await CommandManager.getInstance().processText(message.text);
 	const parsedMessage = parseMessage(newText2);
 
@@ -84,12 +84,12 @@ async function parseMessageAndSetOptions(message: any, chatOptions: any): Promis
 }
 
 // 将处理父哈希的部分提取到一个单独的函数中
-function getParentHash(message: any) {
+export function getParentHash(message: any): string|undefined {
 	let parentHash = undefined;
 	logger.channel()?.info(`request message hash: ${message.hash}`);
 	if (message.hash) {
 		const hmessage = messageHistory.find(message.hash);
-		parentHash = hmessage ? message.parentHash : undefined;
+		parentHash = hmessage ? hmessage.parentHash : undefined;
 	} else {
 		const hmessage = messageHistory.findLast();
 		parentHash = hmessage ? hmessage.hash : undefined;
@@ -117,7 +117,7 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	if (userStop) {
 		userStop = false;
-		if (responseText.indexOf('Exit code: undefined') >= 0) {
+		if (responseText == '' && chatResponse.isError) {
 			return undefined;
 		}
 	}

@@ -1,6 +1,8 @@
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as childProcess from 'child_process';
+
 import { parseArgsStringToArgv } from 'string-argv';
 
 import { logger } from './logger';
@@ -77,7 +79,7 @@ export class CommandRun {
 				if (code === 0) {
 					resolve({ exitCode: code, stdout, stderr });
 				} else {
-					reject({ exitCode: code, stdout, stderr });
+					resolve({ exitCode: code, stdout, stderr });
 				}
 			});
 
@@ -90,7 +92,7 @@ export class CommandRun {
 					logger.channel()?.error(`Error occurred: ${error.message}`);
 					logger.channel()?.show();
 				}
-				reject({ exitCode: error.code, stdout: "", stderr: error.message });
+				resolve({ exitCode: error.code, stdout: "", stderr: error.message });
 			});
 		});
 	};
@@ -149,4 +151,8 @@ export async function getLanguageIdByFileName(fileName: string): Promise<string 
 		// 如果无法打开文件或发生其他错误，返回undefined
 		return undefined;
 	}
+}
+
+export function runCommand(command: string): string {
+	return childProcess.execSync(command).toString();
 }

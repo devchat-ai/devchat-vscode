@@ -4,6 +4,7 @@ import ExtensionContextHolder from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
+import { ApiKeyManager } from '../util/apiKey';
 
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
@@ -70,7 +71,7 @@ export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
 				title: "OPENAI_API_KEY"
 			}) ?? '';
 
-			secretStorage.store("devchat_OPENAI_API_KEY", passwordInput);
+			ApiKeyManager.writeApiKeySecret(passwordInput);
 		})
 	);
 }

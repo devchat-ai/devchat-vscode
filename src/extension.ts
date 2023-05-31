@@ -21,7 +21,8 @@ import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
 import { LoggerChannelVscode } from './util/logger_vscode';
 import { createStatusBarItem } from './panel/statusBarView';
-import { UiUtilWrapper, UiUtilVscode } from './util/uiUtil';
+import { UiUtilWrapper } from './util/uiUtil';
+import { UiUtilVscode } from './util/uiUtil_vscode';
 
 
 function activate(context: vscode.ExtensionContext) {

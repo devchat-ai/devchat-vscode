@@ -18,7 +18,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 	_lastMessage = message;
 
 	const responseMessage = await sendMessageBase(message,  (data: { command: string, text: string, user: string, date: string}) => {
-		MessageHandler.sendMessage(panel, data);
+		MessageHandler.sendMessage(panel, data, false);
 	});
 	if (responseMessage) {
 		MessageHandler.sendMessage(panel, responseMessage);

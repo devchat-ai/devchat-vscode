@@ -1,4 +1,3 @@
-import ExtensionContextHolder from './extensionContext';
 
 export interface UiUtil {
 	languageId(uri: string): Promise<string>;
@@ -12,45 +11,6 @@ export interface UiUtil {
 	runTerminal(terminalName:string, command: string): void;
 }
 
-
-import * as vscode from 'vscode';
-export class UiUtilVscode implements UiUtil {
-	public async languageId(uri: string): Promise<string> {
-		const document = await vscode.workspace.openTextDocument(uri);
-		return document.languageId;
-	}
-	public workspaceFoldersFirstPath(): string | undefined {
-		return vscode.workspace.workspaceFolders?.[0].uri.fsPath;
-	}
-
-	public getConfiguration(key1: string, key2: string): string | undefined {
-		return vscode.workspace.getConfiguration(key1).get(key2);
-	}
-	public async secretStorageGet(key: string): Promise<string | undefined> {
-		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
-		let openaiApiKey = await secretStorage.get(key);
-		return openaiApiKey;
-	}
-	public async writeFile(uri: string, content: string): Promise<void> {
-		vscode.workspace.fs.writeFile(vscode.Uri.file(uri), Buffer.from(content));
-	}
-	public async showInputBox(option: object): Promise<string | undefined> {
-		return vscode.window.showInputBox(option);		
-	}
-	public async storeSecret(key: string, value: string): Promise<void> {
-		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
-		await secretStorage.store(key, value);
-	}
-	public extensionPath(): string {
-		return ExtensionContextHolder.context!.extensionUri.fsPath;
-	}
-	public runTerminal(terminalName: string, command: string): void {
-		const terminal = vscode.window.createTerminal(terminalName);
-		terminal.sendText(command);
-		terminal.show();
-	}
-}
-
 export class UiUtilWrapper {
 	private static _uiUtil: UiUtil | undefined;
 	public static init(uiUtil: UiUtil): void {
@@ -58,7 +18,7 @@ export class UiUtilWrapper {
 	}
 
 	public static async languageId(uri: string): Promise<string | undefined> {
-		return this._uiUtil?.languageId(uri);
+		return await this._uiUtil?.languageId(uri);
 	}
 	public static workspaceFoldersFirstPath(): string | undefined {
 		return this._uiUtil?.workspaceFoldersFirstPath();
@@ -67,16 +27,16 @@ export class UiUtilWrapper {
 		return this._uiUtil?.getConfiguration(key1, key2);
 	}
 	public static async secretStorageGet(key: string): Promise<string | undefined> {
-		return this._uiUtil?.secretStorageGet(key);
+		return await this._uiUtil?.secretStorageGet(key);
 	}
 	public static async writeFile(uri: string, content: string): Promise<void> {
-		return this._uiUtil?.writeFile(uri, content);
+		return await this._uiUtil?.writeFile(uri, content);
 	}
 	public static async showInputBox(option: object): Promise<string | undefined> {
-		return this._uiUtil?.showInputBox(option);
+		return await this._uiUtil?.showInputBox(option);
 	}
 	public static async storeSecret(key: string, value: string): Promise<void> {
-		return this._uiUtil?.storeSecret(key, value);
+		return await this._uiUtil?.storeSecret(key, value);
 	}
 	public static extensionPath(): string {
 		return this._uiUtil?.extensionPath()!;

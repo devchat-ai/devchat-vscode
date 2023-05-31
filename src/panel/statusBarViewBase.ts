@@ -5,7 +5,7 @@ import { logger } from "../util/logger";
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
 import { checkDevChatDependency } from "../contributes/commandsBase";
-import { checkOpenaiApiKey } from "../contributes/commandsBase";
+import { ApiKeyManager } from '../util/apiKey';
 
 
 
@@ -69,7 +69,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 
 	// check api key
 	if (apiKeyStatus === '' || apiKeyStatus === 'please set api key') {
-		const bOk = await checkOpenaiApiKey();
+		const bOk = await ApiKeyManager.getApiKey();
 		if (bOk) {
 			apiKeyStatus = 'ready';
 		} else {

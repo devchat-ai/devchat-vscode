@@ -8,7 +8,7 @@ import { historyMessagesBase, onApiKeyBase } from './historyMessagesBase';
 regInMessage({command: 'historyMessages', options: { skip: 0, maxCount: 0 }});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
 export async function historyMessages(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	const historyMessage = historyMessagesBase();
+	const historyMessage = await historyMessagesBase();
 	MessageHandler.sendMessage(panel, historyMessage);
 }
 
