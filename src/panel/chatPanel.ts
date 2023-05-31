@@ -20,7 +20,7 @@ export default class ChatPanel {
 		// 创建 .chat 目录并复制 workflows
 		createChatDirectoryAndCopyInstructionsSync(extensionUri);
 
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
 			CustomCommands.getInstance().parseCommands(workflowsDir);

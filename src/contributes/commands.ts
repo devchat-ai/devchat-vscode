@@ -9,6 +9,7 @@ import { FilePairManager } from '../util/diffFilePairs';
 
 
 import * as process from 'process';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export function checkDevChatDependency(): boolean {
@@ -37,11 +38,10 @@ export function checkDevChatDependency(): boolean {
   }
 }
 
-export async function checkOpenaiApiKey() {
-	const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
-	let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
+export async function checkOpenAiAPIKey() {
+	let openaiApiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
 	if (!openaiApiKey) {
-		openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
+		openaiApiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
 	}
 	if (!openaiApiKey) {
 		openaiApiKey = process.env.OPENAI_API_KEY;
@@ -50,48 +50,6 @@ export async function checkOpenaiApiKey() {
 		return false;
 	}
 	return true;
-}
-
-function checkOpenaiKey() {
-	let openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
-	if (!openaiApiKey) {
-		openaiApiKey = process.env.OPENAI_API_KEY;
-	}
-	if (!openaiApiKey) {
-		// OpenAI key not set
-		vscode.window.showInputBox({
-			placeHolder: 'Please input your OpenAI API key (or DevChat access key)'
-		}).then((value) => {
-			if (value) {
-				// 设置用户输入的API Key
-				vscode.workspace.getConfiguration('DevChat').update('API_KEY', value, true);
-			}
-		});
-		return false;
-	}
-	return true;
-}
-
-function checkDependencyPackage() {
-	const dependencyInstalled = checkDevChatDependency();
-	if (!dependencyInstalled) {
-		// Prompt the user, whether to install devchat using pip3 install devchat
-		const installPrompt = 'devchat is not installed. Do you want to install it using pip3 install devchat?';
-		const installAction = 'Install';
-
-		vscode.window.showInformationMessage(installPrompt, installAction).then((selectedAction) => {
-			if (selectedAction === installAction) {
-				// Install devchat using pip3 install devchat
-				const terminal = vscode.window.createTerminal("DevChat Install");
-				terminal.sendText("pip3 install --upgrade devchat");
-				terminal.show();
-			}
-		});
-	}
-
-	if (!checkOpenaiKey()) {
-		return;
-	}
 }
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
@@ -278,7 +236,6 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 }
 
 export {
-	checkDependencyPackage,
     registerOpenChatPanelCommand,
     registerAddContextCommand,
     registerAskForCodeCommand,

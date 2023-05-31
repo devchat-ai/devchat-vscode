@@ -1,8 +1,4 @@
-import { vs } from "react-syntax-highlighter/dist/esm/styles/hljs";
 import CustomCommands from "./customCommand";
-import { logger } from "../util/logger";
-import * as vscode from 'vscode';
-import * as path from 'path';
 
 export interface Command {
     name: string;

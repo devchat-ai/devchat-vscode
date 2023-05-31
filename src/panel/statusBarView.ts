@@ -42,7 +42,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 		// 3. ready
 		if (devchatStatus === '' || devchatStatus === 'waiting install devchat') {
 			let bOk = true;
-			let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+			let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 			if (!devChat) {
 				bOk = false;
 			}

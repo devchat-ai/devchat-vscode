@@ -1,15 +1,15 @@
 import * as path from 'path';
-import * as vscode from 'vscode';
 import { ChatContext } from './contextManager';
 import { createTempSubdirectory, runCommandStringAndWriteOutput } from '../util/commonUtil';
 import { logger } from '../util/logger';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 export const customCommandContext: ChatContext = {
     name: '<custom command>',
     description: 'custorm command',
     handler: async () => {
         // popup a dialog to ask for the command line to run
-        const customCommand = await vscode.window.showInputBox({
+        const customCommand = await UiUtilWrapper.showInputBox({
             prompt: 'Input your custom command',
             placeHolder: 'for example: ls -l'
         });

@@ -8,6 +8,7 @@ import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { applyCodeChanges, isValidActionString } from '../util/appyDiff';
 import { logger } from '../util/logger';
 import { FilePairManager } from '../util/diffFilePairs';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 
@@ -64,7 +65,7 @@ export async function diffView(code: string, tarFile: string) {
 	const tempFile = path.join(tempDir, fileName);
 
 	// save code to temp file
-	await vscode.workspace.fs.writeFile(vscode.Uri.file(tempFile), Buffer.from(code));
+	await UiUtilWrapper.writeFile(tempFile, code);
 
 	// open diff view
 	FilePairManager.getInstance().addFilePair(curFile, tempFile);

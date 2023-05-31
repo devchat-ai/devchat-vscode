@@ -22,12 +22,16 @@ import { regDevChatView, regTopicView } from './contributes/views';
 
 import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
+import { LoggerChannelVscode } from './util/logger_vscode';
 import { createStatusBarItem } from './panel/statusBarView';
+import { UiUtilWrapper } from './util/uiUtil';
 
 
 function activate(context: vscode.ExtensionContext) {
 	ExtensionContextHolder.context = context;
-	logger.init(context);
+
+	logger.init(LoggerChannelVscode.getInstance());
+	UiUtilWrapper.init(new UiUtilVscode());
 
 	regLanguageContext();
 

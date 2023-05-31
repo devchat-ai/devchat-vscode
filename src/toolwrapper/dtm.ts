@@ -1,5 +1,4 @@
 import { spawn } from "child_process";
-import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 
@@ -17,7 +16,7 @@ class DtmWrapper {
 	private commandRun: CommandRun;
 
 	constructor() {
-		this.workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath || '.';
+		this.workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath() || '.';
 		this.commandRun = new CommandRun();
 	}
 

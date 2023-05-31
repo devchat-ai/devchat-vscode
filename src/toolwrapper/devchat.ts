@@ -1,5 +1,4 @@
 // devchat.ts
-import * as vscode from 'vscode';
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -7,6 +6,7 @@ import * as fs from 'fs';
 import { logger } from '../util/logger';
 import { CommandRun } from "../util/commonUtil";
 import ExtensionContextHolder from '../util/extensionContext';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 
@@ -84,11 +84,10 @@ class DevChat {
 		return args;
 	}
 
-	async getOpenaiApiKey(): Promise<string | undefined> {
-		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
-		let openaiApiKey = await secretStorage.get("devchat_OPENAI_API_KEY");
+	async getOpenAiApiKey(): Promise<string | undefined> {
+		let openaiApiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
 		if (!openaiApiKey) {
-			openaiApiKey = vscode.workspace.getConfiguration('DevChat').get('API_KEY');
+			openaiApiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
 		}
 		if (!openaiApiKey) {
 			openaiApiKey = process.env.OPENAI_API_KEY;
@@ -166,7 +165,7 @@ class DevChat {
 		const args = await this.buildArgs(options);
 		args.push(content);
 
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		let openaiApiKey = await this.getOpenaiApiKey();
 		if (!openaiApiKey) {
 			logger.channel()?.error('OpenAI key is invalid!');
@@ -177,13 +176,13 @@ class DevChat {
 		// 如果配置了devchat的TOKEN，那么就需要使用默认的代理
 		let openAiApiBaseObject = this.apiEndpoint(openaiApiKey);
 
-		const openaiModel = vscode.workspace.getConfiguration('DevChat').get('OpenAI.model');
-		const openaiTemperature = vscode.workspace.getConfiguration('DevChat').get('OpenAI.temperature');
-		const openaiStream = vscode.workspace.getConfiguration('DevChat').get('OpenAI.stream');
-		const llmModel = vscode.workspace.getConfiguration('DevChat').get('llmModel');
-		const tokensPerPrompt = vscode.workspace.getConfiguration('DevChat').get('OpenAI.tokensPerPrompt');
+		const openaiModel = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.model');
+		const openaiTemperature = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.temperature');
+		const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
+		const llmModel = UiUtilWrapper.getConfiguration('DevChat', 'llmModel');
+		const tokensPerPrompt = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.tokensPerPrompt');
 
-		let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 		if (!devChat) {
 			devChat = 'devchat';
 		}
@@ -253,7 +252,7 @@ class DevChat {
 	async log(options: LogOptions = {}): Promise<LogEntry[]> {
 		const args = this.buildLogArgs(options);
 		const devChat = this.getDevChatPath();
-		const workspaceDir = vscode.workspace.workspaceFolders?.[0].uri.fsPath;
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
 		logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
@@ -286,7 +285,7 @@ class DevChat {
 		if (options.maxCount) {
 			args.push('--max-count', `${options.maxCount}`);
 		} else {
-			const maxLogCount = vscode.workspace.getConfiguration('DevChat').get('maxLogCount');
+			const maxLogCount = UiUtilWrapper.getConfiguration('DevChat', 'maxLogCount');
 			args.push('--max-count', `${maxLogCount}`);
 		}
 
@@ -294,7 +293,7 @@ class DevChat {
 	}
 
 	private getDevChatPath(): string {
-		let devChat: string | undefined = vscode.workspace.getConfiguration('DevChat').get('DevChatPath');
+		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 		if (!devChat) {
 			devChat = 'devchat';
 		}
