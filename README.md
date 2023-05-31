@@ -94,7 +94,7 @@ DevChat is the way developers interact and collaborate with AI.
 
 - Join our [Discord](https://discord.gg/9t3yrbBUXD)!
 - Participate in [discussions](https://github.com/covespace/devchat/discussions)!
-- 扫描二维码加入中文讨论组！
+- Chinese speaking users: 欢迎加入中文讨论组！
 
   <img width="300" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/4407f1af-9f95-4dd4-b08f-e12125a0cf2c">
 
