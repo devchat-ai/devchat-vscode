@@ -16,7 +16,10 @@ export async function historyMessages(message: {command: string, page: number}, 
 	const skip = maxCount * (message.page ? message.page : 0);
 
 	if (messageHistory.getTopic() !== TopicManager.getInstance().currentTopicId) {
-		await historyMessagesBase();
+		const historyMessageAll = await historyMessagesBase();
+		if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
+			MessageHandler.sendMessage(panel, historyMessageAll!);
+		}
 	}
 
 	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(skip, maxCount);
