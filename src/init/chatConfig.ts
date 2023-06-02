@@ -8,7 +8,9 @@ import { UiUtilWrapper } from '../util/uiUtil';
 
 function copyFileSync(source: string, target: string) {
 	const data = fs.readFileSync(source);
-	fs.writeFileSync(target, data);
+	if (!fs.existsSync(target)) {
+		fs.writeFileSync(target, data);
+	}
   }
   
   function copyDirSync(source: string, target: string) {
@@ -45,7 +47,7 @@ export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.
       if (!fs.existsSync(chatWorkflowsDirPath)) {
         fs.mkdirSync(chatWorkflowsDirPath, {recursive: true});
       } else {
-        return;
+        // return;
       }
   
       // 将 workflows 目录复制到 .chat 目录中
