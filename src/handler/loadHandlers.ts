@@ -13,6 +13,8 @@ import { addConext } from './addContext';
 import { addRefCommandContext } from './addRefCommandContext';
 import { contextDetail } from './contextDetail';
 import { listAllMessages } from './listMessages';
+import { regActionList } from './regActionList';
+import { applyAction } from './applyAction';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -65,3 +67,9 @@ messageHandler.registerHandler('listAllMessages', listAllMessages);
 // Regeneration
 // The response is the same as sendMessage
 messageHandler.registerHandler('regeneration', regeneration);
+// Register the action list
+// Response: { command: 'regActionList', result: <action list> }
+messageHandler.registerHandler('regActionList', regActionList);
+// Apply action for code block
+// Response: none
+messageHandler.registerHandler('applyAction', applyAction);

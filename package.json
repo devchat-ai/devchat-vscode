@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.0.47",
+	"version": "0.0.49",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -306,6 +306,7 @@
 		}
 	},
 	"scripts": {
+		"vscode:uninstall": "node ./dist/uninstall",
 		"vscode:prepublish": "npm run package",
 		"compile": "webpack",
 		"watch": "webpack --watch",

@@ -51,7 +51,7 @@ export function getInstructionFiles(): string[] {
 	for (const command of customCommands) {
 		if (command.default) {
 			for (const instruction of command.instructions) {
-				instructionFiles.push(`./.chat/workflows/${command.name}/${instruction}`);
+				instructionFiles.push(`${instruction}`);
 			}
 		}
 	}
@@ -73,7 +73,7 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	}
 
 	chatOptions.header = getInstructionFiles();
-	if (parsedMessage.instruction.length > 0) {
+	if (message.text === newText2) {
 		chatOptions.header = parsedMessage.instruction;
 	}
 
