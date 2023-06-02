@@ -8,7 +8,7 @@ import { logger } from '../util/logger';
 
 let isApiSet: boolean | undefined = undefined;
 
-interface LoadHistoryMessages {
+export interface LoadHistoryMessages {
 	command: string;
 	entries: Array<LogEntry>;
 }
@@ -77,6 +77,7 @@ export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefin
 
 export function updateCurrentMessageHistory(logEntries: Array<LogEntry>): void {
 	messageHistory.clear();
+	messageHistory.setTopic(TopicManager.getInstance().currentTopicId!);
 
 	for (let i = 0; i < logEntries.length; i++) {
 		let entryOld = logEntries[i];
@@ -86,13 +87,33 @@ export function updateCurrentMessageHistory(logEntries: Array<LogEntry>): void {
 			request: entryOld.request,
 			text: entryOld.response,
 			user: entryOld.user,
-			parentHash: '',
+			parentHash: entryOld.parent,
+			context: entryOld.context,
 		};
-		if (i > 0) {
-			entryNew.parentHash = logEntries[i - 1].hash;
-		}
 		messageHistory.add(entryNew);
+
 	}
+}
+
+export function loadTopicHistoryFromCurrentMessageHistory(skip: number, count: number): LoadHistoryMessages {
+	const logEntries = messageHistory.getList();
+	const newEntries = logEntries.map((entry) => {
+		return {
+			hash: entry.hash,
+			parent: entry.parentHash,
+			user: entry.user,
+			date: entry.date,
+			request: entry.request,
+			response: entry.text,
+			context: entry.context,
+		} as LogEntry;
+	});
+
+	const logEntriesFlat = newEntries.reverse().slice(skip, skip + count).reverse();
+	return {
+		command: 'loadHistoryMessages',
+		entries: logEntriesFlat,
+	} as LoadHistoryMessages;
 }
 
 export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefined> {
