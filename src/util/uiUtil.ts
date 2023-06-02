@@ -9,7 +9,14 @@ export interface UiUtil {
 	storeSecret(key: string, value: string): Promise<void>;
 	extensionPath(): string;
 	runTerminal(terminalName:string, command: string): void;
+	// current active file path
+	activeFilePath(): string | undefined;
+	// current selected range, return undefined if no selection 
+	selectRange(): [number, number] | undefined;
+	// current selected text
+	selectText(): string | undefined;
 }
+
 
 export class UiUtilWrapper {
 	private static _uiUtil: UiUtil | undefined;
@@ -43,6 +50,18 @@ export class UiUtilWrapper {
 	}
 	public static runTerminal(terminalName: string, command: string): void {
 		this._uiUtil?.runTerminal(terminalName, command);
+	}
+	// current active file path
+	public static activeFilePath(): string | undefined {
+		return this._uiUtil?.activeFilePath();
+	}
+	// current selected range, return undefined if no selection 
+	public static selectRange(): [number, number] | undefined {
+		return this._uiUtil?.selectRange();
+	}
+	// current selected text
+	public static selectText(): string | undefined {
+		return this._uiUtil?.selectText();
 	}
 }
 
