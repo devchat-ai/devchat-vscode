@@ -9,6 +9,7 @@ export interface Command {
 	message: string;
 	default: boolean;
 	show: boolean;
+	args: number;
 	instructions: string[];
 }
 
@@ -51,6 +52,7 @@ class CustomCommands {
 								description: settings.description,
 								message: settings.message,
 								default: settings.default,
+								args: settings.args === undefined ? 0 : settings.args,
 								show: settings.show === undefined ? "true" : settings.show,
 								instructions: settings.instructions.map((instruction: string) => path.join(commandDir, commandSubDir, instruction))
 							};

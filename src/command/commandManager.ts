@@ -4,6 +4,7 @@ export interface Command {
 	name: string;
 	pattern: string;
 	description: string;
+	args: number;
 	handler: (commandName: string, userInput: string) => Promise<string>;
 }
 
@@ -35,6 +36,7 @@ class CommandManager {
 				name: command.name,
 				pattern: command.pattern,
 				description: command.description,
+				args: command.args,
 				handler: async (commandName: string, userInput: string) => {
 					return CustomCommands.getInstance().handleCommand(commandName, userInput);
 				}
