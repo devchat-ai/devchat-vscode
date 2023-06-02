@@ -30,24 +30,33 @@ class CustomCommands {
 		this.commands = [];
 
 		try {
-			const subDirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
+			const extensionDirs = fs.readdirSync(workflowsDir, { withFileTypes: true })
 				.filter(dirent => dirent.isDirectory())
 				.map(dirent => dirent.name);
 
-			for (const dir of subDirs) {
-				const settingsPath = path.join(workflowsDir, dir, '_setting_.json');
-				if (fs.existsSync(settingsPath)) {
-					const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-					const command: Command = {
-						name: dir,
-						pattern: settings.pattern,
-						description: settings.description,
-						message: settings.message,
-						default: settings.default,
-						show: settings.show === undefined ? "true" : settings.show,
-						instructions: settings.instructions
-					};
-					this.commands.push(command);
+			for (const extensionDir of extensionDirs) {
+				const commandDir = path.join(workflowsDir, extensionDir, 'command');
+				if (fs.existsSync(commandDir)) {
+					const commandSubDirs = fs.readdirSync(commandDir, { withFileTypes: true })
+						.filter(dirent => dirent.isDirectory())
+						.map(dirent => dirent.name);
+
+					for (const commandSubDir of commandSubDirs) {
+						const settingsPath = path.join(commandDir, commandSubDir, '_setting_.json');
+						if (fs.existsSync(settingsPath)) {
+							const settings = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
+							const command: Command = {
+								name: commandSubDir,
+								pattern: settings.pattern,
+								description: settings.description,
+								message: settings.message,
+								default: settings.default,
+								show: settings.show === undefined ? "true" : settings.show,
+								instructions: settings.instructions.map((instruction: string) => path.join(commandDir, commandSubDir, instruction))
+							};
+							this.commands.push(command);
+						}
+					}
 				}
 			}
 		} catch (error) {
@@ -71,7 +80,7 @@ class CustomCommands {
 	}
 
 
-	public handleCommand(commandName: string): string {
+	public handleCommand(commandName: string, userInput: string): string {
 		// 获取命令对象，这里假设您已经有一个方法或属性可以获取到命令对象
 		const command = this.getCommand(commandName);
 		if (!command) {
@@ -80,13 +89,39 @@ class CustomCommands {
 			return '';
 		}
 
-		// 构建instructions列表字符串
+		let commandMessage = command.message;
+		if (userInput && userInput.length > 0) {
+			// userInput is "['aa', 'bb]" like string
+			// parse userInput to array
+			// handle eval exception
+
+			try {
+				const userInputArray = eval(userInput);
+
+				// replace command message $1 with userInputArray[0], $2 with userInputArray[1] and so on
+				for (let i = 0; i < userInputArray.length; i++) {
+					commandMessage = commandMessage.replace(`$${i + 1}`, userInputArray[i]);
+				}
+			} catch (error) {
+				logger.channel()?.error(`Failed to parse user input: ${userInput} error: ${error}`);
+				logger.channel()?.show();
+				return '';
+			}
+		}
+
+		// replace ${Name} with enviroment var Name
+		const envVarRegex = /\${(\w+)}/g;
+		commandMessage = commandMessage.replace(envVarRegex, (match, p1) => {
+			return process.env[p1] || '';
+		});
+
+		// build instrctions
 		const instructions = command!.instructions
-			.map((instruction: string) => `[instruction|./.chat/workflows/${command.name}/${instruction}]`)
+			.map((instruction: string) => `[instruction|${instruction}]`)
 			.join(' ');
 
 		// 返回结果字符串
-		return `${instructions}  ${command!.message}`;
+		return `${instructions}  ${commandMessage}`;
 	}
 }
 
