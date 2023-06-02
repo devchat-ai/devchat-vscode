@@ -1,3 +1,10 @@
+import * as path from 'path';
+import { logger } from '../util/logger';
+
+import { createTempSubdirectory } from '../util/commonUtil';
+import CustomContexts from './customContext';
+
+
 export interface ChatContext {
     name: string;
     description: string;
@@ -21,8 +28,31 @@ export interface ChatContext {
     registerContext(context: ChatContext): void {
       this.contexts.push(context);
     }
+
+	public async loadCustomContexts(workflowsDir: string): Promise<void> {
+		const customContexts = CustomContexts.getInstance();
+		customContexts.parseContexts(workflowsDir);
+	
+		for (const customContext of customContexts.getContexts()) {
+			this.registerContext({
+				name: customContext.name,
+				description: customContext.description,
+				handler: async () => {
+					const tempDir = await createTempSubdirectory('devchat/context');
+    				
+					const outputFile = path.join(tempDir, 'context.txt');
+					const commandResult = await customContexts.handleCommand(customContext.name, outputFile);
+					
+					logger.channel()?.info(`${customContext.command.join(' ')} exit code:`, commandResult!.exitCode);
+					logger.channel()?.debug(`stdout:`, commandResult!.stdout);
+					logger.channel()?.debug(`stderr:`, commandResult!.stderr);
+					return `[context|${outputFile}]`;
+				},
+			});
+		}
+	}
   
-    getContextList(): ChatContext[] {
+	getContextList(): ChatContext[] {
       return this.contexts;
     }
   
@@ -35,7 +65,7 @@ export interface ChatContext {
         }
       
         return '';
-    }  
+    }
   }
   
   export default ChatContextManager;

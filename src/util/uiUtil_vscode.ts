@@ -39,4 +39,61 @@ export class UiUtilVscode implements UiUtil {
 		terminal.sendText(command);
 		terminal.show();
 	}
+
+	// current active file path
+	public activeFilePath(): string | undefined {
+		const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+
+		if (validVisibleTextEditors.length > 1) {
+			vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
+			return undefined;
+		}
+
+		const editor = validVisibleTextEditors[0];
+		if (!editor) {
+			return undefined;
+		}
+
+		return editor.document.fileName;
+	}
+	// current selected range, return undefined if no selection 
+	public selectRange(): [number, number] | undefined {
+		const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+
+		if (validVisibleTextEditors.length > 1) {
+			vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
+			return undefined;
+		}
+
+		const editor = validVisibleTextEditors[0];
+		if (!editor) {
+			return undefined;
+		}
+
+		if (editor.selection.isEmpty) {
+			return undefined;
+		}
+
+		return [editor.selection.start.character, editor.selection.end.character];
+	}
+	// current selected text
+	public selectText(): string | undefined {
+		const validVisibleTextEditors = vscode.window.visibleTextEditors.filter(editor => editor.viewColumn !== undefined);
+
+		if (validVisibleTextEditors.length > 1) {
+			vscode.window.showErrorMessage(`There are more then one visible text editors. Please close all but one and try again.`);
+			return undefined;
+		}
+
+		const editor = validVisibleTextEditors[0];
+		if (!editor) {
+			return undefined;
+		}
+
+		if (editor.selection.isEmpty) {
+			return undefined;
+		}
+
+		return editor.document.getText(editor.selection);
+	}
 }

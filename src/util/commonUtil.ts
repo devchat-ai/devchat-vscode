@@ -24,7 +24,7 @@ export function createTempSubdirectory(subdir: string): string {
 	return targetDir;
 }
 
-interface CommandResult {
+export interface CommandResult {
 	exitCode: number | null;
 	stdout: string;
 	stderr: string;
@@ -40,6 +40,7 @@ export class CommandRun {
 
 	public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
 		return new Promise((resolve, reject) => {
+			logger.channel()?.info(`Running command: ${command} ${args.join(' ')}`);
 			this.childProcess = spawn(command, args, options);
 
 			let stdout = '';
@@ -108,7 +109,7 @@ export class CommandRun {
 export async function runCommandAndWriteOutput(
 	command: string,
 	args: string[],
-	outputFile: string
+	outputFile: string | undefined
 ): Promise<CommandResult> {
 	const run = new CommandRun();
 	const options = {
@@ -141,6 +142,28 @@ export async function runCommandStringAndWriteOutput(
     };
 
     return run.spawnAsync(command, args, options, undefined, undefined, onOutputFile, outputFile);
+}
+
+export async function runCommandStringArrayAndWriteOutput(
+    commandStringList: string[],
+    outputFile: string
+): Promise<CommandResult> {
+    const run = new CommandRun();
+    const options = {
+        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.'
+    };
+
+	const commandString = commandStringList[0];
+	const args: string[] = commandStringList.slice(1);
+    const onOutputFile = (command: string, stdout: string, stderr: string): string => {
+        const data = {
+            command: commandString,
+            content: stdout,
+        };
+        return JSON.stringify(data);
+    };
+
+    return run.spawnAsync(commandString, args, options, undefined, undefined, onOutputFile, outputFile);
 }
 
 export async function getLanguageIdByFileName(fileName: string): Promise<string | undefined> {

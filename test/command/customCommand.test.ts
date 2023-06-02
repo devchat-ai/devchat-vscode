@@ -23,20 +23,24 @@ describe('CustomCommands', () => {
     // Mock the file system with two directories, one with _setting_.json and one without
     mockFs({
       'workflows': {
-        'command1': {
-          '_setting_.json': JSON.stringify({
-            pattern: 'command1',
-            description: 'Command 1',
-            message: 'Command 1 message',
-            default: false,
-            show: true,
-            instructions: ['instruction1', 'instruction2'],
-          }),
-        },
-        'command2': {
-          // No _setting_.json file
-        },
-      },
+		"some": {
+			"command": {
+				'command1': {
+					'_setting_.json': JSON.stringify({
+					  pattern: 'command1',
+					  description: 'Command 1',
+					  message: 'Command 1 message',
+					  default: false,
+					  show: true,
+					  instructions: ['instruction1', 'instruction2'],
+					}),
+				},
+				'command2': {
+					// No _setting_.json file
+				},
+			}
+		}
+      }
     });
 
     const workflowsDir = path.join(process.cwd(), 'workflows');
@@ -54,6 +58,7 @@ describe('CustomCommands', () => {
       },
     ];
 
+	expectedResult[0].instructions = [path.join(workflowsDir, 'some', 'command', 'command1', 'instruction1'), path.join(workflowsDir, 'some', 'command', 'command1', 'instruction2')];
     expect(customCommands['commands']).to.deep.equal(expectedResult);
   });
 
@@ -100,7 +105,23 @@ describe('CustomCommands', () => {
     };
 
     customCommands.regCommand(command);
-    const result = customCommands.handleCommand('test');
-    expect(result).to.equal('[instruction|./.chat/workflows/test/instruction1] [instruction|./.chat/workflows/test/instruction2]  Test message');
+    const result = customCommands.handleCommand('test', '');
+    expect(result).to.equal('[instruction|instruction1] [instruction|instruction2]  Test message');
+  });
+
+  it('should handle a custom command with args', () => {
+    const command: Command = {
+      name: 'test',
+      pattern: 'test {{prompt}}',
+      description: 'Test command',
+      message: 'Test message "$1","$2"',
+      default: false,
+      show: true,
+      instructions: ['instruction1', 'instruction2'],
+    };
+
+    customCommands.regCommand(command);
+    const result = customCommands.handleCommand('test', '["v1", "v2"]');
+    expect(result).to.equal('[instruction|instruction1] [instruction|instruction2]  Test message "v1","v2"');
   });
 });

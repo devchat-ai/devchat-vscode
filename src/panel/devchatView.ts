@@ -9,6 +9,8 @@ import ExtensionContextHolder from '../util/extensionContext';
 import CustomCommands from '../command/customCommand';
 import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
+import ChatContextManager from '../context/contextManager';
+import ActionManager from '../action/actionManager';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -32,6 +34,8 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
 			CustomCommands.getInstance().parseCommands(workflowsDir);
+			ChatContextManager.getInstance().loadCustomContexts(workflowsDir);
+			ActionManager.getInstance().loadCustomActions(workflowsDir);
 		}
 
 		this._view = webviewView;
