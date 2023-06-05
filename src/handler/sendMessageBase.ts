@@ -78,7 +78,7 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	}
 
 	chatOptions.header = getInstructionFiles();
-	if (message.text === newText2) {
+	if (message.text !== newText2) {
 		chatOptions.header = parsedMessage.instruction;
 	}
 
