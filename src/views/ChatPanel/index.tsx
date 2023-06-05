@@ -26,6 +26,25 @@ const blink = keyframes({
 
 const CodeBlock = (props: any) => {
     const { messageText } = props;
+
+    const LanguageCorner = (props: any) => {
+        const { language } = props;
+
+        return (<div style={{ position: 'absolute', top: 0, left: 0 }}>
+            {language && (
+                <div style={{
+                    backgroundColor: '#333',
+                    color: '#fff',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '0.2rem',
+                    fontSize: '0.8rem',
+                }}>
+                    {language}
+                </div>
+            )}
+        </div>);
+    };
+
     return (
         <ReactMarkdown
             components={{
@@ -37,21 +56,7 @@ const CodeBlock = (props: any) => {
 
                     return !inline && match ? (
                         <div style={{ position: 'relative' }}>
-                            <div style={{ position: 'absolute', top: 0, left: 0 }}>
-                                {match[1] && (
-                                    <div
-                                        style={{
-                                            backgroundColor: '#333',
-                                            color: '#fff',
-                                            padding: '0.2rem 0.5rem',
-                                            borderRadius: '0.2rem',
-                                            fontSize: '0.8rem',
-                                        }}
-                                    >
-                                        {match[1]}
-                                    </div>
-                                )}
-                            </div>
+                            <LanguageCorner language={match[1]} />
                             <Flex
                                 gap="5px"
                                 justify="flex-start"
