@@ -114,14 +114,12 @@ const InputMessage = (props: any) => {
                     marginLeft: 12,
                 }} />);
         }
-        if (name === '<custom command>') {
-            return (<IconShellCommand size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
-        }
+        return (<IconShellCommand size={16}
+            color='var(--vscode-menu-foreground)'
+            style={{
+                marginTop: 8,
+                marginLeft: 12,
+            }} />);
     };
 
     const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
