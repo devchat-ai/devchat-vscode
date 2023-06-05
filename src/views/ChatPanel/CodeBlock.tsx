@@ -2,7 +2,7 @@ import { Tooltip, ActionIcon, CopyButton, Flex } from "@mantine/core";
 import { IconCheck, IconGitCommit, IconFileDiff, IconColumnInsertRight, IconReplace, IconCopy } from "@tabler/icons-react";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
-import SyntaxHighlighter from "react-syntax-highlighter";
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import messageUtil from '../../util/MessageUtil';
