@@ -686,6 +686,65 @@ const chatPanel = () => {
             </Flex>);
     });
 
+    const RegenerationButton = () => {
+        return (<Button
+            size='xs'
+            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
+            sx={{
+                backgroundColor: 'var(--vscode-button-background)',
+            }}
+            styles={{
+                icon: {
+                    color: 'var(--vscode-button-foreground)'
+                },
+                label: {
+                    color: 'var(--vscode-button-foreground)',
+                    fontSize: 'var(--vscode-editor-font-size)',
+                }
+            }}
+            variant="white"
+            onClick={() => {
+                messageUtil.sendMessage({
+                    command: 'regeneration'
+                });
+                messageHandlers.pop();
+                setHasError(false);
+                setGenerating(true);
+                setResponsed(false);
+                setCurrentMessage('');
+            }}>
+            Regeneration
+        </Button>);
+    };
+
+    const StopButton = () => {
+        return (
+            <Button
+                size='xs'
+                leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
+                sx={{
+                    backgroundColor: 'var(--vscode-button-background)',
+                }}
+                styles={{
+                    icon: {
+                        color: 'var(--vscode-button-foreground)'
+                    },
+                    label: {
+                        color: 'var(--vscode-button-foreground)',
+                        fontSize: 'var(--vscode-editor-font-size)',
+                    }
+                }}
+                variant="white"
+                onClick={() => {
+                    messageUtil.sendMessage({
+                        command: 'stopDevChat'
+                    });
+                    setGenerating(false);
+                }}>
+                Stop generating
+            </Button>);
+    };
+
     return (
         <Container
             id='chat-container'
@@ -716,62 +775,12 @@ const chatPanel = () => {
                 sx={{ position: 'absolute', bottom: 10, width: chatContainerRect.width }}>
                 {generating &&
                     <Center>
-                        <Button
-                            size='xs'
-                            leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
-                            sx={{
-                                backgroundColor: 'var(--vscode-button-background)',
-                            }}
-                            styles={{
-                                icon: {
-                                    color: 'var(--vscode-button-foreground)'
-                                },
-                                label: {
-                                    color: 'var(--vscode-button-foreground)',
-                                    fontSize: 'var(--vscode-editor-font-size)',
-                                }
-                            }}
-                            variant="white"
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'stopDevChat'
-                                });
-                                setGenerating(false);
-                            }}>
-                            Stop generating
-                        </Button>
+                        <StopButton />
                     </Center>
                 }
                 {hasError &&
                     <Center>
-                        <Button
-                            size='xs'
-                            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
-                            sx={{
-                                backgroundColor: 'var(--vscode-button-background)',
-                            }}
-                            styles={{
-                                icon: {
-                                    color: 'var(--vscode-button-foreground)'
-                                },
-                                label: {
-                                    color: 'var(--vscode-button-foreground)',
-                                    fontSize: 'var(--vscode-editor-font-size)',
-                                }
-                            }}
-                            variant="white"
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'regeneration'
-                                });
-                                messageHandlers.pop();
-                                setHasError(false);
-                                setGenerating(true);
-                                setResponsed(false);
-                                setCurrentMessage('');
-                            }}>
-                            Regeneration
-                        </Button>
+                        <RegenerationButton />
                     </Center>
                 }
                 {contexts && contexts.length > 0 &&
