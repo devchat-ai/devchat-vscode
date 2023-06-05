@@ -745,6 +745,96 @@ const chatPanel = () => {
             </Button>);
     };
 
+    const InputContexts = (props: any) => {
+        const { contexts } = props;
+        return (<Accordion variant="contained" chevronPosition="left"
+            sx={{
+                backgroundColor: 'var(--vscode-menu-background)',
+            }}
+            styles={{
+                item: {
+                    borderColor: 'var(--vscode-menu-border)',
+                    backgroundColor: 'var(--vscode-menu-background)',
+                    '&[data-active]': {
+                        backgroundColor: 'var(--vscode-menu-background)',
+                    }
+                },
+                control: {
+                    height: 30,
+                    borderRadius: 3,
+                    backgroundColor: 'var(--vscode-menu-background)',
+                    '&[aria-expanded="true"]': {
+                        borderBottomLeftRadius: 0,
+                        borderBottomRightRadius: 0,
+                    },
+                    '&:hover': {
+                        backgroundColor: 'var(--vscode-menu-background)',
+                    }
+                },
+                chevron: {
+                    color: 'var(--vscode-menu-foreground)',
+                },
+                icon: {
+                    color: 'var(--vscode-menu-foreground)',
+                },
+                label: {
+                    color: 'var(--vscode-menu-foreground)',
+                },
+                panel: {
+                    color: 'var(--vscode-menu-foreground)',
+                    backgroundColor: 'var(--vscode-menu-background)',
+                    overflow: 'hidden',
+                },
+                content: {
+                    borderRadius: 3,
+                    backgroundColor: 'var(--vscode-menu-background)',
+                }
+            }}>
+            {
+                contexts.map((item: any, index: number) => {
+                    const { context } = item;
+                    return (
+                        <Accordion.Item value={`item-${index}`} >
+                            <Box sx={{
+                                display: 'flex', alignItems: 'center',
+                                backgroundColor: 'var(--vscode-menu-background)',
+                            }}>
+                                <Accordion.Control w={'calc(100% - 40px)'}>
+                                    {'command' in context ? context.command : context.path}
+                                </Accordion.Control>
+                                <ActionIcon
+                                    mr={8}
+                                    size="sm"
+                                    sx={{
+                                        color: 'var(--vscode-menu-foreground)',
+                                        '&:hover': {
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        }
+                                    }}
+                                    onClick={() => {
+                                        contextsHandlers.remove(index);
+                                    }}>
+                                    <IconX size="1rem" />
+                                </ActionIcon>
+                            </Box>
+                            <Accordion.Panel mah={300}>
+                                <ScrollArea h={300} type="never">
+                                    {
+                                        context.content
+                                            ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
+                                            : <Center>
+                                                <Text c='gray.3'>No content</Text>
+                                            </Center>
+                                    }
+                                </ScrollArea>
+                            </Accordion.Panel>
+                        </Accordion.Item>
+                    );
+                })
+            }
+        </Accordion>);
+    };
+
     return (
         <Container
             id='chat-container'
@@ -784,92 +874,7 @@ const chatPanel = () => {
                     </Center>
                 }
                 {contexts && contexts.length > 0 &&
-                    <Accordion variant="contained" chevronPosition="left"
-                        sx={{
-                            backgroundColor: 'var(--vscode-menu-background)',
-                        }}
-                        styles={{
-                            item: {
-                                borderColor: 'var(--vscode-menu-border)',
-                                backgroundColor: 'var(--vscode-menu-background)',
-                                '&[data-active]': {
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                }
-                            },
-                            control: {
-                                height: 30,
-                                borderRadius: 3,
-                                backgroundColor: 'var(--vscode-menu-background)',
-                                '&[aria-expanded="true"]': {
-                                    borderBottomLeftRadius: 0,
-                                    borderBottomRightRadius: 0,
-                                },
-                                '&:hover': {
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                }
-                            },
-                            chevron: {
-                                color: 'var(--vscode-menu-foreground)',
-                            },
-                            icon: {
-                                color: 'var(--vscode-menu-foreground)',
-                            },
-                            label: {
-                                color: 'var(--vscode-menu-foreground)',
-                            },
-                            panel: {
-                                color: 'var(--vscode-menu-foreground)',
-                                backgroundColor: 'var(--vscode-menu-background)',
-                                overflow: 'hidden',
-                            },
-                            content: {
-                                borderRadius: 3,
-                                backgroundColor: 'var(--vscode-menu-background)',
-                            }
-                        }}
-                    >
-                        {
-                            contexts.map(({ context }, index) => {
-                                return (
-                                    <Accordion.Item value={`item-${index}`} >
-                                        <Box sx={{
-                                            display: 'flex', alignItems: 'center',
-                                            backgroundColor: 'var(--vscode-menu-background)',
-                                        }}>
-                                            <Accordion.Control w={'calc(100% - 40px)'}>
-                                                {'command' in context ? context.command : context.path}
-                                            </Accordion.Control>
-                                            <ActionIcon
-                                                mr={8}
-                                                size="sm"
-                                                sx={{
-                                                    color: 'var(--vscode-menu-foreground)',
-                                                    '&:hover': {
-                                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                                    }
-                                                }}
-                                                onClick={() => {
-                                                    contextsHandlers.remove(index);
-                                                }}>
-                                                <IconX size="1rem" />
-                                            </ActionIcon>
-                                        </Box>
-                                        <Accordion.Panel mah={300}>
-                                            <ScrollArea h={300} type="never">
-                                                {
-                                                    context.content
-                                                        ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
-                                                        : <Center>
-                                                            <Text c='gray.3'>No content</Text>
-                                                        </Center>
-                                                }
-                                            </ScrollArea>
-                                        </Accordion.Panel>
-                                    </Accordion.Item>
-                                );
-                            })
-                        }
-                    </Accordion>
+                    <InputContexts contexts={contexts} />
                 }
                 <Popover
                     id='commandMenu'
