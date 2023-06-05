@@ -43,6 +43,7 @@ export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeI
         TopicManager.getInstance().addOnDeleteTopicListener(this.onDeleteTopic.bind(this));
         TopicManager.getInstance().addOnReloadTopicsListener(this.onReloadTopics.bind(this));
         TopicManager.getInstance().addOnUpdateTopicListener(this.onUpdateTopics.bind(this));
+		TopicManager.getInstance().addOnCurrentTopicIdChangeListener(this.onSelectChanged.bind(this));
     }
 
     // sort items
@@ -72,13 +73,33 @@ export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeI
     }
 
     onReloadTopics(topics: Topic[]) {
+		const selectItemId = TopicManager.getInstance().currentTopicId;
         const items = topics.map((topic) => {
             return new TopicTreeItem(topic.name ? topic.name : "new topic", topic.topicId, topic.lastUpdated, vscode.TreeItemCollapsibleState.None);
         });
         this.items = items;
         this.sortItems();
+
+		this.onSelectChanged(selectItemId);
         this._onDidChangeTreeData.fire();
     }
+
+	onSelectChanged(topicId: string | undefined) {
+		this.items.map((item) => {
+			item.uncheck();
+		});
+
+		const item = this.items.find(i => i.id === topicId);
+		if (!item) {
+			this.selectedItem = null;
+			this._onDidChangeTreeData.fire();
+			return;
+		}
+
+		item.check();
+        this.selectedItem = item;
+		this._onDidChangeTreeData.fire();
+	}
 
     onDeleteTopic(topicId: string) {
         this.items = this.items.filter(i => i.id !== topicId);
@@ -87,10 +108,6 @@ export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeI
     }
 
     setSelectedItem(item: TopicTreeItem): void {
-		this.items.map((item) => {
-			item.uncheck();
-		});
-		item.check();
         this.selectedItem = item;
 		this._onDidChangeTreeData.fire();
     }

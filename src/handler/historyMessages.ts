@@ -19,6 +19,7 @@ export async function historyMessages(message: {command: string, page: number}, 
 		const historyMessageAll = await historyMessagesBase();
 		if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
 			MessageHandler.sendMessage(panel, historyMessageAll!);
+			return;
 		}
 	}
 
