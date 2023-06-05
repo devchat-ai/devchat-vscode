@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { useState, useEffect, useRef } from 'react';
-import { Center, Container, Stack, px } from '@mantine/core';
+import { Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
+import { IconAlertCircle, IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
 
 import InputMessage from './InputMessage';
@@ -17,7 +17,7 @@ const chatPanel = () => {
     const [currentMessage, setCurrentMessage] = useState('');
     const [generating, setGenerating] = useState(false);
     const [responsed, setResponsed] = useState(false);
-    const [hasError, setHasError] = useState(false);
+    const [hasError, setHasError] = useState('');
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
@@ -42,11 +42,10 @@ const chatPanel = () => {
             setResponsed(true);
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            setCurrentMessage(message.text);
             setGenerating(false);
             setResponsed(true);
             if (message.isError) {
-                setHasError(true);
+                setHasError(message.text);
             }
         });
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
@@ -121,7 +120,7 @@ const chatPanel = () => {
                     command: 'regeneration'
                 });
                 messageHandlers.pop();
-                setHasError(false);
+                setHasError('');
                 setGenerating(true);
                 setResponsed(false);
                 setCurrentMessage('');
@@ -182,6 +181,11 @@ const chatPanel = () => {
                 // onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 <MessageContainer width={chatContainerRect.width} generating={generating} messages={messages} responsed={responsed} />
+                {hasError &&
+                    <Alert w={chatContainerRect.width} mb={20} color="red" variant="filled">
+                        {hasError}
+                    </Alert>
+                }
             </ScrollArea>
             <Stack
                 spacing={5}
