@@ -181,11 +181,11 @@ const chatPanel = () => {
                 }}
                 // onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageContainer generating={generating} messages={messages} chatContainerRect={chatContainerRect} responsed={responsed} />
+                <MessageContainer width={chatContainerRect.width} generating={generating} messages={messages} responsed={responsed} />
             </ScrollArea>
             <Stack
                 spacing={5}
-                sx={{ position: 'absolute', bottom: 10, width: chatContainerRect.width }}>
+                sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
                 {generating &&
                     <Center>
                         <StopButton />
@@ -198,7 +198,7 @@ const chatPanel = () => {
                 }
                 <InputMessage
                     generating={generating}
-                    chatContainerRect={chatContainerRect}
+                    width={chatContainerRect.width}
                     onSendClick={(input: string, contexts: any) => {
                         // Add the user's message to the chat UI
                         messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });

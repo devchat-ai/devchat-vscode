@@ -6,7 +6,7 @@ import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./I
 import messageUtil from '../../util/MessageUtil';
 
 const InputMessage = (props: any) => {
-    const { generating, chatContainerRect, onSendClick } = props;
+    const { generating, width, onSendClick } = props;
 
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -375,7 +375,7 @@ const InputMessage = (props: any) => {
                 position='top-start'
                 closeOnClickOutside={true}
                 shadow="sm"
-                width={chatContainerRect.width}
+                width={width}
                 opened={menuOpend}
                 onChange={() => {
                     setMenuOpend(!menuOpend);
@@ -479,7 +479,7 @@ const InputMessage = (props: any) => {
                                     fz='sm'
                                     m='12px 5px'
                                     truncate='end'
-                                    w={chatContainerRect.width - 60}>
+                                    w={width - 60}>
                                     Tips: Select code or file & right click
                                 </Text>
                             </Flex>

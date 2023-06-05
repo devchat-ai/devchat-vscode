@@ -9,7 +9,7 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 import SvgAvatarUser from './avatar_spaceman.png';
 
 const MessageContainer = (props: any) => {
-    const { generating, messages, chatContainerRect, responsed } = props;
+    const { generating, messages, width, responsed } = props;
 
     const DefaultMessage = (<Center>
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
@@ -143,7 +143,7 @@ const MessageContainer = (props: any) => {
                 spacing={0}
                 key={`message-${index}`}
                 sx={{
-                    width: chatContainerRect.width,
+                    width: width,
                     padding: 0,
                     margin: 0,
                 }}>
@@ -151,7 +151,7 @@ const MessageContainer = (props: any) => {
                 <Container sx={{
                     margin: 0,
                     padding: 0,
-                    width: chatContainerRect.width,
+                    width: width,
                     pre: {
                         whiteSpace: 'break-spaces'
                     },
