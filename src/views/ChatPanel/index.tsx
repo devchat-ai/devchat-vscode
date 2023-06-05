@@ -321,30 +321,19 @@ const MessageContainer = (props: any) => {
     return (messageList.length > 0 ? messageList : DefaultMessage);
 };
 
-const chatPanel = () => {
+const InputMessage = (props: any) => {
+    const { generating, chatContainerRect, onSendClick } = props;
 
     const theme = useMantineTheme();
-    const [chatContainerRef, chatContainerRect] = useResizeObserver();
-    const scrollViewport = useRef<HTMLDivElement>(null);
-    const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
-    const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
-    const [contexts, contextsHandlers] = useListState<any>([]);
-    const [currentMessage, setCurrentMessage] = useState('');
-    const [generating, setGenerating] = useState(false);
-    const [responsed, setResponsed] = useState(false);
-    const [registed, setRegisted] = useState(false);
     const [input, setInput] = useState('');
     const [menuOpend, setMenuOpend] = useState(false);
-    const [hasError, setHasError] = useState(false);
     const [menuType, setMenuType] = useState(''); // contexts or commands
-    const { height, width } = useViewportSize();
+    const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
+    const [contexts, contextsHandlers] = useListState<any>([]);
     const [inputRef, inputRect] = useResizeObserver();
-    const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
-    const [stopScrolling, setStopScrolling] = useState(false);
-    const messageCount = 10;
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         setMenuType('contexts');
@@ -353,11 +342,22 @@ const chatPanel = () => {
         event.stopPropagation();
     };
 
+    const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+        const value = event.target.value;
+        // if value start with '/' command show menu
+        if (value.startsWith('/')) {
+            setMenuOpend(true);
+            setMenuType('commands');
+            setCurrentMenuIndex(0);
+        } else {
+            setMenuOpend(false);
+        }
+        setInput(value);
+    };
+
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
-            // Add the user's message to the chat UI
-            messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
-
+            onSendClick(input, contexts);
             // Process and send the message to the extension
             const contextStrs = contexts.map(({ file, context }, index) => {
                 return `[context|${file}]`;
@@ -372,11 +372,6 @@ const chatPanel = () => {
             // Clear the input field
             setInput('');
             contexts.length = 0;
-
-            // start generating
-            setGenerating(true);
-            setResponsed(false);
-            setCurrentMessage('');
         }
     };
 
@@ -386,207 +381,6 @@ const chatPanel = () => {
             command: 'addContext',
             selected: contextName
         });
-    };
-
-    const scrollToBottom = () =>
-        scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
-
-    const timer = useTimeout(() => {
-        // console.log(`stopScrolling:${stopScrolling}`);
-        if (!stopScrolling) {
-            scrollToBottom();
-        }
-    }, 1000);
-
-    useEffect(() => {
-        inputRef.current.focus();
-        messageUtil.sendMessage({ command: 'regContextList' });
-        messageUtil.sendMessage({ command: 'regCommandList' });
-        messageUtil.sendMessage({ command: 'historyMessages' });
-        timer.start();
-        return () => {
-            timer.clear();
-        };
-    }, []);
-
-    useEffect(() => {
-        const sh = scrollViewport.current?.scrollHeight || 0;
-        const vh = scrollViewport.current?.clientHeight || 0;
-        const isBottom = sh < vh ? true : sh - vh - scrollPosition.y < 3;
-        if (isBottom) {
-            setStopScrolling(false);
-        } else {
-            setStopScrolling(true);
-        }
-    }, [scrollPosition]);
-
-    useEffect(() => {
-        if (generating) {
-            // new a bot message
-            messageHandlers.append({ type: 'bot', message: currentMessage });
-        }
-    }, [generating]);
-
-    // Add the received message to the chat UI as a bot message
-    useEffect(() => {
-        const lastIndex = messages?.length - 1;
-        const lastMessage = messages[lastIndex];
-        if (currentMessage && lastMessage?.type === 'bot') {
-            // update the last one bot message
-            messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
-        }
-        timer.start();
-    }, [currentMessage]);
-
-    useEffect(() => {
-        if (messages.length > messageCount * 2) {
-            messageHandlers.remove(0, 1);
-        }
-        timer.start();
-    }, [messages]);
-
-    // Add the received message to the chat UI as a bot message
-    useEffect(() => {
-        if (registed) return;
-        setRegisted(true);
-        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            setCurrentMessage(message.text);
-            setResponsed(true);
-        });
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            setCurrentMessage(message.text);
-            setGenerating(false);
-            setResponsed(true);
-            if (message.isError) {
-                setHasError(true);
-            }
-        });
-        messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            commandMenusHandlers.append(...message.result);
-        });
-        messageUtil.registerHandler('regContextList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            contextMenusHandlers.append(...message.result);
-        });
-        messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
-            // context is a temp file path
-            const match = /\|([^]+?)\]/.exec(message.context);
-            // Process and send the message to the extension
-            messageUtil.sendMessage({
-                command: 'contextDetail',
-                file: match && match[1],
-            });
-        });
-        messageUtil.registerHandler('contextDetailResponse', (message: { command: string; file: string; result: string }) => {
-            //result is a content json 
-            // 1. diff json structure
-            // {
-            // 	languageId: languageId,
-            // 	path: fileSelected,
-            // 	content: codeSelected
-            // };
-            // 2. command json structure
-            // {
-            //     command: commandString,
-            //     content: stdout
-            // };
-            const context = JSON.parse(message.result);
-            if (typeof context !== 'undefined' && context) {
-                contextsHandlers.append({
-                    file: message.file,
-                    context: context,
-                });
-            }
-        });
-        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
-            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
-                if (index < message.entries.length - messageCount) return;
-                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
-                messageHandlers.append({ type: 'bot', message: response });
-            });
-        });
-    }, [registed]);
-
-    const commandMenuIcon = (pattern: string) => {
-        if (pattern === 'commit_message') {
-            return (<IconBook size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
-        }
-        return (<IconShellCommand size={16}
-            color='var(--vscode-menu-foreground)'
-            style={{
-                marginTop: 8,
-                marginLeft: 12,
-            }} />);
-    };
-    useEffect(() => {
-        let filtered = commandMenus;
-        if (input) {
-            filtered = commandMenus.filter((item) => `/${item.pattern}`.startsWith(input));
-        }
-        const node = filtered.map(({ pattern, description, name }, index) => {
-            return (
-                <Flex
-                    mih={40}
-                    gap="md"
-                    justify="flex-start"
-                    align="flex-start"
-                    direction="row"
-                    wrap="wrap"
-                    sx={{
-                        padding: '5px 0',
-                        '&:hover,&[aria-checked=true]': {
-                            cursor: 'pointer',
-                            color: 'var(--vscode-commandCenter-activeForeground)',
-                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
-                        }
-                    }}
-                    onClick={() => {
-                        setInput(`/${pattern} `);
-                        setMenuOpend(false);
-                    }}
-                    aria-checked={index === currentMenuIndex}
-                    data-pattern={pattern}
-                >
-                    {commandMenuIcon(pattern)}
-                    <Stack spacing={0}>
-                        <Text sx={{
-                            fontSize: 'sm',
-                            fontWeight: 'bolder',
-                            color: 'var(--vscode-menu-foreground)'
-                        }}>
-                            /{pattern}
-                        </Text>
-                        <Text sx={{
-                            fontSize: 'sm',
-                            color: theme.colors.gray[6],
-                        }}>
-                            {description}
-                        </Text>
-                    </Stack>
-                </Flex>);
-        });
-        setCommandMenusNode(node);
-        if (node.length === 0) {
-            setMenuOpend(false);
-        }
-    }, [input, commandMenus, currentMenuIndex]);
-
-    const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const value = event.target.value;
-        // if value start with '/' command show menu
-        if (value.startsWith('/')) {
-            setMenuOpend(true);
-            setMenuType('commands');
-            setCurrentMenuIndex(0);
-        } else {
-            setMenuOpend(false);
-        }
-        setInput(value);
     };
 
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -645,6 +439,7 @@ const chatPanel = () => {
                 }} />);
         }
     };
+
     const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
         return (
             <Flex
@@ -686,63 +481,21 @@ const chatPanel = () => {
             </Flex>);
     });
 
-    const RegenerationButton = () => {
-        return (<Button
-            size='xs'
-            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
-            sx={{
-                backgroundColor: 'var(--vscode-button-background)',
-            }}
-            styles={{
-                icon: {
-                    color: 'var(--vscode-button-foreground)'
-                },
-                label: {
-                    color: 'var(--vscode-button-foreground)',
-                    fontSize: 'var(--vscode-editor-font-size)',
-                }
-            }}
-            variant="white"
-            onClick={() => {
-                messageUtil.sendMessage({
-                    command: 'regeneration'
-                });
-                messageHandlers.pop();
-                setHasError(false);
-                setGenerating(true);
-                setResponsed(false);
-                setCurrentMessage('');
-            }}>
-            Regeneration
-        </Button>);
-    };
-
-    const StopButton = () => {
-        return (
-            <Button
-                size='xs'
-                leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
-                sx={{
-                    backgroundColor: 'var(--vscode-button-background)',
-                }}
-                styles={{
-                    icon: {
-                        color: 'var(--vscode-button-foreground)'
-                    },
-                    label: {
-                        color: 'var(--vscode-button-foreground)',
-                        fontSize: 'var(--vscode-editor-font-size)',
-                    }
-                }}
-                variant="white"
-                onClick={() => {
-                    messageUtil.sendMessage({
-                        command: 'stopDevChat'
-                    });
-                    setGenerating(false);
-                }}>
-                Stop generating
-            </Button>);
+    const commandMenuIcon = (pattern: string) => {
+        if (pattern === 'commit_message') {
+            return (<IconBook size={16}
+                color='var(--vscode-menu-foreground)'
+                style={{
+                    marginTop: 8,
+                    marginLeft: 12,
+                }} />);
+        }
+        return (<IconShellCommand size={16}
+            color='var(--vscode-menu-foreground)'
+            style={{
+                marginTop: 8,
+                marginLeft: 12,
+            }} />);
     };
 
     const InputContexts = (props: any) => {
@@ -835,139 +588,391 @@ const chatPanel = () => {
         </Accordion>);
     };
 
-    const InputMessage = (props: any) => {
-        const { } = props;
-        return (<Popover
-            id='commandMenu'
-            position='top-start'
-            closeOnClickOutside={true}
-            shadow="sm"
-            width={chatContainerRect.width}
-            opened={menuOpend}
-            onChange={() => {
-                setMenuOpend(!menuOpend);
-                inputRef.current.focus();
-            }}
-            onClose={() => setMenuType('')}
-            onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
-            returnFocus={true}>
-            <Popover.Target>
-                <Textarea
-                    id='chat-textarea'
-                    disabled={generating}
-                    value={input}
-                    ref={inputRef}
-                    onKeyDown={handleKeyDown}
-                    onChange={handleInputChange}
-                    autosize
-                    minRows={1}
-                    maxRows={10}
-                    radius="md"
-                    size="xs"
-                    sx={{ pointerEvents: 'all' }}
-                    placeholder="Send a message."
-                    styles={{
-                        icon: { alignItems: 'center', paddingLeft: '5px' },
-                        rightSection: { alignItems: 'center', paddingRight: '5px' },
-                        input: {
-                            fontSize: 'var(--vscode-editor-font-size)',
-                            backgroundColor: 'var(--vscode-input-background)',
-                            borderColor: 'var(--vscode-input-border)',
-                            color: 'var(--vscode-input-foreground)',
-                            '&[data-disabled]': {
-                                color: 'var(--vscode-disabledForeground)'
-                            }
+    useEffect(() => {
+        messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
+            commandMenusHandlers.append(...message.result);
+        });
+        messageUtil.registerHandler('regContextList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
+            contextMenusHandlers.append(...message.result);
+        });
+        messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
+            // context is a temp file path
+            const match = /\|([^]+?)\]/.exec(message.context);
+            // Process and send the message to the extension
+            messageUtil.sendMessage({
+                command: 'contextDetail',
+                file: match && match[1],
+            });
+        });
+        messageUtil.registerHandler('contextDetailResponse', (message: { command: string; file: string; result: string }) => {
+            //result is a content json 
+            // 1. diff json structure
+            // {
+            // 	languageId: languageId,
+            // 	path: fileSelected,
+            // 	content: codeSelected
+            // };
+            // 2. command json structure
+            // {
+            //     command: commandString,
+            //     content: stdout
+            // };
+            const context = JSON.parse(message.result);
+            if (typeof context !== 'undefined' && context) {
+                contextsHandlers.append({
+                    file: message.file,
+                    context: context,
+                });
+            }
+        });
+        inputRef.current.focus();
+    }, []);
+
+    useEffect(() => {
+        let filtered = commandMenus;
+        if (input) {
+            filtered = commandMenus.filter((item) => `/${item.pattern}`.startsWith(input));
+        }
+        const node = filtered.map(({ pattern, description, name }, index) => {
+            return (
+                <Flex
+                    mih={40}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    sx={{
+                        padding: '5px 0',
+                        '&:hover,&[aria-checked=true]': {
+                            cursor: 'pointer',
+                            color: 'var(--vscode-commandCenter-activeForeground)',
+                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
                         }
                     }}
-                    icon={
-                        <ActionIcon
-                            size='sm'
-                            disabled={generating}
-                            onClick={handlePlusClick}
-                            sx={{
-                                pointerEvents: 'all',
-                                '&:hover': {
-                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                },
-                                '&[data-disabled]': {
-                                    borderColor: 'var(--vscode-input-border)',
-                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                }
-                            }}
-                        >
-                            <IconSquareRoundedPlus size="1rem" />
-                        </ActionIcon>
-                    }
-                    rightSection={
-                        <ActionIcon
-                            size='sm'
-                            disabled={generating}
-                            onClick={handleSendClick}
-                            sx={{
-                                pointerEvents: 'all',
-                                '&:hover': {
-                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                },
-                                '&[data-disabled]': {
-                                    borderColor: 'var(--vscode-input-border)',
-                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                }
-                            }}
-                        >
-                            <IconSend size="1rem" />
-                        </ActionIcon>
-                    }
-                />
-            </Popover.Target>
-            {
-                menuType === 'contexts'
-                    ? (<Popover.Dropdown
-                        sx={{
-                            padding: 0,
-                            color: 'var(--vscode-menu-foreground)',
-                            borderColor: 'var(--vscode-menu-border)',
-                            backgroundColor: 'var(--vscode-menu-background)'
+                    onClick={() => {
+                        setInput(`/${pattern} `);
+                        setMenuOpend(false);
+                    }}
+                    aria-checked={index === currentMenuIndex}
+                    data-pattern={pattern}
+                >
+                    {commandMenuIcon(pattern)}
+                    <Stack spacing={0}>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            fontWeight: 'bolder',
+                            color: 'var(--vscode-menu-foreground)'
                         }}>
-                        <Flex
-                            gap="3px"
-                            justify="flex-start"
-                            align="center"
-                            direction="row"
-                            wrap="wrap"
-                            sx={{ overflow: 'hidden' }}
-                        >
-                            <IconMouseRightClick
-                                size={14}
-                                color={'var(--vscode-menu-foreground)'}
-                                style={{ marginLeft: '12px' }} />
-                            <Text
-                                c="dimmed"
-                                ta="left"
-                                fz='sm'
-                                m='12px 5px'
-                                truncate='end'
-                                w={chatContainerRect.width - 60}>
-                                Tips: Select code or file & right click
-                            </Text>
-                        </Flex>
-                        <Divider />
-                        <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
-                        {contextMenusNode}
-                    </Popover.Dropdown>)
-                    : menuType === 'commands' && commandMenusNode.length > 0
-                        ? <Popover.Dropdown
+                            /{pattern}
+                        </Text>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            color: theme.colors.gray[6],
+                        }}>
+                            {description}
+                        </Text>
+                    </Stack>
+                </Flex>);
+        });
+        setCommandMenusNode(node);
+        if (node.length === 0) {
+            setMenuOpend(false);
+        }
+    }, [input, commandMenus, currentMenuIndex]);
+
+    return (
+        <>
+            {contexts && contexts.length > 0 &&
+                <InputContexts contexts={contexts} />
+            }
+            <Popover
+                id='commandMenu'
+                position='top-start'
+                closeOnClickOutside={true}
+                shadow="sm"
+                width={chatContainerRect.width}
+                opened={menuOpend}
+                onChange={() => {
+                    setMenuOpend(!menuOpend);
+                    inputRef.current.focus();
+                }}
+                onClose={() => setMenuType('')}
+                onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
+                returnFocus={true}>
+                <Popover.Target>
+                    <Textarea
+                        id='chat-textarea'
+                        disabled={generating}
+                        value={input}
+                        ref={inputRef}
+                        onKeyDown={handleKeyDown}
+                        onChange={handleInputChange}
+                        autosize
+                        minRows={1}
+                        maxRows={10}
+                        radius="md"
+                        size="xs"
+                        sx={{ pointerEvents: 'all' }}
+                        placeholder="Send a message."
+                        styles={{
+                            icon: { alignItems: 'center', paddingLeft: '5px' },
+                            rightSection: { alignItems: 'center', paddingRight: '5px' },
+                            input: {
+                                fontSize: 'var(--vscode-editor-font-size)',
+                                backgroundColor: 'var(--vscode-input-background)',
+                                borderColor: 'var(--vscode-input-border)',
+                                color: 'var(--vscode-input-foreground)',
+                                '&[data-disabled]': {
+                                    color: 'var(--vscode-disabledForeground)'
+                                }
+                            }
+                        }}
+                        icon={
+                            <ActionIcon
+                                size='sm'
+                                disabled={generating}
+                                onClick={handlePlusClick}
+                                sx={{
+                                    pointerEvents: 'all',
+                                    '&:hover': {
+                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                    },
+                                    '&[data-disabled]': {
+                                        borderColor: 'var(--vscode-input-border)',
+                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                    }
+                                }}
+                            >
+                                <IconSquareRoundedPlus size="1rem" />
+                            </ActionIcon>
+                        }
+                        rightSection={
+                            <ActionIcon
+                                size='sm'
+                                disabled={generating}
+                                onClick={handleSendClick}
+                                sx={{
+                                    pointerEvents: 'all',
+                                    '&:hover': {
+                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                    },
+                                    '&[data-disabled]': {
+                                        borderColor: 'var(--vscode-input-border)',
+                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                    }
+                                }}
+                            >
+                                <IconSend size="1rem" />
+                            </ActionIcon>
+                        }
+                    />
+                </Popover.Target>
+                {
+                    menuType === 'contexts'
+                        ? (<Popover.Dropdown
                             sx={{
                                 padding: 0,
                                 color: 'var(--vscode-menu-foreground)',
                                 borderColor: 'var(--vscode-menu-border)',
                                 backgroundColor: 'var(--vscode-menu-background)'
                             }}>
-                            <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
-                            {commandMenusNode}
-                        </Popover.Dropdown>
-                        : <></>
+                            <Flex
+                                gap="3px"
+                                justify="flex-start"
+                                align="center"
+                                direction="row"
+                                wrap="wrap"
+                                sx={{ overflow: 'hidden' }}
+                            >
+                                <IconMouseRightClick
+                                    size={14}
+                                    color={'var(--vscode-menu-foreground)'}
+                                    style={{ marginLeft: '12px' }} />
+                                <Text
+                                    c="dimmed"
+                                    ta="left"
+                                    fz='sm'
+                                    m='12px 5px'
+                                    truncate='end'
+                                    w={chatContainerRect.width - 60}>
+                                    Tips: Select code or file & right click
+                                </Text>
+                            </Flex>
+                            <Divider />
+                            <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
+                            {contextMenusNode}
+                        </Popover.Dropdown>)
+                        : menuType === 'commands' && commandMenusNode.length > 0
+                            ? <Popover.Dropdown
+                                sx={{
+                                    padding: 0,
+                                    color: 'var(--vscode-menu-foreground)',
+                                    borderColor: 'var(--vscode-menu-border)',
+                                    backgroundColor: 'var(--vscode-menu-background)'
+                                }}>
+                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
+                                {commandMenusNode}
+                            </Popover.Dropdown>
+                            : <></>
+                }
+            </Popover>
+        </>);
+};
+
+const chatPanel = () => {
+    const [chatContainerRef, chatContainerRect] = useResizeObserver();
+    const scrollViewport = useRef<HTMLDivElement>(null);
+    const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
+    const [currentMessage, setCurrentMessage] = useState('');
+    const [generating, setGenerating] = useState(false);
+    const [responsed, setResponsed] = useState(false);
+    const [registed, setRegisted] = useState(false);
+    const [hasError, setHasError] = useState(false);
+    const { height, width } = useViewportSize();
+    const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
+    const [stopScrolling, setStopScrolling] = useState(false);
+    const messageCount = 10;
+
+    const scrollToBottom = () =>
+        scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
+
+    const timer = useTimeout(() => {
+        // console.log(`stopScrolling:${stopScrolling}`);
+        if (!stopScrolling) {
+            scrollToBottom();
+        }
+    }, 1000);
+
+    useEffect(() => {
+        messageUtil.sendMessage({ command: 'regContextList' });
+        messageUtil.sendMessage({ command: 'regCommandList' });
+        messageUtil.sendMessage({ command: 'historyMessages' });
+        timer.start();
+        return () => {
+            timer.clear();
+        };
+    }, []);
+
+    useEffect(() => {
+        const sh = scrollViewport.current?.scrollHeight || 0;
+        const vh = scrollViewport.current?.clientHeight || 0;
+        const isBottom = sh < vh ? true : sh - vh - scrollPosition.y < 3;
+        if (isBottom) {
+            setStopScrolling(false);
+        } else {
+            setStopScrolling(true);
+        }
+    }, [scrollPosition]);
+
+    useEffect(() => {
+        if (generating) {
+            // new a bot message
+            messageHandlers.append({ type: 'bot', message: currentMessage });
+        }
+    }, [generating]);
+
+    // Add the received message to the chat UI as a bot message
+    useEffect(() => {
+        const lastIndex = messages?.length - 1;
+        const lastMessage = messages[lastIndex];
+        if (currentMessage && lastMessage?.type === 'bot') {
+            // update the last one bot message
+            messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
+        }
+        timer.start();
+    }, [currentMessage]);
+
+    useEffect(() => {
+        if (messages.length > messageCount * 2) {
+            messageHandlers.remove(0, 1);
+        }
+        timer.start();
+    }, [messages]);
+
+    // Add the received message to the chat UI as a bot message
+    useEffect(() => {
+        if (registed) return;
+        setRegisted(true);
+        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+            setCurrentMessage(message.text);
+            setResponsed(true);
+        });
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
+            setCurrentMessage(message.text);
+            setGenerating(false);
+            setResponsed(true);
+            if (message.isError) {
+                setHasError(true);
             }
-        </Popover>);
+        });
+        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
+            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
+                if (index < message.entries.length - messageCount) return;
+                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
+                messageHandlers.append({ type: 'bot', message: response });
+            });
+        });
+    }, [registed]);
+
+    const RegenerationButton = () => {
+        return (<Button
+            size='xs'
+            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
+            sx={{
+                backgroundColor: 'var(--vscode-button-background)',
+            }}
+            styles={{
+                icon: {
+                    color: 'var(--vscode-button-foreground)'
+                },
+                label: {
+                    color: 'var(--vscode-button-foreground)',
+                    fontSize: 'var(--vscode-editor-font-size)',
+                }
+            }}
+            variant="white"
+            onClick={() => {
+                messageUtil.sendMessage({
+                    command: 'regeneration'
+                });
+                messageHandlers.pop();
+                setHasError(false);
+                setGenerating(true);
+                setResponsed(false);
+                setCurrentMessage('');
+            }}>
+            Regeneration
+        </Button>);
+    };
+
+    const StopButton = () => {
+        return (
+            <Button
+                size='xs'
+                leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
+                sx={{
+                    backgroundColor: 'var(--vscode-button-background)',
+                }}
+                styles={{
+                    icon: {
+                        color: 'var(--vscode-button-foreground)'
+                    },
+                    label: {
+                        color: 'var(--vscode-button-foreground)',
+                        fontSize: 'var(--vscode-editor-font-size)',
+                    }
+                }}
+                variant="white"
+                onClick={() => {
+                    messageUtil.sendMessage({
+                        command: 'stopDevChat'
+                    });
+                    setGenerating(false);
+                }}>
+                Stop generating
+            </Button>);
     };
 
     return (
@@ -1008,10 +1013,17 @@ const chatPanel = () => {
                         <RegenerationButton />
                     </Center>
                 }
-                {contexts && contexts.length > 0 &&
-                    <InputContexts contexts={contexts} />
-                }
-                <InputMessage />
+                <InputMessage
+                    generating={generating}
+                    chatContainerRect={chatContainerRect}
+                    onSendClick={(input: string, contexts: any) => {
+                        // Add the user's message to the chat UI
+                        messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
+                        // start generating
+                        setGenerating(true);
+                        setResponsed(false);
+                        setCurrentMessage('');
+                    }} />
             </Stack>
         </Container >
     );
