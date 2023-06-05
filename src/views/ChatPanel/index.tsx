@@ -17,7 +17,6 @@ const chatPanel = () => {
     const [currentMessage, setCurrentMessage] = useState('');
     const [generating, setGenerating] = useState(false);
     const [responsed, setResponsed] = useState(false);
-    const [registed, setRegisted] = useState(false);
     const [hasError, setHasError] = useState(false);
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
@@ -38,6 +37,26 @@ const chatPanel = () => {
         messageUtil.sendMessage({ command: 'regContextList' });
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
+        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
+            setCurrentMessage(message.text);
+            setResponsed(true);
+        });
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
+            setCurrentMessage(message.text);
+            setGenerating(false);
+            setResponsed(true);
+            if (message.isError) {
+                setHasError(true);
+            }
+        });
+        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
+            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
+                if (index < message.entries.length - messageCount) return;
+                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
+                messageHandlers.append({ type: 'bot', message: response });
+            });
+        });
         timer.start();
         return () => {
             timer.clear();
@@ -79,32 +98,6 @@ const chatPanel = () => {
         }
         timer.start();
     }, [messages]);
-
-    // Add the received message to the chat UI as a bot message
-    useEffect(() => {
-        if (registed) return;
-        setRegisted(true);
-        messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            setCurrentMessage(message.text);
-            setResponsed(true);
-        });
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            setCurrentMessage(message.text);
-            setGenerating(false);
-            setResponsed(true);
-            if (message.isError) {
-                setHasError(true);
-            }
-        });
-        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
-            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
-                if (index < message.entries.length - messageCount) return;
-                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
-                messageHandlers.append({ type: 'bot', message: response });
-            });
-        });
-    }, [registed]);
 
     const RegenerationButton = () => {
         return (<Button
@@ -186,7 +179,7 @@ const chatPanel = () => {
                     padding: 0,
                     margin: 0,
                 }}
-                onScrollPositionChange={onScrollPositionChange}
+                // onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 <MessageContainer generating={generating} messages={messages} chatContainerRect={chatContainerRect} responsed={responsed} />
             </ScrollArea>
