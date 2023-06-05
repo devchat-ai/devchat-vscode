@@ -6,6 +6,7 @@ import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 
 import { loadTopicList } from './loadTopics';
 import { UiUtilWrapper } from '../util/uiUtil';
+import { logger } from '../util/logger';
 
 export class Topic {
 	name: string | undefined;
@@ -281,11 +282,13 @@ export class TopicManager {
 		// 在DevChat日志中，找出第一个hash为firstMessageHash的日志，然后向下遍历，直到找不到parentHash为当前日志hash的日志
 		const topic = this._topics[topicId];
 		if (!topic || !topic.firstMessageHash) {
+			logger.channel()?.info(`Topic ${topicId} not found`);
 			return [];
 		}
 
 		const logEntriesMap = await this.loadLogEntries();
 		if (!logEntriesMap[topic.firstMessageHash!]) {
+			logger.channel()?.info(`Topic ${topicId} not found in logEntriesMap`);
 			return [];
 		}
 
