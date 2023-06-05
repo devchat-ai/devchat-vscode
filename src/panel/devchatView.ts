@@ -11,6 +11,7 @@ import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
 import ChatContextManager from '../context/contextManager';
 import ActionManager from '../action/actionManager';
+import { getWaitCreateTopic } from '../handler/sendMessageBase';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -63,7 +64,12 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			this._context.subscriptions
 		);
 
-		TopicManager.getInstance().addOnCurrentTopicIdChangeListener((topicId) => {this.reloadWebview();});
+		TopicManager.getInstance().addOnCurrentTopicIdChangeListener((topicId) => {
+			if (topicId && getWaitCreateTopic()) {
+				return;
+			}
+			this.reloadWebview();
+		});
 	}
 
 	private onDidChangeWorkspaceFolders(event: vscode.WorkspaceFoldersChangeEvent): void {

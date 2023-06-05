@@ -83,7 +83,7 @@ export class TopicManager {
 		const topic = new Topic();
 		this._topics[topic.topicId] = topic;
 		this._notifyCreateTopicListeners(topic);
-		//this.setCurrentTopic(topic.topicId);
+		this.setCurrentTopic(topic.topicId);
 		return topic;
 	}
 
@@ -253,7 +253,6 @@ export class TopicManager {
 		this._topics = {};
 		const logEntriesMap = await this.loadLogEntries();
 		for (const logEntriesList of Object.values(logEntriesMap)) {
-			const topic = new Topic();
 			// 使用logEntriesList第一个元素更新topic的firstMessageHash和name
 			// 使用logEntriesList最后一个元素更新topic的lastMessageHash和lastUpdated
 			if (logEntriesList.length === 0) {
@@ -261,9 +260,10 @@ export class TopicManager {
 			}
 			const logEntry = logEntriesList[0];
 			const name = this.createTopicName(logEntry.request, logEntry.response);
-			topic.updateFirstMessageHashAndName(logEntry.hash, name);
 			const lastLogEntry = logEntriesList[logEntriesList.length - 1];
+			const topic = new Topic(name, logEntry.hash, logEntry.hash, Number(logEntry.date));
 			topic.updateLastMessageHashAndLastUpdated(lastLogEntry.hash, Number(lastLogEntry.date));
+		
 			if (topic.firstMessageHash && this.isDeleteTopic(topic.firstMessageHash)) {
 				continue;
 			}

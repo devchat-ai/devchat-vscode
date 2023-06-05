@@ -5,6 +5,11 @@ import messageHistory from '../util/messageHistory';
 import { TopicManager } from '../topic/topicManager';
 import CustomCommands from '../command/customCommand';
 
+let WaitCreateTopic = false;
+
+export function getWaitCreateTopic(): boolean {
+	return WaitCreateTopic;
+}
 
 // Add this function to messageHandler.ts
 export function parseMessage(message: string): { context: string[]; instruction: string[]; reference: string[]; text: string } {
@@ -99,17 +104,22 @@ export function getParentHash(message: any): string|undefined {
 }
 
 export async function handleTopic(parentHash:string, message: any, chatResponse: ChatResponse) {
-	if (!chatResponse.isError) {
-		messageHistory.add({ request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
-
-		let topicId = TopicManager.getInstance().currentTopicId;
-		if (!topicId) {
-			// create new topic
-			const topic = TopicManager.getInstance().createTopic();
-			topicId = topic.topicId;
+	WaitCreateTopic = true;
+	try {
+		if (!chatResponse.isError) {
+			messageHistory.add({ request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
+	
+			let topicId = TopicManager.getInstance().currentTopicId;
+			if (!topicId) {
+				// create new topic
+				const topic = TopicManager.getInstance().createTopic();
+				topicId = topic.topicId;
+			}
+	
+			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], Number(chatResponse.date), message.text, chatResponse.response);
 		}
-
-		TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], Number(chatResponse.date), message.text, chatResponse.response);
+	} finally {
+		WaitCreateTopic = false;
 	}
 }
 
