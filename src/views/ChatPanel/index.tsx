@@ -835,6 +835,141 @@ const chatPanel = () => {
         </Accordion>);
     };
 
+    const InputMessage = (props: any) => {
+        const { } = props;
+        return (<Popover
+            id='commandMenu'
+            position='top-start'
+            closeOnClickOutside={true}
+            shadow="sm"
+            width={chatContainerRect.width}
+            opened={menuOpend}
+            onChange={() => {
+                setMenuOpend(!menuOpend);
+                inputRef.current.focus();
+            }}
+            onClose={() => setMenuType('')}
+            onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
+            returnFocus={true}>
+            <Popover.Target>
+                <Textarea
+                    id='chat-textarea'
+                    disabled={generating}
+                    value={input}
+                    ref={inputRef}
+                    onKeyDown={handleKeyDown}
+                    onChange={handleInputChange}
+                    autosize
+                    minRows={1}
+                    maxRows={10}
+                    radius="md"
+                    size="xs"
+                    sx={{ pointerEvents: 'all' }}
+                    placeholder="Send a message."
+                    styles={{
+                        icon: { alignItems: 'center', paddingLeft: '5px' },
+                        rightSection: { alignItems: 'center', paddingRight: '5px' },
+                        input: {
+                            fontSize: 'var(--vscode-editor-font-size)',
+                            backgroundColor: 'var(--vscode-input-background)',
+                            borderColor: 'var(--vscode-input-border)',
+                            color: 'var(--vscode-input-foreground)',
+                            '&[data-disabled]': {
+                                color: 'var(--vscode-disabledForeground)'
+                            }
+                        }
+                    }}
+                    icon={
+                        <ActionIcon
+                            size='sm'
+                            disabled={generating}
+                            onClick={handlePlusClick}
+                            sx={{
+                                pointerEvents: 'all',
+                                '&:hover': {
+                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                },
+                                '&[data-disabled]': {
+                                    borderColor: 'var(--vscode-input-border)',
+                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                }
+                            }}
+                        >
+                            <IconSquareRoundedPlus size="1rem" />
+                        </ActionIcon>
+                    }
+                    rightSection={
+                        <ActionIcon
+                            size='sm'
+                            disabled={generating}
+                            onClick={handleSendClick}
+                            sx={{
+                                pointerEvents: 'all',
+                                '&:hover': {
+                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                },
+                                '&[data-disabled]': {
+                                    borderColor: 'var(--vscode-input-border)',
+                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                }
+                            }}
+                        >
+                            <IconSend size="1rem" />
+                        </ActionIcon>
+                    }
+                />
+            </Popover.Target>
+            {
+                menuType === 'contexts'
+                    ? (<Popover.Dropdown
+                        sx={{
+                            padding: 0,
+                            color: 'var(--vscode-menu-foreground)',
+                            borderColor: 'var(--vscode-menu-border)',
+                            backgroundColor: 'var(--vscode-menu-background)'
+                        }}>
+                        <Flex
+                            gap="3px"
+                            justify="flex-start"
+                            align="center"
+                            direction="row"
+                            wrap="wrap"
+                            sx={{ overflow: 'hidden' }}
+                        >
+                            <IconMouseRightClick
+                                size={14}
+                                color={'var(--vscode-menu-foreground)'}
+                                style={{ marginLeft: '12px' }} />
+                            <Text
+                                c="dimmed"
+                                ta="left"
+                                fz='sm'
+                                m='12px 5px'
+                                truncate='end'
+                                w={chatContainerRect.width - 60}>
+                                Tips: Select code or file & right click
+                            </Text>
+                        </Flex>
+                        <Divider />
+                        <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
+                        {contextMenusNode}
+                    </Popover.Dropdown>)
+                    : menuType === 'commands' && commandMenusNode.length > 0
+                        ? <Popover.Dropdown
+                            sx={{
+                                padding: 0,
+                                color: 'var(--vscode-menu-foreground)',
+                                borderColor: 'var(--vscode-menu-border)',
+                                backgroundColor: 'var(--vscode-menu-background)'
+                            }}>
+                            <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
+                            {commandMenusNode}
+                        </Popover.Dropdown>
+                        : <></>
+            }
+        </Popover>);
+    };
+
     return (
         <Container
             id='chat-container'
@@ -876,138 +1011,7 @@ const chatPanel = () => {
                 {contexts && contexts.length > 0 &&
                     <InputContexts contexts={contexts} />
                 }
-                <Popover
-                    id='commandMenu'
-                    position='top-start'
-                    closeOnClickOutside={true}
-                    shadow="sm"
-                    width={chatContainerRect.width}
-                    opened={menuOpend}
-                    onChange={() => {
-                        setMenuOpend(!menuOpend);
-                        inputRef.current.focus();
-                    }}
-                    onClose={() => setMenuType('')}
-                    onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
-                    returnFocus={true}
-                >
-                    <Popover.Target>
-                        <Textarea
-                            id='chat-textarea'
-                            disabled={generating}
-                            value={input}
-                            ref={inputRef}
-                            onKeyDown={handleKeyDown}
-                            onChange={handleInputChange}
-                            autosize
-                            minRows={1}
-                            maxRows={10}
-                            radius="md"
-                            size="xs"
-                            sx={{ pointerEvents: 'all' }}
-                            placeholder="Send a message."
-                            styles={{
-                                icon: { alignItems: 'center', paddingLeft: '5px' },
-                                rightSection: { alignItems: 'center', paddingRight: '5px' },
-                                input: {
-                                    fontSize: 'var(--vscode-editor-font-size)',
-                                    backgroundColor: 'var(--vscode-input-background)',
-                                    borderColor: 'var(--vscode-input-border)',
-                                    color: 'var(--vscode-input-foreground)',
-                                    '&[data-disabled]': {
-                                        color: 'var(--vscode-disabledForeground)'
-                                    }
-                                }
-                            }}
-                            icon={
-                                <ActionIcon
-                                    size='sm'
-                                    disabled={generating}
-                                    onClick={handlePlusClick}
-                                    sx={{
-                                        pointerEvents: 'all',
-                                        '&:hover': {
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                        },
-                                        '&[data-disabled]': {
-                                            borderColor: 'var(--vscode-input-border)',
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                        }
-                                    }}
-                                >
-                                    <IconSquareRoundedPlus size="1rem" />
-                                </ActionIcon>
-                            }
-                            rightSection={
-                                <ActionIcon
-                                    size='sm'
-                                    disabled={generating}
-                                    onClick={handleSendClick}
-                                    sx={{
-                                        pointerEvents: 'all',
-                                        '&:hover': {
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                        },
-                                        '&[data-disabled]': {
-                                            borderColor: 'var(--vscode-input-border)',
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                        }
-                                    }}
-                                >
-                                    <IconSend size="1rem" />
-                                </ActionIcon>
-                            }
-                        />
-                    </Popover.Target>
-                    {
-                        menuType === 'contexts'
-                            ? (<Popover.Dropdown
-                                sx={{
-                                    padding: 0,
-                                    color: 'var(--vscode-menu-foreground)',
-                                    borderColor: 'var(--vscode-menu-border)',
-                                    backgroundColor: 'var(--vscode-menu-background)'
-                                }}>
-                                <Flex
-                                    gap="3px"
-                                    justify="flex-start"
-                                    align="center"
-                                    direction="row"
-                                    wrap="wrap"
-                                    sx={{ overflow: 'hidden' }}
-                                >
-                                    <IconMouseRightClick
-                                        size={14}
-                                        color={'var(--vscode-menu-foreground)'}
-                                        style={{ marginLeft: '12px' }} />
-                                    <Text
-                                        c="dimmed"
-                                        ta="left"
-                                        fz='sm'
-                                        m='12px 5px'
-                                        truncate='end'
-                                        w={chatContainerRect.width - 60}>
-                                        Tips: Select code or file & right click
-                                    </Text>
-                                </Flex>
-                                <Divider />
-                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
-                                {contextMenusNode}
-                            </Popover.Dropdown>)
-                            : menuType === 'commands' && commandMenusNode.length > 0
-                                ? <Popover.Dropdown
-                                    sx={{
-                                        padding: 0,
-                                        color: 'var(--vscode-menu-foreground)',
-                                        borderColor: 'var(--vscode-menu-border)',
-                                        backgroundColor: 'var(--vscode-menu-background)'
-                                    }}>
-                                    <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
-                                    {commandMenusNode}
-                                </Popover.Dropdown>
-                                : <></>
-                    }
-                </Popover>
+                <InputMessage />
             </Stack>
         </Container >
     );
