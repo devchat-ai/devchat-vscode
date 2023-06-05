@@ -19,11 +19,6 @@ import SvgAvatarUser from './avatar_spaceman.png';
 
 import { IconMouseRightClick, IconBook, IconGitBranch, IconGitBranchChecked, IconShellCommand } from './Icons';
 
-const blink = keyframes({
-    '50%': { opacity: 0 },
-});
-
-
 const CodeBlock = (props: any) => {
     const { messageText } = props;
 
@@ -164,6 +159,166 @@ const CodeBlock = (props: any) => {
             {messageText}
         </ReactMarkdown >
     );
+};
+
+const MessageContainer = (props: any) => {
+    const { generating, messages, chatContainerRect, responsed } = props;
+
+    const DefaultMessage = (<Center>
+        <Text size="lg" color="gray" weight={500}>No messages yet</Text>
+    </Center>);
+
+    const MessageAvatar = (props: any) => {
+        const { type } = props;
+        return (<Flex
+            m='10px 0 10px 0'
+            gap="sm"
+            justify="flex-start"
+            align="center"
+            direction="row"
+            wrap="wrap">
+            {
+                type === 'bot'
+                    ? <Avatar
+                        color="indigo"
+                        size={25}
+                        radius="xl"
+                        src={SvgAvatarDevChat} />
+                    : <Avatar
+                        color="cyan"
+                        size={25}
+                        radius="xl"
+                        src={SvgAvatarUser} />
+            }
+            <Text weight='bold'>{type === 'bot' ? 'DevChat' : 'User'}</Text>
+        </Flex>);
+    };
+
+    const MessageContext = (props: any) => {
+        const { contexts } = props;
+        return (contexts &&
+            <Accordion variant="contained" chevronPosition="left"
+                sx={{
+                    marginTop: 5,
+                    borderRadius: 5,
+                    backgroundColor: 'var(--vscode-menu-background)',
+                }}
+                styles={{
+                    item: {
+                        borderColor: 'var(--vscode-menu-border)',
+                        backgroundColor: 'var(--vscode-menu-background)',
+                        '&[data-active]': {
+                            backgroundColor: 'var(--vscode-menu-background)',
+                        }
+                    },
+                    control: {
+                        height: 30,
+                        borderRadius: 3,
+                        backgroundColor: 'var(--vscode-menu-background)',
+                        '&[aria-expanded="true"]': {
+                            borderBottomLeftRadius: 0,
+                            borderBottomRightRadius: 0,
+                        },
+                        '&:hover': {
+                            backgroundColor: 'var(--vscode-menu-background)',
+                        }
+                    },
+                    chevron: {
+                        color: 'var(--vscode-menu-foreground)',
+                    },
+                    icon: {
+                        color: 'var(--vscode-menu-foreground)',
+                    },
+                    label: {
+                        color: 'var(--vscode-menu-foreground)',
+                    },
+                    panel: {
+                        color: 'var(--vscode-menu-foreground)',
+                        backgroundColor: 'var(--vscode-menu-background)',
+                    },
+                    content: {
+                        borderRadius: 3,
+                        backgroundColor: 'var(--vscode-menu-background)',
+                    }
+                }}
+            >
+                {
+                    contexts?.map((item: any, index: number) => {
+                        const { context } = item;
+                        return (
+                            <Accordion.Item value={`item-${index}`} mah='200'>
+                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                    <Accordion.Control >
+                                        {'command' in context ? context.command : context.path}
+                                    </Accordion.Control>
+                                </Box>
+                                <Accordion.Panel>
+                                    {
+                                        context.content
+                                            ? context.content
+                                            : <Center>
+                                                <Text c='gray.3'>No content</Text>
+                                            </Center>
+                                    }
+
+                                </Accordion.Panel>
+                            </Accordion.Item>
+                        );
+                    })
+                }
+            </Accordion>
+        );
+    };
+
+    const MessageBlink = (props: any) => {
+        const { generating, messageType, lastMessage } = props;
+        const blink = keyframes({
+            '50%': { opacity: 0 },
+        });
+
+        return (generating && messageType === 'bot' && lastMessage
+            ? <Text sx={{
+                animation: `${blink} 0.5s infinite;`,
+                width: 5,
+                marginTop: responsed ? 0 : '1em',
+                backgroundColor: 'black',
+                display: 'block'
+
+            }}>|</Text>
+            : <></>);
+    };
+
+    const messageList = messages.map((item: any, index: number) => {
+        const { message: messageText, type: messageType, contexts } = item;
+        // setMessage(messageText);
+        return (<>
+            <Stack
+                spacing={0}
+                key={`message-${index}`}
+                sx={{
+                    width: chatContainerRect.width,
+                    padding: 0,
+                    margin: 0,
+                }}>
+                <MessageAvatar type={messageType} />
+                <Container sx={{
+                    margin: 0,
+                    padding: 0,
+                    width: chatContainerRect.width,
+                    pre: {
+                        whiteSpace: 'break-spaces'
+                    },
+                }}>
+                    <MessageContext contexts={contexts} />
+                    <CodeBlock messageText={messageText} />
+                    <MessageBlink generating={generating} messageType={messageType} lastMessage={index === messages.length - 1} />
+                </Container >
+            </Stack >
+            {index !== messages.length - 1 && <Divider my={3} />}
+        </>);
+    });
+
+    return (messageList.length > 0 ? messageList : DefaultMessage);
 };
 
 const chatPanel = () => {
@@ -464,10 +619,6 @@ const chatPanel = () => {
         }
     };
 
-    const defaultMessages = (<Center>
-        <Text size="lg" color="gray" weight={500}>No messages yet</Text>
-    </Center>);
-
     const contextMenuIcon = (name: string) => {
         if (name === 'git diff --cached') {
             return (<IconGitBranchChecked size={16}
@@ -535,134 +686,6 @@ const chatPanel = () => {
             </Flex>);
     });
 
-    const messageList = messages.map(({ message: messageText, type: messageType, contexts }, index) => {
-        // setMessage(messageText);
-        return (<>
-            <Stack
-                spacing={0}
-                key={`message-${index}`}
-                sx={{
-                    width: chatContainerRect.width,
-                    padding: 0,
-                    margin: 0,
-                }}
-            >
-                <Flex
-                    m='10px 0 10px 0'
-                    gap="sm"
-                    justify="flex-start"
-                    align="center"
-                    direction="row"
-                    wrap="wrap">
-                    {
-                        messageType === 'bot'
-                            ? <Avatar
-                                color="indigo"
-                                size={25}
-                                radius="xl"
-                                src={SvgAvatarDevChat} />
-                            : <Avatar
-                                color="cyan"
-                                size={25}
-                                radius="xl"
-                                src={SvgAvatarUser} />
-                    }
-                    <Text weight='bold'>{messageType === 'bot' ? 'DevChat' : 'User'}</Text>
-                </Flex>
-                <Container sx={{
-                    margin: 0,
-                    padding: 0,
-                    width: chatContainerRect.width,
-                    pre: {
-                        whiteSpace: 'break-spaces'
-                    },
-                }}>
-                    {contexts &&
-                        <Accordion variant="contained" chevronPosition="left"
-                            sx={{
-                                marginTop: 5,
-                                borderRadius: 5,
-                                backgroundColor: 'var(--vscode-menu-background)',
-                            }}
-                            styles={{
-                                item: {
-                                    borderColor: 'var(--vscode-menu-border)',
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                    '&[data-active]': {
-                                        backgroundColor: 'var(--vscode-menu-background)',
-                                    }
-                                },
-                                control: {
-                                    height: 30,
-                                    borderRadius: 3,
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                    '&[aria-expanded="true"]': {
-                                        borderBottomLeftRadius: 0,
-                                        borderBottomRightRadius: 0,
-                                    },
-                                    '&:hover': {
-                                        backgroundColor: 'var(--vscode-menu-background)',
-                                    }
-                                },
-                                chevron: {
-                                    color: 'var(--vscode-menu-foreground)',
-                                },
-                                icon: {
-                                    color: 'var(--vscode-menu-foreground)',
-                                },
-                                label: {
-                                    color: 'var(--vscode-menu-foreground)',
-                                },
-                                panel: {
-                                    color: 'var(--vscode-menu-foreground)',
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                },
-                                content: {
-                                    borderRadius: 3,
-                                    backgroundColor: 'var(--vscode-menu-background)',
-                                }
-                            }}
-                        >
-                            {
-                                contexts?.map(({ context }, index) => {
-                                    return (
-                                        <Accordion.Item value={`item-${index}`} mah='200'>
-                                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                <Accordion.Control >
-                                                    {'command' in context ? context.command : context.path}
-                                                </Accordion.Control>
-                                            </Box>
-                                            <Accordion.Panel>
-                                                {
-                                                    context.content
-                                                        ? context.content
-                                                        : <Center>
-                                                            <Text c='gray.3'>No content</Text>
-                                                        </Center>
-                                                }
-
-                                            </Accordion.Panel>
-                                        </Accordion.Item>
-                                    );
-                                })
-                            }
-                        </Accordion>
-                    }
-                    <CodeBlock messageText={messageText} />
-                    {(generating && messageType === 'bot' && index === messages.length - 1) ? <Text sx={{
-                        animation: `${blink} 0.5s infinite;`,
-                        width: 5,
-                        marginTop: responsed ? 0 : '1em',
-                        backgroundColor: 'black',
-                        display: 'block'
-
-                    }}>|</Text> : ''}
-                </Container >
-            </Stack >
-            {index !== messages.length - 1 && <Divider my={3} />}
-        </>);
-    });
-
     return (
         <Container
             id='chat-container'
@@ -686,7 +709,7 @@ const chatPanel = () => {
                 }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                {messageList.length > 0 ? messageList : defaultMessages}
+                <MessageContainer generating={generating} messages={messages} chatContainerRect={chatContainerRect} responsed={responsed} />
             </ScrollArea>
             <Stack
                 spacing={5}
