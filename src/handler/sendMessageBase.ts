@@ -121,9 +121,7 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 			return undefined;
 		}
 	}
-	if (chatResponse.isError) {
-		responseText = partialDataText + '\n\n' + responseText;
-	}
+	
 	return responseText;
 }
 
