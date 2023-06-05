@@ -23,6 +23,118 @@ const blink = keyframes({
     '50%': { opacity: 0 },
 });
 
+
+const CodeBlock = (props: any) => {
+    const { messageText } = props;
+    return (
+        <ReactMarkdown
+            components={{
+                code({ node, inline, className, children, ...props }) {
+
+                    const match = /language-(\w+)/.exec(className || '');
+                    const value = String(children).replace(/\n$/, '');
+                    const [commited, setCommited] = useState(false);
+
+                    return !inline && match ? (
+                        <div style={{ position: 'relative' }}>
+                            <div style={{ position: 'absolute', top: 0, left: 0 }}>
+                                {match[1] && (
+                                    <div
+                                        style={{
+                                            backgroundColor: '#333',
+                                            color: '#fff',
+                                            padding: '0.2rem 0.5rem',
+                                            borderRadius: '0.2rem',
+                                            fontSize: '0.8rem',
+                                        }}
+                                    >
+                                        {match[1]}
+                                    </div>
+                                )}
+                            </div>
+                            <Flex
+                                gap="5px"
+                                justify="flex-start"
+                                align="flex-start"
+                                direction="row"
+                                wrap="wrap"
+                                style={{ position: 'absolute', top: 8, right: 10 }}>
+                                <CopyButton value={value} timeout={2000}>
+                                    {({ copied, copy }) => (
+                                        <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy'} withArrow position="left" color="gray">
+                                            <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy}>
+                                                {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    )}
+                                </CopyButton>
+                                {match[1] && match[1] === 'commitmsg'
+                                    ? (<>
+                                        <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={commited ? 'Committing' : 'Commit'} withArrow position="left" color="gray">
+                                            <ActionIcon size='xs'
+                                                color={commited ? 'teal' : 'gray'}
+                                                onClick={() => {
+                                                    messageUtil.sendMessage({
+                                                        command: 'doCommit',
+                                                        content: value
+                                                    });
+                                                    setCommited(true);
+                                                    setTimeout(() => { setCommited(false); }, 2000);
+                                                }}>
+                                                {commited ? <IconCheck size="1rem" /> : <IconGitCommit size="1rem" />}
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </>)
+                                    : (<>
+                                        <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='View Diff' withArrow position="left" color="gray">
+                                            <ActionIcon size='xs' onClick={() => {
+                                                messageUtil.sendMessage({
+                                                    command: 'show_diff',
+                                                    content: value
+                                                });
+                                            }}>
+                                                <IconFileDiff size="1.125rem" />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                        <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Insert Code' withArrow position="left" color="gray">
+                                            <ActionIcon size='xs' onClick={() => {
+                                                messageUtil.sendMessage({
+                                                    command: 'code_apply',
+                                                    content: value
+                                                });
+                                            }}>
+                                                <IconColumnInsertRight size="1.125rem" />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                        <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Replace' withArrow position="left" color="gray">
+                                            <ActionIcon size='xs' onClick={() => {
+                                                messageUtil.sendMessage({
+                                                    command: 'code_file_apply',
+                                                    content: value
+                                                });
+                                            }}>
+                                                <IconReplace size="1.125rem" />
+                                            </ActionIcon>
+                                        </Tooltip>
+                                    </>)}
+                            </Flex>
+                            <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
+                                {value}
+                            </SyntaxHighlighter>
+                        </div >
+                    ) : (
+                        <code {...props} className={className}>
+                            {children}
+                        </code>
+                    );
+                }
+            }}
+        >
+            {messageText}
+        </ReactMarkdown >
+    );
+};
+
 const chatPanel = () => {
 
     const theme = useMantineTheme();
@@ -505,111 +617,7 @@ const chatPanel = () => {
                             }
                         </Accordion>
                     }
-                    <ReactMarkdown
-                        components={{
-                            code({ node, inline, className, children, ...props }) {
-
-                                const match = /language-(\w+)/.exec(className || '');
-                                const value = String(children).replace(/\n$/, '');
-                                const [commited, setCommited] = useState(false);
-
-                                return !inline && match ? (
-                                    <div style={{ position: 'relative' }}>
-                                        <div style={{ position: 'absolute', top: 0, left: 0 }}>
-                                            {match[1] && (
-                                                <div
-                                                    style={{
-                                                        backgroundColor: '#333',
-                                                        color: '#fff',
-                                                        padding: '0.2rem 0.5rem',
-                                                        borderRadius: '0.2rem',
-                                                        fontSize: '0.8rem',
-                                                    }}
-                                                >
-                                                    {match[1]}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <Flex
-                                            gap="5px"
-                                            justify="flex-start"
-                                            align="flex-start"
-                                            direction="row"
-                                            wrap="wrap"
-                                            style={{ position: 'absolute', top: 8, right: 10 }}>
-                                            <CopyButton value={value} timeout={2000}>
-                                                {({ copied, copy }) => (
-                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy'} withArrow position="left" color="gray">
-                                                        <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy}>
-                                                            {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                )}
-                                            </CopyButton>
-                                            {match[1] && match[1] === 'commitmsg'
-                                                ? (<>
-                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={commited ? 'Committing' : 'Commit'} withArrow position="left" color="gray">
-                                                        <ActionIcon size='xs'
-                                                            color={commited ? 'teal' : 'gray'}
-                                                            onClick={() => {
-                                                                messageUtil.sendMessage({
-                                                                    command: 'doCommit',
-                                                                    content: value
-                                                                });
-                                                                setCommited(true);
-                                                                setTimeout(() => { setCommited(false); }, 2000);
-                                                            }}>
-                                                            {commited ? <IconCheck size="1rem" /> : <IconGitCommit size="1rem" />}
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                </>)
-                                                : (<>
-                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='View Diff' withArrow position="left" color="gray">
-                                                        <ActionIcon size='xs' onClick={() => {
-                                                            messageUtil.sendMessage({
-                                                                command: 'show_diff',
-                                                                content: value
-                                                            });
-                                                        }}>
-                                                            <IconFileDiff size="1.125rem" />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Insert Code' withArrow position="left" color="gray">
-                                                        <ActionIcon size='xs' onClick={() => {
-                                                            messageUtil.sendMessage({
-                                                                command: 'code_apply',
-                                                                content: value
-                                                            });
-                                                        }}>
-                                                            <IconColumnInsertRight size="1.125rem" />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                    <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Replace' withArrow position="left" color="gray">
-                                                        <ActionIcon size='xs' onClick={() => {
-                                                            messageUtil.sendMessage({
-                                                                command: 'code_file_apply',
-                                                                content: value
-                                                            });
-                                                        }}>
-                                                            <IconReplace size="1.125rem" />
-                                                        </ActionIcon>
-                                                    </Tooltip>
-                                                </>)}
-                                        </Flex>
-                                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
-                                            {value}
-                                        </SyntaxHighlighter>
-                                    </div >
-                                ) : (
-                                    <code {...props} className={className}>
-                                        {children}
-                                    </code>
-                                );
-                            }
-                        }}
-                    >
-                        {messageText}
-                    </ReactMarkdown >
+                    <CodeBlock messageText={messageText} />
                     {(generating && messageType === 'bot' && index === messages.length - 1) ? <Text sx={{
                         animation: `${blink} 0.5s infinite;`,
                         width: 5,
