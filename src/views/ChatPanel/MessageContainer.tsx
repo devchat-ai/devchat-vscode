@@ -1,5 +1,5 @@
 import { keyframes } from "@emotion/react";
-import { Center, Text, Flex, Avatar, Accordion, Box, Stack, Container, Divider } from "@mantine/core";
+import { Center, Text, Flex, Avatar, Accordion, Box, Stack, Container, Divider, ActionIcon, Tooltip } from "@mantine/core";
 import React from "react";
 import CodeBlock from "./CodeBlock";
 
@@ -7,6 +7,7 @@ import CodeBlock from "./CodeBlock";
 import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from './avatar_spaceman.png';
+import { IconCheck, IconCopy } from "@tabler/icons-react";
 
 const MessageContainer = (props: any) => {
     const { generating, messages, width, responsed } = props;
@@ -15,8 +16,9 @@ const MessageContainer = (props: any) => {
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
     </Center>);
 
-    const MessageAvatar = (props: any) => {
+    const MessageHeader = (props: any) => {
         const { type } = props;
+        const [refilled, setRefilled] = React.useState(false);
         return (<Flex
             m='10px 0 10px 0'
             gap="sm"
@@ -38,6 +40,18 @@ const MessageContainer = (props: any) => {
                         src={SvgAvatarUser} />
             }
             <Text weight='bold'>{type === 'bot' ? 'DevChat' : 'User'}</Text>
+            {type === 'user'
+                ? <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={refilled ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
+                    <ActionIcon size='sm' style={{ marginLeft: 'auto' }}
+                        onClick={() => {
+                            setRefilled(true);
+                            setTimeout(() => { setRefilled(false); }, 2000);
+                        }}>
+                        {refilled ? <IconCheck size="1rem" /> : <IconCopy size="1.125rem" />}
+                    </ActionIcon>
+                </Tooltip>
+                : <></>
+            }
         </Flex>);
     };
 
@@ -147,7 +161,7 @@ const MessageContainer = (props: any) => {
                     padding: 0,
                     margin: 0,
                 }}>
-                <MessageAvatar type={messageType} />
+                <MessageHeader type={messageType} />
                 <Container sx={{
                     margin: 0,
                     padding: 0,
