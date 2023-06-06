@@ -34,7 +34,7 @@ export class ApiKeyManager {
 			endPoint = process.env.OPENAI_API_BASE;
 		}
 		if (!endPoint && apiKey?.startsWith("DC.")) {
-			endPoint = "https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1";
+			endPoint = "https://api.devchat.ai/v1";
 		}
 		return endPoint;
 	}
