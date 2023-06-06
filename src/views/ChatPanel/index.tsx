@@ -10,6 +10,53 @@ import messageUtil from '../../util/MessageUtil';
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
+const RegenerationButton = (props: any) => {
+    const { onClick } = props;
+    return (<Button
+        size='xs'
+        leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
+        sx={{
+            backgroundColor: 'var(--vscode-button-background)',
+        }}
+        styles={{
+            icon: {
+                color: 'var(--vscode-button-foreground)'
+            },
+            label: {
+                color: 'var(--vscode-button-foreground)',
+                fontSize: 'var(--vscode-editor-font-size)',
+            }
+        }}
+        onClick={onClick}
+        variant="white">
+        Regeneration
+    </Button>);
+};
+
+const StopButton = (props: any) => {
+    const { onClick } = props;
+    return (
+        <Button
+            size='xs'
+            leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
+            sx={{
+                backgroundColor: 'var(--vscode-button-background)',
+            }}
+            styles={{
+                icon: {
+                    color: 'var(--vscode-button-foreground)'
+                },
+                label: {
+                    color: 'var(--vscode-button-foreground)',
+                    fontSize: 'var(--vscode-editor-font-size)',
+                }
+            }}
+            onClick={onClick}
+            variant="white">
+            Stop generating
+        </Button>);
+};
+
 const chatPanel = () => {
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
@@ -98,65 +145,6 @@ const chatPanel = () => {
         timer.start();
     }, [messages]);
 
-    const RegenerationButton = () => {
-        return (<Button
-            size='xs'
-            leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
-            sx={{
-                backgroundColor: 'var(--vscode-button-background)',
-            }}
-            styles={{
-                icon: {
-                    color: 'var(--vscode-button-foreground)'
-                },
-                label: {
-                    color: 'var(--vscode-button-foreground)',
-                    fontSize: 'var(--vscode-editor-font-size)',
-                }
-            }}
-            variant="white"
-            onClick={() => {
-                messageUtil.sendMessage({
-                    command: 'regeneration'
-                });
-                messageHandlers.pop();
-                setHasError('');
-                setGenerating(true);
-                setResponsed(false);
-                setCurrentMessage('');
-            }}>
-            Regeneration
-        </Button>);
-    };
-
-    const StopButton = () => {
-        return (
-            <Button
-                size='xs'
-                leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
-                sx={{
-                    backgroundColor: 'var(--vscode-button-background)',
-                }}
-                styles={{
-                    icon: {
-                        color: 'var(--vscode-button-foreground)'
-                    },
-                    label: {
-                        color: 'var(--vscode-button-foreground)',
-                        fontSize: 'var(--vscode-editor-font-size)',
-                    }
-                }}
-                variant="white"
-                onClick={() => {
-                    messageUtil.sendMessage({
-                        command: 'stopDevChat'
-                    });
-                    setGenerating(false);
-                }}>
-                Stop generating
-            </Button>);
-    };
-
     return (
         <Container
             id='chat-container'
@@ -182,7 +170,7 @@ const chatPanel = () => {
                 viewportRef={scrollViewport}>
                 <MessageContainer width={chatContainerRect.width} generating={generating} messages={messages} responsed={responsed} />
                 {hasError &&
-                    <Alert w={chatContainerRect.width} mb={20} color="red" variant="filled">
+                    <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {hasError}
                     </Alert>
                 }
@@ -192,12 +180,28 @@ const chatPanel = () => {
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
                 {generating &&
                     <Center>
-                        <StopButton />
+                        <StopButton
+                            onClick={() => {
+                                messageUtil.sendMessage({
+                                    command: 'stopDevChat'
+                                });
+                                setGenerating(false);
+                            }} />
                     </Center>
                 }
                 {hasError &&
                     <Center>
-                        <RegenerationButton />
+                        <RegenerationButton
+                            onClick={() => {
+                                messageUtil.sendMessage({
+                                    command: 'regeneration'
+                                });
+                                messageHandlers.pop();
+                                setHasError('');
+                                setGenerating(true);
+                                setResponsed(false);
+                                setCurrentMessage('');
+                            }} />
                     </Center>
                 }
                 <InputMessage
