@@ -102,7 +102,7 @@ const MessageContainer = (props: any) => {
                                 <Accordion.Panel>
                                     {
                                         context.content
-                                            ? context.content
+                                            ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
                                             : <Center>
                                                 <Text c='gray.3'>No content</Text>
                                             </Center>
