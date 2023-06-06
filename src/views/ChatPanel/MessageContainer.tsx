@@ -10,14 +10,14 @@ import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
 const MessageContainer = (props: any) => {
-    const { generating, messages, width, responsed } = props;
+    const { generating, messages, width, responsed, onRefillClick } = props;
 
     const DefaultMessage = (<Center>
         <Text size="lg" color="gray" weight={500}>No messages yet</Text>
     </Center>);
 
     const MessageHeader = (props: any) => {
-        const { type } = props;
+        const { type, message, contexts } = props;
         const [refilled, setRefilled] = React.useState(false);
         return (<Flex
             m='10px 0 10px 0'
@@ -44,6 +44,10 @@ const MessageContainer = (props: any) => {
                 ? <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={refilled ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
                     <ActionIcon size='sm' style={{ marginLeft: 'auto' }}
                         onClick={() => {
+                            onRefillClick({
+                                message: message,
+                                contexts: contexts
+                            });
                             setRefilled(true);
                             setTimeout(() => { setRefilled(false); }, 2000);
                         }}>
@@ -161,7 +165,7 @@ const MessageContainer = (props: any) => {
                     padding: 0,
                     margin: 0,
                 }}>
-                <MessageHeader type={messageType} />
+                <MessageHeader type={messageType} message={messageText} contexts={contexts} />
                 <Container sx={{
                     margin: 0,
                     padding: 0,
