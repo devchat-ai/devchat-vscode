@@ -280,7 +280,13 @@ class DevChat {
 			return [];
 		}
 
-		return JSON.parse(stdout.trim()).reverse();
+		try {
+			return JSON.parse(stdout.trim()).reverse();
+		} catch (error) {
+			logger.channel()?.error(`Error parsing log: ${error}`);
+			logger.channel()?.show();
+			return [];
+		}
 	}
 
 	private buildLogArgs(options: LogOptions): string[] {

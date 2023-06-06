@@ -4,7 +4,6 @@ import * as fs from 'fs';
 
 import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 
-import { loadTopicList } from './loadTopics';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { logger } from '../util/logger';
 
@@ -240,7 +239,7 @@ export class TopicManager {
 		// visite logEntries
 		// for each logEntry
 		let lastData: number = 0;
-		for (const logEntry of logEntries) {
+		for (const logEntry of logEntries.flat()) {
 			lastData += 1;
 			const name = this.createTopicName(logEntry.request, logEntry.response);
 			const topic = new Topic(name, logEntry.hash, logEntry.hash, Number(logEntry.date));
