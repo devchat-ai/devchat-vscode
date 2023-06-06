@@ -64,7 +64,7 @@ export interface ChatContext {
     async processText(command: string): Promise<string> {
         // 处理所有命令
         for (const contextObj of this.contexts) {
-            if (contextObj.name == command) {
+            if (contextObj.name === command) {
                 return await contextObj.handler();
             }
         }
