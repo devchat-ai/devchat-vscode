@@ -214,6 +214,7 @@ const chatPanel = () => {
                         setGenerating(true);
                         setResponsed(false);
                         setCurrentMessage('');
+                        setHasError('');
                     }} />
             </Stack>
         </Container >
