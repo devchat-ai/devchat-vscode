@@ -145,6 +145,7 @@ class DevChat {
 
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
 		const args = await this.buildArgs(options);
+		args.push("--");
 		args.push(content);
 
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
