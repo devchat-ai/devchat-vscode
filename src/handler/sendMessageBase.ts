@@ -7,6 +7,22 @@ import CustomCommands from '../command/customCommand';
 
 let WaitCreateTopic = false;
 
+
+function parseDateStringToTimestamp(dateString: string): number {
+	const dateS = Date.parse(dateString);
+	if (!isNaN(dateS)) {
+		return dateS;
+	}
+
+	const formattedDateString = dateString
+	  .replace(/^[A-Za-z]{3} /, '')
+	  .replace(/ /, 'T')
+	  .replace(/(\d{4}) (\+\d{4})$/, '$1$2');
+  
+	const date = new Date(formattedDateString);
+	return date.getTime();
+}
+
 export function getWaitCreateTopic(): boolean {
 	return WaitCreateTopic;
 }
@@ -116,7 +132,7 @@ export async function handleTopic(parentHash:string, message: any, chatResponse:
 				topicId = topic.topicId;
 			}
 	
-			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], Number(chatResponse.date), message.text, chatResponse.response);
+			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], parseDateStringToTimestamp(chatResponse.date), message.text, chatResponse.response);
 		}
 	} finally {
 		WaitCreateTopic = false;
@@ -127,7 +143,7 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	if (userStop) {
 		userStop = false;
-		if (responseText == '' && chatResponse.isError) {
+		if (responseText === '' && chatResponse.isError) {
 			return undefined;
 		}
 	}
