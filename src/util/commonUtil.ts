@@ -86,14 +86,16 @@ export class CommandRun {
 
 			// Add error event listener to handle command not found exception
 			this.childProcess.on('error', (error: any) => {
+				let errorMessage = error.message;
 				if (error.code === 'ENOENT') {
+					errorMessage = `Command not found: ${command}`;
 					logger.channel()?.error(`Command not found: ${command}`);
 					logger.channel()?.show();
 				} else {
 					logger.channel()?.error(`Error occurred: ${error.message}`);
 					logger.channel()?.show();
 				}
-				resolve({ exitCode: error.code, stdout: "", stderr: error.message });
+				resolve({ exitCode: error.code, stdout: "", stderr: errorMessage });
 			});
 		});
 	};
