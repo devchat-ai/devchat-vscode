@@ -143,7 +143,7 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	if (userStop) {
 		userStop = false;
-		if (responseText === '' && chatResponse.isError) {
+		if (chatResponse.isError) {
 			return undefined;
 		}
 	}
