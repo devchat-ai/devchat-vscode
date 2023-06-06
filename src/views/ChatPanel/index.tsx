@@ -69,6 +69,8 @@ const chatPanel = () => {
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
     const messageCount = 10;
+    const [input, setInput] = useState('');
+    const [contexts, contextsHandlers] = useListState<any>([]);
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
@@ -168,7 +170,17 @@ const chatPanel = () => {
                 }}
                 // onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageContainer width={chatContainerRect.width} generating={generating} messages={messages} responsed={responsed} />
+                <MessageContainer
+                    onRefillClick={(params: any) => {
+                        const { message, contexts: messageContexts } = params;
+                        setInput(message);
+                        contexts.length = 0;
+                        contextsHandlers.append(...messageContexts);
+                    }}
+                    width={chatContainerRect.width}
+                    generating={generating}
+                    messages={messages}
+                    responsed={responsed} />
                 {hasError &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {hasError}
@@ -205,6 +217,10 @@ const chatPanel = () => {
                     </Center>
                 }
                 <InputMessage
+                    input={input}
+                    setInput={setInput}
+                    contexts={contexts}
+                    contextsHandlers={contextsHandlers}
                     generating={generating}
                     width={chatContainerRect.width}
                     onSendClick={(input: string, contexts: any) => {
@@ -214,6 +230,7 @@ const chatPanel = () => {
                         setGenerating(true);
                         setResponsed(false);
                         setCurrentMessage('');
+                        setHasError('');
                     }} />
             </Stack>
         </Container >

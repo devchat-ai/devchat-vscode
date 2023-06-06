@@ -5,18 +5,107 @@ import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./Icons";
 import messageUtil from '../../util/MessageUtil';
 
+
+const InputContexts = (props: any) => {
+    const { contexts, contextsHandlers } = props;
+    return (<Accordion variant="contained" chevronPosition="left"
+        sx={{
+            backgroundColor: 'var(--vscode-menu-background)',
+        }}
+        styles={{
+            item: {
+                borderColor: 'var(--vscode-menu-border)',
+                backgroundColor: 'var(--vscode-menu-background)',
+                '&[data-active]': {
+                    backgroundColor: 'var(--vscode-menu-background)',
+                }
+            },
+            control: {
+                height: 30,
+                borderRadius: 3,
+                backgroundColor: 'var(--vscode-menu-background)',
+                '&[aria-expanded="true"]': {
+                    borderBottomLeftRadius: 0,
+                    borderBottomRightRadius: 0,
+                },
+                '&:hover': {
+                    backgroundColor: 'var(--vscode-menu-background)',
+                }
+            },
+            chevron: {
+                color: 'var(--vscode-menu-foreground)',
+            },
+            icon: {
+                color: 'var(--vscode-menu-foreground)',
+            },
+            label: {
+                color: 'var(--vscode-menu-foreground)',
+            },
+            panel: {
+                color: 'var(--vscode-menu-foreground)',
+                backgroundColor: 'var(--vscode-menu-background)',
+                overflow: 'hidden',
+            },
+            content: {
+                borderRadius: 3,
+                backgroundColor: 'var(--vscode-menu-background)',
+            }
+        }}>
+        {
+            contexts.map((item: any, index: number) => {
+                const { context } = item;
+                return (
+                    <Accordion.Item value={`item-${index}`} >
+                        <Box sx={{
+                            display: 'flex', alignItems: 'center',
+                            backgroundColor: 'var(--vscode-menu-background)',
+                        }}>
+                            <Accordion.Control w={'calc(100% - 40px)'}>
+                                {'command' in context ? context.command : context.path}
+                            </Accordion.Control>
+                            <ActionIcon
+                                mr={8}
+                                size="sm"
+                                sx={{
+                                    color: 'var(--vscode-menu-foreground)',
+                                    '&:hover': {
+                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                    }
+                                }}
+                                onClick={() => {
+                                    contextsHandlers.remove(index);
+                                }}>
+                                <IconX size="1rem" />
+                            </ActionIcon>
+                        </Box>
+                        <Accordion.Panel mah={300}>
+                            <ScrollArea h={300} type="never">
+                                {
+                                    context.content
+                                        ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
+                                        : <Center>
+                                            <Text c='gray.3'>No content</Text>
+                                        </Center>
+                                }
+                            </ScrollArea>
+                        </Accordion.Panel>
+                    </Accordion.Item>
+                );
+            })
+        }
+    </Accordion>);
+};
+
 const InputMessage = (props: any) => {
-    const { generating, width, onSendClick } = props;
+    const { generating, width, onSendClick, input, setInput, contexts, contextsHandlers } = props;
 
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
-    const [input, setInput] = useState('');
     const [menuOpend, setMenuOpend] = useState(false);
     const [menuType, setMenuType] = useState(''); // contexts or commands
     const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
-    const [contexts, contextsHandlers] = useListState<any>([]);
     const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -43,7 +132,8 @@ const InputMessage = (props: any) => {
         if (input) {
             onSendClick(input, contexts);
             // Process and send the message to the extension
-            const contextStrs = contexts.map(({ file, context }, index) => {
+            const contextStrs = contexts.map((item: any, index: number) => {
+                const { file, context } = item;
                 return `[context|${file}]`;
             });
             const text = input + contextStrs.join(' ');
@@ -122,46 +212,57 @@ const InputMessage = (props: any) => {
             }} />);
     };
 
-    const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
-        return (
-            <Flex
-                mih={40}
-                gap="md"
-                justify="flex-start"
-                align="flex-start"
-                direction="row"
-                wrap="wrap"
-                sx={{
-                    padding: '5px 0',
-                    '&:hover': {
-                        cursor: 'pointer',
-                        color: 'var(--vscode-commandCenter-activeForeground)',
-                        backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
-                    }
-                }}
-                onClick={() => {
-                    handleContextClick(name);
-                    setMenuOpend(false);
-                }}
-            >
-                {contextMenuIcon(name)}
-                <Stack spacing={0}>
-                    <Text sx={{
-                        fontSize: 'sm',
-                        fontWeight: 'bolder',
-                        color: 'var(--vscode-menu-foreground)'
-                    }}>
-                        {name}
-                    </Text>
-                    <Text sx={{
-                        fontSize: 'sm',
-                        color: theme.colors.gray[6],
-                    }}>
-                        {description}
-                    </Text>
-                </Stack>
-            </Flex>);
-    });
+
+    const contextMenusNode = contextMenus
+        .sort((a, b) => {
+            if (a.name === '<custom command>') {
+                return 1; // Placing '<custom command>' at the end
+            } else if (b.name === '<custom command>') {
+                return -1; // Placing '<custom command>' at the front
+            } else {
+                return (a.name || "").localeCompare(b.name || ""); // Sorting alphabetically for other cases
+            }
+        })
+        .map(({ pattern, description, name }, index) => {
+            return (
+                <Flex
+                    mih={40}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    sx={{
+                        padding: '5px 0',
+                        '&:hover': {
+                            cursor: 'pointer',
+                            color: 'var(--vscode-commandCenter-activeForeground)',
+                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
+                        }
+                    }}
+                    onClick={() => {
+                        handleContextClick(name);
+                        setMenuOpend(false);
+                    }}
+                >
+                    {contextMenuIcon(name)}
+                    <Stack spacing={0}>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            fontWeight: 'bolder',
+                            color: 'var(--vscode-menu-foreground)'
+                        }}>
+                            {name}
+                        </Text>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            color: theme.colors.gray[6],
+                        }}>
+                            {description}
+                        </Text>
+                    </Stack>
+                </Flex>);
+        });
 
     const commandMenuIcon = (pattern: string) => {
         if (pattern === 'commit_message') {
@@ -178,96 +279,6 @@ const InputMessage = (props: any) => {
                 marginTop: 8,
                 marginLeft: 12,
             }} />);
-    };
-
-    const InputContexts = (props: any) => {
-        const { contexts } = props;
-        return (<Accordion variant="contained" chevronPosition="left"
-            sx={{
-                backgroundColor: 'var(--vscode-menu-background)',
-            }}
-            styles={{
-                item: {
-                    borderColor: 'var(--vscode-menu-border)',
-                    backgroundColor: 'var(--vscode-menu-background)',
-                    '&[data-active]': {
-                        backgroundColor: 'var(--vscode-menu-background)',
-                    }
-                },
-                control: {
-                    height: 30,
-                    borderRadius: 3,
-                    backgroundColor: 'var(--vscode-menu-background)',
-                    '&[aria-expanded="true"]': {
-                        borderBottomLeftRadius: 0,
-                        borderBottomRightRadius: 0,
-                    },
-                    '&:hover': {
-                        backgroundColor: 'var(--vscode-menu-background)',
-                    }
-                },
-                chevron: {
-                    color: 'var(--vscode-menu-foreground)',
-                },
-                icon: {
-                    color: 'var(--vscode-menu-foreground)',
-                },
-                label: {
-                    color: 'var(--vscode-menu-foreground)',
-                },
-                panel: {
-                    color: 'var(--vscode-menu-foreground)',
-                    backgroundColor: 'var(--vscode-menu-background)',
-                    overflow: 'hidden',
-                },
-                content: {
-                    borderRadius: 3,
-                    backgroundColor: 'var(--vscode-menu-background)',
-                }
-            }}>
-            {
-                contexts.map((item: any, index: number) => {
-                    const { context } = item;
-                    return (
-                        <Accordion.Item value={`item-${index}`} >
-                            <Box sx={{
-                                display: 'flex', alignItems: 'center',
-                                backgroundColor: 'var(--vscode-menu-background)',
-                            }}>
-                                <Accordion.Control w={'calc(100% - 40px)'}>
-                                    {'command' in context ? context.command : context.path}
-                                </Accordion.Control>
-                                <ActionIcon
-                                    mr={8}
-                                    size="sm"
-                                    sx={{
-                                        color: 'var(--vscode-menu-foreground)',
-                                        '&:hover': {
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                        }
-                                    }}
-                                    onClick={() => {
-                                        contextsHandlers.remove(index);
-                                    }}>
-                                    <IconX size="1rem" />
-                                </ActionIcon>
-                            </Box>
-                            <Accordion.Panel mah={300}>
-                                <ScrollArea h={300} type="never">
-                                    {
-                                        context.content
-                                            ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
-                                            : <Center>
-                                                <Text c='gray.3'>No content</Text>
-                                            </Center>
-                                    }
-                                </ScrollArea>
-                            </Accordion.Panel>
-                        </Accordion.Item>
-                    );
-                })
-            }
-        </Accordion>);
     };
 
     useEffect(() => {
@@ -366,7 +377,7 @@ const InputMessage = (props: any) => {
     return (
         <>
             {contexts && contexts.length > 0 &&
-                <InputContexts contexts={contexts} />
+                <InputContexts contexts={contexts} contextsHandlers={contextsHandlers} />
             }
             <Popover
                 id='commandMenu'
