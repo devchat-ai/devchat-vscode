@@ -122,46 +122,57 @@ const InputMessage = (props: any) => {
             }} />);
     };
 
-    const contextMenusNode = contextMenus.map(({ pattern, description, name }, index) => {
-        return (
-            <Flex
-                mih={40}
-                gap="md"
-                justify="flex-start"
-                align="flex-start"
-                direction="row"
-                wrap="wrap"
-                sx={{
-                    padding: '5px 0',
-                    '&:hover': {
-                        cursor: 'pointer',
-                        color: 'var(--vscode-commandCenter-activeForeground)',
-                        backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
-                    }
-                }}
-                onClick={() => {
-                    handleContextClick(name);
-                    setMenuOpend(false);
-                }}
-            >
-                {contextMenuIcon(name)}
-                <Stack spacing={0}>
-                    <Text sx={{
-                        fontSize: 'sm',
-                        fontWeight: 'bolder',
-                        color: 'var(--vscode-menu-foreground)'
-                    }}>
-                        {name}
-                    </Text>
-                    <Text sx={{
-                        fontSize: 'sm',
-                        color: theme.colors.gray[6],
-                    }}>
-                        {description}
-                    </Text>
-                </Stack>
-            </Flex>);
-    });
+
+    const contextMenusNode = contextMenus
+        .sort((a, b) => {
+            if (a.name === '<custom command>') {
+                return 1; // Placing '<custom command>' at the end
+            } else if (b.name === '<custom command>') {
+                return -1; // Placing '<custom command>' at the front
+            } else {
+                return (a.name || "").localeCompare(b.name || ""); // Sorting alphabetically for other cases
+            }
+        })
+        .map(({ pattern, description, name }, index) => {
+            return (
+                <Flex
+                    mih={40}
+                    gap="md"
+                    justify="flex-start"
+                    align="flex-start"
+                    direction="row"
+                    wrap="wrap"
+                    sx={{
+                        padding: '5px 0',
+                        '&:hover': {
+                            cursor: 'pointer',
+                            color: 'var(--vscode-commandCenter-activeForeground)',
+                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
+                        }
+                    }}
+                    onClick={() => {
+                        handleContextClick(name);
+                        setMenuOpend(false);
+                    }}
+                >
+                    {contextMenuIcon(name)}
+                    <Stack spacing={0}>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            fontWeight: 'bolder',
+                            color: 'var(--vscode-menu-foreground)'
+                        }}>
+                            {name}
+                        </Text>
+                        <Text sx={{
+                            fontSize: 'sm',
+                            color: theme.colors.gray[6],
+                        }}>
+                            {description}
+                        </Text>
+                    </Stack>
+                </Flex>);
+        });
 
     const commandMenuIcon = (pattern: string) => {
         if (pattern === 'commit_message') {
