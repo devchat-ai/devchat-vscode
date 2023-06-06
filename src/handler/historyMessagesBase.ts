@@ -1,7 +1,7 @@
 
 
 import { TopicManager } from '../topic/topicManager';
-import { LogEntry } from '../toolwrapper/devchat';
+import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 import messageHistory from '../util/messageHistory';
 import { ApiKeyManager } from '../util/apiKey';
 import { logger } from '../util/logger';
@@ -63,15 +63,19 @@ export async function isWaitForApiKey() {
 
 export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefined>  {
 	const topicId = TopicManager.getInstance().currentTopicId;
-	let logEntriesFlat: Array<LogEntry> = [];
-	if (topicId) {
-		logEntriesFlat = await TopicManager.getInstance().getTopicHistory(topicId);
+	if (!topicId) {
+		return [];
 	}
 
-	if (topicId !== TopicManager.getInstance().currentTopicId) {
-		logger.channel()?.info(`Current topic changed dure load topic hsitory!`)
-		return undefined;
-	}
+	const devChat = new DevChat();
+	const logOptions: LogOptions = {
+		skip: 0,
+		maxCount: 10000,
+		topic: topicId
+	};
+	const logEntries = await devChat.log(logOptions);
+	const logEntriesFlat = logEntries.flat();
+
 	return logEntriesFlat;
 }
 

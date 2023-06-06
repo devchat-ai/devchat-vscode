@@ -231,39 +231,20 @@ export class TopicManager {
 		return deletedTopics.includes(topicId);
 	}
 
-	// loadTopics
-	// 功能：将DevChat日志根据parentHash进行分组，当前条目与该条目parentHash对应条目归属一组，以此类推，直到parentHash为空
-	// 返回值：多个链表，每个链表中当前元素的hash是下一个元素的parentHash
-	async loadLogEntries(): Promise<{ [key: string]: LogEntry[] }> {
-		// 通过DevChat获取日志
-		const devChat = new DevChat();
-		const logOptions: LogOptions = {
-			skip: 0,
-			maxCount: 10000
-		};
-		const logEntries = await devChat.log(logOptions);
-		const logEntriesFlat = logEntries.flat();
-
-		const logTopicLinkedList = loadTopicList(logEntriesFlat);
-		return logTopicLinkedList;
-	}
-
 	async loadTopics(): Promise<void> {
-		// 删除已经加载的topic
-		// 重新构建topic信息
 		this._topics = {};
-		const logEntriesMap = await this.loadLogEntries();
-		for (const logEntriesList of Object.values(logEntriesMap)) {
-			// 使用logEntriesList第一个元素更新topic的firstMessageHash和name
-			// 使用logEntriesList最后一个元素更新topic的lastMessageHash和lastUpdated
-			if (logEntriesList.length === 0) {
-				continue;
-			}
-			const logEntry = logEntriesList[0];
+
+		const devChat = new DevChat();
+		const logEntries: LogEntry[] = await devChat.topics();
+
+		// visite logEntries
+		// for each logEntry
+		let lastData: number = 0;
+		for (const logEntry of logEntries) {
+			lastData += 1;
 			const name = this.createTopicName(logEntry.request, logEntry.response);
-			const lastLogEntry = logEntriesList[logEntriesList.length - 1];
 			const topic = new Topic(name, logEntry.hash, logEntry.hash, Number(logEntry.date));
-			topic.updateLastMessageHashAndLastUpdated(lastLogEntry.hash, Number(lastLogEntry.date));
+			topic.updateLastMessageHashAndLastUpdated(logEntry.hash, lastData);
 		
 			if (topic.firstMessageHash && this.isDeleteTopic(topic.firstMessageHash)) {
 				continue;
@@ -271,28 +252,5 @@ export class TopicManager {
 			this._topics[topic.topicId] = topic;
 		}
 		this._notifyReloadTopicsListeners(Object.values(this._topics));
-	}
-	
-
-	async getTopicHistory(topicId: string): Promise<LogEntry[]> {
-		/**
-		 * 获取topic历史聊天记录
-		 */
-		// TOPIC对象中firstMessageHash可以作为日志查询的起始点
-		// 在DevChat日志中，找出第一个hash为firstMessageHash的日志，然后向下遍历，直到找不到parentHash为当前日志hash的日志
-		const topic = this._topics[topicId];
-		if (!topic || !topic.firstMessageHash) {
-			logger.channel()?.info(`Topic ${topicId} not found`);
-			return [];
-		}
-
-		const logEntriesMap = await this.loadLogEntries();
-		if (!logEntriesMap[topic.firstMessageHash!]) {
-			logger.channel()?.info(`Topic ${topicId} not found in logEntriesMap`);
-			return [];
-		}
-
-		const logEntriesFlat = logEntriesMap[topic.firstMessageHash!];
-		return logEntriesFlat;
 	}
 }

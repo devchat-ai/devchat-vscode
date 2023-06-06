@@ -24,6 +24,7 @@ export interface ChatOptions {
 export interface LogOptions {
 	skip?: number;
 	maxCount?: number;
+	topic?: string;
 }
 
 export interface LogEntry {
@@ -257,6 +258,31 @@ class DevChat {
 		return JSON.parse(stdout.trim()).reverse();
 	}
 
+	async topics(): Promise<LogEntry[]> {
+		const args = ["topic", "-l"];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		
+		logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env
+			},
+		};
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+
+		logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error getting log: ${stderr}`);
+			logger.channel()?.show();
+			return [];
+		}
+
+		return JSON.parse(stdout.trim()).reverse();
+	}
+
 	private buildLogArgs(options: LogOptions): string[] {
 		let args = ["log"];
 
@@ -268,6 +294,10 @@ class DevChat {
 		} else {
 			const maxLogCount = UiUtilWrapper.getConfiguration('DevChat', 'maxLogCount');
 			args.push('--max-count', `${maxLogCount}`);
+		}
+
+		if (options.topic) {
+			args.push('--topic', `${options.topic}`);
 		}
 
 		return args;
