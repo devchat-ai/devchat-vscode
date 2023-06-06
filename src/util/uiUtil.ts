@@ -15,6 +15,7 @@ export interface UiUtil {
 	selectRange(): [number, number] | undefined;
 	// current selected text
 	selectText(): string | undefined;
+	showErrorMessage(message: string): void;
 }
 
 
@@ -62,6 +63,10 @@ export class UiUtilWrapper {
 	// current selected text
 	public static selectText(): string | undefined {
 		return this._uiUtil?.selectText();
+	}
+
+	public static showErrorMessage(message: string): void {
+		this._uiUtil?.showErrorMessage(message);
 	}
 }
 

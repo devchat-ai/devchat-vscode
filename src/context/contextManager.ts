@@ -3,6 +3,7 @@ import { logger } from '../util/logger';
 
 import { createTempSubdirectory } from '../util/commonUtil';
 import CustomContexts from './customContext';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export interface ChatContext {
@@ -46,6 +47,10 @@ export interface ChatContext {
 					logger.channel()?.info(`${customContext.command.join(' ')} exit code:`, commandResult!.exitCode);
 					logger.channel()?.debug(`stdout:`, commandResult!.stdout);
 					logger.channel()?.debug(`stderr:`, commandResult!.stderr);
+
+					if (commandResult!.stderr) {
+						UiUtilWrapper.showErrorMessage(commandResult!.stderr);
+					}
 					return `[context|${outputFile}]`;
 				},
 			});

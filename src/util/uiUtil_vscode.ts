@@ -96,4 +96,8 @@ export class UiUtilVscode implements UiUtil {
 
 		return editor.document.getText(editor.selection);
 	}
+
+	public showErrorMessage(message: string): void {
+		vscode.window.showErrorMessage(message);
+	}
 }
