@@ -66,12 +66,16 @@ export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefin
 	if (!topicId) {
 		return [];
 	}
+	const topic = TopicManager.getInstance().getTopic(topicId);
+	if (!topic || !topic.firstMessageHash) {
+		return [];
+	}
 
 	const devChat = new DevChat();
 	const logOptions: LogOptions = {
 		skip: 0,
 		maxCount: 10000,
-		topic: topicId
+		topic: topic.firstMessageHash
 	};
 	const logEntries = await devChat.log(logOptions);
 	const logEntriesFlat = logEntries.flat();
