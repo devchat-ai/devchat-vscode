@@ -181,3 +181,25 @@ export async function getLanguageIdByFileName(fileName: string): Promise<string 
 export function runCommand(command: string): string {
 	return childProcess.execSync(command).toString();
 }
+
+export function runCommandStringAndWriteOutputSync(command: string, outputFile: string): CommandResult {
+	try {
+		const options = {
+			cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.'
+		};
+		const output = childProcess.execSync(command, options).toString();
+		const onOutputFile = (command: string, stdout: string): string => {
+			const data = {
+				"command": command,
+				"content": stdout,
+			};
+			return JSON.stringify(data);
+		};
+		fs.writeFileSync(outputFile, onOutputFile(command, output));
+		return { exitCode: 0, stdout: output, stderr: '' }
+	} catch (error) {
+		logger.channel()?.error(`Error occurred: ${error}`);
+		logger.channel()?.show();
+		return { exitCode: 1, stdout: '', stderr: String(error) }
+	}
+}
