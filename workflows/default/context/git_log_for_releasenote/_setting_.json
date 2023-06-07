@@ -1,0 +1,5 @@
+{
+	"name": "git_log_releasenote",
+	"description": "git log for write release note",
+	"command": ["git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:\"%h - %B\""]
+}

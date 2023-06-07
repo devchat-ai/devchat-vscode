@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.0.49",
+	"version": "0.1.8",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -13,7 +13,45 @@
 		"url": "https://github.com/covespace/devchat-vscode.git"
 	},
 	"categories": [
-		"Other"
+		"Programming Languages",
+		"Snippets",
+		"Machine Learning",
+		"Education"
+	],
+	"keywords": [
+		"ai",
+		"anthropic",
+		"assistant",
+		"autocomplete",
+		"bot",
+		"chat",
+		"chatbot",
+		"codegen",
+		"c#",
+		"c++",
+		"codex",
+		"co-pilot",
+		"devchat",
+		"documentation",
+		"go",
+		"golang",
+		"intellisense",
+		"java",
+		"javascript",
+		"keybindings",
+		"kotlin",
+		"llm",
+		"model",
+		"openai",
+		"php",
+		"pilot",
+		"python",
+		"refactor",
+		"ruby",
+		"sourcegraph",
+		"snippets",
+		"test",
+		"typescript"
 	],
 	"activationEvents": [
 		"*"

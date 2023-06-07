@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { logger } from '../util/logger';
 
-import { runCommandStringArrayAndWriteOutput, CommandResult } from '../util/commonUtil';
+import { runCommandStringArrayAndWriteOutput, runCommandStringAndWriteOutputSync, CommandResult } from '../util/commonUtil';
 
 
 export interface CustomContext {
@@ -85,6 +85,9 @@ class CustomContexts {
 			commandArray[index] = arg.replace('${CurDir}', contextDir);
 		});
 
+		if (commandArray.length === 1) {
+			return runCommandStringAndWriteOutputSync(commandArray[0], outputFile);
+		}
 		return await runCommandStringArrayAndWriteOutput(commandArray, outputFile);
 	}
 }
