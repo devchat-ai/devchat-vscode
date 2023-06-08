@@ -82,8 +82,8 @@ DevChat is the way developers interact and collaborate with AI.
   
   &nbsp; &nbsp; <img width="220" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/c30f76fe-321a-4145-88fa-a0ef3d36bde5">
 
-  - Since DevChat is designed for developers, it requires a Git repository folder to store metadata. Therefore, be sure to open a Git project.
-  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="[sk-...]"` (or use DevChat access key).
+  - Since DevChat is designed for developers, it requires a Git or SVN repository folder to store metadata. Therefore, be sure to open a Git or SVN project.
+  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="[sk-...]"` (or set it to your DevChat access key instead).
   - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
 
   &nbsp; &nbsp; <img width="400" alt="image" src="https://github.com/covespace/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
