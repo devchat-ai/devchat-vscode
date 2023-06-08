@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import messageUtil from '../../util/MessageUtil';
 
 export const chatSlice = createSlice({
     name: 'chat',
@@ -10,15 +11,32 @@ export const chatSlice = createSlice({
         messages: <any>[],
     },
     reducers: {
-        startGenerating: (state) => {
+        startGenerating: (state, action) => {
             state.generating = true;
             state.responsed = false;
             state.errorMessage = '';
             state.currentMessage = '';
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: action.payload
+            });
+        },
+        reGenerating: (state) => {
+            state.generating = true;
+            state.responsed = false;
+            state.errorMessage = '';
+            state.currentMessage = '';
+            state.messages.pop();
+            messageUtil.sendMessage({
+                command: 'regeneration'
+            });
         },
         stopGenerating: (state) => {
             state.generating = false;
             state.responsed = false;
+            messageUtil.sendMessage({
+                command: 'stopDevChat'
+            });
         },
         startResponsing: (state, action) => {
             state.responsed = true;
@@ -54,6 +72,7 @@ export const selectMessages = state => state.chat.messages;
 export const {
     startGenerating,
     stopGenerating,
+    reGenerating,
     startResponsing,
     happendError,
     newMessage,

@@ -11,6 +11,11 @@ import {
     setValue,
     selectValue
 } from './inputSlice';
+import {
+    selectGenerating,
+    newMessage,
+    startGenerating,
+} from './chatSlice';
 
 const InputContexts = (props: any) => {
     const { contexts, contextsHandlers } = props;
@@ -103,9 +108,10 @@ const InputContexts = (props: any) => {
 };
 
 const InputMessage = (props: any) => {
-    const { generating, width, onSendClick, contexts, contextsHandlers } = props;
+    const { width, contexts, contextsHandlers } = props;
 
     const input = useSelector(selectValue);
+    const generating = useSelector(selectGenerating);
     const dispatch = useDispatch();
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -138,18 +144,16 @@ const InputMessage = (props: any) => {
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
-            onSendClick(input, contexts);
             // Process and send the message to the extension
             const contextStrs = contexts.map((item: any, index: number) => {
                 const { file, context } = item;
                 return `[context|${file}]`;
             });
             const text = input + contextStrs.join(' ');
-            messageUtil.sendMessage({
-                command: 'sendMessage',
-                text: text
-            });
-
+            // Add the user's message to the chat UI
+            dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            // start generating
+            dispatch(startGenerating(text));
             // Clear the input field
             dispatch(setValue(''));
             contexts.length = 0;

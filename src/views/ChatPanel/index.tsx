@@ -4,7 +4,7 @@ import { Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconAlertCircle, IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
+import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
 
 import { useSelector, useDispatch } from 'react-redux';
@@ -12,16 +12,14 @@ import {
     setValue
 } from './inputSlice';
 import {
-    startGenerating,
+    reGenerating,
     stopGenerating,
     startResponsing,
     happendError,
     newMessage,
     updateMessage,
     shiftMessage,
-    popMessage,
     selectGenerating,
-    selectResponsed,
     selectCurrentMessage,
     selectErrorMessage,
     selectMessages,
@@ -30,8 +28,8 @@ import {
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
-const RegenerationButton = (props: any) => {
-    const { onClick } = props;
+const RegenerationButton = () => {
+    const dispatch = useDispatch();
     return (<Button
         size='xs'
         leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
@@ -47,14 +45,14 @@ const RegenerationButton = (props: any) => {
                 fontSize: 'var(--vscode-editor-font-size)',
             }
         }}
-        onClick={onClick}
-        variant="white">
+        onClick={() => dispatch(reGenerating())}
+        variant="white" >
         Regeneration
-    </Button>);
+    </Button >);
 };
 
-const StopButton = (props: any) => {
-    const { onClick } = props;
+const StopButton = () => {
+    const dispatch = useDispatch();
     return (
         <Button
             size='xs'
@@ -71,7 +69,7 @@ const StopButton = (props: any) => {
                     fontSize: 'var(--vscode-editor-font-size)',
                 }
             }}
-            onClick={onClick}
+            onClick={() => dispatch(stopGenerating())}
             variant="white">
             Stop generating
         </Button>);
@@ -82,7 +80,6 @@ const chatPanel = () => {
     const generating = useSelector(selectGenerating);
     const currentMessage = useSelector(selectCurrentMessage);
     const errorMessage = useSelector(selectErrorMessage);
-    const responsed = useSelector(selectResponsed);
     const messages = useSelector(selectMessages);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
@@ -211,38 +208,18 @@ const chatPanel = () => {
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
                 {generating &&
                     <Center>
-                        <StopButton
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'stopDevChat'
-                                });
-                                dispatch(stopGenerating());
-                            }} />
+                        <StopButton />
                     </Center>
                 }
                 {errorMessage &&
                     <Center>
-                        <RegenerationButton
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'regeneration'
-                                });
-                                dispatch(popMessage());
-                                dispatch(startGenerating());
-                            }} />
+                        <RegenerationButton />
                     </Center>
                 }
                 <InputMessage
                     contexts={contexts}
                     contextsHandlers={contextsHandlers}
-                    generating={generating}
-                    width={chatContainerRect.width}
-                    onSendClick={(input: string, contexts: any) => {
-                        // Add the user's message to the chat UI
-                        dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
-                        // start generating
-                        dispatch(startGenerating());
-                    }} />
+                    width={chatContainerRect.width} />
             </Stack>
         </Container>
     );
