@@ -11,9 +11,15 @@ import {
     setValue,
     selectValue,
     selectContexts,
+    selectMenuOpend,
+    selectMenuType,
+    selectCurrentMenuIndex,
+    setCurrentMenuIndex,
     removeContext,
     clearContexts,
     newContext,
+    openMenu,
+    closeMenu,
 } from './inputSlice';
 import {
     selectGenerating,
@@ -115,22 +121,21 @@ const InputContexts = () => {
 const InputMessage = (props: any) => {
     const { width } = props;
 
+    const dispatch = useDispatch();
     const input = useSelector(selectValue);
     const generating = useSelector(selectGenerating);
     const contexts = useSelector(selectContexts);
-    const dispatch = useDispatch();
+    const menuOpend = useSelector(selectMenuOpend);
+    const menuType = useSelector(selectMenuType);
+    const currentMenuIndex = useSelector(selectCurrentMenuIndex);
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
-    const [menuOpend, setMenuOpend] = useState(false);
-    const [menuType, setMenuType] = useState(''); // contexts or commands
-    const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
     const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setMenuType('contexts');
-        setMenuOpend(!menuOpend);
+        dispatch(openMenu('contexts'));
         inputRef.current.focus();
         event.stopPropagation();
     };
@@ -139,11 +144,10 @@ const InputMessage = (props: any) => {
         const value = event.target.value;
         // if value start with '/' command show menu
         if (value.startsWith('/')) {
-            setMenuOpend(true);
-            setMenuType('commands');
-            setCurrentMenuIndex(0);
+            dispatch(openMenu('commands'));
+            dispatch(setCurrentMenuIndex(0));
         } else {
-            setMenuOpend(false);
+            dispatch(closeMenu());
         }
         dispatch(setValue(value));
     };
@@ -177,23 +181,23 @@ const InputMessage = (props: any) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (menuOpend) {
             if (event.key === 'Escape') {
-                setMenuOpend(false);
+                dispatch(closeMenu());
             }
             if (menuType === 'commands') {
                 if (event.key === 'ArrowDown') {
                     const newIndex = currentMenuIndex + 1;
-                    setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
+                    dispatch(setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0));
                     event.preventDefault();
                 }
                 if (event.key === 'ArrowUp') {
                     const newIndex = currentMenuIndex - 1;
-                    setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
+                    dispatch(setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex));
                     event.preventDefault();
                 }
                 if (event.key === 'Enter' && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
                     dispatch(setValue(`/${commandNode.props['data-pattern']} `));
-                    setMenuOpend(false);
+                    dispatch(closeMenu());
                     event.preventDefault();
                 }
             }
@@ -259,7 +263,7 @@ const InputMessage = (props: any) => {
                     }}
                     onClick={() => {
                         handleContextClick(name);
-                        setMenuOpend(false);
+                        dispatch(closeMenu());
                     }}
                 >
                     {contextMenuIcon(name)}
@@ -362,7 +366,7 @@ const InputMessage = (props: any) => {
                     }}
                     onClick={() => {
                         dispatch(setValue(`/${pattern} `));
-                        setMenuOpend(false);
+                        dispatch(closeMenu());
                     }}
                     aria-checked={index === currentMenuIndex}
                     data-pattern={pattern}
@@ -387,7 +391,7 @@ const InputMessage = (props: any) => {
         });
         setCommandMenusNode(node);
         if (node.length === 0) {
-            setMenuOpend(false);
+            dispatch(closeMenu());
         }
     }, [input, commandMenus, currentMenuIndex]);
 
@@ -404,11 +408,11 @@ const InputMessage = (props: any) => {
                 width={width}
                 opened={menuOpend}
                 onChange={() => {
-                    setMenuOpend(!menuOpend);
+                    dispatch(closeMenu());
                     inputRef.current.focus();
                 }}
-                onClose={() => setMenuType('')}
-                onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
+                onClose={() => dispatch(closeMenu())}
+                onOpen={() => menuType !== '' ? dispatch(openMenu(menuType)) : dispatch(closeMenu())}
                 returnFocus={true}>
                 <Popover.Target>
                     <Textarea
