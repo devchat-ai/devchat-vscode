@@ -7,6 +7,11 @@ import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@m
 import { IconAlertCircle, IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
 
+import { useDispatch } from 'react-redux';
+import {
+    setValue
+} from './inputSlice';
+
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
@@ -58,6 +63,7 @@ const StopButton = (props: any) => {
 };
 
 const chatPanel = () => {
+    const dispatch = useDispatch();
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
@@ -69,7 +75,6 @@ const chatPanel = () => {
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
     const messageCount = 10;
-    const [input, setInput] = useState('');
     const [contexts, contextsHandlers] = useListState<any>([]);
 
     const scrollToBottom = () =>
@@ -173,7 +178,7 @@ const chatPanel = () => {
                 <MessageContainer
                     onRefillClick={(params: any) => {
                         const { message, contexts: messageContexts } = params;
-                        setInput(message);
+                        dispatch(setValue(message));
                         contexts.length = 0;
                         contextsHandlers.append(...messageContexts);
                     }}
@@ -217,8 +222,6 @@ const chatPanel = () => {
                     </Center>
                 }
                 <InputMessage
-                    input={input}
-                    setInput={setInput}
                     contexts={contexts}
                     contextsHandlers={contextsHandlers}
                     generating={generating}
@@ -233,7 +236,7 @@ const chatPanel = () => {
                         setHasError('');
                     }} />
             </Stack>
-        </Container >
+        </Container>
     );
 };
 

@@ -6,6 +6,12 @@ import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./I
 import messageUtil from '../../util/MessageUtil';
 
 
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    setValue,
+    selectValue
+} from './inputSlice';
+
 const InputContexts = (props: any) => {
     const { contexts, contextsHandlers } = props;
     return (<Accordion variant="contained" chevronPosition="left"
@@ -97,8 +103,10 @@ const InputContexts = (props: any) => {
 };
 
 const InputMessage = (props: any) => {
-    const { generating, width, onSendClick, input, setInput, contexts, contextsHandlers } = props;
+    const { generating, width, onSendClick, contexts, contextsHandlers } = props;
 
+    const input = useSelector(selectValue);
+    const dispatch = useDispatch();
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -125,7 +133,7 @@ const InputMessage = (props: any) => {
         } else {
             setMenuOpend(false);
         }
-        setInput(value);
+        dispatch(setValue(value));
     };
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -137,14 +145,13 @@ const InputMessage = (props: any) => {
                 return `[context|${file}]`;
             });
             const text = input + contextStrs.join(' ');
-            // console.log(`message text: ${text}`);
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: text
             });
 
             // Clear the input field
-            setInput('');
+            dispatch(setValue(''));
             contexts.length = 0;
         }
     };
@@ -175,7 +182,7 @@ const InputMessage = (props: any) => {
                 }
                 if (event.key === 'Enter' && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
-                    setInput(`/${commandNode.props['data-pattern']} `);
+                    dispatch(setValue(`/${commandNode.props['data-pattern']} `));
                     setMenuOpend(false);
                     event.preventDefault();
                 }
@@ -344,7 +351,7 @@ const InputMessage = (props: any) => {
                         }
                     }}
                     onClick={() => {
-                        setInput(`/${pattern} `);
+                        dispatch(setValue(`/${pattern} `));
                         setMenuOpend(false);
                     }}
                     aria-checked={index === currentMenuIndex}
