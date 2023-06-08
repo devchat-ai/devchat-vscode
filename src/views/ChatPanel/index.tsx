@@ -7,10 +7,20 @@ import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@m
 import { IconAlertCircle, IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
 
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import {
     setValue
 } from './inputSlice';
+import {
+    startGenerating,
+    stopGenerating,
+    startResponsing,
+    happendError,
+    selectGenerating,
+    selectResponsed,
+    selectCurrentMessage,
+    selectErrorMessage,
+} from './chatSlice';
 
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
@@ -64,13 +74,13 @@ const StopButton = (props: any) => {
 
 const chatPanel = () => {
     const dispatch = useDispatch();
+    const generating = useSelector(selectGenerating);
+    const currentMessage = useSelector(selectCurrentMessage);
+    const errorMessage = useSelector(selectErrorMessage);
+    const responsed = useSelector(selectResponsed);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
-    const [currentMessage, setCurrentMessage] = useState('');
-    const [generating, setGenerating] = useState(false);
-    const [responsed, setResponsed] = useState(false);
-    const [hasError, setHasError] = useState('');
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
@@ -92,14 +102,12 @@ const chatPanel = () => {
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            setCurrentMessage(message.text);
-            setResponsed(true);
+            dispatch(startResponsing(message.text));
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            setGenerating(false);
-            setResponsed(true);
+            dispatch(stopGenerating());
             if (message.isError) {
-                setHasError(message.text);
+                dispatch(happendError(message.text));
             }
         });
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
@@ -186,9 +194,9 @@ const chatPanel = () => {
                     generating={generating}
                     messages={messages}
                     responsed={responsed} />
-                {hasError &&
+                {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {hasError}
+                        {errorMessage}
                     </Alert>
                 }
             </ScrollArea>
@@ -202,11 +210,11 @@ const chatPanel = () => {
                                 messageUtil.sendMessage({
                                     command: 'stopDevChat'
                                 });
-                                setGenerating(false);
+                                dispatch(stopGenerating());
                             }} />
                     </Center>
                 }
-                {hasError &&
+                {errorMessage &&
                     <Center>
                         <RegenerationButton
                             onClick={() => {
@@ -214,10 +222,7 @@ const chatPanel = () => {
                                     command: 'regeneration'
                                 });
                                 messageHandlers.pop();
-                                setHasError('');
-                                setGenerating(true);
-                                setResponsed(false);
-                                setCurrentMessage('');
+                                dispatch(startGenerating());
                             }} />
                     </Center>
                 }
@@ -230,10 +235,7 @@ const chatPanel = () => {
                         // Add the user's message to the chat UI
                         messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
                         // start generating
-                        setGenerating(true);
-                        setResponsed(false);
-                        setCurrentMessage('');
-                        setHasError('');
+                        dispatch(startGenerating());
                     }} />
             </Stack>
         </Container>
