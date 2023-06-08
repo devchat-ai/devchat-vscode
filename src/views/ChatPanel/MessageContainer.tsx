@@ -12,7 +12,8 @@ import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useSelector } from 'react-redux';
 import {
     selectGenerating,
-    selectResponsed
+    selectResponsed,
+    selectMessages,
 } from './chatSlice';
 
 
@@ -162,9 +163,9 @@ const MessageHeader = (props: any) => {
 };
 
 const MessageContainer = (props: any) => {
-    const { messages, width, onRefillClick } = props;
+    const { width, onRefillClick } = props;
 
-    const generating = useSelector(selectGenerating);
+    const messages = useSelector(selectMessages);
 
     const messageList = messages.map((item: any, index: number) => {
         const { message: messageText, type: messageType, contexts } = item;
@@ -193,7 +194,7 @@ const MessageContainer = (props: any) => {
                 }}>
                     <MessageContext contexts={contexts} />
                     <CodeBlock messageText={messageText} />
-                    <MessageBlink generating={generating} messageType={messageType} lastMessage={index === messages.length - 1} />
+                    <MessageBlink messageType={messageType} lastMessage={index === messages.length - 1} />
                 </Container >
             </Stack >
             {index !== messages.length - 1 && <Divider my={3} />}

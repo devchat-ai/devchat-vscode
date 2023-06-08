@@ -16,10 +16,15 @@ import {
     stopGenerating,
     startResponsing,
     happendError,
+    newMessage,
+    updateMessage,
+    shiftMessage,
+    popMessage,
     selectGenerating,
     selectResponsed,
     selectCurrentMessage,
     selectErrorMessage,
+    selectMessages,
 } from './chatSlice';
 
 import InputMessage from './InputMessage';
@@ -78,9 +83,9 @@ const chatPanel = () => {
     const currentMessage = useSelector(selectCurrentMessage);
     const errorMessage = useSelector(selectErrorMessage);
     const responsed = useSelector(selectResponsed);
+    const messages = useSelector(selectMessages);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
-    const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
@@ -114,8 +119,8 @@ const chatPanel = () => {
             message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
                 if (index < message.entries.length - messageCount) return;
                 const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
-                messageHandlers.append({ type: 'bot', message: response });
+                dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
+                dispatch(newMessage({ type: 'bot', message: response }));
             });
         });
         timer.start();
@@ -138,7 +143,7 @@ const chatPanel = () => {
     useEffect(() => {
         if (generating) {
             // new a bot message
-            messageHandlers.append({ type: 'bot', message: currentMessage });
+            dispatch(newMessage({ type: 'bot', message: currentMessage }));
         }
     }, [generating]);
 
@@ -148,14 +153,18 @@ const chatPanel = () => {
         const lastMessage = messages[lastIndex];
         if (currentMessage && lastMessage?.type === 'bot') {
             // update the last one bot message
-            messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
+            // messageHandlers.setItem();
+            dispatch(updateMessage({
+                index: lastIndex,
+                newMessage: { type: 'bot', message: currentMessage }
+            }));
         }
         timer.start();
     }, [currentMessage]);
 
     useEffect(() => {
         if (messages.length > messageCount * 2) {
-            messageHandlers.remove(0, 1);
+            dispatch(shiftMessage());
         }
         timer.start();
     }, [messages]);
@@ -190,10 +199,7 @@ const chatPanel = () => {
                         contexts.length = 0;
                         contextsHandlers.append(...messageContexts);
                     }}
-                    width={chatContainerRect.width}
-                    generating={generating}
-                    messages={messages}
-                    responsed={responsed} />
+                    width={chatContainerRect.width} />
                 {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {errorMessage}
@@ -221,7 +227,7 @@ const chatPanel = () => {
                                 messageUtil.sendMessage({
                                     command: 'regeneration'
                                 });
-                                messageHandlers.pop();
+                                dispatch(popMessage());
                                 dispatch(startGenerating());
                             }} />
                     </Center>
@@ -233,7 +239,7 @@ const chatPanel = () => {
                     width={chatContainerRect.width}
                     onSendClick={(input: string, contexts: any) => {
                         // Add the user's message to the chat UI
-                        messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
+                        dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
                         // start generating
                         dispatch(startGenerating());
                     }} />
