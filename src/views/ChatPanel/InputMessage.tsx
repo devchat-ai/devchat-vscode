@@ -9,7 +9,11 @@ import messageUtil from '../../util/MessageUtil';
 import { useSelector, useDispatch } from 'react-redux';
 import {
     setValue,
-    selectValue
+    selectValue,
+    selectContexts,
+    removeContext,
+    clearContexts,
+    newContext,
 } from './inputSlice';
 import {
     selectGenerating,
@@ -17,8 +21,9 @@ import {
     startGenerating,
 } from './chatSlice';
 
-const InputContexts = (props: any) => {
-    const { contexts, contextsHandlers } = props;
+const InputContexts = () => {
+    const dispatch = useDispatch();
+    const contexts = useSelector(selectContexts);
     return (<Accordion variant="contained" chevronPosition="left"
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
@@ -84,7 +89,7 @@ const InputContexts = (props: any) => {
                                     }
                                 }}
                                 onClick={() => {
-                                    contextsHandlers.remove(index);
+                                    dispatch(removeContext(index));
                                 }}>
                                 <IconX size="1rem" />
                             </ActionIcon>
@@ -108,10 +113,11 @@ const InputContexts = (props: any) => {
 };
 
 const InputMessage = (props: any) => {
-    const { width, contexts, contextsHandlers } = props;
+    const { width } = props;
 
     const input = useSelector(selectValue);
     const generating = useSelector(selectGenerating);
+    const contexts = useSelector(selectContexts);
     const dispatch = useDispatch();
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -156,7 +162,7 @@ const InputMessage = (props: any) => {
             dispatch(startGenerating(text));
             // Clear the input field
             dispatch(setValue(''));
-            contexts.length = 0;
+            dispatch(clearContexts());
         }
     };
 
@@ -323,10 +329,10 @@ const InputMessage = (props: any) => {
             // };
             const context = JSON.parse(message.result);
             if (typeof context !== 'undefined' && context) {
-                contextsHandlers.append({
+                dispatch(newContext({
                     file: message.file,
                     context: context,
-                });
+                }));
             }
         });
         inputRef.current.focus();
@@ -388,7 +394,7 @@ const InputMessage = (props: any) => {
     return (
         <>
             {contexts && contexts.length > 0 &&
-                <InputContexts contexts={contexts} contextsHandlers={contextsHandlers} />
+                <InputContexts />
             }
             <Popover
                 id='commandMenu'

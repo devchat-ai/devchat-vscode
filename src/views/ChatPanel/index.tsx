@@ -87,7 +87,6 @@ const chatPanel = () => {
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
     const messageCount = 10;
-    const [contexts, contextsHandlers] = useListState<any>([]);
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
@@ -190,12 +189,6 @@ const chatPanel = () => {
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 <MessageContainer
-                    onRefillClick={(params: any) => {
-                        const { message, contexts: messageContexts } = params;
-                        dispatch(setValue(message));
-                        contexts.length = 0;
-                        contextsHandlers.append(...messageContexts);
-                    }}
                     width={chatContainerRect.width} />
                 {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
@@ -217,8 +210,6 @@ const chatPanel = () => {
                     </Center>
                 }
                 <InputMessage
-                    contexts={contexts}
-                    contextsHandlers={contextsHandlers}
                     width={chatContainerRect.width} />
             </Stack>
         </Container>

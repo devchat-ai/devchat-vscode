@@ -9,12 +9,16 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import {
     selectGenerating,
     selectResponsed,
     selectMessages,
 } from './chatSlice';
+import {
+    setContexts,
+    setValue,
+} from './inputSlice';
 
 
 const MessageBlink = (props: any) => {
@@ -120,7 +124,8 @@ const DefaultMessage = (<Center>
 </Center>);
 
 const MessageHeader = (props: any) => {
-    const { type, message, contexts, onRefillClick } = props;
+    const { type, message, contexts } = props;
+    const dispatch = useDispatch();
     const [refilled, setRefilled] = React.useState(false);
     return (<Flex
         m='10px 0 10px 0'
@@ -147,10 +152,8 @@ const MessageHeader = (props: any) => {
             ? <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={refilled ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
                 <ActionIcon size='sm' style={{ marginLeft: 'auto' }}
                     onClick={() => {
-                        onRefillClick({
-                            message: message,
-                            contexts: contexts
-                        });
+                        dispatch(setValue(message));
+                        dispatch(setContexts(contexts));
                         setRefilled(true);
                         setTimeout(() => { setRefilled(false); }, 2000);
                     }}>
@@ -163,7 +166,7 @@ const MessageHeader = (props: any) => {
 };
 
 const MessageContainer = (props: any) => {
-    const { width, onRefillClick } = props;
+    const { width } = props;
 
     const messages = useSelector(selectMessages);
 
@@ -180,7 +183,6 @@ const MessageContainer = (props: any) => {
                     margin: 0,
                 }}>
                 <MessageHeader
-                    onRefillClick={onRefillClick}
                     type={messageType}
                     message={messageText}
                     contexts={contexts} />
