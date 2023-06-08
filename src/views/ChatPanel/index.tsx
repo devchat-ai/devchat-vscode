@@ -168,7 +168,7 @@ const chatPanel = () => {
                     padding: 0,
                     margin: 0,
                 }}
-                // onScrollPositionChange={onScrollPositionChange}
+                onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 <MessageContainer
                     onRefillClick={(params: any) => {
