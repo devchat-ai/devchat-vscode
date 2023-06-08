@@ -98,7 +98,7 @@ const MessageContext = (props: any) => {
                         <Accordion.Item value={`item-${index}`} mah='200'>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Accordion.Control >
-                                    {'command' in context ? context.command : context.path}
+                                    <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
                                 </Accordion.Control>
                             </Box>
                             <Accordion.Panel>

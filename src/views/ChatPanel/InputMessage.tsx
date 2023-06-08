@@ -83,7 +83,7 @@ const InputContexts = () => {
                             backgroundColor: 'var(--vscode-menu-background)',
                         }}>
                             <Accordion.Control w={'calc(100% - 40px)'}>
-                                {'command' in context ? context.command : context.path}
+                                <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
                             </Accordion.Control>
                             <ActionIcon
                                 mr={8}
