@@ -4,14 +4,32 @@ import { Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconAlertCircle, IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
+import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
+
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    setValue
+} from './inputSlice';
+import {
+    reGenerating,
+    stopGenerating,
+    startResponsing,
+    happendError,
+    newMessage,
+    updateMessage,
+    shiftMessage,
+    selectGenerating,
+    selectCurrentMessage,
+    selectErrorMessage,
+    selectMessages,
+} from './chatSlice';
 
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
-const RegenerationButton = (props: any) => {
-    const { onClick } = props;
+const RegenerationButton = () => {
+    const dispatch = useDispatch();
     return (<Button
         size='xs'
         leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
@@ -27,14 +45,14 @@ const RegenerationButton = (props: any) => {
                 fontSize: 'var(--vscode-editor-font-size)',
             }
         }}
-        onClick={onClick}
-        variant="white">
+        onClick={() => dispatch(reGenerating())}
+        variant="white" >
         Regeneration
-    </Button>);
+    </Button >);
 };
 
-const StopButton = (props: any) => {
-    const { onClick } = props;
+const StopButton = () => {
+    const dispatch = useDispatch();
     return (
         <Button
             size='xs'
@@ -51,26 +69,24 @@ const StopButton = (props: any) => {
                     fontSize: 'var(--vscode-editor-font-size)',
                 }
             }}
-            onClick={onClick}
+            onClick={() => dispatch(stopGenerating())}
             variant="white">
             Stop generating
         </Button>);
 };
 
 const chatPanel = () => {
+    const dispatch = useDispatch();
+    const generating = useSelector(selectGenerating);
+    const currentMessage = useSelector(selectCurrentMessage);
+    const errorMessage = useSelector(selectErrorMessage);
+    const messages = useSelector(selectMessages);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
-    const [messages, messageHandlers] = useListState<{ type: string; message: string; contexts?: any[] }>([]);
-    const [currentMessage, setCurrentMessage] = useState('');
-    const [generating, setGenerating] = useState(false);
-    const [responsed, setResponsed] = useState(false);
-    const [hasError, setHasError] = useState('');
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
     const messageCount = 10;
-    const [input, setInput] = useState('');
-    const [contexts, contextsHandlers] = useListState<any>([]);
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
@@ -87,22 +103,20 @@ const chatPanel = () => {
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            setCurrentMessage(message.text);
-            setResponsed(true);
+            dispatch(startResponsing(message.text));
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            setGenerating(false);
-            setResponsed(true);
+            dispatch(stopGenerating());
             if (message.isError) {
-                setHasError(message.text);
+                dispatch(happendError(message.text));
             }
         });
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
             message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
                 if (index < message.entries.length - messageCount) return;
                 const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                messageHandlers.append({ type: 'user', message: request, contexts: contexts });
-                messageHandlers.append({ type: 'bot', message: response });
+                dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
+                dispatch(newMessage({ type: 'bot', message: response }));
             });
         });
         timer.start();
@@ -125,7 +139,7 @@ const chatPanel = () => {
     useEffect(() => {
         if (generating) {
             // new a bot message
-            messageHandlers.append({ type: 'bot', message: currentMessage });
+            dispatch(newMessage({ type: 'bot', message: currentMessage }));
         }
     }, [generating]);
 
@@ -135,14 +149,18 @@ const chatPanel = () => {
         const lastMessage = messages[lastIndex];
         if (currentMessage && lastMessage?.type === 'bot') {
             // update the last one bot message
-            messageHandlers.setItem(lastIndex, { type: 'bot', message: currentMessage });
+            // messageHandlers.setItem();
+            dispatch(updateMessage({
+                index: lastIndex,
+                newMessage: { type: 'bot', message: currentMessage }
+            }));
         }
         timer.start();
     }, [currentMessage]);
 
     useEffect(() => {
         if (messages.length > messageCount * 2) {
-            messageHandlers.remove(0, 1);
+            dispatch(shiftMessage());
         }
         timer.start();
     }, [messages]);
@@ -168,22 +186,13 @@ const chatPanel = () => {
                     padding: 0,
                     margin: 0,
                 }}
-                // onScrollPositionChange={onScrollPositionChange}
+                onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
                 <MessageContainer
-                    onRefillClick={(params: any) => {
-                        const { message, contexts: messageContexts } = params;
-                        setInput(message);
-                        contexts.length = 0;
-                        contextsHandlers.append(...messageContexts);
-                    }}
-                    width={chatContainerRect.width}
-                    generating={generating}
-                    messages={messages}
-                    responsed={responsed} />
-                {hasError &&
+                    width={chatContainerRect.width} />
+                {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {hasError}
+                        {errorMessage}
                     </Alert>
                 }
             </ScrollArea>
@@ -192,48 +201,18 @@ const chatPanel = () => {
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
                 {generating &&
                     <Center>
-                        <StopButton
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'stopDevChat'
-                                });
-                                setGenerating(false);
-                            }} />
+                        <StopButton />
                     </Center>
                 }
-                {hasError &&
+                {errorMessage &&
                     <Center>
-                        <RegenerationButton
-                            onClick={() => {
-                                messageUtil.sendMessage({
-                                    command: 'regeneration'
-                                });
-                                messageHandlers.pop();
-                                setHasError('');
-                                setGenerating(true);
-                                setResponsed(false);
-                                setCurrentMessage('');
-                            }} />
+                        <RegenerationButton />
                     </Center>
                 }
                 <InputMessage
-                    input={input}
-                    setInput={setInput}
-                    contexts={contexts}
-                    contextsHandlers={contextsHandlers}
-                    generating={generating}
-                    width={chatContainerRect.width}
-                    onSendClick={(input: string, contexts: any) => {
-                        // Add the user's message to the chat UI
-                        messageHandlers.append({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
-                        // start generating
-                        setGenerating(true);
-                        setResponsed(false);
-                        setCurrentMessage('');
-                        setHasError('');
-                    }} />
+                    width={chatContainerRect.width} />
             </Stack>
-        </Container >
+        </Container>
     );
 };
 

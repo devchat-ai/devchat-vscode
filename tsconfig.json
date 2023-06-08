@@ -12,7 +12,10 @@
 		"rootDir": "src",
 		"strict": true,
 		"jsx": "react",
-		"esModuleInterop": true
+		"esModuleInterop": true,
+		"noImplicitAny": false
 	},
-	"exclude": ["test"]
+	"exclude": [
+		"test"
+	]
 }

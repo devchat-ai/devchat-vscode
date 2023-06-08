@@ -6,8 +6,30 @@ import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./I
 import messageUtil from '../../util/MessageUtil';
 
 
-const InputContexts = (props: any) => {
-    const { contexts, contextsHandlers } = props;
+import { useSelector, useDispatch } from 'react-redux';
+import {
+    setValue,
+    selectValue,
+    selectContexts,
+    selectMenuOpend,
+    selectMenuType,
+    selectCurrentMenuIndex,
+    setCurrentMenuIndex,
+    removeContext,
+    clearContexts,
+    newContext,
+    openMenu,
+    closeMenu,
+} from './inputSlice';
+import {
+    selectGenerating,
+    newMessage,
+    startGenerating,
+} from './chatSlice';
+
+const InputContexts = () => {
+    const dispatch = useDispatch();
+    const contexts = useSelector(selectContexts);
     return (<Accordion variant="contained" chevronPosition="left"
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
@@ -61,7 +83,7 @@ const InputContexts = (props: any) => {
                             backgroundColor: 'var(--vscode-menu-background)',
                         }}>
                             <Accordion.Control w={'calc(100% - 40px)'}>
-                                {'command' in context ? context.command : context.path}
+                                <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
                             </Accordion.Control>
                             <ActionIcon
                                 mr={8}
@@ -73,7 +95,7 @@ const InputContexts = (props: any) => {
                                     }
                                 }}
                                 onClick={() => {
-                                    contextsHandlers.remove(index);
+                                    dispatch(removeContext(index));
                                 }}>
                                 <IconX size="1rem" />
                             </ActionIcon>
@@ -97,20 +119,23 @@ const InputContexts = (props: any) => {
 };
 
 const InputMessage = (props: any) => {
-    const { generating, width, onSendClick, input, setInput, contexts, contextsHandlers } = props;
+    const { width } = props;
 
+    const dispatch = useDispatch();
+    const input = useSelector(selectValue);
+    const generating = useSelector(selectGenerating);
+    const contexts = useSelector(selectContexts);
+    const menuOpend = useSelector(selectMenuOpend);
+    const menuType = useSelector(selectMenuType);
+    const currentMenuIndex = useSelector(selectCurrentMenuIndex);
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
-    const [menuOpend, setMenuOpend] = useState(false);
-    const [menuType, setMenuType] = useState(''); // contexts or commands
-    const [currentMenuIndex, setCurrentMenuIndex] = useState<number>(0);
     const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setMenuType('contexts');
-        setMenuOpend(!menuOpend);
+        dispatch(openMenu('contexts'));
         inputRef.current.focus();
         event.stopPropagation();
     };
@@ -119,33 +144,29 @@ const InputMessage = (props: any) => {
         const value = event.target.value;
         // if value start with '/' command show menu
         if (value.startsWith('/')) {
-            setMenuOpend(true);
-            setMenuType('commands');
-            setCurrentMenuIndex(0);
+            dispatch(openMenu('commands'));
+            dispatch(setCurrentMenuIndex(0));
         } else {
-            setMenuOpend(false);
+            dispatch(closeMenu());
         }
-        setInput(value);
+        dispatch(setValue(value));
     };
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
-            onSendClick(input, contexts);
             // Process and send the message to the extension
             const contextStrs = contexts.map((item: any, index: number) => {
                 const { file, context } = item;
                 return `[context|${file}]`;
             });
             const text = input + contextStrs.join(' ');
-            // console.log(`message text: ${text}`);
-            messageUtil.sendMessage({
-                command: 'sendMessage',
-                text: text
-            });
-
+            // Add the user's message to the chat UI
+            dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            // start generating
+            dispatch(startGenerating(text));
             // Clear the input field
-            setInput('');
-            contexts.length = 0;
+            dispatch(setValue(''));
+            dispatch(clearContexts());
         }
     };
 
@@ -160,23 +181,23 @@ const InputMessage = (props: any) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (menuOpend) {
             if (event.key === 'Escape') {
-                setMenuOpend(false);
+                dispatch(closeMenu());
             }
             if (menuType === 'commands') {
                 if (event.key === 'ArrowDown') {
                     const newIndex = currentMenuIndex + 1;
-                    setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
+                    dispatch(setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0));
                     event.preventDefault();
                 }
                 if (event.key === 'ArrowUp') {
                     const newIndex = currentMenuIndex - 1;
-                    setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
+                    dispatch(setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex));
                     event.preventDefault();
                 }
                 if (event.key === 'Enter' && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
-                    setInput(`/${commandNode.props['data-pattern']} `);
-                    setMenuOpend(false);
+                    dispatch(setValue(`/${commandNode.props['data-pattern']} `));
+                    dispatch(closeMenu());
                     event.preventDefault();
                 }
             }
@@ -242,7 +263,7 @@ const InputMessage = (props: any) => {
                     }}
                     onClick={() => {
                         handleContextClick(name);
-                        setMenuOpend(false);
+                        dispatch(closeMenu());
                     }}
                 >
                     {contextMenuIcon(name)}
@@ -312,10 +333,10 @@ const InputMessage = (props: any) => {
             // };
             const context = JSON.parse(message.result);
             if (typeof context !== 'undefined' && context) {
-                contextsHandlers.append({
+                dispatch(newContext({
                     file: message.file,
                     context: context,
-                });
+                }));
             }
         });
         inputRef.current.focus();
@@ -344,8 +365,8 @@ const InputMessage = (props: any) => {
                         }
                     }}
                     onClick={() => {
-                        setInput(`/${pattern} `);
-                        setMenuOpend(false);
+                        dispatch(setValue(`/${pattern} `));
+                        dispatch(closeMenu());
                     }}
                     aria-checked={index === currentMenuIndex}
                     data-pattern={pattern}
@@ -370,14 +391,14 @@ const InputMessage = (props: any) => {
         });
         setCommandMenusNode(node);
         if (node.length === 0) {
-            setMenuOpend(false);
+            dispatch(closeMenu());
         }
     }, [input, commandMenus, currentMenuIndex]);
 
     return (
         <>
             {contexts && contexts.length > 0 &&
-                <InputContexts contexts={contexts} contextsHandlers={contextsHandlers} />
+                <InputContexts />
             }
             <Popover
                 id='commandMenu'
@@ -387,11 +408,11 @@ const InputMessage = (props: any) => {
                 width={width}
                 opened={menuOpend}
                 onChange={() => {
-                    setMenuOpend(!menuOpend);
+                    dispatch(closeMenu());
                     inputRef.current.focus();
                 }}
-                onClose={() => setMenuType('')}
-                onOpen={() => menuType !== '' ? setMenuOpend(true) : setMenuOpend(false)}
+                onClose={() => dispatch(closeMenu())}
+                onOpen={() => menuType !== '' ? dispatch(openMenu(menuType)) : dispatch(closeMenu())}
                 returnFocus={true}>
                 <Popover.Target>
                     <Textarea
