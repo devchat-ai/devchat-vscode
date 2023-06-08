@@ -231,6 +231,10 @@ export class TopicManager {
 	}
 
 	async loadTopics(): Promise<void> {
+		if (this.currentTopicId) {
+			this.currentTopicId = this.getTopic(this.currentTopicId)?.firstMessageHash;
+		}
+
 		this._topics = {};
 
 		const devChat = new DevChat();
