@@ -153,6 +153,8 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 
 // 重构后的sendMessage函数
 export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
+	userStop = false;
+	
 	const chatOptions: any = {};
 	const parsedMessage = await parseMessageAndSetOptions(message, chatOptions);
 
