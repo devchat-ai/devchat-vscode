@@ -25,7 +25,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	if (isVersionChangeCompare === undefined) {
 		const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
 		const versionNew = getExtensionVersion();
-		const versionChanged = versionOld !== versionNew;
+		versionChanged = versionOld !== versionNew;
 		UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
 
 		isVersionChangeCompare = true;
