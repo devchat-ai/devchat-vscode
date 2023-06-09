@@ -35,9 +35,6 @@ export const chatSlice = createSlice({
         stopGenerating: (state) => {
             state.generating = false;
             state.responsed = false;
-            messageUtil.sendMessage({
-                command: 'stopDevChat'
-            });
         },
         startResponsing: (state, action) => {
             state.responsed = true;

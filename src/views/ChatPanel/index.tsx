@@ -69,7 +69,12 @@ const StopButton = () => {
                     fontSize: 'var(--vscode-editor-font-size)',
                 }
             }}
-            onClick={() => dispatch(stopGenerating())}
+            onClick={() => {
+                dispatch(stopGenerating());
+                messageUtil.sendMessage({
+                    command: 'stopDevChat'
+                });
+            }}
             variant="white">
             Stop generating
         </Button>);
