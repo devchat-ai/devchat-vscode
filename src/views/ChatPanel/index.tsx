@@ -114,7 +114,7 @@ const chatPanel = () => {
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
             message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
                 if (index < message.entries.length - messageCount) return;
-                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
                 dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
                 dispatch(newMessage({ type: 'bot', message: response }));
             });
