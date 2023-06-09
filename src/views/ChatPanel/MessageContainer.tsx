@@ -9,7 +9,7 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../hooks';
 import {
     selectGenerating,
     selectResponsed,
@@ -24,8 +24,8 @@ import {
 const MessageBlink = (props: any) => {
     const { messageType, lastMessage } = props;
 
-    const generating = useSelector(selectGenerating);
-    const responsed = useSelector(selectResponsed);
+    const generating = useAppSelector(selectGenerating);
+    const responsed = useAppSelector(selectResponsed);
 
     const blink = keyframes({
         '50%': { opacity: 0 },
@@ -125,7 +125,7 @@ const DefaultMessage = (<Center>
 
 const MessageHeader = (props: any) => {
     const { type, message, contexts } = props;
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [refilled, setRefilled] = React.useState(false);
     return (<Flex
         m='10px 0 10px 0'
@@ -168,7 +168,7 @@ const MessageHeader = (props: any) => {
 const MessageContainer = (props: any) => {
     const { width } = props;
 
-    const messages = useSelector(selectMessages);
+    const messages = useAppSelector(selectMessages);
 
     const messageList = messages.map((item: any, index: number) => {
         const { message: messageText, type: messageType, contexts } = item;

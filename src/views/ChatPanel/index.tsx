@@ -6,8 +6,8 @@ import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
-import { useSelector, useDispatch } from 'react-redux';
 import {
     setValue
 } from './inputSlice';
@@ -29,7 +29,7 @@ import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
 const RegenerationButton = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     return (<Button
         size='xs'
         leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
@@ -52,7 +52,7 @@ const RegenerationButton = () => {
 };
 
 const StopButton = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     return (
         <Button
             size='xs'
@@ -76,11 +76,11 @@ const StopButton = () => {
 };
 
 const chatPanel = () => {
-    const dispatch = useDispatch();
-    const generating = useSelector(selectGenerating);
-    const currentMessage = useSelector(selectCurrentMessage);
-    const errorMessage = useSelector(selectErrorMessage);
-    const messages = useSelector(selectMessages);
+    const dispatch = useAppDispatch();
+    const generating = useAppSelector(selectGenerating);
+    const currentMessage = useAppSelector(selectCurrentMessage);
+    const errorMessage = useAppSelector(selectErrorMessage);
+    const messages = useAppSelector(selectMessages);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();

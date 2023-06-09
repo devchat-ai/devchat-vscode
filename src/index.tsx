@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
 import App from './views/App';
-import store from './views/store';
+import { store } from './views/store';
 import { Provider } from 'react-redux';
 
 const container = document.getElementById('app')!;
