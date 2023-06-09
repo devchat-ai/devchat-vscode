@@ -76,7 +76,7 @@ const InputContexts = () => {
             contexts.map((item: any, index: number) => {
                 const { context } = item;
                 return (
-                    <Accordion.Item value={`item-${index}`} >
+                    <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
                         <Box sx={{
                             display: 'flex', alignItems: 'center',
                             backgroundColor: 'var(--vscode-menu-background)',

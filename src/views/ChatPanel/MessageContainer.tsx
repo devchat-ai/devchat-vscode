@@ -95,7 +95,7 @@ const MessageContext = (props: any) => {
                 contexts?.map((item: any, index: number) => {
                     const { context } = item;
                     return (
-                        <Accordion.Item value={`item-${index}`} mah='200'>
+                        <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} mah='200'>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Accordion.Control >
                                     <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
