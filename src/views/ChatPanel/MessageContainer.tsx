@@ -170,11 +170,11 @@ const MessageContainer = (props: any) => {
 
     const messages = useAppSelector(selectMessages);
 
-    const messageList = messages.map((item: any, index: number) => {
-        const { message: messageText, type: messageType, contexts } = item;
-        // setMessage(messageText);
-        return (<>
-            <Stack
+    return (messages.length > 0
+        ? messages.map((item: any, index: number) => {
+            const { message: messageText, type: messageType, contexts } = item;
+            // setMessage(messageText);
+            return <Stack
                 spacing={0}
                 key={`message-${index}`}
                 sx={{
@@ -183,27 +183,28 @@ const MessageContainer = (props: any) => {
                     margin: 0,
                 }}>
                 <MessageHeader
+                    key={`message-header-${index}`}
                     type={messageType}
                     message={messageText}
                     contexts={contexts} />
-                <Container sx={{
-                    margin: 0,
-                    padding: 0,
-                    width: width,
-                    pre: {
-                        whiteSpace: 'break-spaces'
-                    },
-                }}>
-                    <MessageContext contexts={contexts} />
-                    <CodeBlock messageText={messageText} />
-                    <MessageBlink messageType={messageType} lastMessage={index === messages.length - 1} />
+                <Container
+                    key={`message-container-${index}`}
+                    sx={{
+                        margin: 0,
+                        padding: 0,
+                        width: width,
+                        pre: {
+                            whiteSpace: 'break-spaces'
+                        },
+                    }}>
+                    <MessageContext key={`message-context-${index}`} contexts={contexts} />
+                    <CodeBlock key={`message-codeblock-${index}`} messageText={messageText} />
+                    <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
                 </Container >
-            </Stack >
-            {index !== messages.length - 1 && <Divider my={3} />}
-        </>);
-    });
-
-    return (messageList.length > 0 ? messageList : DefaultMessage);
+                {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
+            </Stack >;
+        })
+        : DefaultMessage);
 };
 
 export default MessageContainer;

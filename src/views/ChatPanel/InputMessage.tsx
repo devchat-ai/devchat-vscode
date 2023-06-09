@@ -246,6 +246,7 @@ const InputMessage = (props: any) => {
         .map(({ pattern, description, name }, index) => {
             return (
                 <Flex
+                    key={`contexts-menus-${index}`}
                     mih={40}
                     gap="md"
                     justify="flex-start"
@@ -349,6 +350,7 @@ const InputMessage = (props: any) => {
         const node = filtered.map(({ pattern, description, name }, index) => {
             return (
                 <Flex
+                    key={`command-menus-${index}`}
                     mih={40}
                     gap="md"
                     justify="flex-start"

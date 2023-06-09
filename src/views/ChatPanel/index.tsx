@@ -167,7 +167,6 @@ const chatPanel = () => {
 
     return (
         <Container
-            id='chat-container'
             ref={chatContainerRef}
             sx={{
                 height: '100%',
@@ -178,7 +177,6 @@ const chatPanel = () => {
                 minWidth: 240
             }}>
             <ScrollArea
-                id='chat-scroll-area'
                 type="never"
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),
