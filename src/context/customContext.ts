@@ -3,12 +3,14 @@ import path from 'path';
 import { logger } from '../util/logger';
 
 import { runCommandStringArrayAndWriteOutput, runCommandStringAndWriteOutputSync, CommandResult } from '../util/commonUtil';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export interface CustomContext {
 	name: string;
 	description: string;
 	command: string[];
+	edit: boolean | undefined;
 	path: string;
 }
 
@@ -49,6 +51,7 @@ class CustomContexts {
 								name: settings.name,
 								description: settings.description,
 								command: settings.command,
+								edit: settings.edit,
 								path: path.join(contextDirPath, contextDir)
 							};
 							this.contexts.push(context);
@@ -86,6 +89,17 @@ class CustomContexts {
 		});
 
 		if (commandArray.length === 1) {
+			if (context.edit === true) {
+				// prompt input box for user to edit the commandArray[0]
+				const newCommand: string | undefined = await UiUtilWrapper.showInputBox({
+					placeHolder: 'Edit the command',
+					value: commandArray[0]
+				});
+				if (!newCommand) {
+					return { exitCode: 1, stdout: '', stderr: 'Command is empty' };
+				}
+				return runCommandStringAndWriteOutputSync(newCommand!, outputFile);
+			}
 			return runCommandStringAndWriteOutputSync(commandArray[0], outputFile);
 		}
 		return await runCommandStringArrayAndWriteOutput(commandArray, outputFile);
