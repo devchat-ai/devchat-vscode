@@ -33,9 +33,9 @@ export function parseMessage(message: string): { context: string[]; instruction:
 	const instructionRegex = /\[instruction\|(.*?)\]/g;
 	const referenceRegex = /\[reference\|(.*?)\]/g;
 
-	const contextPaths = [];
-	const instructionPaths = [];
-	const referencePaths = [];
+	const contextPaths: string[] = [];
+	const instructionPaths: string[] = [];
+	const referencePaths: string[] = [];
 
 	let match;
 
