@@ -9,7 +9,7 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useDispatch, useSelector } from 'react-redux';
+import { useAppDispatch, useAppSelector } from '../hooks';
 import {
     selectGenerating,
     selectResponsed,
@@ -24,8 +24,8 @@ import {
 const MessageBlink = (props: any) => {
     const { messageType, lastMessage } = props;
 
-    const generating = useSelector(selectGenerating);
-    const responsed = useSelector(selectResponsed);
+    const generating = useAppSelector(selectGenerating);
+    const responsed = useAppSelector(selectResponsed);
 
     const blink = keyframes({
         '50%': { opacity: 0 },
@@ -95,7 +95,7 @@ const MessageContext = (props: any) => {
                 contexts?.map((item: any, index: number) => {
                     const { context } = item;
                     return (
-                        <Accordion.Item value={`item-${index}`} mah='200'>
+                        <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} mah='200'>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Accordion.Control >
                                     <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
@@ -125,7 +125,7 @@ const DefaultMessage = (<Center>
 
 const MessageHeader = (props: any) => {
     const { type, message, contexts } = props;
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     const [refilled, setRefilled] = React.useState(false);
     return (<Flex
         m='10px 0 10px 0'
@@ -168,13 +168,13 @@ const MessageHeader = (props: any) => {
 const MessageContainer = (props: any) => {
     const { width } = props;
 
-    const messages = useSelector(selectMessages);
+    const messages = useAppSelector(selectMessages);
 
-    const messageList = messages.map((item: any, index: number) => {
-        const { message: messageText, type: messageType, contexts } = item;
-        // setMessage(messageText);
-        return (<>
-            <Stack
+    return (messages.length > 0
+        ? messages.map((item: any, index: number) => {
+            const { message: messageText, type: messageType, contexts } = item;
+            // setMessage(messageText);
+            return <Stack
                 spacing={0}
                 key={`message-${index}`}
                 sx={{
@@ -183,27 +183,28 @@ const MessageContainer = (props: any) => {
                     margin: 0,
                 }}>
                 <MessageHeader
+                    key={`message-header-${index}`}
                     type={messageType}
                     message={messageText}
                     contexts={contexts} />
-                <Container sx={{
-                    margin: 0,
-                    padding: 0,
-                    width: width,
-                    pre: {
-                        whiteSpace: 'break-spaces'
-                    },
-                }}>
-                    <MessageContext contexts={contexts} />
-                    <CodeBlock messageText={messageText} />
-                    <MessageBlink messageType={messageType} lastMessage={index === messages.length - 1} />
+                <Container
+                    key={`message-container-${index}`}
+                    sx={{
+                        margin: 0,
+                        padding: 0,
+                        width: width,
+                        pre: {
+                            whiteSpace: 'break-spaces'
+                        },
+                    }}>
+                    <MessageContext key={`message-context-${index}`} contexts={contexts} />
+                    <CodeBlock key={`message-codeblock-${index}`} messageText={messageText} />
+                    <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
                 </Container >
-            </Stack >
-            {index !== messages.length - 1 && <Divider my={3} />}
-        </>);
-    });
-
-    return (messageList.length > 0 ? messageList : DefaultMessage);
+                {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
+            </Stack >;
+        })
+        : DefaultMessage);
 };
 
 export default MessageContainer;

@@ -6,8 +6,8 @@ import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '../../util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
-import { useSelector, useDispatch } from 'react-redux';
 import {
     setValue
 } from './inputSlice';
@@ -29,7 +29,7 @@ import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 
 const RegenerationButton = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     return (<Button
         size='xs'
         leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
@@ -52,7 +52,7 @@ const RegenerationButton = () => {
 };
 
 const StopButton = () => {
-    const dispatch = useDispatch();
+    const dispatch = useAppDispatch();
     return (
         <Button
             size='xs'
@@ -76,11 +76,11 @@ const StopButton = () => {
 };
 
 const chatPanel = () => {
-    const dispatch = useDispatch();
-    const generating = useSelector(selectGenerating);
-    const currentMessage = useSelector(selectCurrentMessage);
-    const errorMessage = useSelector(selectErrorMessage);
-    const messages = useSelector(selectMessages);
+    const dispatch = useAppDispatch();
+    const generating = useAppSelector(selectGenerating);
+    const currentMessage = useAppSelector(selectCurrentMessage);
+    const errorMessage = useAppSelector(selectErrorMessage);
+    const messages = useAppSelector(selectMessages);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
@@ -114,7 +114,7 @@ const chatPanel = () => {
         messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
             message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
                 if (index < message.entries.length - messageCount) return;
-                const contexts = context.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
                 dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
                 dispatch(newMessage({ type: 'bot', message: response }));
             });
@@ -167,7 +167,6 @@ const chatPanel = () => {
 
     return (
         <Container
-            id='chat-container'
             ref={chatContainerRef}
             sx={{
                 height: '100%',
@@ -178,7 +177,6 @@ const chatPanel = () => {
                 minWidth: 240
             }}>
             <ScrollArea
-                id='chat-scroll-area'
                 type="never"
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),

@@ -4,9 +4,8 @@ import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from 
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./Icons";
 import messageUtil from '../../util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '../hooks';
 
-
-import { useSelector, useDispatch } from 'react-redux';
 import {
     setValue,
     selectValue,
@@ -28,8 +27,8 @@ import {
 } from './chatSlice';
 
 const InputContexts = () => {
-    const dispatch = useDispatch();
-    const contexts = useSelector(selectContexts);
+    const dispatch = useAppDispatch();
+    const contexts = useAppSelector(selectContexts);
     return (<Accordion variant="contained" chevronPosition="left"
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
@@ -77,7 +76,7 @@ const InputContexts = () => {
             contexts.map((item: any, index: number) => {
                 const { context } = item;
                 return (
-                    <Accordion.Item value={`item-${index}`} >
+                    <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
                         <Box sx={{
                             display: 'flex', alignItems: 'center',
                             backgroundColor: 'var(--vscode-menu-background)',
@@ -121,13 +120,13 @@ const InputContexts = () => {
 const InputMessage = (props: any) => {
     const { width } = props;
 
-    const dispatch = useDispatch();
-    const input = useSelector(selectValue);
-    const generating = useSelector(selectGenerating);
-    const contexts = useSelector(selectContexts);
-    const menuOpend = useSelector(selectMenuOpend);
-    const menuType = useSelector(selectMenuType);
-    const currentMenuIndex = useSelector(selectCurrentMenuIndex);
+    const dispatch = useAppDispatch();
+    const input = useAppSelector(selectValue);
+    const generating = useAppSelector(selectGenerating);
+    const contexts = useAppSelector(selectContexts);
+    const menuOpend = useAppSelector(selectMenuOpend);
+    const menuType = useAppSelector(selectMenuType);
+    const currentMenuIndex = useAppSelector(selectCurrentMenuIndex);
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
@@ -247,6 +246,7 @@ const InputMessage = (props: any) => {
         .map(({ pattern, description, name }, index) => {
             return (
                 <Flex
+                    key={`contexts-menus-${index}`}
                     mih={40}
                     gap="md"
                     justify="flex-start"
@@ -350,6 +350,7 @@ const InputMessage = (props: any) => {
         const node = filtered.map(({ pattern, description, name }, index) => {
             return (
                 <Flex
+                    key={`command-menus-${index}`}
                     mih={40}
                     gap="md"
                     justify="flex-start"

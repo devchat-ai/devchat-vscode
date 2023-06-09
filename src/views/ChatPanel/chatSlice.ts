@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import messageUtil from '../../util/MessageUtil';
+import type { RootState } from '../store';
 
 export const chatSlice = createSlice({
     name: 'chat',
@@ -63,11 +64,11 @@ export const chatSlice = createSlice({
     }
 });
 
-export const selectGenerating = state => state.chat.generating;
-export const selectResponsed = state => state.chat.responsed;
-export const selectCurrentMessage = state => state.chat.currentMessage;
-export const selectErrorMessage = state => state.chat.errorMessage;
-export const selectMessages = state => state.chat.messages;
+export const selectGenerating = (state: RootState) => state.chat.generating;
+export const selectResponsed = (state: RootState) => state.chat.responsed;
+export const selectCurrentMessage = (state: RootState) => state.chat.currentMessage;
+export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
+export const selectMessages = (state: RootState) => state.chat.messages;
 
 export const {
     startGenerating,
