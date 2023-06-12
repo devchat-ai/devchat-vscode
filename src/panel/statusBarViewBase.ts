@@ -62,7 +62,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	}
 	if (devchatStatus === 'not ready') {
 		// auto install devchat
-		UiUtilWrapper.runTerminal('DevChat Install', `python ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
+		UiUtilWrapper.runTerminal('DevChat Install', `python3 ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
 		devchatStatus = 'waiting install devchat';
 		isVersionChangeCompare = true;
 	}
