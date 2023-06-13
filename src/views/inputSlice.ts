@@ -15,6 +15,19 @@ export const fetchContextMenus = createAsyncThunk('input/fetchContextMenus', asy
     });
 });
 
+export const fetchCommandMenus = createAsyncThunk('input/fetchCommandMenus', async () => {
+    return new Promise((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'regCommandList' });
+            messageUtil.registerHandler('regCommandList', (message: any) => {
+                resolve(message.result);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+});
+
 export const inputSlice = createSlice({
     name: 'input',
     initialState: {
@@ -58,6 +71,9 @@ export const inputSlice = createSlice({
         builder
             .addCase(fetchContextMenus.fulfilled, (state, action) => {
                 state.contextMenus = action.payload;
+            })
+            .addCase(fetchCommandMenus.fulfilled, (state, action) => {
+                state.commandMenus = action.payload;
             });
     },
 });
@@ -68,6 +84,7 @@ export const selectMenuOpend = (state: RootState) => state.input.menuOpend;
 export const selectMenuType = (state: RootState) => state.input.menuType;
 export const selectCurrentMenuIndex = (state: RootState) => state.input.currentMenuIndex;
 export const selectContextMenus = (state: RootState) => state.input.contextMenus;
+export const selectCommandMenus = (state: RootState) => state.input.commandMenus;
 
 export const {
     setValue,

@@ -14,6 +14,7 @@ import {
     selectMenuType,
     selectCurrentMenuIndex,
     selectContextMenus,
+    selectCommandMenus,
     setCurrentMenuIndex,
     removeContext,
     clearContexts,
@@ -21,6 +22,7 @@ import {
     openMenu,
     closeMenu,
     fetchContextMenus,
+    fetchCommandMenus,
 } from './inputSlice';
 import {
     selectGenerating,
@@ -130,8 +132,8 @@ const InputMessage = (props: any) => {
     const menuType = useAppSelector(selectMenuType);
     const currentMenuIndex = useAppSelector(selectCurrentMenuIndex);
     const contextMenus = useAppSelector(selectContextMenus);
+    const commandMenus = useAppSelector(selectCommandMenus);
     const theme = useMantineTheme();
-    const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
     const [inputRef, inputRect] = useResizeObserver();
 
@@ -305,9 +307,7 @@ const InputMessage = (props: any) => {
 
     useEffect(() => {
         dispatch(fetchContextMenus());
-        messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            commandMenusHandlers.append(...message.result);
-        });
+        dispatch(fetchCommandMenus());
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);
