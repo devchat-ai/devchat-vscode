@@ -24,6 +24,12 @@ import {
     selectErrorMessage,
     selectMessages,
     selectMessageCount,
+    selectIsBottom,
+    selectIsTop,
+    selectIsMiddle,
+    onMessagesBottom,
+    onMessagesTop,
+    onMessagesMiddle,
     fetchHistoryMessages,
 } from './chatSlice';
 
@@ -89,21 +95,37 @@ const chatPanel = () => {
     const errorMessage = useAppSelector(selectErrorMessage);
     const messages = useAppSelector(selectMessages);
     const messageCount = useAppSelector(selectMessageCount);
+    const isTop = useAppSelector(selectIsTop);
+    const isBottom = useAppSelector(selectIsBottom);
+    const isMiddle = useAppSelector(selectIsMiddle);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
-    const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
-    const [stopScrolling, setStopScrolling] = useState(false);
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     const timer = useTimeout(() => {
-        // console.log(`stopScrolling:${stopScrolling}`);
-        if (!stopScrolling) {
+        if (isBottom) {
             scrollToBottom();
         }
     }, 1000);
+
+    const onScrollPositionChange = ({ x, y }) => {
+        const sh = scrollViewport.current?.scrollHeight || 0;
+        const vh = scrollViewport.current?.clientHeight || 0;
+        const gap = sh - vh - y;
+        const isBottom = sh < vh ? true : gap < 100;
+        const isTop = y === 0;
+        // console.log(`sh:${sh},vh:${vh},x:${x},y:${y},gap:${gap}`);
+        if (isBottom) {
+            dispatch(onMessagesBottom());
+        } else if (isTop) {
+            dispatch(onMessagesTop());
+        } else {
+            dispatch(onMessagesMiddle());
+        }
+    };
 
     useEffect(() => {
         dispatch(fetchHistoryMessages());
@@ -121,17 +143,6 @@ const chatPanel = () => {
             timer.clear();
         };
     }, []);
-
-    useEffect(() => {
-        const sh = scrollViewport.current?.scrollHeight || 0;
-        const vh = scrollViewport.current?.clientHeight || 0;
-        const isBottom = sh < vh ? true : sh - vh - scrollPosition.y < 3;
-        if (isBottom) {
-            setStopScrolling(false);
-        } else {
-            setStopScrolling(true);
-        }
-    }, [scrollPosition]);
 
     useEffect(() => {
         if (generating) {

@@ -24,6 +24,9 @@ export const chatSlice = createSlice({
         errorMessage: '',
         messages: <any>[],
         messageCount: 10,
+        isBottom: true,
+        isMiddle: false,
+        isTop: false,
     },
     reducers: {
         startGenerating: (state, action) => {
@@ -71,6 +74,21 @@ export const chatSlice = createSlice({
         },
         happendError: (state, action) => {
             state.errorMessage = action.payload;
+        },
+        onMessagesTop: (state) => {
+            state.isTop = true;
+            state.isBottom = false;
+            state.isMiddle = false;
+        },
+        onMessagesBottom: (state) => {
+            state.isTop = false;
+            state.isBottom = true;
+            state.isMiddle = false;
+        },
+        onMessagesMiddle: (state) => {
+            state.isTop = false;
+            state.isBottom = false;
+            state.isMiddle = true;
         }
     },
     extraReducers: (builder) => {
@@ -99,6 +117,9 @@ export const selectCurrentMessage = (state: RootState) => state.chat.currentMess
 export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
 export const selectMessageCount = (state: RootState) => state.chat.messageCount;
+export const selectIsBottom = (state: RootState) => state.chat.isBottom;
+export const selectIsTop = (state: RootState) => state.chat.isTop;
+export const selectIsMiddle = (state: RootState) => state.chat.isMiddle;
 
 
 export const {
@@ -112,6 +133,9 @@ export const {
     popMessage,
     clearMessages,
     updateMessage,
+    onMessagesTop,
+    onMessagesBottom,
+    onMessagesMiddle,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;
