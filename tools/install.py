@@ -2,6 +2,10 @@ import os
 import subprocess
 import sys
 
+# replace python3 with sys.executable, we will do everything in the same envrionment
+pythonCommand = sys.executable
+
+
 def check_pipx_installed():
     try:
         subprocess.run(["pipx", "--version"], check=True)
@@ -12,7 +16,7 @@ def check_pipx_installed():
 def install_pipx():
     print("Installing pipx...")
     try:
-        subprocess.run(["python3", "-m", "pip", "install", "pipx", "--force"], check=True)
+        subprocess.run([pythonCommand, "-m", "pip", "install", "pipx", "--force"], check=True)
         print("pipx installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing pipx:", e, file=sys.stderr)
@@ -20,8 +24,8 @@ def install_pipx():
 
 def add_pipx_to_path():
     print("Adding pipx to PATH...")
-    subprocess.run(["python3", "-m", "pipx", "ensurepath"], check=True)
-    result = subprocess.run(["python3", "-m", "pipx", "environment"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    subprocess.run([pythonCommand, "-m", "pipx", "ensurepath"], check=True)
+    result = subprocess.run([pythonCommand, "-m", "pipx", "environment"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     pipx_path_line = [line for line in result.stdout.splitlines() if "PIPX_BIN_DIR" in line]
     if pipx_path_line:
         pipx_path = pipx_path_line[0].split('=')[-1].strip()

@@ -4,7 +4,7 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency } from "../contributes/commandsBase";
+import { checkDevChatDependency, getValidPythonCommand } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
 
 
@@ -37,7 +37,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	// 1. not in a folder
 	// 2. dependence is invalid
 	// 3. ready
-	if (devchatStatus === '' || devchatStatus === 'waiting install devchat') {
+	if (devchatStatus === '' || devchatStatus === 'Waiting for devchat installation to complete') {
 		let bOk = true;
 		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 		if (!devChat) {
@@ -60,20 +60,30 @@ export async function dependencyCheck(): Promise<[string, string]> {
 			}
 		}
 	}
-	if (devchatStatus === 'not ready') {
+	if (devchatStatus === 'not ready' || devchatStatus === 'Waiting for Python3 installation to complete') {
 		// auto install devchat
-		UiUtilWrapper.runTerminal('DevChat Install', `python3 ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
-		devchatStatus = 'waiting install devchat';
-		isVersionChangeCompare = true;
+		// check whether python3 exist
+		const pythonCommand = getValidPythonCommand();
+		if (!pythonCommand && devchatStatus === 'not ready') {
+			UiUtilWrapper.showErrorMessage('Python3 not found.');
+			devchatStatus = 'Waiting for Python3 installation to complete';
+			isVersionChangeCompare = true;
+		} else if (!pythonCommand) {
+			// Waiting for Python3 installation to complete
+		} else {
+			UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
+			devchatStatus = 'Waiting for devchat installation to complete';
+			isVersionChangeCompare = true;
+		}
 	}
 
 	// check api key
-	if (apiKeyStatus === '' || apiKeyStatus === 'please set api key') {
+	if (apiKeyStatus === '' || apiKeyStatus === 'Please set the API key') {
 		const bOk = await ApiKeyManager.getApiKey();
 		if (bOk) {
 			apiKeyStatus = 'ready';
 		} else {
-			apiKeyStatus = 'please set api key';
+			apiKeyStatus = 'Please set the API key';
 		}
 	}
 

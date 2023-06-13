@@ -28,6 +28,23 @@ export function checkDevChatDependency(): boolean {
 	}
 }
 
+export function getValidPythonCommand(): string | undefined {
+	try {
+		runCommand('python3 -V');
+		return 'python3';
+	} catch (error) {
+		try {
+			const version = runCommand('python -V');
+			if (version.includes('Python 3')) {
+				return 'python';
+			}
+			return undefined;
+		} catch (error) {
+			return undefined;
+		}
+	}
+}
+
 export function getPipxEnvironmentPath(): string | null {
 	// Get pipx environment
 	const pipxEnvOutput = runCommand('python3 -m pipx environment').toString();
