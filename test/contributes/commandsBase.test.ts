@@ -21,7 +21,7 @@ describe('commandsBase', () => {
         return '';
       });
 
-      const result = commandsBase.checkDevChatDependency();
+      const result = commandsBase.checkDevChatDependency("python3");
       expect(result).to.be.true;
     });
 
@@ -35,7 +35,7 @@ describe('commandsBase', () => {
         return '';
       });
 
-      const result = commandsBase.checkDevChatDependency();
+      const result = commandsBase.checkDevChatDependency("python3");
       expect(result).to.be.false;
     });
 
@@ -47,7 +47,7 @@ describe('commandsBase', () => {
         return '';
       });
 
-      const result = commandsBase.checkDevChatDependency();
+      const result = commandsBase.checkDevChatDependency("python3");
       expect(result).to.be.false;
     });
   });
@@ -65,7 +65,7 @@ describe('commandsBase', () => {
         return '';
       });
 
-      const result = commandsBase.getPipxEnvironmentPath();
+      const result = commandsBase.getPipxEnvironmentPath("python3");
       expect(result).to.equal('/path/to/bin');
     });
 
@@ -77,7 +77,7 @@ describe('commandsBase', () => {
         return '';
       });
 
-      const result = commandsBase.getPipxEnvironmentPath();
+      const result = commandsBase.getPipxEnvironmentPath("python3");
       expect(result).to.be.null;
     });
   });

@@ -32,6 +32,18 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
 	}
 	
+	const pythonCommand = getValidPythonCommand();
+	if (!pythonCommand) {
+		if (devchatStatus === '') {
+			UiUtilWrapper.showErrorMessage('Missing required dependency: Python3');
+			logger.channel()?.error('Missing required dependency: Python3');
+			logger.channel()?.show();
+		}
+		
+		devchatStatus = 'Missing required dependency: Python3';
+	} else {
+		devchatStatus = '';
+	}
 	
 	// status item has three status type
 	// 1. not in a folder
@@ -45,7 +57,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		}
 
 		if (!bOk) {
-			bOk = checkDevChatDependency();
+			bOk = checkDevChatDependency(pythonCommand!);
 		}
 		if (bOk && versionChanged) {
 			bOk = false;
@@ -60,21 +72,11 @@ export async function dependencyCheck(): Promise<[string, string]> {
 			}
 		}
 	}
-	if (devchatStatus === 'not ready' || devchatStatus === 'Waiting for Python3 installation to complete') {
+	if (devchatStatus === 'not ready') {
 		// auto install devchat
-		// check whether python3 exist
-		const pythonCommand = getValidPythonCommand();
-		if (!pythonCommand && devchatStatus === 'not ready') {
-			UiUtilWrapper.showErrorMessage('Python3 not found.');
-			devchatStatus = 'Waiting for Python3 installation to complete';
-			isVersionChangeCompare = true;
-		} else if (!pythonCommand) {
-			// Waiting for Python3 installation to complete
-		} else {
-			UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
-			devchatStatus = 'Waiting for devchat installation to complete';
-			isVersionChangeCompare = true;
-		}
+		UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
+		devchatStatus = 'Waiting for devchat installation to complete';
+		isVersionChangeCompare = true;
 	}
 
 	// check api key

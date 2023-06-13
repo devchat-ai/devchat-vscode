@@ -4,9 +4,9 @@ import { runCommand } from "../util/commonUtil";
 import { logger } from "../util/logger";
 
 
-export function checkDevChatDependency(): boolean {
+export function checkDevChatDependency(pythonCommand: string): boolean {
 	try {
-		const binPath = getPipxEnvironmentPath();
+		const binPath = getPipxEnvironmentPath(pythonCommand);
 
 		if (binPath) {
 			updateEnvironmentPath(binPath);
@@ -43,9 +43,9 @@ export function getValidPythonCommand(): string | undefined {
 	}
 }
 
-export function getPipxEnvironmentPath(): string | null {
+export function getPipxEnvironmentPath(pythonCommand: string): string | null {
 	// Get pipx environment
-	const pipxEnvOutput = runCommand('python3 -m pipx environment').toString();
+	const pipxEnvOutput = runCommand(`${pythonCommand} -m pipx environment`).toString();
 	const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
 
 	// Get BIN path from pipx environment
