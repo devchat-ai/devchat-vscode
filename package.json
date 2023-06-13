@@ -10,7 +10,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "https://github.com/covespace/devchat-vscode.git"
+		"url": "https://github.com/devchat-ai/devchat-vscode.git"
 	},
 	"categories": [
 		"Programming Languages",
