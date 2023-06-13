@@ -20,12 +20,12 @@ async function ensureChatPanel(context: vscode.ExtensionContext): Promise<boolea
 }
 
 function registerAddContextCommand(context: vscode.ExtensionContext) {
-	const callback = async (uri: { path: any; }) => {
+	const callback = async (uri: { fsPath: any; }) => {
 		if (!await ensureChatPanel(context)) {
 			return;
 		}
 
-		await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.path);
+		await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.fsPath);
 	};
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext', callback));
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext_chinese', callback));
