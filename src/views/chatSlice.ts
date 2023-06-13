@@ -2,12 +2,16 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import messageUtil from '@/util/MessageUtil';
 import type { RootState } from '@/views/store';
 
-export const fetchHistoryMessages = createAsyncThunk<{ command: string; entries: [] }>('input/fetchHistoryMessages', async () => {
+export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entries: [] }, { pageIndex: number }>('input/fetchHistoryMessages', async (params) => {
+    const { pageIndex } = params;
     return new Promise((resolve, reject) => {
         try {
-            messageUtil.sendMessage({ command: 'historyMessages' });
+            messageUtil.sendMessage({ command: 'historyMessages', page: pageIndex });
             messageUtil.registerHandler('loadHistoryMessages', (message: any) => {
-                resolve(message);
+                resolve({
+                    pageIndex: pageIndex,
+                    entries: message.entries
+                });
             });
         } catch (e) {
             reject(e);
@@ -23,9 +27,9 @@ export const chatSlice = createSlice({
         currentMessage: '',
         errorMessage: '',
         messages: <any>[],
-        messageCount: 10,
+        pageIndex: 0,
+        isLastPage: false,
         isBottom: true,
-        isMiddle: false,
         isTop: false,
     },
     reducers: {
@@ -78,35 +82,40 @@ export const chatSlice = createSlice({
         onMessagesTop: (state) => {
             state.isTop = true;
             state.isBottom = false;
-            state.isMiddle = false;
         },
         onMessagesBottom: (state) => {
             state.isTop = false;
             state.isBottom = true;
-            state.isMiddle = false;
         },
         onMessagesMiddle: (state) => {
             state.isTop = false;
             state.isBottom = false;
-            state.isMiddle = true;
         }
     },
     extraReducers: (builder) => {
         builder
             .addCase(fetchHistoryMessages.fulfilled, (state, action) => {
-                state.messages = action.payload.entries
-                    .map((item: any, index) => {
-                        if (index < action.payload.entries.length - state.messageCount) {
-                            return [];
-                        }
-                        const { hash, user, date, request, response, context } = item;
-                        const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                        return [
-                            { type: 'user', message: request, contexts: contexts },
-                            { type: 'bot', message: response },
-                        ];
-                    })
-                    .flat();
+                const { pageIndex, entries } = action.payload;
+                if (entries.length > 0) {
+                    state.pageIndex = pageIndex;
+                    const messages = entries
+                        .map((item: any, index) => {
+                            const { hash, user, date, request, response, context } = item;
+                            const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                            return [
+                                { type: 'user', message: request, contexts: contexts },
+                                { type: 'bot', message: response },
+                            ];
+                        })
+                        .flat();
+                    if (state.pageIndex === 0) {
+                        state.messages = messages;
+                    } else if (state.pageIndex > 0) {
+                        state.messages = messages.concat(state.messages);
+                    }
+                } else {
+                    state.isLastPage = true;
+                }
             });
     }
 });
@@ -116,10 +125,10 @@ export const selectResponsed = (state: RootState) => state.chat.responsed;
 export const selectCurrentMessage = (state: RootState) => state.chat.currentMessage;
 export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
-export const selectMessageCount = (state: RootState) => state.chat.messageCount;
 export const selectIsBottom = (state: RootState) => state.chat.isBottom;
 export const selectIsTop = (state: RootState) => state.chat.isTop;
-export const selectIsMiddle = (state: RootState) => state.chat.isMiddle;
+export const selectPageIndex = (state: RootState) => state.chat.pageIndex;
+export const selectIsLastPage = (state: RootState) => state.chat.isLastPage;
 
 
 export const {

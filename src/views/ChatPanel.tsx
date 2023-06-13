@@ -23,10 +23,9 @@ import {
     selectCurrentMessage,
     selectErrorMessage,
     selectMessages,
-    selectMessageCount,
     selectIsBottom,
-    selectIsTop,
-    selectIsMiddle,
+    selectPageIndex,
+    selectIsLastPage,
     onMessagesBottom,
     onMessagesTop,
     onMessagesMiddle,
@@ -94,10 +93,9 @@ const chatPanel = () => {
     const currentMessage = useAppSelector(selectCurrentMessage);
     const errorMessage = useAppSelector(selectErrorMessage);
     const messages = useAppSelector(selectMessages);
-    const messageCount = useAppSelector(selectMessageCount);
-    const isTop = useAppSelector(selectIsTop);
     const isBottom = useAppSelector(selectIsBottom);
-    const isMiddle = useAppSelector(selectIsMiddle);
+    const isLastPage = useAppSelector(selectIsLastPage);
+    const pageIndex = useAppSelector(selectPageIndex);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
@@ -122,13 +120,16 @@ const chatPanel = () => {
             dispatch(onMessagesBottom());
         } else if (isTop) {
             dispatch(onMessagesTop());
+            if (!isLastPage) {
+                dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
+            }
         } else {
             dispatch(onMessagesMiddle());
         }
     };
 
     useEffect(() => {
-        dispatch(fetchHistoryMessages());
+        dispatch(fetchHistoryMessages({ pageIndex: 0 }));
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             dispatch(startResponsing(message.text));
         });
@@ -165,13 +166,6 @@ const chatPanel = () => {
         }
         timer.start();
     }, [currentMessage]);
-
-    useEffect(() => {
-        if (messages.length > messageCount * 2) {
-            dispatch(shiftMessage());
-        }
-        timer.start();
-    }, [messages]);
 
     return (
         <Container
