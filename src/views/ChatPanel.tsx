@@ -23,6 +23,8 @@ import {
     selectCurrentMessage,
     selectErrorMessage,
     selectMessages,
+    selectMessageCount,
+    fetchHistoryMessages,
 } from './chatSlice';
 
 import InputMessage from './InputMessage';
@@ -86,12 +88,12 @@ const chatPanel = () => {
     const currentMessage = useAppSelector(selectCurrentMessage);
     const errorMessage = useAppSelector(selectErrorMessage);
     const messages = useAppSelector(selectMessages);
+    const messageCount = useAppSelector(selectMessageCount);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
     const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
     const [stopScrolling, setStopScrolling] = useState(false);
-    const messageCount = 10;
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
@@ -104,7 +106,7 @@ const chatPanel = () => {
     }, 1000);
 
     useEffect(() => {
-        messageUtil.sendMessage({ command: 'historyMessages' });
+        dispatch(fetchHistoryMessages());
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             dispatch(startResponsing(message.text));
         });
@@ -113,14 +115,6 @@ const chatPanel = () => {
             if (message.isError) {
                 dispatch(happendError(message.text));
             }
-        });
-        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
-            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
-                if (index < message.entries.length - messageCount) return;
-                const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
-                dispatch(newMessage({ type: 'bot', message: response }));
-            });
         });
         timer.start();
         return () => {
