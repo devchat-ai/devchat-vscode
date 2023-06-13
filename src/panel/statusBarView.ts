@@ -8,8 +8,9 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 
     // Set the status bar item properties
     statusBarItem.text = `$(warning)DevChat`;
-    statusBarItem.tooltip = 'DevChat checking ..., please wait.';
-    statusBarItem.command = '';
+    statusBarItem.tooltip = 'DevChat is checking ..., please wait';
+	// when statsBarItem.command is '', then there is "command '' not found" error.
+    statusBarItem.command = undefined;
 
     // add a timer to update the status bar item
 	setInterval(async () => {
