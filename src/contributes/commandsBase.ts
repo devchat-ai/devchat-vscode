@@ -16,14 +16,12 @@ export function checkDevChatDependency(): boolean {
 			return true;
 		} else {
 			logger.channel()?.error(`Failed to get pipx environment path, I will try to install pipx.`);
-			logger.channel()?.show();
 			return false;
 		}
 	} catch (error) {
 		// DevChat dependency check failed
 		// log out detail error message
 		logger.channel()?.error(`Failed to check DevChat dependency: ${error}`);
-		logger.channel()?.show();
 		return false;
 	}
 }
