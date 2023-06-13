@@ -53,7 +53,10 @@ export async function dependencyCheck(): Promise<[string, string]> {
 
 		if (bOk) {
 			devchatStatus = 'ready';
-			TopicManager.getInstance().loadTopics();
+			// check whether open a workspace
+			if (UiUtilWrapper.workspaceFoldersFirstPath()) {
+				TopicManager.getInstance().loadTopics();
+			}
 		} else {
 			if (devchatStatus === '') {
 				devchatStatus = 'not ready';
