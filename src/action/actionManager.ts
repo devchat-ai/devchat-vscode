@@ -39,13 +39,9 @@ export default class ActionManager {
 	}
 
 	public async applyAction(actionName: string, codeBlock: { [key: string]: string }): Promise<void> {
-		logger.channel()?.info(` => Apply action: ${actionName}`);
-		for (const action of this.actions) {
-			logger.channel()?.info(`    => ${action.name}`);
-		}
 		const action = this.actions.find(action => action.name.trim() === actionName.trim());
 		if (action) {
-			logger.channel()?.info(`Apply action: ${actionName}`);
+			logger.channel()?.info(`Applying action: ${actionName}`);
 			await action.handler(codeBlock);
 		}
 	}
@@ -79,9 +75,10 @@ export default class ActionManager {
 					const handlerArgs = customAction.handler.map(arg => arg.replace('${contextFile}', tempFile));
 					// run handler
 					const result = await runCommandAndWriteOutput(handlerArgs[0], handlerArgs.slice(1), undefined);
-					logger.channel()?.info(`Apply action: ${customAction.name} exit code:`, result.exitCode);
-					logger.channel()?.info(`stdout:`, result.stdout);
-					logger.channel()?.info(`stderr:`, result.stderr);
+					logger.channel()?.info(`Applied action: ${customAction.name}`);
+					logger.channel()?.info(`  exit code:`, result.exitCode)
+					logger.channel()?.info(`  stdout:`, result.stdout);
+					logger.channel()?.info(`  stderr:`, result.stderr);
 
 					// remove temp file
 					fs.unlinkSync(tempFile);
