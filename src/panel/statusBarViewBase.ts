@@ -41,7 +41,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		}
 		
 		devchatStatus = 'Missing required dependency: Python3';
-	} else {
+	} else if (devchatStatus === 'Missing required dependency: Python3') {
 		devchatStatus = '';
 	}
 	
