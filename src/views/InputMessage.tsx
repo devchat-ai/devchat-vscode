@@ -3,8 +3,8 @@ import { useListState, useResizeObserver } from "@mantine/hooks";
 import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./Icons";
-import messageUtil from '../util/MessageUtil';
-import { useAppDispatch, useAppSelector } from './hooks';
+import messageUtil from '@/util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '@/views/hooks';
 
 import {
     setValue,

@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import type { RootState } from './store';
-import messageUtil from '../util/MessageUtil';
+import type { RootState } from '@/views/store';
+import messageUtil from '@/util/MessageUtil';
 
 export const fetchContextMenus = createAsyncThunk('input/fetchContextMenus', async () => {
     return new Promise((resolve, reject) => {

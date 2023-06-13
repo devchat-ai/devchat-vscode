@@ -13,7 +13,12 @@
 		"strict": true,
 		"jsx": "react",
 		"esModuleInterop": true,
-		"noImplicitAny": false
+		"noImplicitAny": false,
+		"paths": {
+			"@/*": [
+				"./src/*"
+			]
+		}
 	},
 	"exclude": [
 		"test"

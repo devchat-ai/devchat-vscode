@@ -1,15 +1,15 @@
 import { keyframes } from "@emotion/react";
 import { Center, Text, Flex, Avatar, Accordion, Box, Stack, Container, Divider, ActionIcon, Tooltip } from "@mantine/core";
 import React from "react";
-import CodeBlock from "./CodeBlock";
+import CodeBlock from "@/views/CodeBlock";
 
 // @ts-ignore
-import SvgAvatarDevChat from './avatar_devchat.svg';
+import SvgAvatarDevChat from '@/views/avatar_devchat.svg';
 // @ts-ignore
-import SvgAvatarUser from './avatar_spaceman.png';
+import SvgAvatarUser from '@/views/avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useAppDispatch, useAppSelector } from './hooks';
+import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import {
     selectGenerating,
     selectResponsed,

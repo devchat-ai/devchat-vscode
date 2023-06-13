@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import messageUtil from '../util/MessageUtil';
-import type { RootState } from './store';
+import messageUtil from '@/util/MessageUtil';
+import type { RootState } from '@/views/store';
 
 export const fetchHistoryMessages = createAsyncThunk<{ command: string; entries: [] }>('input/fetchHistoryMessages', async () => {
     return new Promise((resolve, reject) => {

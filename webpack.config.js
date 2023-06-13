@@ -75,7 +75,10 @@ const webviewConfig = {
     filename: 'index.js',
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: {
+      '@': path.resolve(__dirname, 'src/')
+    },
   },
   module: {
     rules: [
