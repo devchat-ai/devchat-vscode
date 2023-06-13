@@ -4,7 +4,7 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency } from "../contributes/commandsBase";
+import { checkDevChatDependency, getValidPythonCommand } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
 
 
@@ -32,12 +32,24 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
 	}
 	
+	const pythonCommand = getValidPythonCommand();
+	if (!pythonCommand) {
+		if (devchatStatus === '') {
+			UiUtilWrapper.showErrorMessage('Missing required dependency: Python3');
+			logger.channel()?.error('Missing required dependency: Python3');
+			logger.channel()?.show();
+		}
+		
+		devchatStatus = 'Missing required dependency: Python3';
+	} else {
+		devchatStatus = '';
+	}
 	
 	// status item has three status type
 	// 1. not in a folder
 	// 2. dependence is invalid
 	// 3. ready
-	if (devchatStatus === '' || devchatStatus === 'waiting install devchat') {
+	if (devchatStatus === '' || devchatStatus === 'Waiting for devchat installation to complete') {
 		let bOk = true;
 		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 		if (!devChat) {
@@ -45,7 +57,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		}
 
 		if (!bOk) {
-			bOk = checkDevChatDependency();
+			bOk = checkDevChatDependency(pythonCommand!);
 		}
 		if (bOk && versionChanged) {
 			bOk = false;
@@ -62,18 +74,18 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	}
 	if (devchatStatus === 'not ready') {
 		// auto install devchat
-		UiUtilWrapper.runTerminal('DevChat Install', `python3 ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
-		devchatStatus = 'waiting install devchat';
+		UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
+		devchatStatus = 'Waiting for devchat installation to complete';
 		isVersionChangeCompare = true;
 	}
 
 	// check api key
-	if (apiKeyStatus === '' || apiKeyStatus === 'please set api key') {
+	if (apiKeyStatus === '' || apiKeyStatus === 'Please set the API key') {
 		const bOk = await ApiKeyManager.getApiKey();
 		if (bOk) {
 			apiKeyStatus = 'ready';
 		} else {
-			apiKeyStatus = 'please set api key';
+			apiKeyStatus = 'Please set the API key';
 		}
 	}
 

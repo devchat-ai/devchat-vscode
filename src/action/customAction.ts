@@ -57,7 +57,7 @@ export class CustomActions {
             }
         } catch (error) {
             // Show error message
-            logger.channel()?.error(`Failed to parse actions: ${error}`);
+            logger.channel()?.error(`Failed to parse actions due to error: ${error}`);
 			logger.channel()?.show();
 		}
 	}

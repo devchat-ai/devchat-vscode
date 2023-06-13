@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import ExtensionContextHolder from './extensionContext';
 import { UiUtil } from './uiUtil';
+import { logger } from './logger';
 
 
 export class UiUtilVscode implements UiUtil {
@@ -35,6 +36,12 @@ export class UiUtilVscode implements UiUtil {
 		return ExtensionContextHolder.context!.extensionUri.fsPath;
 	}
 	public runTerminal(terminalName: string, command: string): void {
+		const terminals = vscode.window.terminals;
+		for (const terminal of terminals) {
+			if (terminal.name === terminalName) {
+				terminal.dispose();
+			}
+		}
 		const terminal = vscode.window.createTerminal(terminalName);
 		terminal.sendText(command);
 		terminal.show();

@@ -10,14 +10,14 @@ export const gitDiffCachedContext: ChatContext = {
   description: 'diff for cached changes',
   handler: async () => {
     const tempDir = await createTempSubdirectory('devchat/context');
-    const diff_file = path.join(tempDir, 'diff_cached.txt');
+    const diffFile = path.join(tempDir, 'diff_cached.txt');
     
-	logger.channel()?.info(`git diff --cached`);
-	const result = await runCommandStringAndWriteOutput('git diff --cached', diff_file);
-	logger.channel()?.info(`git diff --cached exit code:`, result.exitCode);
+	logger.channel()?.info(`git diff --cached:`);
+	const result = await runCommandStringAndWriteOutput('git diff --cached', diffFile);
+	logger.channel()?.info(`  exit code:`, result.exitCode);
 
-	logger.channel()?.debug(`git diff --cached stdout:`, result.stdout);
-	logger.channel()?.debug(`git diff --cached stderr:`, result.stderr);
-    return `[context|${diff_file}]`;
+	logger.channel()?.debug(`  stdout:`, result.stdout);
+	logger.channel()?.debug(`  stderr:`, result.stderr);
+    return `[context|${diffFile}]`;
   },
 };

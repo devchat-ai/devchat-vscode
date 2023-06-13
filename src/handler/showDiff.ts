@@ -80,7 +80,7 @@ async function getFileContent(fileName: string): Promise<string | undefined> {
 		// Return the whole text in the file with name fileName
 		return fileContent;
 	} catch (error) {
-		logger.channel()!.error(`Error reading file ${fileName}:`, error);
+		logger.channel()!.error(`Error reading the file ${fileName}:`, error);
 		return undefined;
 	}
 }
@@ -90,7 +90,7 @@ async function getNewCode(message: any): Promise<string | undefined> {
 	if (message.fileName) {
 		const fileContent = await getFileContent(message.fileName);
 		if (!fileContent) {
-			logger.channel()!.error(`read file ${message.fileName} failed`);
+			logger.channel()!.error(`Failed to read the file: ${message.fileName}`);
 			return undefined;
 		}
 
@@ -99,7 +99,7 @@ async function getNewCode(message: any): Promise<string | undefined> {
 		codeTextObj = await getDocumentText();
 	}
 	if (!codeTextObj) {
-		logger.channel()!.error('getDocumentText failed');
+		logger.channel()!.error('No document text found.');
 		return undefined;
 	}
 

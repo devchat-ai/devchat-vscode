@@ -28,7 +28,7 @@ class DtmWrapper {
 			return { status: result.exitCode || 0, message: result.stdout, log: result.stderr };
 		} catch (error) {
 			// 处理 runCommand 中的 reject 错误
-			logger.channel()?.error(`Error in commit: ${error}`);
+			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
 			return error as DtmResponse;
 		}
@@ -41,7 +41,7 @@ class DtmWrapper {
 			return { status: result.exitCode || 0, message: result.stdout, log: result.stderr };
 		} catch (error) {
 			// 处理 runCommand 中的 reject 错误
-			logger.channel()?.error(`Error in commit: ${error}`);
+			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
 			return error as DtmResponse;
 		}

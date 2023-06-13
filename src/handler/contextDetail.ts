@@ -15,6 +15,6 @@ export async function contextDetail(message: any, panel: vscode.WebviewPanel | v
 		const fileContent = fs.readFileSync(message.file, 'utf-8'); 
 		MessageHandler.sendMessage(panel, { command: 'contextDetailResponse', 'file': message.file, result: fileContent }); 
 	} catch (error) { 
-		logger.channel()?.error(`Error reading file ${ message.file }:, ${error}`); 
+		logger.channel()?.error(`Error reading file ${message.file}: ${error}`); 
 	} 
 }
