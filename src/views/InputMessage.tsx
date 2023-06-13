@@ -13,12 +13,14 @@ import {
     selectMenuOpend,
     selectMenuType,
     selectCurrentMenuIndex,
+    selectContextMenus,
     setCurrentMenuIndex,
     removeContext,
     clearContexts,
     newContext,
     openMenu,
     closeMenu,
+    fetchContextMenus,
 } from './inputSlice';
 import {
     selectGenerating,
@@ -127,9 +129,9 @@ const InputMessage = (props: any) => {
     const menuOpend = useAppSelector(selectMenuOpend);
     const menuType = useAppSelector(selectMenuType);
     const currentMenuIndex = useAppSelector(selectCurrentMenuIndex);
+    const contextMenus = useAppSelector(selectContextMenus);
     const theme = useMantineTheme();
     const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
-    const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
     const [inputRef, inputRect] = useResizeObserver();
 
@@ -232,8 +234,7 @@ const InputMessage = (props: any) => {
             }} />);
     };
 
-
-    const contextMenusNode = contextMenus
+    const contextMenusNode = [...contextMenus]
         .sort((a, b) => {
             if (a.name === '<custom command>') {
                 return 1; // Placing '<custom command>' at the end
@@ -303,11 +304,9 @@ const InputMessage = (props: any) => {
     };
 
     useEffect(() => {
+        dispatch(fetchContextMenus());
         messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
             commandMenusHandlers.append(...message.result);
-        });
-        messageUtil.registerHandler('regContextList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            contextMenusHandlers.append(...message.result);
         });
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path

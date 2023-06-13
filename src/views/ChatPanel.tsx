@@ -104,7 +104,6 @@ const chatPanel = () => {
     }, 1000);
 
     useEffect(() => {
-        messageUtil.sendMessage({ command: 'regContextList' });
         messageUtil.sendMessage({ command: 'regCommandList' });
         messageUtil.sendMessage({ command: 'historyMessages' });
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
