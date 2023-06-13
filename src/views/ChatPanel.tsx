@@ -5,8 +5,8 @@ import { ScrollArea } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
-import messageUtil from '../../util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '../hooks';
+import messageUtil from '../util/MessageUtil';
+import { useAppDispatch, useAppSelector } from './hooks';
 
 import {
     setValue

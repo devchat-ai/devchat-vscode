@@ -1,6 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
-import messageUtil from '../../util/MessageUtil';
-import type { RootState } from '../store';
+import messageUtil from '../util/MessageUtil';
+import type { RootState } from './store';
 
 export const chatSlice = createSlice({
     name: 'chat',

@@ -9,7 +9,7 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useAppDispatch, useAppSelector } from '../hooks';
+import { useAppDispatch, useAppSelector } from './hooks';
 import {
     selectGenerating,
     selectResponsed,
