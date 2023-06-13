@@ -60,7 +60,7 @@ class CustomContexts {
 				}
 			}
 		} catch (error) {
-			logger.channel()?.error(`Failed to parse contexts: ${error}`);
+			logger.channel()?.error(`Failed to parse contexts due to error: ${error}`);
 			logger.channel()?.show();
 		}
 	}
@@ -77,7 +77,7 @@ class CustomContexts {
 	public async handleCommand(contextName: string, outputFile: string): Promise<CommandResult | null> {
 		const context = this.getContext(contextName);
 		if (!context) {
-			logger.channel()?.error(`Context not found: ${contextName}`);
+			logger.channel()?.error(`Context "${contextName}" not found`);
 			logger.channel()?.show();
 			return null;
 		}

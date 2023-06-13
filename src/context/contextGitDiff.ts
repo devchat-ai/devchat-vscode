@@ -10,14 +10,14 @@ export const gitDiffContext: ChatContext = {
   description: 'diff for all changes',
   handler: async () => {
     const tempDir = await createTempSubdirectory('devchat/context');
-    const diff_file = path.join(tempDir, 'diff_all.txt');
+    const diffFile = path.join(tempDir, 'diff_all.txt');
     
-	logger.channel()?.info(`git diff`);
-	const result = await runCommandStringAndWriteOutput('git diff HEAD', diff_file);
-	logger.channel()?.info(`git diff exit code:`, result.exitCode);
+	logger.channel()?.info(`git diff HEAD:`);
+	const result = await runCommandStringAndWriteOutput('git diff HEAD', diffFile);
+	logger.channel()?.info(`  exit code:`, result.exitCode);
 
-	logger.channel()?.debug(`git diff stdout:`, result.stdout);
-	logger.channel()?.debug(`git diff stderr:`, result.stderr);
-    return `[context|${diff_file}]`;
+	logger.channel()?.debug(`  stdout:`, result.stdout);
+	logger.channel()?.debug(`  stderr:`, result.stderr);
+    return `[context|${diffFile}]`;
   },
 };

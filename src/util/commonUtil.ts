@@ -89,10 +89,10 @@ export class CommandRun {
 				let errorMessage = error.message;
 				if (error.code === 'ENOENT') {
 					errorMessage = `Command not found: ${command}`;
-					logger.channel()?.error(`Command not found: ${command}`);
+					logger.channel()?.error(`Command "${command}" not found`);
 					logger.channel()?.show();
 				} else {
-					logger.channel()?.error(`Error occurred: ${error.message}`);
+					logger.channel()?.error(`Error: ${error.message}`);
 					logger.channel()?.show();
 				}
 				resolve({ exitCode: error.code, stdout: "", stderr: errorMessage });

@@ -11,10 +11,10 @@ export async function handleRefCommand(ref_command: string) {
 		
 		logger.channel()?.info(`custom command: ${ref_command}`);
 		const result = await runCommandStringAndWriteOutput(ref_command, diff_file);
-		logger.channel()?.info(`custom command: ${ref_command} exit code:`, result.exitCode);
+		logger.channel()?.info(`  exit code:`, result.exitCode);
 
-		logger.channel()?.debug(`custom command: ${ref_command} stdout:`, result.stdout);
-		logger.channel()?.debug(`custom command: ${ref_command} stderr:`, result.stderr);
+		logger.channel()?.debug(`  stdout:`, result.stdout);
+		logger.channel()?.debug(`  stderr:`, result.stderr);
 		return `[context|${diff_file}]`;
 	}
 

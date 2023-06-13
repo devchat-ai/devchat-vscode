@@ -20,12 +20,12 @@ export const customCommandContext: ChatContext = {
             const tempDir = await createTempSubdirectory('devchat/context');
             const diffFile = path.join(tempDir, 'custom.txt');
 
-			logger.channel()?.info(`custom command: ${customCommand}`);
+			logger.channel()?.info(`Your custom command is: ${customCommand}`);
             const result = await runCommandStringAndWriteOutput(customCommand, diffFile);
-			logger.channel()?.info(`custom command: ${customCommand} exit code:`, result.exitCode);
+			logger.channel()?.info(`  exit code:`, result.exitCode);
 
-			logger.channel()?.debug(`custom command: ${customCommand} stdout:`, result.stdout);
-			logger.channel()?.debug(`custom command: ${customCommand} stderr:`, result.stderr);
+			logger.channel()?.debug(`  stdout:`, result.stdout);
+			logger.channel()?.debug(`  stderr:`, result.stderr);
             return `[context|${diffFile}]`;
         }
         return '';

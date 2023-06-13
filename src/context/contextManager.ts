@@ -42,11 +42,13 @@ export interface ChatContext {
 					const tempDir = await createTempSubdirectory('devchat/context');
     				
 					const outputFile = path.join(tempDir, 'context.txt');
+
+					logger.channel()?.info(`running: ${customContext.command.join(' ')}`);
 					const commandResult = await customContexts.handleCommand(customContext.name, outputFile);
 					
-					logger.channel()?.info(`${customContext.command.join(' ')} exit code:`, commandResult!.exitCode);
-					logger.channel()?.debug(`stdout:`, commandResult!.stdout);
-					logger.channel()?.debug(`stderr:`, commandResult!.stderr);
+					logger.channel()?.info(`  exit code:`, commandResult!.exitCode);
+					logger.channel()?.debug(`  stdout:`, commandResult!.stdout);
+					logger.channel()?.debug(`  stderr:`, commandResult!.stderr);
 
 					if (commandResult!.stderr) {
 						UiUtilWrapper.showErrorMessage(commandResult!.stderr);

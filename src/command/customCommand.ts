@@ -63,7 +63,7 @@ class CustomCommands {
 			}
 		} catch (error) {
 			// 显示错误消息
-			logger.channel()?.error(`Failed to parse commands: ${error}`);
+			logger.channel()?.error(`Failed to parse commands due to error: ${error}`);
 			logger.channel()?.show();
 		}
 	}
@@ -105,7 +105,7 @@ class CustomCommands {
 					commandMessage = commandMessage.replace(`$${i + 1}`, userInputArray[i]);
 				}
 			} catch (error) {
-				logger.channel()?.error(`Failed to parse user input: ${userInput} error: ${error}`);
+				logger.channel()?.error(`Failed to parse user input '${userInput}' due to error: ${error}. A valid input should be in the format: ['aa', 'bb']`);
 				logger.channel()?.show();
 				return '';
 			}

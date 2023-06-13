@@ -44,11 +44,11 @@ export class MessageHandler {
 
 		const handler = this.handlers[message.command];
 		if (handler) {
-			logger.channel()?.info(`Handling command "${message.command}"`);
+			logger.channel()?.info(`Handling the command "${message.command}"`);
 			await handler(message, panel);
-			logger.channel()?.info(`Handling command "${message.command}" done`);
+			logger.channel()?.info(`Handling the command "${message.command}" done`);
 		} else {
-			logger.channel()?.error(`No handler found for command "${message.command}"`);
+			logger.channel()?.error(`No handler found for the command "${message.command}"`);
 			logger.channel()?.show();
 		}
 
@@ -59,7 +59,7 @@ export class MessageHandler {
 
 	public static sendMessage(panel: vscode.WebviewPanel|vscode.WebviewView, message: object, log: boolean = true): void {
 		if (log) {
-			logger.channel()?.info(`Sending message "${JSON.stringify(message)}"`);
+			logger.channel()?.info(`Sending message: "${JSON.stringify(message)}"`);
 		}
 		panel.webview.postMessage(message);
 	}

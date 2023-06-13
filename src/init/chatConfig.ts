@@ -53,7 +53,7 @@ export function createChatDirectoryAndCopyInstructionsSync(extensionUri: vscode.
       // 将 workflows 目录复制到 .chat 目录中
 	  copyDirSync(instructionsSrcPath, chatWorkflowsDirPath);
     } catch (error) {
-		logger.channel()?.error('Error creating .chat directory and copying workflows:', error);
+		logger.channel()?.error('Error occurred while creating the .chat directory and copying workflows:', error);
 		logger.channel()?.show();
     }
 }

@@ -152,7 +152,7 @@ class DevChat {
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		let openaiApiKey = await ApiKeyManager.getApiKey();
 		if (!openaiApiKey) {
-			logger.channel()?.error('OpenAI key is invalid!');
+			logger.channel()?.error('The OpenAI key is invalid!');
 			logger.channel()?.show();
 		}
 
@@ -205,8 +205,8 @@ class DevChat {
 				},
 			};
 
-			logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
-			logger.channel()?.info(`Running devchat with env: ${JSON.stringify(openAiApiBaseObject)}`);
+			logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(openAiApiBaseObject)}`);
 			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
@@ -238,7 +238,7 @@ class DevChat {
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		const openaiApiKey = process.env.OPENAI_API_KEY;
 
-		logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
 		const spawnOptions = {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
@@ -249,9 +249,9 @@ class DevChat {
 		};
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
 
-		logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
-			logger.channel()?.error(`Error getting log: ${stderr}`);
+			logger.channel()?.error(`Error: ${stderr}`);
 			logger.channel()?.show();
 			return [];
 		}
@@ -264,7 +264,7 @@ class DevChat {
 		const devChat = this.getDevChatPath();
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		
-		logger.channel()?.info(`Running devchat with args: ${args.join(" ")}`);
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
 		const spawnOptions = {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
@@ -274,9 +274,9 @@ class DevChat {
 		};
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
 
-		logger.channel()?.info(`Finish devchat with args: ${args.join(" ")}`);
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
-			logger.channel()?.error(`Error getting log: ${stderr}`);
+			logger.channel()?.error(`Error: ${stderr}`);
 			logger.channel()?.show();
 			return [];
 		}
@@ -284,7 +284,7 @@ class DevChat {
 		try {
 			return JSON.parse(stdout.trim()).reverse();
 		} catch (error) {
-			logger.channel()?.error(`Error parsing log: ${error}`);
+			logger.channel()?.error(`Error parsing JSON: ${error}`);
 			logger.channel()?.show();
 			return [];
 		}
