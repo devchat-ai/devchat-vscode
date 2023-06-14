@@ -18,9 +18,14 @@ export class UiUtilVscode implements UiUtil {
 		return vscode.workspace.getConfiguration(key1).get(key2);
 	}
 	public async secretStorageGet(key: string): Promise<string | undefined> {
-		const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
-		let openaiApiKey = await secretStorage.get(key);
-		return openaiApiKey;
+		try {
+			const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;
+			let openaiApiKey = await secretStorage.get(key);
+			return openaiApiKey;
+		} catch (error) {
+			logger.channel()?.error(`secretStorageGet error: ${error}`);
+			return undefined;
+		}
 	}
 	public async writeFile(uri: string, content: string): Promise<void> {
 		await vscode.workspace.fs.writeFile(vscode.Uri.file(uri), Buffer.from(content));
