@@ -3,7 +3,7 @@ import {
     AppShell,
     useMantineTheme,
 } from '@mantine/core';
-import ChatPanel from '@/views/ChatPanel';
+import ChatPanel from '@/views/pages/ChatPanel';
 
 export default function App() {
     const theme = useMantineTheme();
