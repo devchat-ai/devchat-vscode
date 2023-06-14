@@ -128,24 +128,22 @@ const chatPanel = () => {
                     padding: 0,
                     margin: 0,
                     display: 'flex',
+                    overflow: 'auto',
                     flexDirection: 'column-reverse',
-                    overflowX: 'hidden',
-                    overflowY: 'scroll',
                     '&::-webkit-scrollbar': {
                         display: 'none'
                     }
                 }}
-            // onScrollPositionChange={onScrollPositionChange}
-            // viewportRef={scrollViewport}
             >
                 <InfiniteScroll
                     dataLength={messages.length}
                     next={fetchMoreData}
                     style={{
                         display: 'flex',
+                        contentVisibility: 'auto',
                         flexDirection: 'column-reverse'
-                    }} //To put endMessage and loader to the top.
-                    inverse={true} //
+                    }}
+                    inverse={true}
                     hasMore={!isLastPage}
                     loader={<Center><h4>Loading...</h4></Center>}
                     scrollableTarget="scrollableDiv"
