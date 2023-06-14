@@ -199,6 +199,7 @@ class DevChat {
 				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 				cwd: workspaceDir,
 				env: {
+					PYTHONUTF8:1,
 					...process.env,
 					OPENAI_API_KEY: openaiApiKey,
 					...openAiApiBaseObject
