@@ -164,7 +164,9 @@ const InputMessage = (props: any) => {
             });
             const text = input + contextStrs.join(' ');
             // Add the user's message to the chat UI
-            dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            dispatch(newMessage({ type: 'user', message: text, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            // new a bot message
+            dispatch(newMessage({ type: 'bot', message: '' }));
             // start generating
             dispatch(startGenerating(text));
             // Clear the input field

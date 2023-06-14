@@ -199,9 +199,9 @@ const MessageContainer = (props: any) => {
                     }}>
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
                     <CodeBlock key={`message-codeblock-${index}`} messageText={messageText} />
-                    <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
+                    <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === 0} />
                 </Container >
-                {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
+                {index !== 0 && <Divider my={3} key={`message-divider-${index}`} />}
             </Stack >;
         })
         : DefaultMessage);

@@ -7,20 +7,14 @@ import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@m
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
+import InfiniteScroll from 'react-infinite-scroll-component';
 
-import {
-    setValue
-} from './inputSlice';
 import {
     reGenerating,
     stopGenerating,
     startResponsing,
     happendError,
-    newMessage,
-    updateMessage,
-    shiftMessage,
     selectGenerating,
-    selectCurrentMessage,
     selectErrorMessage,
     selectMessages,
     selectIsBottom,
@@ -90,7 +84,6 @@ const StopButton = () => {
 const chatPanel = () => {
     const dispatch = useAppDispatch();
     const generating = useAppSelector(selectGenerating);
-    const currentMessage = useAppSelector(selectCurrentMessage);
     const errorMessage = useAppSelector(selectErrorMessage);
     const messages = useAppSelector(selectMessages);
     const isBottom = useAppSelector(selectIsBottom);
@@ -100,32 +93,8 @@ const chatPanel = () => {
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
 
-    const scrollToBottom = () =>
-        scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
-
-    const timer = useTimeout(() => {
-        if (isBottom) {
-            scrollToBottom();
-        }
-    }, 1000);
-
-    const onScrollPositionChange = ({ x, y }) => {
-        const sh = scrollViewport.current?.scrollHeight || 0;
-        const vh = scrollViewport.current?.clientHeight || 0;
-        const gap = sh - vh - y;
-        const isBottom = sh < vh ? true : gap < 100;
-        const isTop = y === 0;
-        // console.log(`sh:${sh},vh:${vh},x:${x},y:${y},gap:${gap}`);
-        if (isBottom) {
-            dispatch(onMessagesBottom());
-        } else if (isTop) {
-            dispatch(onMessagesTop());
-            if (!isLastPage) {
-                dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
-            }
-        } else {
-            dispatch(onMessagesMiddle());
-        }
+    const fetchMoreData = () => {
+        dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
     };
 
     useEffect(() => {
@@ -139,33 +108,7 @@ const chatPanel = () => {
                 dispatch(happendError(message.text));
             }
         });
-        timer.start();
-        return () => {
-            timer.clear();
-        };
     }, []);
-
-    useEffect(() => {
-        if (generating) {
-            // new a bot message
-            dispatch(newMessage({ type: 'bot', message: currentMessage }));
-        }
-    }, [generating]);
-
-    // Add the received message to the chat UI as a bot message
-    useEffect(() => {
-        const lastIndex = messages?.length - 1;
-        const lastMessage = messages[lastIndex];
-        if (currentMessage && lastMessage?.type === 'bot') {
-            // update the last one bot message
-            // messageHandlers.setItem();
-            dispatch(updateMessage({
-                index: lastIndex,
-                newMessage: { type: 'bot', message: currentMessage }
-            }));
-        }
-        timer.start();
-    }, [currentMessage]);
 
     return (
         <Container
@@ -178,24 +121,45 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
-            <ScrollArea
-                type="never"
+            <Container
+                id="scrollableDiv"
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),
                     width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
+                    display: 'flex',
+                    flexDirection: 'column-reverse',
+                    overflowX: 'hidden',
+                    overflowY: 'scroll',
+                    '&::-webkit-scrollbar': {
+                        display: 'none'
+                    }
                 }}
-                onScrollPositionChange={onScrollPositionChange}
-                viewportRef={scrollViewport}>
-                <MessageContainer
-                    width={chatContainerRect.width} />
-                {errorMessage &&
-                    <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {errorMessage}
-                    </Alert>
-                }
-            </ScrollArea>
+            // onScrollPositionChange={onScrollPositionChange}
+            // viewportRef={scrollViewport}
+            >
+                <InfiniteScroll
+                    dataLength={messages.length}
+                    next={fetchMoreData}
+                    style={{
+                        display: 'flex',
+                        flexDirection: 'column-reverse'
+                    }} //To put endMessage and loader to the top.
+                    inverse={true} //
+                    hasMore={!isLastPage}
+                    loader={<Center><h4>Loading...</h4></Center>}
+                    scrollableTarget="scrollableDiv"
+                >
+                    {errorMessage &&
+                        <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
+                            {errorMessage}
+                        </Alert>
+                    }
+                    <MessageContainer
+                        width={chatContainerRect.width} />
+                </InfiniteScroll>
+            </Container>
             <Stack
                 spacing={5}
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
@@ -212,7 +176,7 @@ const chatPanel = () => {
                 <InputMessage
                     width={chatContainerRect.width} />
             </Stack>
-        </Container>
+        </Container >
     );
 };
 

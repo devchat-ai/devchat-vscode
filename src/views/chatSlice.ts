@@ -24,7 +24,6 @@ export const chatSlice = createSlice({
     initialState: {
         generating: false,
         responsed: false,
-        currentMessage: '',
         errorMessage: '',
         messages: <any>[],
         pageIndex: 0,
@@ -37,7 +36,6 @@ export const chatSlice = createSlice({
             state.generating = true;
             state.responsed = false;
             state.errorMessage = '';
-            state.currentMessage = '';
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: action.payload
@@ -47,7 +45,6 @@ export const chatSlice = createSlice({
             state.generating = true;
             state.responsed = false;
             state.errorMessage = '';
-            state.currentMessage = '';
             state.messages.pop();
             messageUtil.sendMessage({
                 command: 'regeneration'
@@ -59,19 +56,13 @@ export const chatSlice = createSlice({
         },
         startResponsing: (state, action) => {
             state.responsed = true;
-            state.currentMessage = action.payload;
+            const lastMessage = state.messages[0];
+            if (lastMessage?.type === 'bot') {
+                state.messages[0] = { type: 'bot', message: action.payload };
+            }
         },
         newMessage: (state, action) => {
-            state.messages.push(action.payload);
-        },
-        updateMessage: (state, action) => {
-            state.messages[action.payload.index] = action.payload.newMessage;
-        },
-        shiftMessage: (state) => {
-            state.messages.splice(0, 1);
-        },
-        popMessage: (state) => {
-            state.messages.pop();
+            state.messages = [action.payload, ...state.messages];
         },
         clearMessages: (state) => {
             state.messages.length = 0;
@@ -107,11 +98,12 @@ export const chatSlice = createSlice({
                                 { type: 'bot', message: response },
                             ];
                         })
-                        .flat();
+                        .flat()
+                        .reverse();
                     if (state.pageIndex === 0) {
                         state.messages = messages;
                     } else if (state.pageIndex > 0) {
-                        state.messages = messages.concat(state.messages);
+                        state.messages = [...state.messages, ...messages];
                     }
                 } else {
                     state.isLastPage = true;
@@ -122,7 +114,6 @@ export const chatSlice = createSlice({
 
 export const selectGenerating = (state: RootState) => state.chat.generating;
 export const selectResponsed = (state: RootState) => state.chat.responsed;
-export const selectCurrentMessage = (state: RootState) => state.chat.currentMessage;
 export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
 export const selectIsBottom = (state: RootState) => state.chat.isBottom;
@@ -138,10 +129,7 @@ export const {
     startResponsing,
     happendError,
     newMessage,
-    shiftMessage,
-    popMessage,
     clearMessages,
-    updateMessage,
     onMessagesTop,
     onMessagesBottom,
     onMessagesMiddle,
