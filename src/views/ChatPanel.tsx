@@ -90,7 +90,6 @@ const chatPanel = () => {
     const isLastPage = useAppSelector(selectIsLastPage);
     const pageIndex = useAppSelector(selectPageIndex);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
-    const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
 
     const fetchMoreData = () => {
@@ -124,7 +123,7 @@ const chatPanel = () => {
             <Container
                 id="scrollableDiv"
                 sx={{
-                    height: generating ? height - px('8rem') : height - px('5rem'),
+                    maxHeight: generating ? height - px('7rem') : height - px('5rem'),
                     width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
