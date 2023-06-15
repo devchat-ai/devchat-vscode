@@ -121,7 +121,8 @@ const chatPanel = () => {
         } else if (isTop) {
             dispatch(onMessagesTop());
             if (!isLastPage) {
-                dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
+                //TODO: Data loading flickers and has poor performance, so I temporarily disabled the loading logic.
+                // dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
             }
         } else {
             dispatch(onMessagesMiddle());
