@@ -197,7 +197,7 @@ const InputMessage = (props: any) => {
                     dispatch(setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex));
                     event.preventDefault();
                 }
-                if (event.key === 'Enter' && !event.shiftKey) {
+                if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
                     dispatch(setValue(`/${commandNode.props['data-pattern']} `));
                     dispatch(closeMenu());
