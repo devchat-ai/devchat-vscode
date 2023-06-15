@@ -5,8 +5,8 @@ import { ScrollArea } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
-import messageUtil from '../../util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '../hooks';
+import messageUtil from '@/util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '@/views/hooks';
 
 import {
     setValue
@@ -23,6 +23,13 @@ import {
     selectCurrentMessage,
     selectErrorMessage,
     selectMessages,
+    selectIsBottom,
+    selectPageIndex,
+    selectIsLastPage,
+    onMessagesBottom,
+    onMessagesTop,
+    onMessagesMiddle,
+    fetchHistoryMessages,
 } from './chatSlice';
 
 import InputMessage from './InputMessage';
@@ -86,27 +93,44 @@ const chatPanel = () => {
     const currentMessage = useAppSelector(selectCurrentMessage);
     const errorMessage = useAppSelector(selectErrorMessage);
     const messages = useAppSelector(selectMessages);
+    const isBottom = useAppSelector(selectIsBottom);
+    const isLastPage = useAppSelector(selectIsLastPage);
+    const pageIndex = useAppSelector(selectPageIndex);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
-    const [scrollPosition, onScrollPositionChange] = useState({ x: 0, y: 0 });
-    const [stopScrolling, setStopScrolling] = useState(false);
-    const messageCount = 10;
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     const timer = useTimeout(() => {
-        // console.log(`stopScrolling:${stopScrolling}`);
-        if (!stopScrolling) {
+        if (isBottom) {
             scrollToBottom();
         }
     }, 1000);
 
+    const onScrollPositionChange = ({ x, y }) => {
+        const sh = scrollViewport.current?.scrollHeight || 0;
+        const vh = scrollViewport.current?.clientHeight || 0;
+        const gap = sh - vh - y;
+        const isBottom = sh < vh ? true : gap < 100;
+        const isTop = y === 0;
+        // console.log(`sh:${sh},vh:${vh},x:${x},y:${y},gap:${gap}`);
+        if (isBottom) {
+            dispatch(onMessagesBottom());
+        } else if (isTop) {
+            dispatch(onMessagesTop());
+            if (!isLastPage) {
+                //TODO: Data loading flickers and has poor performance, so I temporarily disabled the loading logic.
+                // dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
+            }
+        } else {
+            dispatch(onMessagesMiddle());
+        }
+    };
+
     useEffect(() => {
-        messageUtil.sendMessage({ command: 'regContextList' });
-        messageUtil.sendMessage({ command: 'regCommandList' });
-        messageUtil.sendMessage({ command: 'historyMessages' });
+        dispatch(fetchHistoryMessages({ pageIndex: 0 }));
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             dispatch(startResponsing(message.text));
         });
@@ -116,30 +140,11 @@ const chatPanel = () => {
                 dispatch(happendError(message.text));
             }
         });
-        messageUtil.registerHandler('loadHistoryMessages', (message: { command: string; entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] }) => {
-            message.entries?.forEach(({ hash, user, date, request, response, context }, index) => {
-                if (index < message.entries.length - messageCount) return;
-                const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
-                dispatch(newMessage({ type: 'user', message: request, contexts: contexts }));
-                dispatch(newMessage({ type: 'bot', message: response }));
-            });
-        });
         timer.start();
         return () => {
             timer.clear();
         };
     }, []);
-
-    useEffect(() => {
-        const sh = scrollViewport.current?.scrollHeight || 0;
-        const vh = scrollViewport.current?.clientHeight || 0;
-        const isBottom = sh < vh ? true : sh - vh - scrollPosition.y < 3;
-        if (isBottom) {
-            setStopScrolling(false);
-        } else {
-            setStopScrolling(true);
-        }
-    }, [scrollPosition]);
 
     useEffect(() => {
         if (generating) {
@@ -162,13 +167,6 @@ const chatPanel = () => {
         }
         timer.start();
     }, [currentMessage]);
-
-    useEffect(() => {
-        if (messages.length > messageCount * 2) {
-            dispatch(shiftMessage());
-        }
-        timer.start();
-    }, [messages]);
 
     return (
         <Container

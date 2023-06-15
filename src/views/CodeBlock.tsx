@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-import messageUtil from '../../util/MessageUtil';
+import messageUtil from '@/util/MessageUtil';
 
 const CodeBlock = (props: any) => {
     const { messageText } = props;

@@ -3,8 +3,8 @@ import { useListState, useResizeObserver } from "@mantine/hooks";
 import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./Icons";
-import messageUtil from '../../util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '../hooks';
+import messageUtil from '@/util/MessageUtil';
+import { useAppDispatch, useAppSelector } from '@/views/hooks';
 
 import {
     setValue,
@@ -13,12 +13,16 @@ import {
     selectMenuOpend,
     selectMenuType,
     selectCurrentMenuIndex,
+    selectContextMenus,
+    selectCommandMenus,
     setCurrentMenuIndex,
     removeContext,
     clearContexts,
     newContext,
     openMenu,
     closeMenu,
+    fetchContextMenus,
+    fetchCommandMenus,
 } from './inputSlice';
 import {
     selectGenerating,
@@ -127,9 +131,9 @@ const InputMessage = (props: any) => {
     const menuOpend = useAppSelector(selectMenuOpend);
     const menuType = useAppSelector(selectMenuType);
     const currentMenuIndex = useAppSelector(selectCurrentMenuIndex);
+    const contextMenus = useAppSelector(selectContextMenus);
+    const commandMenus = useAppSelector(selectCommandMenus);
     const theme = useMantineTheme();
-    const [commandMenus, commandMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
-    const [contextMenus, contextMenusHandlers] = useListState<{ pattern: string; description: string; name: string }>([]);
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
     const [inputRef, inputRect] = useResizeObserver();
 
@@ -232,8 +236,7 @@ const InputMessage = (props: any) => {
             }} />);
     };
 
-
-    const contextMenusNode = contextMenus
+    const contextMenusNode = [...contextMenus]
         .sort((a, b) => {
             if (a.name === '<custom command>') {
                 return 1; // Placing '<custom command>' at the end
@@ -303,12 +306,8 @@ const InputMessage = (props: any) => {
     };
 
     useEffect(() => {
-        messageUtil.registerHandler('regCommandList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            commandMenusHandlers.append(...message.result);
-        });
-        messageUtil.registerHandler('regContextList', (message: { result: { pattern: string; description: string; name: string }[] }) => {
-            contextMenusHandlers.append(...message.result);
-        });
+        dispatch(fetchContextMenus());
+        dispatch(fetchCommandMenus());
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);

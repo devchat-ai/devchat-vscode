@@ -58,6 +58,7 @@ class MessageUtil {
 
   // Send a message to the VSCode API
   sendMessage(message: any) {
+    // console.log(`${JSON.stringify(message)}`);
     vscodeApi.postMessage(message);
   }
 }

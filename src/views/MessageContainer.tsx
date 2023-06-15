@@ -1,15 +1,15 @@
 import { keyframes } from "@emotion/react";
 import { Center, Text, Flex, Avatar, Accordion, Box, Stack, Container, Divider, ActionIcon, Tooltip } from "@mantine/core";
 import React from "react";
-import CodeBlock from "./CodeBlock";
+import CodeBlock from "@/views/CodeBlock";
 
 // @ts-ignore
-import SvgAvatarDevChat from './avatar_devchat.svg';
+import SvgAvatarDevChat from '@/views/avatar_devchat.svg';
 // @ts-ignore
-import SvgAvatarUser from './avatar_spaceman.png';
+import SvgAvatarUser from '@/views/avatar_spaceman.png';
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 
-import { useAppDispatch, useAppSelector } from '../hooks';
+import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import {
     selectGenerating,
     selectResponsed,
@@ -119,10 +119,6 @@ const MessageContext = (props: any) => {
     );
 };
 
-const DefaultMessage = (<Center>
-    <Text size="lg" color="gray" weight={500}>No messages yet</Text>
-</Center>);
-
 const MessageHeader = (props: any) => {
     const { type, message, contexts } = props;
     const dispatch = useAppDispatch();
@@ -170,41 +166,39 @@ const MessageContainer = (props: any) => {
 
     const messages = useAppSelector(selectMessages);
 
-    return (messages.length > 0
-        ? messages.map((item: any, index: number) => {
-            const { message: messageText, type: messageType, contexts } = item;
-            // setMessage(messageText);
-            return <Stack
-                spacing={0}
-                key={`message-${index}`}
+    return messages.map((item: any, index: number) => {
+        const { message: messageText, type: messageType, contexts } = item;
+        // setMessage(messageText);
+        return <Stack
+            spacing={0}
+            key={`message-${index}`}
+            sx={{
+                width: width,
+                padding: 0,
+                margin: 0,
+            }}>
+            <MessageHeader
+                key={`message-header-${index}`}
+                type={messageType}
+                message={messageText}
+                contexts={contexts} />
+            <Container
+                key={`message-container-${index}`}
                 sx={{
-                    width: width,
-                    padding: 0,
                     margin: 0,
+                    padding: 0,
+                    width: width,
+                    pre: {
+                        whiteSpace: 'break-spaces'
+                    },
                 }}>
-                <MessageHeader
-                    key={`message-header-${index}`}
-                    type={messageType}
-                    message={messageText}
-                    contexts={contexts} />
-                <Container
-                    key={`message-container-${index}`}
-                    sx={{
-                        margin: 0,
-                        padding: 0,
-                        width: width,
-                        pre: {
-                            whiteSpace: 'break-spaces'
-                        },
-                    }}>
-                    <MessageContext key={`message-context-${index}`} contexts={contexts} />
-                    <CodeBlock key={`message-codeblock-${index}`} messageText={messageText} />
-                    <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
-                </Container >
-                {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
-            </Stack >;
-        })
-        : DefaultMessage);
+                <MessageContext key={`message-context-${index}`} contexts={contexts} />
+                <CodeBlock key={`message-codeblock-${index}`} messageText={messageText} />
+                <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
+            </Container >
+            {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
+        </Stack >;
+    });
 };
 
 export default MessageContainer;
