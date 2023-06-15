@@ -10,14 +10,13 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 
 		if (binPath) {
 			updateEnvironmentPath(binPath);
-
-			// Check if DevChat is installed
-			runCommand('devchat --help');
-			return true;
 		} else {
-			logger.channel()?.error(`Failed to obtain the pipx environment path. Attempting to install pipx.`);
-			return false;
+			logger.channel()?.info(`Failed to obtain the pipx environment path.`);
 		}
+
+		// Check if DevChat is installed
+		runCommand('devchat --help');
+		return true;
 	} catch (error) {
 		// DevChat dependency check failed
 		// log out detail error message
