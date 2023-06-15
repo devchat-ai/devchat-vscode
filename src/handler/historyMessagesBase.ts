@@ -61,8 +61,7 @@ export async function isWaitForApiKey() {
 	return !isApiSet;
 }
 
-export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefined>  {
-	const topicId = TopicManager.getInstance().currentTopicId;
+export async function loadTopicHistoryLogs(topicId: string | undefined) : Promise<Array<LogEntry> | undefined>  {
 	if (!topicId) {
 		return [];
 	}
@@ -83,9 +82,9 @@ export async function loadTopicHistoryLogs() : Promise<Array<LogEntry> | undefin
 	return logEntriesFlat;
 }
 
-export function updateCurrentMessageHistory(logEntries: Array<LogEntry>): void {
+export function updateCurrentMessageHistory(topicId: string, logEntries: Array<LogEntry>): void {
 	messageHistory.clear();
-	messageHistory.setTopic(TopicManager.getInstance().currentTopicId!);
+	messageHistory.setTopic(topicId);
 
 	for (let i = 0; i < logEntries.length; i++) {
 		let entryOld = logEntries[i];
@@ -141,12 +140,16 @@ export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefi
 }
 
 export async function historyMessagesBase(): Promise<LoadHistoryMessages | undefined> {
-	const logEntriesFlat = await loadTopicHistoryLogs();
+	const topicId = TopicManager.getInstance().currentTopicId;
+	const logEntriesFlat = await loadTopicHistoryLogs(topicId);
 	if (!logEntriesFlat) {
 		return undefined;
 	}
 
-	updateCurrentMessageHistory(logEntriesFlat);
+	if (topicId !== TopicManager.getInstance().currentTopicId) {
+		return undefined;
+	}
+	updateCurrentMessageHistory(topicId!, logEntriesFlat);
 	
 	const apiKeyMessage = await apiKeyInvalidMessage();
 	if (apiKeyMessage !== undefined) {
