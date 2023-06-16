@@ -62,5 +62,8 @@ export function getPipxEnvironmentPath(pythonCommand: string): string | null {
 
 function updateEnvironmentPath(binPath: string): void {
 	// Add BIN path to PATH
-	process.env.PATH = `${binPath}:${process.env.PATH}`;
+	if (process.env.PATH?.indexOf(binPath) === undefined) {
+		process.env.PATH = `${binPath}:${process.env.PATH}`;
+		logger.channel()?.info(`Added ${binPath} to PATH.`);
+	}
 }
