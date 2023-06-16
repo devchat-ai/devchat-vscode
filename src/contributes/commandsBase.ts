@@ -13,13 +13,17 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 		} else {
 			logger.channel()?.info(`Failed to obtain the pipx environment path.`);
 		}
-
-		// Check if DevChat is installed
-		runCommand('devchat --help');
-		return true;
 	} catch (error) {
 		// DevChat dependency check failed
 		// log out detail error message
+		logger.channel()?.info(`Failed to check DevChat dependency due to error: ${error}`);
+	}
+
+	try {
+		// Check if DevChat is installed
+		runCommand('devchat --help');
+		return true;
+	} catch(error) {
 		logger.channel()?.error(`Failed to check DevChat dependency due to error: ${error}`);
 		return false;
 	}
@@ -58,5 +62,8 @@ export function getPipxEnvironmentPath(pythonCommand: string): string | null {
 
 function updateEnvironmentPath(binPath: string): void {
 	// Add BIN path to PATH
-	process.env.PATH = `${binPath}:${process.env.PATH}`;
+	if (process.env.PATH?.indexOf(binPath) === undefined) {
+		process.env.PATH = `${binPath}:${process.env.PATH}`;
+		logger.channel()?.info(`Added ${binPath} to PATH.`);
+	}
 }
