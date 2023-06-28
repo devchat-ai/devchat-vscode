@@ -8,7 +8,7 @@ import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import messageUtil from '@/util/MessageUtil';
 
 const CodeBlock = (props: any) => {
-    const { messageText } = props;
+    const { messageText, messageType } = props;
 
     const LanguageCorner = (props: any) => {
         const { language } = props;
@@ -121,31 +121,33 @@ const CodeBlock = (props: any) => {
     };
 
     return (
-        <ReactMarkdown
-            components={{
-                code({ node, inline, className, children, ...props }) {
+        messageType === 'bot'
+            ? <ReactMarkdown
+                components={{
+                    code({ node, inline, className, children, ...props }) {
 
-                    const match = /language-(\w+)/.exec(className || '');
-                    const value = String(children).replace(/\n$/, '');
+                        const match = /language-(\w+)/.exec(className || '');
+                        const value = String(children).replace(/\n$/, '');
 
-                    return !inline && match ? (
-                        <div style={{ position: 'relative' }}>
-                            <LanguageCorner language={match[1]} />
-                            <CodeButtons language={match[1]} code={value} />
-                            <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
-                                {value}
-                            </SyntaxHighlighter>
-                        </div >
-                    ) : (
-                        <code {...props} className={className}>
-                            {children}
-                        </code>
-                    );
-                }
-            }}
-        >
-            {messageText}
-        </ReactMarkdown >
+                        return !inline && match ? (
+                            <div style={{ position: 'relative' }}>
+                                <LanguageCorner language={match[1]} />
+                                <CodeButtons language={match[1]} code={value} />
+                                <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
+                                    {value}
+                                </SyntaxHighlighter>
+                            </div >
+                        ) : (
+                            <code {...props} className={className}>
+                                {children}
+                            </code>
+                        );
+                    }
+                }}
+            >
+                {messageText}
+            </ReactMarkdown >
+            : <pre>{messageText}</pre>
     );
 };
 
