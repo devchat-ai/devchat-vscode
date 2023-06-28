@@ -205,7 +205,7 @@ const InputMessage = (props: any) => {
                 }
             }
         } else {
-            if (event.key === 'Enter' && !event.shiftKey) {
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
                 handleSendClick(event as any);
             }
         }
