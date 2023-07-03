@@ -76,7 +76,7 @@ const CodeBlock = (props: any) => {
         };
 
         const FileApplyButton = () => {
-            return (<Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Replace' withArrow position="left" color="gray">
+            return (<Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label='Replace File' withArrow position="left" color="gray">
                 <ActionIcon size='xs' onClick={() => {
                     messageUtil.sendMessage({
                         command: 'code_file_apply',
