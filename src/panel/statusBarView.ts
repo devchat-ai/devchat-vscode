@@ -18,7 +18,13 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 		if (devchatStatus !== 'ready') {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `${devchatStatus}`;
-			statusBarItem.command = undefined;
+
+			if (devchatStatus === 'Missing required dependency: Python3') {
+				statusBarItem.command = "devchat.PythonPath";
+			} else {
+				statusBarItem.command = undefined;
+			}
+			
 			// set statusBarItem warning color
 			return;
 		}

@@ -1,5 +1,6 @@
 // src/contributes/commandsBase.ts
 
+import { UiUtilWrapper } from "../util/uiUtil";
 import { runCommand } from "../util/commonUtil";
 import { logger } from "../util/logger";
 
@@ -29,15 +30,23 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 	}
 }
 
-export function getValidPythonCommand(): string | undefined {
+function getDefaultPythonCommand(): string | undefined {
 	try {
 		runCommand('python3 -V');
-		return 'python3';
+		try {
+			return runCommand('where python3').toString().trim();
+		} catch (error) {
+			return runCommand('which python3').toString().trim();
+		}
 	} catch (error) {
 		try {
 			const version = runCommand('python -V');
 			if (version.includes('Python 3')) {
-				return 'python';
+				try {
+					return runCommand('where python').toString().trim();
+				} catch (error) {
+					return runCommand('which python').toString().trim();
+				}
 			}
 			return undefined;
 		} catch (error) {
@@ -46,9 +55,27 @@ export function getValidPythonCommand(): string | undefined {
 	}
 }
 
+export function getValidPythonCommand(): string | undefined {
+	try {
+		const pythonCommand = UiUtilWrapper.getConfiguration('DevChat', 'PythonPath');
+		if (pythonCommand) {
+			return pythonCommand;
+		}
+
+		const defaultPythonCommand = getDefaultPythonCommand();
+		if (defaultPythonCommand) {
+			UiUtilWrapper.updateConfiguration('DevChat', 'PythonPath', defaultPythonCommand);
+		}
+
+		return defaultPythonCommand;
+	} catch (error) {
+		return undefined;
+	}
+}
+
 export function getPipxEnvironmentPath(pythonCommand: string): string | null {
 	// Get pipx environment
-	const pipxEnvOutput = runCommand(`${pythonCommand} -m pipx environment`).toString();
+	const pipxEnvOutput = runCommand(`"${pythonCommand}" -m pipx environment`).toString();
 	const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
 
 	// Get BIN path from pipx environment
@@ -62,7 +89,7 @@ export function getPipxEnvironmentPath(pythonCommand: string): string | null {
 
 function updateEnvironmentPath(binPath: string): void {
 	// Add BIN path to PATH
-	if (process.env.PATH?.indexOf(binPath) === undefined) {
+	if (process.env.PATH?.indexOf(binPath) === undefined || process.env.PATH?.indexOf(binPath) < 0) {
 		process.env.PATH = `${binPath}:${process.env.PATH}`;
 		logger.channel()?.info(`Added ${binPath} to PATH.`);
 	}

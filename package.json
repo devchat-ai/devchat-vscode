@@ -131,6 +131,19 @@
 						}
 					},
 					"description": "Where is the devchat binary located?"
+				},
+				"DevChat.PythonPath": {
+					"type": "string",
+					"default": "",
+					"input": {
+						"type": "file",
+						"filter": {
+							"All files": [
+								"python*"
+							]
+						}
+					},
+					"description": "Where is the python binary located?"
 				}
 			}
 		},
@@ -194,6 +207,11 @@
 			{
 				"command": "DevChat.OPENAI_API_KEY",
 				"title": "Input Access Key",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.PythonPath",
+				"title": "Set Python Path",
 				"category": "DevChat"
 			},
 			{
