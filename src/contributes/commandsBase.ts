@@ -9,10 +9,13 @@ let devchatStatus = '';
 
 function locateCommand(command): string | undefined {
 	try {
-		return runCommand(`where ${command}`).toString().trim();
+		// split lines and choose first line
+		const binPaths = runCommand(`where ${command}`).toString().trim().split('\n');
+		return binPaths[0].trim();
 	} catch (error) {
 		try {
-			return runCommand(`which ${command}`).toString().trim();
+			const binPaths = runCommand(`which ${command}`).toString().trim().split('\n');
+			return binPaths[0].trim();
 		} catch (error) {
 			return undefined;
 		}
