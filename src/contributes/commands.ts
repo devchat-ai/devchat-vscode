@@ -5,6 +5,7 @@ import { TopicManager } from '../topic/topicManager';
 import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
 import { ApiKeyManager } from '../util/apiKey';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
@@ -144,6 +145,21 @@ export function regReloadTopicCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('devchat-topicview.reloadTopic', async () => {
 			TopicManager.getInstance().loadTopics();
+		})
+	);
+}
+
+export function regPythonPathCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat.PythonPath', async () => {
+			const pythonPath = await vscode.window.showInputBox({
+				title: "Set Python Path",
+				placeHolder: "Set Python Path"
+			}) ?? '';
+
+			if (pythonPath) {
+				vscode.workspace.getConfiguration("DevChat").update("PythonPath", pythonPath, vscode.ConfigurationTarget.Global);
+			}
 		})
 	);
 }
