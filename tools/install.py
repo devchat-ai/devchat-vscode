@@ -6,10 +6,18 @@ import sys
 pythonCommand = sys.executable
 print('Python command:', pythonCommand)
 
+tools_dir = os.path.dirname(os.path.realpath(__file__))
+
 def ensure_pip_installed():
     print("install pip ...")
     try:
-        subprocess.run([pythonCommand, "-m", "ensurepip", "--upgrade"], check=True)
+        subprocess.run([pythonCommand, "-m", "pip", "--version"], check=True)
+        return True
+    except Exception as e:
+        pass
+
+    try:
+        subprocess.run([pythonCommand, tools_dir + "/get-pip.py", "--force-reinstall"], check=True)
         return True
     except Exception as e:
         print(e)
@@ -25,7 +33,7 @@ def check_pipx_installed():
 def install_pipx():
     print("Installing pipx...")
     try:
-        subprocess.run([pythonCommand, "-m", "pip", "install", "pipx", "--force"], check=True)
+        subprocess.run([pythonCommand, "-m", "pip", "install", "--user", "pipx", "--force-reinstall"], check=True)
         print("pipx installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing pipx:", e, file=sys.stderr)
