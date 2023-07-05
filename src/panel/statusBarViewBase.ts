@@ -23,13 +23,17 @@ let isVersionChangeCompare: boolean|undefined = undefined;
 export async function dependencyCheck(): Promise<[string, string]> {
 	let versionChanged = false;
 	if (isVersionChangeCompare === undefined) {
-		const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
-		const versionNew = getExtensionVersion();
-		versionChanged = versionOld !== versionNew;
-		UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
+		try {
+			const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
+			const versionNew = getExtensionVersion();
+			versionChanged = versionOld !== versionNew;
+			UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
 
-		isVersionChangeCompare = true;
-		logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
+			isVersionChangeCompare = true;
+			logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
+		} catch (error) {
+			isVersionChangeCompare = false;
+		}
 	}
 	
 	const pythonCommand = getValidPythonCommand();
@@ -59,7 +63,7 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		if (!bOk) {
 			bOk = checkDevChatDependency(pythonCommand!);
 		}
-		if (bOk && versionChanged) {
+		if (bOk && versionChanged && !devChat) {
 			bOk = false;
 		}
 
