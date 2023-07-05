@@ -7,24 +7,16 @@ import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@m
 import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
+import CurrentMessage from "@/views/CurrentMessage";
 
-import {
-    setValue
-} from './inputSlice';
 import {
     reGenerating,
     stopGenerating,
     startResponsing,
     happendError,
-    newMessage,
-    updateMessage,
-    shiftMessage,
     selectGenerating,
-    selectCurrentMessage,
     selectErrorMessage,
-    selectMessages,
     selectIsBottom,
-    selectPageIndex,
     selectIsLastPage,
     onMessagesBottom,
     onMessagesTop,
@@ -77,7 +69,7 @@ const StopButton = () => {
                 }
             }}
             onClick={() => {
-                dispatch(stopGenerating());
+                dispatch(stopGenerating({ hasDone: false }));
                 messageUtil.sendMessage({
                     command: 'stopDevChat'
                 });
@@ -90,12 +82,9 @@ const StopButton = () => {
 const chatPanel = () => {
     const dispatch = useAppDispatch();
     const generating = useAppSelector(selectGenerating);
-    const currentMessage = useAppSelector(selectCurrentMessage);
-    const errorMessage = useAppSelector(selectErrorMessage);
-    const messages = useAppSelector(selectMessages);
     const isBottom = useAppSelector(selectIsBottom);
     const isLastPage = useAppSelector(selectIsLastPage);
-    const pageIndex = useAppSelector(selectPageIndex);
+    const errorMessage = useAppSelector(selectErrorMessage);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
@@ -133,9 +122,10 @@ const chatPanel = () => {
         dispatch(fetchHistoryMessages({ pageIndex: 0 }));
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             dispatch(startResponsing(message.text));
+            timer.start();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            dispatch(stopGenerating());
+            dispatch(stopGenerating({ hasDone: true }));
             if (message.isError) {
                 dispatch(happendError(message.text));
             }
@@ -145,28 +135,6 @@ const chatPanel = () => {
             timer.clear();
         };
     }, []);
-
-    useEffect(() => {
-        if (generating) {
-            // new a bot message
-            dispatch(newMessage({ type: 'bot', message: currentMessage }));
-        }
-    }, [generating]);
-
-    // Add the received message to the chat UI as a bot message
-    useEffect(() => {
-        const lastIndex = messages?.length - 1;
-        const lastMessage = messages[lastIndex];
-        if (currentMessage && lastMessage?.type === 'bot') {
-            // update the last one bot message
-            // messageHandlers.setItem();
-            dispatch(updateMessage({
-                index: lastIndex,
-                newMessage: { type: 'bot', message: currentMessage }
-            }));
-        }
-        timer.start();
-    }, [currentMessage]);
 
     return (
         <Container
@@ -191,11 +159,11 @@ const chatPanel = () => {
                 viewportRef={scrollViewport}>
                 <MessageContainer
                     width={chatContainerRect.width} />
+                <CurrentMessage width={chatContainerRect.width} />
                 {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {errorMessage}
-                    </Alert>
-                }
+                    </Alert>}
             </ScrollArea>
             <Stack
                 spacing={5}

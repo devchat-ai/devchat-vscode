@@ -1,4 +1,4 @@
-import { Tooltip, ActionIcon, CopyButton, Flex } from "@mantine/core";
+import { Tooltip, ActionIcon, CopyButton, Flex, Container } from "@mantine/core";
 import { IconCheck, IconGitCommit, IconFileDiff, IconColumnInsertRight, IconReplace, IconCopy } from "@tabler/icons-react";
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
@@ -147,7 +147,17 @@ const CodeBlock = (props: any) => {
             >
                 {messageText}
             </ReactMarkdown >
-            : <pre>{messageText}</pre>
+            : <Container
+                sx={{
+                    margin: 0,
+                    padding: 0,
+                    pre: {
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                    },
+                }}>
+                <pre>{messageText}</pre>
+            </Container>
     );
 };
 
