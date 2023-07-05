@@ -24,7 +24,9 @@ export const chatSlice = createSlice({
     initialState: {
         generating: false,
         responsed: false,
+        lastMessage: <any>null,
         currentMessage: '',
+        hasDone: false,
         errorMessage: '',
         messages: <any>[],
         pageIndex: 0,
@@ -36,6 +38,7 @@ export const chatSlice = createSlice({
         startGenerating: (state, action) => {
             state.generating = true;
             state.responsed = false;
+            state.hasDone = false;
             state.errorMessage = '';
             state.currentMessage = '';
             messageUtil.sendMessage({
@@ -46,6 +49,7 @@ export const chatSlice = createSlice({
         reGenerating: (state) => {
             state.generating = true;
             state.responsed = false;
+            state.hasDone = false;
             state.errorMessage = '';
             state.currentMessage = '';
             state.messages.pop();
@@ -53,9 +57,10 @@ export const chatSlice = createSlice({
                 command: 'regeneration'
             });
         },
-        stopGenerating: (state) => {
+        stopGenerating: (state, action) => {
             state.generating = false;
             state.responsed = false;
+            state.hasDone = action.payload.hasDone;
         },
         startResponsing: (state, action) => {
             state.responsed = true;
@@ -63,9 +68,11 @@ export const chatSlice = createSlice({
         },
         newMessage: (state, action) => {
             state.messages.push(action.payload);
+            state.lastMessage = action.payload;
         },
-        updateMessage: (state, action) => {
-            state.messages[action.payload.index] = action.payload.newMessage;
+        updateLastMessage: (state, action) => {
+            state.messages[state.messages.length - 1] = action.payload;
+            state.lastMessage = action.payload;
         },
         shiftMessage: (state) => {
             state.messages.splice(0, 1);
@@ -122,6 +129,8 @@ export const chatSlice = createSlice({
 
 export const selectGenerating = (state: RootState) => state.chat.generating;
 export const selectResponsed = (state: RootState) => state.chat.responsed;
+export const selecHasDone = (state: RootState) => state.chat.hasDone;
+export const selecLastMessage = (state: RootState) => state.chat.lastMessage;
 export const selectCurrentMessage = (state: RootState) => state.chat.currentMessage;
 export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
@@ -141,7 +150,7 @@ export const {
     shiftMessage,
     popMessage,
     clearMessages,
-    updateMessage,
+    updateLastMessage,
     onMessagesTop,
     onMessagesBottom,
     onMessagesMiddle,
