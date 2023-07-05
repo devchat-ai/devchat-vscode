@@ -4,7 +4,7 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency, getValidPythonCommand } from "../contributes/commandsBase";
+import { checkDevChatDependency, getPipxEnvironmentPath, getValidPythonCommand } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
 
 
@@ -56,7 +56,8 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	if (devchatStatus === '' || devchatStatus === 'Waiting for devchat installation to complete') {
 		let bOk = true;
 		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-		if (!devChat) {
+		const pipxPath = getPipxEnvironmentPath(pythonCommand!);
+		if (!devChat || !pipxPath || devChat.indexOf(pipxPath) > -1) {
 			bOk = false;
 		}
 

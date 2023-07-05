@@ -4,6 +4,20 @@ import { UiUtilWrapper } from "../util/uiUtil";
 import { runCommand } from "../util/commonUtil";
 import { logger } from "../util/logger";
 
+let pipxPathStatus = '';
+let devchatStatus = '';
+
+function locateCommand(command): string | undefined {
+	try {
+		return runCommand(`where ${command}`).toString().trim();
+	} catch (error) {
+		try {
+			return runCommand(`which ${command}`).toString().trim();
+		} catch (error) {
+			return undefined;
+		}
+	}
+}
 
 export function checkDevChatDependency(pythonCommand: string): boolean {
 	try {
@@ -11,21 +25,55 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 
 		if (binPath) {
 			updateEnvironmentPath(binPath);
+
+			const error_status = `Updated pipx environment path.`;
+			if (pipxPathStatus !== error_status) {
+				logger.channel()?.info(error_status);
+				pipxPathStatus = error_status;
+			}
 		} else {
-			logger.channel()?.info(`Failed to obtain the pipx environment path.`);
+			const error_status = `Failed to obtain the pipx environment path.`;
+			if (pipxPathStatus !== error_status) {
+				logger.channel()?.error(error_status);
+				logger.channel()?.show();
+				pipxPathStatus = error_status;
+			}
 		}
 	} catch (error) {
 		// DevChat dependency check failed
 		// log out detail error message
-		logger.channel()?.info(`Failed to check DevChat dependency due to error: ${error}`);
+		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
+		if (pipxPathStatus !== error_status) {
+			logger.channel()?.error(error_status);
+			logger.channel()?.show();
+			pipxPathStatus = error_status;
+		}
 	}
 
 	try {
 		// Check if DevChat is installed
 		runCommand('devchat --help');
+
+		const devchatCommand = locateCommand('devchat');
+		if (devchatCommand) {
+			UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommand);
+		}
+
+		const error_status = `DevChat has installed.`;
+		if (devchatStatus !== error_status) {
+			logger.channel()?.info(error_status);
+			devchatStatus = error_status;
+		}
+		
 		return true;
 	} catch(error) {
-		logger.channel()?.error(`Failed to check DevChat dependency due to error: ${error}`);
+		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
+		if (devchatStatus !== error_status) {
+			logger.channel()?.error(error_status);
+			logger.channel()?.show();
+			devchatStatus = error_status;
+		}
+
 		return false;
 	}
 }
@@ -33,20 +81,12 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 function getDefaultPythonCommand(): string | undefined {
 	try {
 		runCommand('python3 -V');
-		try {
-			return runCommand('where python3').toString().trim();
-		} catch (error) {
-			return runCommand('which python3').toString().trim();
-		}
+		return locateCommand('python3');
 	} catch (error) {
 		try {
 			const version = runCommand('python -V');
 			if (version.includes('Python 3')) {
-				try {
-					return runCommand('where python').toString().trim();
-				} catch (error) {
-					return runCommand('which python').toString().trim();
-				}
+				return locateCommand('python');
 			}
 			return undefined;
 		} catch (error) {
@@ -73,17 +113,21 @@ export function getValidPythonCommand(): string | undefined {
 	}
 }
 
-export function getPipxEnvironmentPath(pythonCommand: string): string | null {
+export function getPipxEnvironmentPath(pythonCommand: string): string | undefined {
 	// Get pipx environment
-	const pipxEnvOutput = runCommand(`"${pythonCommand}" -m pipx environment`).toString();
-	const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
+	try {
+		const pipxEnvOutput = runCommand(`"${pythonCommand}" -m pipx environment`).toString();
+		const binPathRegex = /PIPX_BIN_DIR=\s*(.*)/;
 
-	// Get BIN path from pipx environment
-	const match = pipxEnvOutput.match(binPathRegex);
-	if (match && match[1]) {
-		return match[1];
-	} else {
-		return null;
+		// Get BIN path from pipx environment
+		const match = pipxEnvOutput.match(binPathRegex);
+		if (match && match[1]) {
+			return match[1];
+		} else {
+			return undefined;
+		}
+	} catch (error) {
+		return undefined;
 	}
 }
 
