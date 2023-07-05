@@ -1,4 +1,4 @@
-import { keyframes } from "@emotion/react";
+
 import { Center, Text, Flex, Avatar, Accordion, Box, Stack, Container, Divider, ActionIcon, Tooltip } from "@mantine/core";
 import React from "react";
 import CodeBlock from "@/views/CodeBlock";
@@ -11,8 +11,6 @@ import { IconCheck, IconCopy } from "@tabler/icons-react";
 
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import {
-    selectGenerating,
-    selectResponsed,
     selectMessages,
 } from './chatSlice';
 import {
@@ -20,28 +18,6 @@ import {
     setValue,
 } from './inputSlice';
 
-
-const MessageBlink = (props: any) => {
-    const { messageType, lastMessage } = props;
-
-    const generating = useAppSelector(selectGenerating);
-    const responsed = useAppSelector(selectResponsed);
-
-    const blink = keyframes({
-        '50%': { opacity: 0 },
-    });
-
-    return (generating && messageType === 'bot' && lastMessage
-        ? <Text sx={{
-            animation: `${blink} 0.5s infinite;`,
-            width: 5,
-            marginTop: responsed ? 0 : '1em',
-            backgroundColor: 'black',
-            display: 'block'
-
-        }}>|</Text>
-        : <></>);
-};
 
 const MessageContext = (props: any) => {
     const { contexts } = props;
@@ -194,7 +170,6 @@ const MessageContainer = (props: any) => {
                 }}>
                 <MessageContext key={`message-context-${index}`} contexts={contexts} />
                 <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
-                <MessageBlink key={`message-blink-${index}`} messageType={messageType} lastMessage={index === messages.length - 1} />
             </Container >
             {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
         </Stack >;
