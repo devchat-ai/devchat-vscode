@@ -55,7 +55,7 @@ def add_pipx_to_path():
 def install_devchat():
     print("Installing devchat...")
     try:
-        subprocess.run([pythonCommand, "-m", "pipx", "install", "devchat"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "install", "devchat", "--force"], check=True)
         print("devchat installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing devchat:", e, file=sys.stderr)
