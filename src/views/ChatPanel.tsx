@@ -159,7 +159,7 @@ const chatPanel = () => {
                 viewportRef={scrollViewport}>
                 <MessageContainer
                     width={chatContainerRect.width} />
-                <CurrentMessage />
+                <CurrentMessage width={chatContainerRect.width} />
                 {errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {errorMessage}
