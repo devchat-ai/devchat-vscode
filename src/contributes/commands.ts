@@ -6,6 +6,7 @@ import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
 import { ApiKeyManager } from '../util/apiKey';
 import { UiUtilWrapper } from '../util/uiUtil';
+import { isValidApiKey } from '../handler/historyMessagesBase';
 
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
@@ -73,6 +74,10 @@ export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
 				placeHolder: "Set OPENAI_API_KEY (or DevChat Access Key)"
 			}) ?? '';
 
+			if (!isValidApiKey(passwordInput)) {
+				UiUtilWrapper.showErrorMessage("You access key is invalid!");
+				return ;
+			}
 			ApiKeyManager.writeApiKeySecret(passwordInput);
 		})
 	);

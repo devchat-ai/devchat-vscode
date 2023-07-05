@@ -6,6 +6,14 @@ import sys
 pythonCommand = sys.executable
 print('Python command:', pythonCommand)
 
+def ensure_pip_installed():
+    print("install pip ...")
+    try:
+        subprocess.run([pythonCommand, "-m", "ensurepip", "--upgrade"], check=True)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def check_pipx_installed():
     try:
@@ -55,6 +63,7 @@ def upgrade_devchat():
         sys.exit(1)
 
 def main():
+    ensure_pip_installed()
     if not check_pipx_installed():
         install_pipx()
         add_pipx_to_path()
