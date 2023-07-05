@@ -3,6 +3,7 @@
 import { UiUtilWrapper } from "../util/uiUtil";
 import { runCommand } from "../util/commonUtil";
 import { logger } from "../util/logger";
+import path from "path";
 
 let pipxPathStatus = '';
 let devchatStatus = '';
@@ -23,8 +24,10 @@ function locateCommand(command): string | undefined {
 }
 
 export function checkDevChatDependency(pythonCommand: string): boolean {
+	let pipxBinPath: string | undefined = undefined;
 	try {
 		const binPath = getPipxEnvironmentPath(pythonCommand);
+		pipxBinPath = binPath;
 
 		if (binPath) {
 			updateEnvironmentPath(binPath);
@@ -37,31 +40,32 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 		} else {
 			const error_status = `Failed to obtain the pipx environment path.`;
 			if (pipxPathStatus !== error_status) {
-				logger.channel()?.error(error_status);
+				logger.channel()?.warn(error_status);
 				logger.channel()?.show();
 				pipxPathStatus = error_status;
 			}
+
+			return false;
 		}
 	} catch (error) {
 		// DevChat dependency check failed
 		// log out detail error message
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
 		if (pipxPathStatus !== error_status) {
-			logger.channel()?.error(error_status);
+			logger.channel()?.warn(error_status);
 			logger.channel()?.show();
 			pipxPathStatus = error_status;
 		}
+
+		return false;
 	}
 
 	try {
 		// Check if DevChat is installed
-		runCommand('devchat --help');
+		const pipxDevChat = path.join(pipxBinPath!, 'devchat');
+		runCommand(`${pipxDevChat} --help`);
 
-		const devchatCommand = locateCommand('devchat');
-		if (devchatCommand) {
-			UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommand);
-		}
-
+		UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', pipxDevChat);
 		const error_status = `DevChat has installed.`;
 		if (devchatStatus !== error_status) {
 			logger.channel()?.info(error_status);
@@ -72,7 +76,7 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 	} catch(error) {
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
 		if (devchatStatus !== error_status) {
-			logger.channel()?.error(error_status);
+			logger.channel()?.warn(error_status);
 			logger.channel()?.show();
 			devchatStatus = error_status;
 		}
