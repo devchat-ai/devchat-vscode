@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.1.8",
+	"version": "0.1.17",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -143,7 +143,7 @@
 							]
 						}
 					},
-					"description": "Where is the python binary located?"
+					"description": "Which Python interpreter to use with DevChat?"
 				}
 			}
 		},
