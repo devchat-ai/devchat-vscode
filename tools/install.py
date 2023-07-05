@@ -4,11 +4,12 @@ import sys
 
 # replace python3 with sys.executable, we will do everything in the same envrionment
 pythonCommand = sys.executable
+print('Python command:', pythonCommand)
 
 
 def check_pipx_installed():
     try:
-        subprocess.run(["pipx", "--version"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "--version"], check=True)
         return True
     except Exception as e:
         return False
@@ -38,7 +39,7 @@ def add_pipx_to_path():
 def install_devchat():
     print("Installing devchat...")
     try:
-        subprocess.run(["pipx", "install", "devchat"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "install", "devchat"], check=True)
         print("devchat installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing devchat:", e, file=sys.stderr)
@@ -47,7 +48,7 @@ def install_devchat():
 def upgrade_devchat():
     print("Upgrading devchat...")
     try:
-        subprocess.run(["pipx", "upgrade", "devchat"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "upgrade", "devchat"], check=True)
         print("devchat upgraded successfully.")
     except subprocess.CalledProcessError as e:
         print("Error upgrading devchat:", e, file=sys.stderr)
