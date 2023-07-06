@@ -4,8 +4,9 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency, getValidPythonCommand } from "../contributes/commandsBase";
+import { checkDevChatDependency, getPipxEnvironmentPath, getValidPythonCommand } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
+import { CommandRun } from '../util/commonUtil';
 
 
 
@@ -23,13 +24,17 @@ let isVersionChangeCompare: boolean|undefined = undefined;
 export async function dependencyCheck(): Promise<[string, string]> {
 	let versionChanged = false;
 	if (isVersionChangeCompare === undefined) {
-		const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
-		const versionNew = getExtensionVersion();
-		versionChanged = versionOld !== versionNew;
-		UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
+		try {
+			const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
+			const versionNew = getExtensionVersion();
+			versionChanged = versionOld !== versionNew;
+			UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
 
-		isVersionChangeCompare = true;
-		logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
+			isVersionChangeCompare = true;
+			logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
+		} catch (error) {
+			isVersionChangeCompare = false;
+		}
 	}
 	
 	const pythonCommand = getValidPythonCommand();
@@ -49,17 +54,20 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	// 1. not in a folder
 	// 2. dependence is invalid
 	// 3. ready
-	if (devchatStatus === '' || devchatStatus === 'Waiting for devchat installation to complete') {
+	if (devchatStatus === '' ||
+		devchatStatus === 'An error occurred during the installation of DevChat' ||
+		devchatStatus === 'DevChat has been installed') {
 		let bOk = true;
 		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-		if (!devChat) {
+		const pipxPath = getPipxEnvironmentPath(pythonCommand!);
+		if (!devChat || !pipxPath || devChat.indexOf(pipxPath) > -1) {
 			bOk = false;
 		}
 
 		if (!bOk) {
 			bOk = checkDevChatDependency(pythonCommand!);
 		}
-		if (bOk && versionChanged) {
+		if (bOk && versionChanged && !devChat) {
 			bOk = false;
 		}
 
@@ -74,8 +82,27 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	}
 	if (devchatStatus === 'not ready') {
 		// auto install devchat
-		UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} ${UiUtilWrapper.extensionPath() + "/tools/install.py"}`);
-		devchatStatus = 'Waiting for devchat installation to complete';
+		const run = new CommandRun();
+		const options = {
+			cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
+		};
+
+		let errorInstall = false;
+		await run.spawnAsync(pythonCommand!, [UiUtilWrapper.extensionPath() + "/tools/install.py"], options, 
+		(data) => {
+			logger.channel()?.info(data.trim());
+		}, 
+		(data) => {
+			errorInstall = true;
+			logger.channel()?.info(data.trim());
+		}, undefined, undefined);
+
+		// UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} "${UiUtilWrapper.extensionPath() + "/tools/install.py"}"`);
+		if (errorInstall) {
+			devchatStatus = 'An error occurred during the installation of DevChat';
+		} else {
+			devchatStatus = 'DevChat has been installed';
+		}
 		isVersionChangeCompare = true;
 	}
 

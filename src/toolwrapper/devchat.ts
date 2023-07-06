@@ -179,7 +179,8 @@ class DevChat {
 				temperature: openaiTemperature,
 				stream: openaiStream,
 			}
-		}
+		};
+		
 		// write to config file
 		const configPath = path.join(workspaceDir!, '.chat', 'config.json');
 		// write devchatConfig to configPath

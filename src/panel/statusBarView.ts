@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
+import { logger } from '@/util/logger';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
@@ -13,26 +14,51 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     statusBarItem.command = undefined;
 
     // add a timer to update the status bar item
+	let runStatus = 0;
+	let continueTimes = 0
+
 	setInterval(async () => {
-		const [devchatStatus, apiKeyStatus] = await dependencyCheck();
-		if (devchatStatus !== 'ready') {
+		if (runStatus > 0 && continueTimes < 60) {
+			continueTimes += 1;
+			return ;
+		}
+
+		runStatus = 1;
+		continueTimes = 0;
+
+		try {
+			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
+			if (devchatStatus !== 'ready') {
+				statusBarItem.text = `$(warning)DevChat`;
+				statusBarItem.tooltip = `${devchatStatus}`;
+
+				if (devchatStatus === 'Missing required dependency: Python3') {
+					statusBarItem.command = "devchat.PythonPath";
+				} else {
+					statusBarItem.command = undefined;
+				}
+				
+				// set statusBarItem warning color
+				return;
+			}
+
+			if (apiKeyStatus !== 'ready') {
+				statusBarItem.text = `$(warning)DevChat`;
+				statusBarItem.tooltip = `${apiKeyStatus}`;
+				statusBarItem.command = 'DevChat.OPENAI_API_KEY';
+				return;
+			}
+
+			statusBarItem.text = `$(pass)DevChat`;
+			statusBarItem.tooltip = `ready to chat`;
+			statusBarItem.command = 'devcaht.onStatusBarClick';
+		} catch (error) {
 			statusBarItem.text = `$(warning)DevChat`;
-			statusBarItem.tooltip = `${devchatStatus}`;
+			statusBarItem.tooltip = `Error: ${error}`;
 			statusBarItem.command = undefined;
-			// set statusBarItem warning color
-			return;
+		} finally {
+			runStatus = 0;
 		}
-
-		if (apiKeyStatus !== 'ready') {
-			statusBarItem.text = `$(warning)DevChat`;
-			statusBarItem.tooltip = `${apiKeyStatus}`;
-			statusBarItem.command = 'DevChat.OPENAI_API_KEY';
-			return;
-		}
-
-		statusBarItem.text = `$(pass)DevChat`;
-		statusBarItem.tooltip = `ready to chat`;
-		statusBarItem.command = 'devcaht.onStatusBarClick';
 	}, 3000);
 
 	// Add the status bar item to the status bar

@@ -17,6 +17,10 @@ export class UiUtilVscode implements UiUtil {
 	public getConfiguration(key1: string, key2: string): string | undefined {
 		return vscode.workspace.getConfiguration(key1).get(key2);
 	}
+
+	public async updateConfiguration(key1: string, key2: string, value: string): Promise<void> {
+		await vscode.workspace.getConfiguration(key1).update(key2, value, vscode.ConfigurationTarget.Global);
+	}
 	public async secretStorageGet(key: string): Promise<string | undefined> {
 		try {
 			const secretStorage: vscode.SecretStorage = ExtensionContextHolder.context!.secrets;

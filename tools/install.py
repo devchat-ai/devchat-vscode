@@ -4,11 +4,28 @@ import sys
 
 # replace python3 with sys.executable, we will do everything in the same envrionment
 pythonCommand = sys.executable
+print('Python command:', pythonCommand)
 
+tools_dir = os.path.dirname(os.path.realpath(__file__))
+
+def ensure_pip_installed():
+    print("install pip ...")
+    try:
+        subprocess.run([pythonCommand, "-m", "pip", "--version"], check=True)
+        return True
+    except Exception as e:
+        pass
+
+    try:
+        subprocess.run([pythonCommand, tools_dir + "/get-pip.py", "--force-reinstall"], check=True)
+        return True
+    except Exception as e:
+        print(e)
+        return False
 
 def check_pipx_installed():
     try:
-        subprocess.run(["pipx", "--version"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "--version"], check=True)
         return True
     except Exception as e:
         return False
@@ -16,7 +33,7 @@ def check_pipx_installed():
 def install_pipx():
     print("Installing pipx...")
     try:
-        subprocess.run([pythonCommand, "-m", "pip", "install", "pipx", "--force"], check=True)
+        subprocess.run([pythonCommand, "-m", "pip", "install", "--user", "pipx", "--force-reinstall"], check=True)
         print("pipx installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing pipx:", e, file=sys.stderr)
@@ -38,7 +55,7 @@ def add_pipx_to_path():
 def install_devchat():
     print("Installing devchat...")
     try:
-        subprocess.run(["pipx", "install", "devchat"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "install", "devchat", "--force"], check=True)
         print("devchat installed successfully.")
     except subprocess.CalledProcessError as e:
         print("Error installing devchat:", e, file=sys.stderr)
@@ -47,13 +64,14 @@ def install_devchat():
 def upgrade_devchat():
     print("Upgrading devchat...")
     try:
-        subprocess.run(["pipx", "upgrade", "devchat"], check=True)
+        subprocess.run([pythonCommand, "-m", "pipx", "upgrade", "devchat"], check=True)
         print("devchat upgraded successfully.")
     except subprocess.CalledProcessError as e:
         print("Error upgrading devchat:", e, file=sys.stderr)
         sys.exit(1)
 
 def main():
+    ensure_pip_installed()
     if not check_pipx_installed():
         install_pipx()
         add_pipx_to_path()
