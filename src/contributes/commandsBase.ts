@@ -63,7 +63,7 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 	try {
 		// Check if DevChat is installed
 		const pipxDevChat = path.join(pipxBinPath!, 'devchat');
-		runCommand(`${pipxDevChat} --help`);
+		runCommand(`"${pipxDevChat}" --help`);
 
 		UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', pipxDevChat);
 		const error_status = `DevChat has installed.`;
