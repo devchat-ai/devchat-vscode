@@ -18,7 +18,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 	let continueTimes = 0
 
 	setInterval(async () => {
-		if (runStatus > 0 && continueTimes < 20) {
+		if (runStatus > 0 && continueTimes < 60) {
 			continueTimes += 1;
 			return ;
 		}
