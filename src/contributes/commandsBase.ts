@@ -23,7 +23,7 @@ function locateCommand(command): string | undefined {
 	}
 }
 
-export function checkDevChatDependency(pythonCommand: string): boolean {
+export function checkDevChatDependency(pythonCommand: string, showError: boolean = true): boolean {
 	let pipxBinPath: string | undefined = undefined;
 	try {
 		const binPath = getPipxEnvironmentPath(pythonCommand);
@@ -39,7 +39,7 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 			}
 		} else {
 			const error_status = `Failed to obtain the pipx environment path.`;
-			if (pipxPathStatus !== error_status) {
+			if (pipxPathStatus !== error_status && showError) {
 				logger.channel()?.warn(error_status);
 				logger.channel()?.show();
 				pipxPathStatus = error_status;
@@ -51,7 +51,7 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 		// DevChat dependency check failed
 		// log out detail error message
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
-		if (pipxPathStatus !== error_status) {
+		if (pipxPathStatus !== error_status && showError) {
 			logger.channel()?.warn(error_status);
 			logger.channel()?.show();
 			pipxPathStatus = error_status;
@@ -75,7 +75,7 @@ export function checkDevChatDependency(pythonCommand: string): boolean {
 		return true;
 	} catch(error) {
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
-		if (devchatStatus !== error_status) {
+		if (devchatStatus !== error_status && showError) {
 			logger.channel()?.warn(error_status);
 			logger.channel()?.show();
 			devchatStatus = error_status;

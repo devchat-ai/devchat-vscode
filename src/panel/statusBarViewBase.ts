@@ -65,7 +65,8 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		}
 
 		if (!bOk) {
-			bOk = checkDevChatDependency(pythonCommand!);
+			const showError = devchatStatus == ''? false : true;
+			bOk = checkDevChatDependency(pythonCommand!, showError);
 		}
 		if (bOk && versionChanged && !devChat) {
 			bOk = false;

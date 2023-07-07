@@ -72,7 +72,7 @@ export class CommandRun {
 					fs.writeFileSync(outputFile, outputData);
 				}
 
-				if (stderr) {
+				if (stderr && !onError) {
 					logger.channel()?.error(stderr);
 					logger.channel()?.show();
 				}
