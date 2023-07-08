@@ -97,7 +97,9 @@ DevChat is the way developers interact and collaborate with AI.
 
 ## Contributing
 
-Issues and pull request are welcome: https://github.com/devchat-ai/devchat-vscode/issues
+Issues and pull request are welcome: 
+- https://github.com/devchat-ai/devchat/issues
+- https://github.com/devchat-ai/devchat-vscode/pulls
 
 ## Automated Publishing Process
 
