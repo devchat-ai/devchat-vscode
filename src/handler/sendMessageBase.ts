@@ -104,22 +104,8 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	return parsedMessage;
 }
 
-// 将处理父哈希的部分提取到一个单独的函数中
-export function getParentHash(message: any): string|undefined {
-	let parentHash = undefined;
-	logger.channel()?.info(`request message hash: ${message.hash}`);
-	if (message.hash) {
-		const hmessage = messageHistory.find(message.hash);
-		parentHash = hmessage ? hmessage.parentHash : undefined;
-	} else {
-		const hmessage = messageHistory.findLast();
-		parentHash = hmessage ? hmessage.hash : undefined;
-	}
-	logger.channel()?.info(`parent hash: ${parentHash}`);
-	return parentHash;
-}
 
-export async function handleTopic(parentHash:string, message: any, chatResponse: ChatResponse) {
+export async function handleTopic(parentHash:string | undefined, message: any, chatResponse: ChatResponse) {
 	WaitCreateTopic = true;
 	try {
 		if (!chatResponse.isError) {
@@ -158,10 +144,10 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 	const chatOptions: any = {};
 	const parsedMessage = await parseMessageAndSetOptions(message, chatOptions);
 
-	const parentHash = getParentHash(message);
-	if (parentHash) {
-		chatOptions.parent = parentHash;
+	if (message.parent_hash) {
+		chatOptions.parent = message.parent_hash;
 	}
+	logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
 
 	let partialDataText = '';
 	const onData = (partialResponse: ChatResponse) => {
@@ -170,7 +156,7 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 	};
 
 	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
-	await handleTopic(parentHash!, message, chatResponse);
+	await handleTopic(message.parent_hash, message, chatResponse);
 	const responseText = await handlerResponseText(partialDataText, chatResponse);
 	if (responseText === undefined) {
 		return;
