@@ -24,54 +24,14 @@ function locateCommand(command): string | undefined {
 }
 
 export function checkDevChatDependency(pythonCommand: string, showError: boolean = true): boolean {
-	let pipxBinPath: string | undefined = undefined;
-	try {
-		const binPath = getPipxEnvironmentPath(pythonCommand);
-		pipxBinPath = binPath;
-
-		if (binPath) {
-			updateEnvironmentPath(binPath);
-
-			const error_status = `Updated pipx environment path.`;
-			if (pipxPathStatus !== error_status) {
-				logger.channel()?.info(error_status);
-				pipxPathStatus = error_status;
-			}
-		} else {
-			const error_status = `Failed to obtain the pipx environment path.`;
-			if (pipxPathStatus !== error_status && showError) {
-				logger.channel()?.warn(error_status);
-				logger.channel()?.show();
-				pipxPathStatus = error_status;
-			}
-
-			return false;
-		}
-	} catch (error) {
-		// DevChat dependency check failed
-		// log out detail error message
-		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
-		if (pipxPathStatus !== error_status && showError) {
-			logger.channel()?.warn(error_status);
-			logger.channel()?.show();
-			pipxPathStatus = error_status;
-		}
-
+	let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
+	if (!devChat) {
 		return false;
 	}
 
 	try {
 		// Check if DevChat is installed
-		const pipxDevChat = path.join(pipxBinPath!, 'devchat');
-		runCommand(`"${pipxDevChat}" --help`);
-
-		UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', pipxDevChat);
-		const error_status = `DevChat has installed.`;
-		if (devchatStatus !== error_status) {
-			logger.channel()?.info(error_status);
-			devchatStatus = error_status;
-		}
-		
+		runCommand(`"${devChat}" --help`);
 		return true;
 	} catch(error) {
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
