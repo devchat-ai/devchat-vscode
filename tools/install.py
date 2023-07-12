@@ -28,10 +28,60 @@ def get_pythoncmd_in_env(venvdir, envname):
         return False
 
 
-# install devchat
-#   devchat is a python package
-# devchat should install in a virtual env
-#    virtualenv is installed by: pip install virtualenv
+def pip_cmd_run(pipcmd: list[str], with_user: bool, with_local_source: bool):
+    """
+    run pip cmd
+    with_user: --user
+    with_local_source: -i https://pypi.tuna.tsinghua.edu.cn/simple
+    """
+    if with_user:
+        pipcmd.append("--user")
+    if with_local_source:
+        pipcmd.append("-i")
+        pipcmd.append("https://pypi.tuna.tsinghua.edu.cn/simple")
+        
+    file = open('test.txt', 'wb')
+    try:
+        # before command run, output runnning command
+        print("run command: ", *pipcmd)
+        subprocess.run(pipcmd, check=True,     stdout=sys.stdout, stderr=file, text=True)
+        
+        file.close()
+        os.remove('test.txt')
+        return True, ''
+    except Exception as error:
+        file.flush()
+        file.close()
+        file = open('test.txt', 'rb')
+        error_out = file.read()
+        file.close()
+        os.remove('test.txt')
+        
+        print(error)
+        return False, error_out
+
+
+def pip_cmd_with_retries(pipcmd: list[str], retry_times: int, with_user: bool):
+    """
+    when pip cmd fails, then retry for retry_times
+    with_user: --user   whether use --user, if pipcmd error output include --user, then remove --user while retry
+    
+    if pipcmd error output not include --user, then retry with with_local_source
+    """
+    with_local_source = False
+    for i in range(0, retry_times):
+        pipcmd_copy = pipcmd.copy()
+        ret, error = pip_cmd_run(pipcmd_copy, with_user, with_local_source)
+        if ret:
+            return True
+        
+        if error.find(b"--user") > -1:
+            with_user = False
+        else:
+            with_local_source = True
+        
+    return False
+
 
 def pip_install_devchat(pythoncmd):
     # run command: {pythoncmd} -m pip install devchat
@@ -55,37 +105,14 @@ def pip_install_devchat(pythoncmd):
         pass
     
     # second step: install devchat
-    try:
-        # before command run, output runnning command
-        print("run command: ", pythoncmd, "-m", "pip", "install", "devchat")
-        # redirect output to stdout
-        subprocess.run([pythoncmd, "-m", "pip", "install", "devchat"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
-
-        pipCommandEnv = pythoncmd.replace("/python", "/devchat")
-        print("==> devchatCommandEnv: ", pipCommandEnv)
-        
+    if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "devchat"], 3, False)):
+        pip_command_env = pythoncmd.replace("/python", "/devchat")
+        print("==> devchatCommandEnv: ", pip_command_env)
         return True
-    except Exception as error:
+    else:
         print('devchat install failed')
-        print(error)
-        
-    # reinstall 3 times
-    for i in range(0,3):
-        try:
-            # before command run, output runnning command
-            print("run command: ", pythoncmd, "-m", "pip", "install", "devchat", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple")
-            # redirect output to stdout
-            subprocess.run([pythoncmd, "-m", "pip", "install", "devchat", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
+        return False
 
-            pipCommandEnv = pythoncmd.replace("/python", "/devchat")
-            print("==> devchatCommandEnv: ", pipCommandEnv)
-            
-            return True
-        except Exception as error:
-            print('devchat install failed')
-            print(error) 
-            if i >= 2:
-                return False
 
 def virtualenv_create_venv(pythoncmd, venvdir, envname):
     """
@@ -143,7 +170,8 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
         print('create env failed')
         print(error)
         return False
-    
+
+
 def pip_install_virtualenv(pythoncmd):
     # run command: {pythoncmd} -m pip install virtualenv
     # check if virtualenv is installed
@@ -161,30 +189,12 @@ def pip_install_virtualenv(pythoncmd):
         pass
     
     # second step: install virtualenv
-    try:
-        # before command run, output runnning command
-        print("run command: ", pythoncmd, "-m", "pip", "install", "--user", "virtualenv")
-        # redirect output to stdout
-        subprocess.run([pythoncmd, "-m", "pip", "install", "--user", "virtualenv"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
+    if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "virtualenv"], 4, True)):
         return True
-    except Exception as error:
+    else:
         print('virtualenv install failed')
-        print(error)
-    
-    
-    # reinstall 3 times
-    for i in range(0,3):
-        try:
-            # before command run, output runnning command
-            print("run command: ", pythoncmd, "-m", "pip", "install", "--user", "virtualenv", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple")
-            # redirect output to stdout
-            subprocess.run([pythoncmd, "-m", "pip", "install", "--user", "virtualenv", "-i", "https://pypi.tuna.tsinghua.edu.cn/simple"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
-            return True
-        except Exception as error:
-            print('virtualenv install failed')
-            print(error)
-            if i >= 2:
-                return False
+        return False
+
         
 def install_pip(pythoncmd):
     # run command: {pythoncmd} {tools_dir}/get-pip.py --force-reinstall
