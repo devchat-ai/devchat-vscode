@@ -32,6 +32,7 @@ export function checkDevChatDependency(pythonCommand: string, showError: boolean
 	try {
 		// Check if DevChat is installed
 		runCommand(`"${devChat}" --help`);
+		logger.channel()?.info("devchat has installed.")
 		return true;
 	} catch(error) {
 		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
