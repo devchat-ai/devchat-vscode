@@ -77,6 +77,8 @@ DevChat is the way developers interact and collaborate with AI.
 
 ## Quick Start
 
+> Chinese: [中文安装配置指南](https://zh.devchat.blog/devchat-vscode-installation-guide).
+
   - Install [Visual Studio Code](https://code.visualstudio.com/download).
   - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
   
