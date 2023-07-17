@@ -5,7 +5,7 @@ import { Text, Flex, Avatar, ActionIcon, Tooltip, CopyButton, SimpleGrid } from 
 import SvgAvatarDevChat from '@/views/avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from '@/views/avatar_spaceman.png';
-import { IconCheck, IconCopy, Icon360, IconEdit } from "@tabler/icons-react";
+import { IconCheck, IconCopy, Icon360, IconEdit, IconTrash } from "@tabler/icons-react";
 
 import { useAppDispatch } from '@/views/hooks';
 
@@ -15,7 +15,7 @@ import {
 } from './inputSlice';
 
 const MessageHeader = (props: any) => {
-    const { type, message, contexts, showEdit = false } = props;
+    const { type, message, contexts, showEdit = false, showDelete = true } = props;
     const dispatch = useAppDispatch();
     const [done, setDone] = React.useState(false);
     return (<Flex
@@ -64,6 +64,14 @@ const MessageHeader = (props: any) => {
 
                         }}>
                         <IconEdit size="1.125rem" />
+                    </ActionIcon>
+                </Tooltip >}
+                {showDelete && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
+                    <ActionIcon size='sm'
+                        onClick={() => {
+
+                        }}>
+                        <IconTrash size="1.125rem" />
                     </ActionIcon>
                 </Tooltip >}
             </Flex >
