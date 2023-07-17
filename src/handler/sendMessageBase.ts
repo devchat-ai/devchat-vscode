@@ -184,3 +184,19 @@ export async function stopDevChatBase(message: any): Promise<void> {
 	userStop = true;
 	devChat.stop();
 }
+
+// delete a chat message
+// each message is identified by hash
+export async function deleteChatMessageBase(message:{'hash': string}): Promise<boolean> {
+	// if hash is undefined, return
+	if (!message.hash) {
+		return true;
+	}
+
+	// delete the message from messageHistory
+	messageHistory.delete(message.hash);
+
+	// delete the message by devchat
+	const bSuccess = await devChat.delete(message.hash);
+	return bSuccess;
+}
