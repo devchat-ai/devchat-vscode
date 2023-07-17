@@ -8,7 +8,7 @@ import { UiUtilWrapper } from '../util/uiUtil';
 
 let _lastMessage: any = undefined;
 
-regInMessage({command: 'sendMessage', text: '', hash: undefined});
+regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
 regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
 // message: { command: 'sendMessage', text: 'xxx', hash: 'xxx'}
