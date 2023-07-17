@@ -1,11 +1,11 @@
 import React from "react";
-import { Text, Flex, Avatar, ActionIcon, Tooltip, CopyButton } from "@mantine/core";
+import { Text, Flex, Avatar, ActionIcon, Tooltip, CopyButton, SimpleGrid } from "@mantine/core";
 
 // @ts-ignore
 import SvgAvatarDevChat from '@/views/avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from '@/views/avatar_spaceman.png';
-import { IconCheck, IconCopy, Icon360 } from "@tabler/icons-react";
+import { IconCheck, IconCopy, Icon360, IconEdit } from "@tabler/icons-react";
 
 import { useAppDispatch } from '@/views/hooks';
 
@@ -15,7 +15,7 @@ import {
 } from './inputSlice';
 
 const MessageHeader = (props: any) => {
-    const { type, message, contexts } = props;
+    const { type, message, contexts, showEdit = false } = props;
     const dispatch = useAppDispatch();
     const [done, setDone] = React.useState(false);
     return (<Flex
@@ -40,17 +40,33 @@ const MessageHeader = (props: any) => {
         }
         <Text weight='bold'>{type === 'bot' ? 'DevChat' : 'User'}</Text>
         {type === 'user'
-            ? <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={done ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
-                <ActionIcon size='sm' style={{ marginLeft: 'auto' }}
-                    onClick={() => {
-                        dispatch(setValue(message));
-                        dispatch(setContexts(contexts));
-                        setDone(true);
-                        setTimeout(() => { setDone(false); }, 2000);
-                    }}>
-                    {done ? <IconCheck size="1rem" /> : <Icon360 size="1.125rem" />}
-                </ActionIcon>
-            </Tooltip>
+            ? <Flex
+                gap="xs"
+                justify="flex-end"
+                align="center"
+                direction="row"
+                wrap="wrap"
+                style={{ marginLeft: 'auto' }}>
+                <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={done ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
+                    <ActionIcon size='sm'
+                        onClick={() => {
+                            dispatch(setValue(message));
+                            dispatch(setContexts(contexts));
+                            setDone(true);
+                            setTimeout(() => { setDone(false); }, 2000);
+                        }}>
+                        {done ? <IconCheck size="1rem" /> : <Icon360 size="1.125rem" />}
+                    </ActionIcon>
+                </Tooltip>
+                {showEdit && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Edit message" withArrow position="left" color="gray">
+                    <ActionIcon size='sm'
+                        onClick={() => {
+
+                        }}>
+                        <IconEdit size="1.125rem" />
+                    </ActionIcon>
+                </Tooltip >}
+            </Flex >
             : <CopyButton value={message} timeout={2000}>
                 {({ copied, copy }) => (
                     <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy message'} withArrow position="left" color="gray">
