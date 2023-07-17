@@ -105,9 +105,8 @@ const MessageContainer = (props: any) => {
             }}>
             <MessageHeader
                 key={`message-header-${index}`}
-                type={messageType}
-                message={messageText}
-                contexts={contexts} />
+                showDelete={index === messages.length - 2}
+                item={item} />
             <Container
                 key={`message-container-${index}`}
                 sx={{

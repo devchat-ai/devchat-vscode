@@ -14,8 +14,13 @@ import {
     setValue,
 } from './inputSlice';
 
+import {
+    deleteMessage
+} from './chatSlice';
+
 const MessageHeader = (props: any) => {
-    const { type, message, contexts, showEdit = false, showDelete = true } = props;
+    const { item, showEdit = false, showDelete = true } = props;
+    const { contexts, message, type, hash } = item;
     const dispatch = useAppDispatch();
     const [done, setDone] = React.useState(false);
     return (<Flex
@@ -66,10 +71,10 @@ const MessageHeader = (props: any) => {
                         <IconEdit size="1.125rem" />
                     </ActionIcon>
                 </Tooltip >}
-                {showDelete && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
+                {showDelete && hash && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
-
+                            dispatch(deleteMessage(item));
                         }}>
                         <IconTrash size="1.125rem" />
                     </ActionIcon>

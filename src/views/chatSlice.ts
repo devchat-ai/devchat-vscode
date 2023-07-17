@@ -19,6 +19,23 @@ export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entrie
     });
 });
 
+export const deleteMessage = createAsyncThunk<{ hash }, { hash }>('chat/deleteMessage', async (params) => {
+    debugger
+    const { hash } = params;
+    return new Promise((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: hash });
+            messageUtil.registerHandler('deletedChatMessage', (rhash: any) => {
+                resolve({
+                    hash: rhash
+                });
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+});
+
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
@@ -110,8 +127,8 @@ export const chatSlice = createSlice({
                             const { hash, user, date, request, response, context } = item;
                             const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
                             return [
-                                { type: 'user', message: request, contexts: contexts },
-                                { type: 'bot', message: response },
+                                { type: 'user', message: request, contexts: contexts, date: date, hash: hash },
+                                { type: 'bot', message: response, date: date, hash: hash },
                             ];
                         })
                         .flat();
@@ -122,6 +139,13 @@ export const chatSlice = createSlice({
                     }
                 } else {
                     state.isLastPage = true;
+                }
+            })
+            .addCase(deleteMessage.fulfilled, (state, action) => {
+                const { hash } = action.payload;
+                const index = state.messages.findIndex((item: any) => item.hash === hash);
+                if (index > -1) {
+                    state.messages.splice(index);
                 }
             });
     }
