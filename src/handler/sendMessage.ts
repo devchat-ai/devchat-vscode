@@ -53,8 +53,8 @@ export async function deleteChatMessage(message: any, panel: vscode.WebviewPanel
 		return;
 	}
 	
-	const deleted = deleteChatMessageBase(message);
-	if (!deleted) {
+	const deleted = await deleteChatMessageBase(message);
+	if (deleted) {
 		MessageHandler.sendMessage(panel, { command: 'deletedChatMessage', hash: message.hash });
 	} else {
 		UiUtilWrapper.showErrorMessage('Delete message failed!');
