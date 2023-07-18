@@ -20,7 +20,6 @@ export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entrie
 });
 
 export const deleteMessage = createAsyncThunk<{ hash }, { hash }>('chat/deleteMessage', async (params) => {
-    debugger
     const { hash } = params;
     return new Promise((resolve, reject) => {
         try {
