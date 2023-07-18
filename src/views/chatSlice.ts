@@ -57,9 +57,17 @@ export const chatSlice = createSlice({
             state.hasDone = false;
             state.errorMessage = '';
             state.currentMessage = '';
+            let lastNonEmptyHash;
+            for (let i = state.messages.length - 1; i >= 0; i--) {
+                if (state.messages[i].hash) {
+                    lastNonEmptyHash = state.messages[i].hash;
+                    break;
+                }
+            }
             messageUtil.sendMessage({
                 command: 'sendMessage',
-                text: action.payload
+                text: action.payload,
+                parent_hash: lastNonEmptyHash
             });
         },
         reGenerating: (state) => {
