@@ -89,23 +89,23 @@ def pip_install_devchat(pythoncmd):
     # if not, install devchat
 
     # first step: check if devchat is installed
-    try:
-        # before command run, output runnning command
-        print("run command: ", pythoncmd, "-m", "pip", "show", "devchat")
-        subprocess.run([pythoncmd, "-m", "pip", "show", "devchat"], check=True, stdout=sys.stdout, stderr=sys.stderr, text=True)
+    # try:
+    #     # before command run, output runnning command
+    #     print("run command: ", pythoncmd, "-m", "pip", "show", "devchat")
+    #     subprocess.run([pythoncmd, "-m", "pip", "show", "devchat"], check=True, stdout=sys.stdout, stderr=sys.stderr, text=True)
         
-        pipCommandEnv = pythoncmd.replace("/python", "/devchat")
-        print("==> devchatCommandEnv: ", pipCommandEnv)
+    #     pipCommandEnv = pythoncmd.replace("/python", "/devchat")
+    #     print("==> devchatCommandEnv: ", pipCommandEnv)
         
-        return True
-    except Exception as error:
-        # devchat is not installed
-        print('devchat is not installed')
-        print(error)
-        pass
+    #     return True
+    # except Exception as error:
+    #     # devchat is not installed
+    #     print('devchat is not installed')
+    #     print(error)
+    #     pass
     
     # second step: install devchat
-    if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "devchat"], 3, False)):
+    if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "devchat", "--force"], 3, False)):
         pip_command_env = pythoncmd.replace("/python", "/devchat")
         print("==> devchatCommandEnv: ", pip_command_env)
         return True

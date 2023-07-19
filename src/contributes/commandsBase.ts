@@ -31,7 +31,13 @@ export function checkDevChatDependency(pythonCommand: string, showError: boolean
 
 	try {
 		// Check if DevChat is installed
-		runCommand(`"${devChat}" --help`);
+		const expectVersion = 'DevChat 0.1.15';
+		const devchatVersion = runCommand(`"${devChat}" --version`).toString().trim();
+		if (devchatVersion < expectVersion) {
+			logger.channel()?.info("devchat version: ${devchatVersion}, but expect version: ${expectVersion}");
+			return false;
+		}
+
 		logger.channel()?.info("devchat has installed.")
 		return true;
 	} catch(error) {
