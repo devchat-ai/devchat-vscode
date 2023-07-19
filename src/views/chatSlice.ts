@@ -19,6 +19,22 @@ export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entrie
     });
 });
 
+export const deleteMessage = createAsyncThunk<{ hash }, { hash }>('chat/deleteMessage', async (params) => {
+    const { hash } = params;
+    return new Promise((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: hash });
+            messageUtil.registerHandler('deletedChatMessage', (message) => {
+                resolve({
+                    hash: message.hash
+                });
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+});
+
 export const chatSlice = createSlice({
     name: 'chat',
     initialState: {
@@ -41,9 +57,17 @@ export const chatSlice = createSlice({
             state.hasDone = false;
             state.errorMessage = '';
             state.currentMessage = '';
+            let lastNonEmptyHash;
+            for (let i = state.messages.length - 1; i >= 0; i--) {
+                if (state.messages[i].hash) {
+                    lastNonEmptyHash = state.messages[i].hash;
+                    break;
+                }
+            }
             messageUtil.sendMessage({
                 command: 'sendMessage',
-                text: action.payload
+                text: action.payload,
+                parent_hash: lastNonEmptyHash
             });
         },
         reGenerating: (state) => {
@@ -61,6 +85,17 @@ export const chatSlice = createSlice({
             state.generating = false;
             state.responsed = false;
             state.hasDone = action.payload.hasDone;
+            if (action.payload.hasDone) {
+                const { hash } = action.payload.message;
+                const messagesLength = state.messages.length;
+
+                if (messagesLength > 1) {
+                    state.messages[messagesLength - 2].hash = hash;
+                    state.messages[messagesLength - 1].hash = hash;
+                } else if (messagesLength > 0) {
+                    state.messages[messagesLength - 1].hash = hash;
+                }
+            }
         },
         startResponsing: (state, action) => {
             state.responsed = true;
@@ -110,8 +145,8 @@ export const chatSlice = createSlice({
                             const { hash, user, date, request, response, context } = item;
                             const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
                             return [
-                                { type: 'user', message: request, contexts: contexts },
-                                { type: 'bot', message: response },
+                                { type: 'user', message: request, contexts: contexts, date: date, hash: hash },
+                                { type: 'bot', message: response, date: date, hash: hash },
                             ];
                         })
                         .flat();
@@ -122,6 +157,13 @@ export const chatSlice = createSlice({
                     }
                 } else {
                     state.isLastPage = true;
+                }
+            })
+            .addCase(deleteMessage.fulfilled, (state, action) => {
+                const { hash } = action.payload;
+                const index = state.messages.findIndex((item: any) => item.hash === hash);
+                if (index > -1) {
+                    state.messages.splice(index);
                 }
             });
     }

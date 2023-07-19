@@ -30,6 +30,18 @@ export class MessageHistory {
 	find(hash: string) {
 		return this.history.find(message => message.hash === hash);
 	}
+
+	delete(hash: string) {
+		const index = this.history.findIndex(message => message.hash === hash);
+		if (index >= 0) {
+			this.history.splice(index, 1);
+		}
+
+		if (this.lastmessage?.hash === hash) {
+			this.lastmessage = null;
+		}
+	}
+
 	findLast() {
 		return this.lastmessage;
 	}

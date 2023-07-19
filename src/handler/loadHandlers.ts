@@ -6,7 +6,7 @@ import { doCommit } from './doCommit';
 import { historyMessages } from './historyMessages';
 import { regCommandList } from './regCommandList';
 import { regContextList } from './regContextList';
-import { sendMessage, stopDevChat, regeneration } from './sendMessage';
+import { sendMessage, stopDevChat, regeneration, deleteChatMessage } from './sendMessage';
 import { blockApply } from './showDiff';
 import { showDiff } from './showDiff';
 import { addConext } from './addContext';
@@ -73,3 +73,6 @@ messageHandler.registerHandler('regActionList', regActionList);
 // Apply action for code block
 // Response: none
 messageHandler.registerHandler('applyAction', applyAction);
+// Delete chat message
+// Response: { command: 'deletedChatMessage', result: <message id> }
+messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);

@@ -2,12 +2,13 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { stopDevChatBase, sendMessageBase } from './sendMessageBase';
+import { stopDevChatBase, sendMessageBase, deleteChatMessageBase } from './sendMessageBase';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 let _lastMessage: any = undefined;
 
-regInMessage({command: 'sendMessage', text: '', hash: undefined});
+regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
 regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
 // message: { command: 'sendMessage', text: 'xxx', hash: 'xxx'}
@@ -37,6 +38,27 @@ export async function regeneration(message: any, panel: vscode.WebviewPanel|vsco
 regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	stopDevChatBase(message);
+}
+
+regInMessage({command: 'deleteChatMessage', hash: 'xxx'});
+regOutMessage({ command: 'deletedChatMessage', hash: 'xxxx'});
+export async function deleteChatMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	// prompt user to confirm
+	const confirm = await vscode.window.showWarningMessage(
+		`Are you sure to delete this message?`,
+		{ modal: true },
+		'Delete'
+	);
+	if (confirm !== 'Delete') {
+		return;
+	}
+	
+	const deleted = await deleteChatMessageBase(message);
+	if (deleted) {
+		MessageHandler.sendMessage(panel, { command: 'deletedChatMessage', hash: message.hash });
+	} else {
+		UiUtilWrapper.showErrorMessage('Delete message failed!');
+	}
 }
 
 

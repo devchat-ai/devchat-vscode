@@ -8,6 +8,7 @@ import { CommandRun } from "../util/commonUtil";
 import ExtensionContextHolder from '../util/extensionContext';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
+import { exitCode } from 'process';
 
 
 
@@ -232,6 +233,43 @@ class DevChat {
 				isError: true,
 			};
 		}
+	}
+
+	async delete(hash: string): Promise<boolean> {
+		const args = ["log", "--delete", hash];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		const openaiApiKey = process.env.OPENAI_API_KEY;
+
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env,
+				OPENAI_API_KEY: openaiApiKey,
+			},
+		};
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error: ${stderr}`);
+			logger.channel()?.show();
+			return false;
+		}
+		if (stdout.indexOf('Failed to delete prompt') >= 0) {
+			logger.channel()?.error(`Failed to delete prompt: ${hash}`);
+			logger.channel()?.show();
+			return false;
+		}
+
+		if (code !== 0) {
+			logger.channel()?.error(`Exit code: ${code}`);
+			logger.channel()?.show();
+			return false;
+		}
+		return true;
 	}
 
 	async log(options: LogOptions = {}): Promise<LogEntry[]> {

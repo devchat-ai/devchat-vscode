@@ -69,7 +69,7 @@ const StopButton = () => {
                 }
             }}
             onClick={() => {
-                dispatch(stopGenerating({ hasDone: false }));
+                dispatch(stopGenerating({ hasDone: false, message: null }));
                 messageUtil.sendMessage({
                     command: 'stopDevChat'
                 });
@@ -124,8 +124,8 @@ const chatPanel = () => {
             dispatch(startResponsing(message.text));
             timer.start();
         });
-        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean }) => {
-            dispatch(stopGenerating({ hasDone: true }));
+        messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean, hash }) => {
+            dispatch(stopGenerating({ hasDone: true, message: message }));
             if (message.isError) {
                 dispatch(happendError(message.text));
             }

@@ -3,7 +3,7 @@ import { describe, it } from 'mocha';
 import { Context } from 'mocha';
 import sinon from 'sinon';
 import * as path from 'path';
-import { parseMessage, getInstructionFiles, parseMessageAndSetOptions, getParentHash, handleTopic, handlerResponseText, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
+import { parseMessage, getInstructionFiles, parseMessageAndSetOptions, handleTopic, handlerResponseText, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
 import DevChat, { ChatResponse } from '../../src/toolwrapper/devchat';
 import CommandManager from '../../src/command/commandManager';
 import messageHistory from '../../src/util/messageHistory';
@@ -68,76 +68,6 @@ describe('sendMessageBase', () => {
 		});
 	});
 
-	describe('getParentHash', () => {
-		beforeEach(() => {
-			messageHistory.clear();
-		});
-
-		it('should return parent hash when message hash is provided and found in history', () => {
-			const message1 = {
-				hash: 'somehash1',
-				parentHash: 'parentHash1'
-			};
-			const message2 = {
-				hash: 'somehash2',
-				parentHash: 'parentHash2'
-			};
-			messageHistory.add(message1);
-			messageHistory.add(message2);
-
-			const message = {
-				hash: 'somehash1'
-			};
-
-			const result = getParentHash(message);
-			expect(result).to.equal('parentHash1');
-		});
-
-		it('should return undefined when message hash is provided but not found in history', () => {
-			const message1 = {
-				hash: 'somehash1',
-				parentHash: 'parentHash1'
-			};
-			const message2 = {
-				hash: 'somehash2',
-				parentHash: 'parentHash2'
-			};
-			messageHistory.add(message1);
-			messageHistory.add(message2);
-
-			const message = {
-				hash: 'nonexistenthash'
-			};
-
-			const result = getParentHash(message);
-			expect(result).to.be.undefined;
-		});
-
-		it('should return last message hash when message hash is not provided', () => {
-			const message1 = {
-				hash: 'somehash1',
-				parentHash: 'parentHash1'
-			};
-			const message2 = {
-				hash: 'somehash2',
-				parentHash: 'parentHash2'
-			};
-			messageHistory.add(message1);
-			messageHistory.add(message2);
-
-			const message = {};
-
-			const result = getParentHash(message);
-			expect(result).to.equal('somehash2');
-		});
-
-		it('should return undefined when message hash is not provided and history is empty', () => {
-			const message = {};
-
-			const result = getParentHash(message);
-			expect(result).to.be.undefined;
-		});
-	});
 
 	describe('handleTopic', () => {
 		it('should handle topic correctly', async () => {
