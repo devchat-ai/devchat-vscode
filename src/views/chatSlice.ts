@@ -67,7 +67,7 @@ export const chatSlice = createSlice({
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: action.payload,
-                parent_hash: lastNonEmptyHash
+                parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
             });
         },
         reGenerating: (state) => {
