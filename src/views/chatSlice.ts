@@ -85,6 +85,17 @@ export const chatSlice = createSlice({
             state.generating = false;
             state.responsed = false;
             state.hasDone = action.payload.hasDone;
+            if (action.payload.hasDone) {
+                const { hash } = action.payload.message;
+                const messagesLength = state.messages.length;
+
+                if (messagesLength > 1) {
+                    state.messages[messagesLength - 2].hash = hash;
+                    state.messages[messagesLength - 1].hash = hash;
+                } else if (messagesLength > 0) {
+                    state.messages[messagesLength - 1].hash = hash;
+                }
+            }
         },
         startResponsing: (state, action) => {
             state.responsed = true;
@@ -151,6 +162,7 @@ export const chatSlice = createSlice({
             .addCase(deleteMessage.fulfilled, (state, action) => {
                 const { hash } = action.payload;
                 const index = state.messages.findIndex((item: any) => item.hash === hash);
+                debugger
                 if (index > -1) {
                     state.messages.splice(index);
                 }

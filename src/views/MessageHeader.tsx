@@ -15,7 +15,8 @@ import {
 } from './inputSlice';
 
 import {
-    deleteMessage
+    deleteMessage,
+    popMessage
 } from './chatSlice';
 
 const MessageHeader = (props: any) => {
@@ -71,10 +72,15 @@ const MessageHeader = (props: any) => {
                         <IconEdit size="1.125rem" />
                     </ActionIcon>
                 </Tooltip >}
-                {showDelete && hash && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
+                {showDelete && hash !== 'message' && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
-                            dispatch(deleteMessage(item));
+                            if (item.hash) {
+                                dispatch(deleteMessage(item));
+                            } else {
+                                dispatch(popMessage());
+                                dispatch(popMessage());
+                            }
                         }}>
                         <IconTrash size="1.125rem" />
                     </ActionIcon>
