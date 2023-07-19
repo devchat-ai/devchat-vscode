@@ -20,6 +20,7 @@ export class UiUtilVscode implements UiUtil {
 
 	public async updateConfiguration(key1: string, key2: string, value: string): Promise<void> {
 		await vscode.workspace.getConfiguration(key1).update(key2, value, vscode.ConfigurationTarget.Global);
+		await vscode.workspace.getConfiguration(key1).update(key2, value, vscode.ConfigurationTarget.Workspace);
 	}
 	public async secretStorageGet(key: string): Promise<string | undefined> {
 		try {
