@@ -24,9 +24,9 @@ export const deleteMessage = createAsyncThunk<{ hash }, { hash }>('chat/deleteMe
     return new Promise((resolve, reject) => {
         try {
             messageUtil.sendMessage({ command: 'deleteChatMessage', hash: hash });
-            messageUtil.registerHandler('deletedChatMessage', (rhash: any) => {
+            messageUtil.registerHandler('deletedChatMessage', (message) => {
                 resolve({
-                    hash: rhash
+                    hash: message.hash
                 });
             });
         } catch (e) {
@@ -162,7 +162,6 @@ export const chatSlice = createSlice({
             .addCase(deleteMessage.fulfilled, (state, action) => {
                 const { hash } = action.payload;
                 const index = state.messages.findIndex((item: any) => item.hash === hash);
-                debugger
                 if (index > -1) {
                     state.messages.splice(index);
                 }
