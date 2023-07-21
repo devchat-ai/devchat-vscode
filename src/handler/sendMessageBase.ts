@@ -184,5 +184,11 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
 
 	// delete the message by devchat
 	const bSuccess = await devChat.delete(message.hash);
+	if (bSuccess) {
+		let topicId = TopicManager.getInstance().currentTopicId;
+		if (topicId) {
+			TopicManager.getInstance().deleteMessage(topicId, message.hash);
+		}
+	}
 	return bSuccess;
 }

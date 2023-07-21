@@ -30,7 +30,7 @@ export class Topic {
 		}
 	}
 
-	updateFirstMessageHashAndName(newFirstMessageHash: string, newName: string): void {
+	updateFirstMessageHashAndName(newFirstMessageHash: string|undefined, newName: string|undefined): void {
 		this.firstMessageHash = newFirstMessageHash;
 		this.name = newName;
 	}
@@ -111,6 +111,15 @@ export class TopicManager {
 
 			// 使用topic方法更新lastMessageHash和lastUpdated
 			topic.updateLastMessageHashAndLastUpdated(newMessageHash, messageDate);
+			this._notifyUpdateTopicListeners(topicId);
+		}
+	}
+
+	deleteMessage(topicId: string, messageHash: string): void {
+		const topic = this._topics[topicId];
+		if (topic) {
+			topic.updateFirstMessageHashAndName(undefined, "Empty topic");
+			topic.lastMessageHash = undefined;
 			this._notifyUpdateTopicListeners(topicId);
 		}
 	}
