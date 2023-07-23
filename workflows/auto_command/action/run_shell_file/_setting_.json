@@ -1,12 +1,12 @@
 {
 	"name": "run_shell_file",
-	"description": "run shell script",
+	"description": "run shell script file",
 	"type": [
 		"shell"
 	],
 	"args": [
 		{
-			"name": "script",
+			"name": "script_file",
 			"description": "shell script file to run",
 			"type": "string",
 			"as": "file",
@@ -16,6 +16,6 @@
 	"action": "run_shell",
 	"handler": [
 		"bash",
-		"${script}"
+		"${script_file}"
 	]
 }
