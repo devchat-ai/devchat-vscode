@@ -5,7 +5,8 @@ import messageHistory from '../util/messageHistory';
 import { TopicManager } from '../topic/topicManager';
 import CustomCommands from '../command/customCommand';
 
-let WaitCreateTopic = false;
+
+let waitCreateTopic = false;
 
 
 function parseDateStringToTimestamp(dateString: string): number {
@@ -24,7 +25,7 @@ function parseDateStringToTimestamp(dateString: string): number {
 }
 
 export function getWaitCreateTopic(): boolean {
-	return WaitCreateTopic;
+	return waitCreateTopic;
 }
 
 // Add this function to messageHandler.ts
@@ -94,7 +95,7 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	}
 
 	chatOptions.header = getInstructionFiles();
-	if (message.text !== newText2) {
+	if (parsedMessage.instruction && parsedMessage.instruction.length > 0) {
 		chatOptions.header = parsedMessage.instruction;
 	}
 
@@ -121,7 +122,7 @@ export async function handleTopic(parentHash:string | undefined, message: any, c
 			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], parseDateStringToTimestamp(chatResponse.date), message.text, chatResponse.response);
 		}
 	} finally {
-		WaitCreateTopic = false;
+		waitCreateTopic = false;
 	}
 }
 
