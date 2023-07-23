@@ -203,3 +203,31 @@ export function runCommandStringAndWriteOutputSync(command: string, outputFile: 
 		return { exitCode: 1, stdout: '', stderr: String(error) }
 	}
 }
+
+export function git_ls_tree(withAbsolutePath: boolean = false): string[] {
+    // Run the git ls-tree command
+	const workspacePath = UiUtilWrapper.workspaceFoldersFirstPath() || '.';
+    const result = childProcess.execSync('git ls-tree -r --name-only HEAD', {
+        cwd: workspacePath,
+        encoding: 'utf-8'
+    });
+
+    // Split the result into lines
+    const lines = result.split('\n');
+
+    // Remove the last line if it is empty
+    if (lines[lines.length - 1] === '') {
+        lines.pop();
+    }
+
+    // Return the lines
+	// Convert the lines to absolute paths
+	if (withAbsolutePath) {
+		const absolutePaths = lines.map(line => path.resolve(workspacePath, line));
+
+		// Return the absolute paths
+		return absolutePaths;
+	} else {
+		return lines;
+	}
+}
