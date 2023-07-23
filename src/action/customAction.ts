@@ -96,7 +96,7 @@ export class CustomActions {
 
 								handlerAction: async (args: { [key: string]: string }) => {
 									// Implement the handler logic for the custom action
-									const tempDir = await createTempSubdirectory('devchat/context');
+									const tempDir = await createTempSubdirectory('devchat/action');
 									const tempFile = path.join(tempDir, 'apply.json');
 
 									const contextMap = {
@@ -109,6 +109,7 @@ export class CustomActions {
 
 									// Save contextMap to temp file
 									await UiUtilWrapper.writeFile(tempFile, JSON.stringify(contextMap));
+
 									// replace ${contextFile} with tempFile for arg in handler
 									let handlerArgs = action.handler.map(arg => arg.replace('${contextFile}', tempFile));
 									if (args !== undefined) {
@@ -140,7 +141,9 @@ export class CustomActions {
 									logger.channel()?.info(`stderr:`, result.stderr);
 
 									// remove temp file
-									fs.unlinkSync(tempFile);
+									if (fs.existsSync(tempFile)) {
+										fs.unlinkSync(tempFile);
+									}
 									return result;
 								},
 							};
