@@ -20,6 +20,7 @@ describe('CommandManager', () => {
       name: 'test',
       pattern: 'test',
       description: 'Test command',
+	  args: 0,
       handler: async (commandName: string, userInput: string) => {
         return 'Test result';
       },
@@ -34,6 +35,7 @@ describe('CommandManager', () => {
       name: 'test',
       pattern: 'test',
       description: 'Test command',
+	  args: 0,
       handler: async (commandName: string, userInput: string) => {
         return 'Test result';
       },
@@ -48,6 +50,7 @@ describe('CommandManager', () => {
       name: 'test',
       pattern: 'test',
       description: 'Test command',
+	  args: 0,
       handler: async (commandName: string, userInput: string) => {
         return 'Test result';
       },
@@ -64,6 +67,7 @@ describe('CommandManager', () => {
       pattern: 'customTest',
       description: 'Custom test command',
 	  message: 'Custom test result',
+	  args: 0,
       show: true,
 	  default: false,
 	  instructions: []

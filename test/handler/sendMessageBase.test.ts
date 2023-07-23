@@ -114,7 +114,7 @@ describe('sendMessageBase', () => {
 			};
 
 			const result = await handlerResponseText(partialDataText, chatResponse);
-			expect(result).to.equal('Partial data\n\nError occurred!');
+			expect(result).to.equal('Error occurred!');
 		});
 	});
 
