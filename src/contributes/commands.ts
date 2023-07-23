@@ -195,6 +195,14 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 	);
 }
 
+export function TestDevChatCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat.', async () => {
+			TopicManager.getInstance().loadTopics();
+		})
+	);
+}
+
 export {
 	registerOpenChatPanelCommand,
 	registerAddContextCommand,
