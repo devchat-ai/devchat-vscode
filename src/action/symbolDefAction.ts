@@ -1,7 +1,7 @@
 
 import { Action, CustomActions } from './customAction';
 
-import { CommandResult } from '../util/commonUtil';
+import { CommandResult, git_ls_tree } from '../util/commonUtil';
 import { logger } from '../util/logger';
 
 import * as vscode from 'vscode';
@@ -19,13 +19,20 @@ async function findSymbolInWorkspace(symbolName: string) {
                 fileUri
             );
             if (symbolsT) {
-
-				symbolsT.forEach(symbol => {
-					if (symbol.name === symbolName) {
-						const documentNew = await vscode.workspace.openTextDocument(fileUri);
-						defList.push(documentNew.getText(symbol.range));
+				for (const symbol of symbolsT) {
+					// append symbol and it's children symbol to list
+					let newSymbolList = [symbol];
+					symbol.children.forEach((child) => {
+						newSymbolList.push(child);
+					});
+					
+					for (const symbol of newSymbolList) {
+						if (symbol.name === symbolName) {
+							const documentNew = await vscode.workspace.openTextDocument(fileUri);
+							defList.push(documentNew.getText(symbol.range));
+						}
 					}
-				});
+				}
             }
         } catch (e) {
             logger.channel()?.error(`Error: ${e}`);
