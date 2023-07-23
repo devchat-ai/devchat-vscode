@@ -1,0 +1,21 @@
+{
+	"name": "run_shell",
+	"description": "run shell script",
+	"type": [
+		"shell"
+	],
+	"args": [
+		{
+			"name": "script",
+			"description": "shell script file to run",
+			"type": "string",
+			"as": "file",
+			"from": "content.content"
+		}
+	],
+	"action": "run_shell",
+	"handler": [
+		"bash",
+		"${script}"
+	]
+}
