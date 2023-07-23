@@ -123,7 +123,7 @@ export async function runCommandAndWriteOutput(
 
 export async function runCommandStringAndWriteOutput(
     commandString: string,
-    outputFile: string
+    outputFile: string | undefined
 ): Promise<CommandResult> {
     const run = new CommandRun();
     const options = {
