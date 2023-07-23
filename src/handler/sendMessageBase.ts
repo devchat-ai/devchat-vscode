@@ -102,6 +102,7 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	if (parsedMessage.reference.length > 0) {
 		chatOptions.reference = parsedMessage.reference;
 	}
+
 	return parsedMessage;
 }
 
@@ -134,14 +135,17 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 			return undefined;
 		}
 	}
+
+	if (chatResponse.finish_reason === "function_call") {
+		return '\n```command\n' + responseText + '\n```\n';
+	}
 	
 	return responseText;
 }
 
 // 重构后的sendMessage函数
-export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
+export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void, function_name: string| undefined = undefined): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
 	userStop = false;
-	
 	const chatOptions: any = {};
 	const parsedMessage = await parseMessageAndSetOptions(message, chatOptions);
 
@@ -150,9 +154,18 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 	}
 	logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
 
+	chatOptions.functions = "./.chat/functions.json";
+	if (function_name) {
+		chatOptions.function_name = function_name;
+		chatOptions.role = "function";
+	}
+
 	let partialDataText = '';
 	const onData = (partialResponse: ChatResponse) => {
 		partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+		if (partialResponse.finish_reason === "function_call") {
+			partialDataText = '\n```command\n' + partialDataText + '\n```\n';
+		}
 		handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
 	};
 

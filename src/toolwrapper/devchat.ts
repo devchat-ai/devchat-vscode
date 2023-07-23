@@ -19,6 +19,9 @@ export interface ChatOptions {
 	parent?: string;
 	reference?: string[];
 	header?: string[];
+	functions?: string;
+	role?: string;
+	function_name?: string;
 	context?: string[];
 }
 
@@ -46,6 +49,7 @@ export interface ChatResponse {
 	user: string;
 	date: string;
 	response: string;
+	finish_reason: string;
 	isError: boolean;
 }
 
@@ -80,6 +84,18 @@ class DevChat {
 			}
 		}
 
+		if (options.functions) {
+			args.push("-f", options.functions);
+		}
+
+		if (options.role) {
+			args.push("-R", options.role);
+		}
+
+		if (options.function_name) {
+			args.push("-n", options.function_name);
+		}
+
 		if (options.parent) {
 			args.push("-p", options.parent);
 		}
@@ -96,6 +112,7 @@ class DevChat {
 				user: "",
 				date: "",
 				response: "",
+				finish_reason: "",
 				isError: isPartial ? false : true,
 			};
 		}
@@ -116,16 +133,27 @@ class DevChat {
 			}
 		}
 
+		let finishReasonLine = "";
+		for (let i = responseLines.length - 1; i >= 0; i--) {
+			if (responseLines[i].startsWith("finish_reason:")) {
+				finishReasonLine = responseLines[i];
+				responseLines.splice(i, 1);
+				break;
+			}
+		}
+
 		if (!promptHashLine) {
 			return {
 				"prompt-hash": "",
 				user: user,
 				date: date,
 				response: responseLines.join("\n"),
+				finish_reason: "",
 				isError: isPartial ? false : true,
 			};
 		}
 
+		const finishReason = finishReasonLine.split(" ")[1];
 		const promptHash = promptHashLine.split(" ")[1];
 		const response = responseLines.join("\n");
 
@@ -134,6 +162,7 @@ class DevChat {
 			user,
 			date,
 			response,
+			finish_reason: finishReason,
 			isError: false,
 		};
 	}
@@ -218,6 +247,7 @@ class DevChat {
 					user: "",
 					date: "",
 					response: stderr,
+					finish_reason: "",
 					isError: true,
 				};
 			}
@@ -230,6 +260,7 @@ class DevChat {
 				user: "",
 				date: "",
 				response: `Error: ${error.stderr}\nExit code: ${error.code}`,
+				finish_reason: "",
 				isError: true,
 			};
 		}

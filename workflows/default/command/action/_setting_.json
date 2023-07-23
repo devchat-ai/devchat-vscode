@@ -1,7 +1,0 @@
-{
-	"pattern": "auto",
-	"description": "Generate commands for the bot to execute",
-	"message": "",
-	"default": false,
-	"instructions": ["./chat/action.instr"]
-}

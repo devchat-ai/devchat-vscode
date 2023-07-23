@@ -15,6 +15,27 @@ export interface Action {
 	handlerAction: (args: { [key: string]: string }) => Promise<CommandResult>;
 }
 
+// generate instruction for action
+export function getActionInstruction(action: Action): any {
+	const actionSchema = {
+		name: action.name,
+		description: action.description,
+		parameters: {
+			type: "object",
+			properties: action.args.reduce((obj: any, arg: any) => {
+				obj[arg.name] = {
+					type: arg.type,
+					description: arg.description
+				};
+				return obj;
+			}, {}),
+			required: action.args.filter((arg: any) => arg.required).map((arg: any) => arg.name)
+		}
+	};
+
+	return actionSchema;
+}
+
 export class CustomActions {
 	private static instance: CustomActions | null = null;
 	private actions: Action[] = [];
@@ -27,44 +48,6 @@ export class CustomActions {
 			CustomActions.instance = new CustomActions();
 		}
 		return CustomActions.instance;
-	}
-
-	public actionInstruction(): string {
-		let instruction = 'As an AI bot, you replay user with "command" block, don\'t replay any other words.\n' +
-			'"command" block is like this:\n' +
-			'``` command\n' +
-			'{\n' +
-			'	"command": "xxx",\n' +
-			'	"args" {\n' +
-			'		"var name": "xxx"\n' +
-			'	}\n' +
-			'}\n' +
-			'```\n' +
-			'You can split task into small sub tasks, after each command I will give you the result of command executed. so, the next command can depend pre command\'s output.\n' +
-			'\n' +
-			'Supported commands are:\n';
-		let index = 1;
-		for (const action of this.actions) {
-			instruction += String(index) + ". " + this.getActionInstruction(action.name) + "\n";
-			index += 1;
-		}
-
-		instruction += 'Restriction for output:\n' +
-			'1. Only reponse "command" block.\n' +
-			'2. Don\'t include any other text exclude command.\n' +
-			'3. Only supported extension commands can be used to complete the response.\n' +
-			'4. When update file, old_content must include at least three lines.';
-
-		return instruction;
-	}
-
-	public saveActionInstructionFile(tarFile: string): void {
-		try {
-			fs.writeFileSync(tarFile, this.actionInstruction());
-		} catch (error) {
-			logger.channel()?.error(`Failed to save action instruction file: ${error}`);
-			logger.channel()?.show();
-		}
 	}
 
 	public parseActions(workflowsDir: string): void {
@@ -161,24 +144,5 @@ export class CustomActions {
 
 	public getActions(): Action[] {
 		return this.actions;
-	}
-
-	// generate instruction for action
-	public getActionInstruction(actionName: string): string {
-		const action = this.actions.find(action => action.name.trim() === actionName.trim());
-		if (!action) {
-			return '';
-		}
-
-		let instruction = `${action.name}: ${action.description}\n`;
-		// if args is not undefined and has values, then visit args
-		if (action.args !== undefined && action.args.length > 0) {
-			instruction += `Args:\n`;
-			for (const arg of action.args) {
-				instruction += `  name: ${arg.name}  type: (${arg.type})  description: ${arg.description}\n`;
-			}
-		}
-
-		return instruction;
 	}
 }

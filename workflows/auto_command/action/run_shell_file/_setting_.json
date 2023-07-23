@@ -1,5 +1,5 @@
 {
-	"name": "run_shell",
+	"name": "run_shell_file",
 	"description": "run shell script",
 	"type": [
 		"shell"

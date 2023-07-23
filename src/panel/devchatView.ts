@@ -39,8 +39,8 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			ChatContextManager.getInstance().loadCustomContexts(workflowsDir);
 			ActionManager.getInstance().loadCustomActions(workflowsDir);
 			
-			const actionInstrucFile = path.join(UiUtilWrapper.workspaceFoldersFirstPath()!, './.chat/action.instr');
-			CustomActions.getInstance().saveActionInstructionFile( actionInstrucFile);
+			const actionInstrucFile = path.join(UiUtilWrapper.workspaceFoldersFirstPath()!, './.chat/functions.json');
+			ActionManager.getInstance().saveActionInstructionFile( actionInstrucFile);
 		}
 
 		this._view = webviewView;

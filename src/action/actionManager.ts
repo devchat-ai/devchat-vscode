@@ -1,9 +1,12 @@
-import { Action, CustomActions } from './customAction';
+import fs from 'fs';
+
+import { Action, CustomActions, getActionInstruction } from './customAction';
 
 import { CommandResult } from '../util/commonUtil';
 import { logger } from '../util/logger';
 
-
+import { SymbolRefAction } from './symbolRefAction';
+import { SymbolDefAction } from './symbolDefAction';
 
 
 // extend Action
@@ -29,7 +32,7 @@ export class CommandRunAction implements Action {
 	async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
 		try {
 			const commandData = JSON.parse(args.content);
-			const result = await ActionManager.getInstance().applyCommandAction(commandData.command, commandData.args);
+			const result = await ActionManager.getInstance().applyCommandAction(commandData.name, commandData.arguments);
 			return result;
 		} catch (error) {
 			logger.channel()?.error('Failed to parse code file content: ' + error);
@@ -51,6 +54,9 @@ export default class ActionManager {
 		}
 
 		ActionManager.instance.registerAction(new CommandRunAction());
+		ActionManager.instance.registerAction(new SymbolRefAction());
+		ActionManager.instance.registerAction(new SymbolDefAction());
+
 		return ActionManager.instance;
 	}
 
@@ -158,6 +164,25 @@ export default class ActionManager {
 		for (const customAction of customActionsInstance.getActions()) {
 			const chatAction: Action = customAction;
 			this.registerAction(chatAction);
+		}
+	}
+
+	public actionInstruction(): string {
+		let functionsDefList = []
+		for (const action of this.actions) {
+			functionsDefList.push(getActionInstruction(action));
+		}
+
+		// return as json string
+		return JSON.stringify(functionsDefList, null, 4);
+	}
+
+	public saveActionInstructionFile(tarFile: string): void {
+		try {
+			fs.writeFileSync(tarFile, this.actionInstruction());
+		} catch (error) {
+			logger.channel()?.error(`Failed to save action instruction file: ${error}`);
+			logger.channel()?.show();
 		}
 	}
 }
