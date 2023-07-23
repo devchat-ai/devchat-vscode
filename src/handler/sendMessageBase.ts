@@ -135,10 +135,6 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 			return undefined;
 		}
 	}
-
-	if (chatResponse.finish_reason === "function_call") {
-		return '\n```command\n' + responseText + '\n```\n';
-	}
 	
 	return responseText;
 }
@@ -163,9 +159,6 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 	let partialDataText = '';
 	const onData = (partialResponse: ChatResponse) => {
 		partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
-		if (partialResponse.finish_reason === "function_call") {
-			partialDataText = '\n```command\n' + partialDataText + '\n```\n';
-		}
 		handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
 	};
 
