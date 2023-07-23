@@ -4,7 +4,24 @@ import { Action, CustomActions } from './customAction';
 import { CommandResult } from '../util/commonUtil';
 import { logger } from '../util/logger';
 
+import * as vscode from 'vscode';
+import { stringify } from 'querystring';
 
+async function findSymbolInWorkspace(symbolName: string) {
+    const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
+        'vscode.executeWorkspaceSymbolProvider',
+        symbolName
+    );
+
+	let defList: string[] = [];
+    if (symbols) {
+        for (const symbol of symbols) {
+			const documentNew = await vscode.workspace.openTextDocument(symbol.location.uri.fsPath);
+			defList.push( documentNew.getText(symbol.location.range))
+        }
+    }
+	return defList;
+}
 export class SymbolDefAction implements Action {
 	name: string;
 	description: string;
@@ -29,8 +46,9 @@ export class SymbolDefAction implements Action {
 			const symbolName = args.symbol;
 
 			// get reference information
+			const defList = await findSymbolInWorkspace(symbolName);
 
-			return {exitCode: 0, stdout: "", stderr: ""};
+			return {exitCode: 0, stdout: JSON.stringify(defList), stderr: ""};
 		} catch (error) {
 			logger.channel()?.error(`${this.name} handle error: ${error}`);
 			logger.channel()?.show();
