@@ -88,10 +88,6 @@ class DevChat {
 			args.push("-f", options.functions);
 		}
 
-		if (options.role) {
-			args.push("-R", options.role);
-		}
-
 		if (options.function_name) {
 			args.push("-n", options.function_name);
 		}
