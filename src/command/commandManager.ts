@@ -52,16 +52,27 @@ class CommandManager {
 		// 定义一个异步函数来处理单个命令
 		const processCommand = async (commandObj: Command, userInput: string) => {
 			// 转义特殊字符
-			const escapedPattern = commandObj.pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-			const commandPattern = new RegExp(
-				`\\/(${escapedPattern.replace('\\{\\{prompt\\}\\}', '\\{\\{(.+?)\\}\\}')})`,
-				'g'
-			);
+			let commandPattern: RegExp;
+			if (commandObj.pattern.indexOf("{{") > 0) {
+				const escapedPattern = commandObj.pattern.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+				commandPattern = new RegExp(
+					`\\/(${escapedPattern.replace('\\{\\{prompt\\}\\}', '\\{\\{(.+?)\\}\\}')})`,
+					'g'
+				);
+			} else {
+				const escapedPattern = commandObj.pattern.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+				// Update the regex pattern to match commands ending with space or newline
+				commandPattern = new RegExp(
+					`\\/(?<command>${escapedPattern.replace('{{prompt}}', '(?<userInput>.+?)')})(?=\\s|\\n|$)`,
+					'g'
+				);
+			}
+
 
 			const matches = Array.from(text.matchAll(commandPattern));
 			const replacements = await Promise.all(
 				matches.map(async (match) => {
-					const matchedUserInput = match[2];
+					const matchedUserInput = commandObj.pattern.indexOf("{{") > 0 ? match[2] : match.groups!.userInput;
 					return await commandObj.handler(commandObj.name, matchedUserInput);
 				})
 			);
