@@ -7,6 +7,7 @@ import { logger } from '../util/logger';
 
 import { SymbolRefAction } from './symbolRefAction';
 import { SymbolDefAction } from './symbolDefAction';
+import { AskInputAction } from './askInputAction';
 
 
 // extend Action
@@ -56,6 +57,7 @@ export default class ActionManager {
 		ActionManager.instance.registerAction(new CommandRunAction());
 		ActionManager.instance.registerAction(new SymbolRefAction());
 		ActionManager.instance.registerAction(new SymbolDefAction());
+		ActionManager.instance.registerAction(new AskInputAction());
 
 		return ActionManager.instance;
 	}
@@ -170,7 +172,15 @@ export default class ActionManager {
 	public actionInstruction(): string {
 		let functionsDefList = []
 		for (const action of this.actions) {
-			functionsDefList.push(getActionInstruction(action));
+			try {
+				if (action.name === "command_run") {
+					continue;
+				}
+				functionsDefList.push(getActionInstruction(action));
+			} catch (error) {
+				logger.channel()?.error(`Failed to get action instruction: ${error}`);
+				logger.channel()?.show();
+			}
 		}
 
 		// return as json string
