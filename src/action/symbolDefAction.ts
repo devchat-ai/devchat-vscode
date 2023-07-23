@@ -8,18 +8,30 @@ import * as vscode from 'vscode';
 import { stringify } from 'querystring';
 
 async function findSymbolInWorkspace(symbolName: string) {
-    const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-        'vscode.executeWorkspaceSymbolProvider',
-        symbolName
-    );
+	const filesList = await git_ls_tree(true);
 
 	let defList: string[] = [];
-    if (symbols) {
-        for (const symbol of symbols) {
-			const documentNew = await vscode.workspace.openTextDocument(symbol.location.uri.fsPath);
-			defList.push( documentNew.getText(symbol.location.range))
+	for (const file of filesList) {
+        try {
+            const fileUri = vscode.Uri.file(file);
+            const symbolsT: vscode.DocumentSymbol[]  = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+                'vscode.executeDocumentSymbolProvider',
+                fileUri
+            );
+            if (symbolsT) {
+
+				symbolsT.forEach(symbol => {
+					if (symbol.name === symbolName) {
+						const documentNew = await vscode.workspace.openTextDocument(fileUri);
+						defList.push(documentNew.getText(symbol.range));
+					}
+				});
+            }
+        } catch (e) {
+            logger.channel()?.error(`Error: ${e}`);
         }
     }
+
 	return defList;
 }
 export class SymbolDefAction implements Action {
