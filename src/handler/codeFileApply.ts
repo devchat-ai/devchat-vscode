@@ -73,22 +73,8 @@ export async function applyCodeFile(text: string, fileName: string): Promise<voi
 
 regInMessage({command: 'code_file_apply', content: '', fileName: ''});
 export async function codeFileApply(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	// await applyCodeFile(message.content, message.fileName);
-	// return;
-
-	try {
-		const result = await ActionManager.getInstance().applyAction("command_run", { "command": "", "fileName": message.fileName, "content": message.content });
-		
-			// send error message to devchat
-			const commandObj = JSON.parse(message.content)
-			const newMessage = `{"exit_code": ${result.exitCode}, stdout: ${result.stdout}, stderr: ${compressText(result.stderr, 100)}}`;
-			MessageHandler.sendMessage(panel, { "command": "sendMessageSystem" });
-			sendMessage({command: 'sendMessage', text: newMessage}, panel, commandObj.name);
-		
-	} catch (error) {
-		logger.channel()?.error('Failed to parse code file content: ' + error);
-		logger.channel()?.show();
-	}
+	await applyCodeFile(message.content, message.fileName);
+	return;
 }
 
 
