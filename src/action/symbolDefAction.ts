@@ -1,7 +1,7 @@
 
 import { Action, CustomActions } from './customAction';
 
-import { CommandResult, git_ls_tree } from '../util/commonUtil';
+import { CommandResult, getLanguageIdByFileName, git_ls_tree } from '../util/commonUtil';
 import { logger } from '../util/logger';
 
 import * as vscode from 'vscode';
@@ -14,6 +14,11 @@ async function findSymbolInWorkspace(symbolName: string) {
 	for (const file of filesList) {
         try {
             const fileUri = vscode.Uri.file(file);
+			const languageId = await getLanguageIdByFileName(file);
+			if (!languageId || languageId.length === 0) {
+				continue;
+			}
+
             const symbolsT: vscode.DocumentSymbol[]  = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
                 'vscode.executeDocumentSymbolProvider',
                 fileUri
