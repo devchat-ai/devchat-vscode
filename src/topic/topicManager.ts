@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
 
-import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
+import DevChat, { LogEntry, LogOptions, TopicEntry } from '../toolwrapper/devchat';
 
 import { UiUtilWrapper } from '../util/uiUtil';
 import { logger } from '../util/logger';
@@ -118,7 +118,7 @@ export class TopicManager {
 	deleteMessage(topicId: string, messageHash: string): void {
 		const topic = this._topics[topicId];
 		if (topic) {
-			topic.updateFirstMessageHashAndName(undefined, "Empty topic");
+			topic.updateFirstMessageHashAndName(undefined, undefined);
 			topic.lastMessageHash = undefined;
 			this._notifyUpdateTopicListeners(topicId);
 		}
@@ -247,16 +247,14 @@ export class TopicManager {
 		this._topics = {};
 
 		const devChat = new DevChat();
-		const logEntries: LogEntry[] = await devChat.topics();
+		const topicEntries: TopicEntry[] = await devChat.topics();
 
 		// visite logEntries
 		// for each logEntry
-		let lastData: number = 0;
-		for (const logEntry of logEntries.flat()) {
-			lastData += 1;
-			const name = this.createTopicName(logEntry.request, logEntry.response);
-			const topic = new Topic(name, logEntry.hash, logEntry.hash, Number(logEntry.date));
-			topic.updateLastMessageHashAndLastUpdated(logEntry.hash, lastData);
+		for (const topicEntry of topicEntries) {
+			const name = topicEntry.title ? topicEntry.title : this.createTopicName(topicEntry.root_prompt.request, topicEntry.root_prompt.response);
+			const topic = new Topic(name!, topicEntry.root_prompt.hash, topicEntry.root_prompt.hash, Number(topicEntry.latest_time));
+			topic.updateLastMessageHashAndLastUpdated(topicEntry.root_prompt.hash, topicEntry.latest_time);
 		
 			if (topic.firstMessageHash && this.isDeleteTopic(topic.firstMessageHash)) {
 				continue;

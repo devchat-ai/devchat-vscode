@@ -44,6 +44,24 @@ export interface LogEntry {
 	}>;
 }
 
+// define TopicEntry interface
+/*
+[
+	{
+		root_prompt: LogEntry,
+		latest_time: 1689849274,
+		hidden: false,
+		title: null
+	}
+]
+*/
+export interface TopicEntry {
+	root_prompt: LogEntry;
+	latest_time: number;
+	hidden: boolean;
+	title: string | null;
+}
+
 export interface ChatResponse {
 	"prompt-hash": string;
 	user: string;
@@ -323,10 +341,15 @@ class DevChat {
 			return [];
 		}
 
-		return JSON.parse(stdout.trim()).reverse();
+		const logs = JSON.parse(stdout.trim()).reverse();
+		for (const log of logs) {
+			log.response = log.responses[0];
+			delete log.responses;
+		}
+		return logs;
 	}
 
-	async topics(): Promise<LogEntry[]> {
+	async topics(): Promise<TopicEntry[]> {
 		const args = ["topic", "-l"];
 		const devChat = this.getDevChatPath();
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
@@ -349,7 +372,16 @@ class DevChat {
 		}
 
 		try {
-			return JSON.parse(stdout.trim()).reverse();
+			const topics = JSON.parse(stdout.trim()).reverse();
+			// convert responses to respose, and remove responses field
+			// responses is in TopicEntry.root_prompt.responses
+			for (const topic of topics) {
+				if (topic.root_prompt.responses) {
+					topic.root_prompt.response = topic.root_prompt.responses[0];
+					delete topic.root_prompt.responses;
+				}
+			}
+			return topics;
 		} catch (error) {
 			logger.channel()?.error(`Error parsing JSON: ${error}`);
 			logger.channel()?.show();
