@@ -14,7 +14,7 @@ import path from 'path';
 
 const readFile = util.promisify(fs.readFile);
 
-async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
+export async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
     // Read the file
     let content = await readFile(symbolFile, 'utf-8');
 
@@ -96,9 +96,6 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 				break;
 			}
 		}
-		if (!symbol) {
-			continue;
-		}
 
 		const symbolName = symbol ? symbol.name : '';
 		const symbolLine = symbol ? symbol.range.start.line : 0;
@@ -144,7 +141,7 @@ export class SymbolRefAction implements Action {
 				"from": "content.content.line"
 			}, {
 				"name": "file", 
-				"description": 'File contain that symbol. This field is not required.', 
+				"description": 'File contain that symbol.', 
 				"type": "string", 
 				"required": true,
 				"from": "content.content.file"
