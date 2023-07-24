@@ -53,13 +53,13 @@ export default class ActionManager {
 	public static getInstance(): ActionManager {
 		if (!ActionManager.instance) {
 			ActionManager.instance = new ActionManager();
-		}
 
-		ActionManager.instance.registerAction(new CommandRunAction());
-		ActionManager.instance.registerAction(new SymbolRefAction());
-		ActionManager.instance.registerAction(new SymbolDefAction());
-		ActionManager.instance.registerAction(new AskInputAction());
-		ActionManager.instance.registerAction(new SymbolInFileAction());
+			ActionManager.instance.registerAction(new CommandRunAction());
+			ActionManager.instance.registerAction(new SymbolRefAction());
+			ActionManager.instance.registerAction(new SymbolDefAction());
+			ActionManager.instance.registerAction(new AskInputAction());
+			ActionManager.instance.registerAction(new SymbolInFileAction());
+		}
 
 		return ActionManager.instance;
 	}
