@@ -53,6 +53,7 @@ describe('CustomCommands', () => {
         description: 'Command 1',
         message: 'Command 1 message',
         default: false,
+		args: 0,
         show: true,
         instructions: ['instruction1', 'instruction2'],
       },
@@ -69,6 +70,7 @@ describe('CustomCommands', () => {
       description: 'Test command',
       message: 'Test message',
       default: false,
+	  args: 0,
       show: true,
       instructions: ['instruction1', 'instruction2'],
     };
@@ -84,6 +86,7 @@ describe('CustomCommands', () => {
       description: 'Test command',
       message: 'Test message',
       default: false,
+	  args: 0,
       show: true,
       instructions: ['instruction1', 'instruction2'],
     };
@@ -100,6 +103,7 @@ describe('CustomCommands', () => {
       description: 'Test command',
       message: 'Test message',
       default: false,
+	  args: 0,
       show: true,
       instructions: ['instruction1', 'instruction2'],
     };
@@ -116,6 +120,7 @@ describe('CustomCommands', () => {
       description: 'Test command',
       message: 'Test message "$1","$2"',
       default: false,
+	  args: 0,
       show: true,
       instructions: ['instruction1', 'instruction2'],
     };

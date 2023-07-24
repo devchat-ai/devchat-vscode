@@ -1,0 +1,68 @@
+DevChat has three types of extension, context, command, and action. 
+
+Context extension include two files: _setting_.json and handle.py. 
+_setting_.json like this:
+``` json
+{
+	"name": "demo_python",
+	"description": "Demo for python context",
+	"command": ["python", "${CurDir}/handle.py"]
+}
+```
+handle.py will print data to stdout as context to GPT.
+_setting_.json and handle.py are place in .chat/workflows/${extension_name}/context/${context_name}.
+
+command extension include one more files, _setting_.json is necessary.
+_setting_.json for command like this:
+``` json
+{
+	"pattern": "ft {{prompt}}",
+	"description": "Some test. $1 is xxx, $2 is xxx",
+	"message": "In the given code, eliminate the feature flags tied to the key '$1', while preserving the code associated with the '$2'return value. Also, maintain any other code not related to these feature flags. Ignore the defaultValue. Provide just the code, excluding any descriptions.",
+	"default": false,
+	"args": 2,
+	"instructions": []
+}
+```
+instructions is a list of files, like this file.
+in pattern field, "{{prompt}}" means this command needs user input. if command doesn't need user input, don't include space in this field.
+default is always false. 
+args means there are two arguments need user input.
+_setting_.json and ${instructions files} are place in .chat/workflows/${extension_name}/command/${command_name}.
+
+action extion include one more files, _setting_.json is necessary.
+_setting_.json for action like this:
+``` json
+{
+	"name": "new_file",
+	"description": "create new file with specified content",
+	"type": [
+		"*"
+	],
+	"args": [
+		{
+			"name": "fileName",
+			"description": "target file name to create",
+			"type": "string",
+			"from": "content.fileName"
+		},
+		{
+			"name": "content",
+			"description": "content to write to file",
+			"type": "string",
+			"as": "file",
+			"from": "content.content"
+		}
+	],
+	"action": "new_file",
+	"handler": [
+		"cp",
+		"${content}",
+		"${fileName}"
+	]
+}
+```
+"as": "file", it means content of this arg will save to a file, it will use the file name as arg value.
+`"type": ["*"]` means this action can suitable for any block type.
+`"from": "content.content"` means where this arg value is from. content has two fields, fileName and content. Depending on the block type, content.content may contain other required subfields. 
+_setting_.json is place in .chat/workflows/${extension_name}/action/${action_name}.

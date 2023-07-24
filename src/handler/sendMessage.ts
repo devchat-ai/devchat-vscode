@@ -15,12 +15,12 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 // return message: 
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
-export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	_lastMessage = message;
+export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, function_name: string|undefined = undefined): Promise<void> {
+	_lastMessage = [message, function_name];
 
-	const responseMessage = await sendMessageBase(message,  (data: { command: string, text: string, user: string, date: string}) => {
+	const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
 		MessageHandler.sendMessage(panel, data, false);
-	});
+	}, function_name);
 	if (responseMessage) {
 		MessageHandler.sendMessage(panel, responseMessage);
 	}
@@ -31,7 +31,7 @@ regInMessage({command: 'regeneration'});
 export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// call sendMessage to send last message again
 	if (_lastMessage) {
-		sendMessage(_lastMessage, panel);
+		sendMessage(_lastMessage[0], panel, _lastMessage[1]);
 	}
 }
 

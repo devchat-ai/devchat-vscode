@@ -12,6 +12,7 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import ChatContextManager from '../context/contextManager';
 import ActionManager from '../action/actionManager';
 import { getWaitCreateTopic } from '../handler/sendMessageBase';
+import { CustomActions } from '../action/customAction';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -37,6 +38,9 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			CustomCommands.getInstance().parseCommands(workflowsDir);
 			ChatContextManager.getInstance().loadCustomContexts(workflowsDir);
 			ActionManager.getInstance().loadCustomActions(workflowsDir);
+			
+			const actionInstrucFile = path.join(UiUtilWrapper.workspaceFoldersFirstPath()!, './.chat/functions.json');
+			ActionManager.getInstance().saveActionInstructionFile( actionInstrucFile);
 		}
 
 		this._view = webviewView;

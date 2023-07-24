@@ -65,7 +65,7 @@ export class TopicTreeDataProvider implements vscode.TreeDataProvider<TopicTreeI
         const items = this.items.filter(i => i.id === topicId);
         const topic = TopicManager.getInstance().getTopic(topicId);
         items.map((item) => {
-            item.label = topic?.name;
+            item.label = topic?.name ? topic.name : "new topic";
             item.date = topic?.lastUpdated;
         });
         this.sortItems();

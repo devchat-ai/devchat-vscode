@@ -42,7 +42,7 @@ function registerAskForCodeCommand(context: vscode.ExtensionContext) {
 			}
 
 			const selectedText = editor.document.getText(editor.selection);
-			await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText);
+			await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText, editor.selection.start.line);
 		}
 	};
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForCode', callback));
@@ -191,6 +191,14 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 			} else {
 				vscode.window.showErrorMessage('No file to apply diff result.');
 			}
+		})
+	);
+}
+
+export function TestDevChatCommand(context: vscode.ExtensionContext) {
+	context.subscriptions.push(
+		vscode.commands.registerCommand('devchat.', async () => {
+			TopicManager.getInstance().loadTopics();
 		})
 	);
 }

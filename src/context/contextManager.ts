@@ -9,7 +9,7 @@ import { UiUtilWrapper } from '../util/uiUtil';
 export interface ChatContext {
     name: string;
     description: string;
-    handler: () => Promise<string>;
+    handler: () => Promise<string[]>;
   }
   
   class ChatContextManager {
@@ -53,7 +53,7 @@ export interface ChatContext {
 					if (commandResult!.stderr) {
 						UiUtilWrapper.showErrorMessage(commandResult!.stderr);
 					}
-					return `[context|${outputFile}]`;
+					return [`[context|${outputFile}]`];
 				},
 			});
 		}
@@ -63,15 +63,14 @@ export interface ChatContext {
       return this.contexts;
     }
   
-    async processText(command: string): Promise<string> {
-        // 处理所有命令
+    async processText(command: string): Promise<string[]> {
         for (const contextObj of this.contexts) {
             if (contextObj.name === command) {
                 return await contextObj.handler();
             }
         }
       
-        return '';
+        return [];
     }
   }
   

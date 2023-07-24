@@ -3,7 +3,7 @@ import * as path from 'path';
 import { createTempSubdirectory, getLanguageIdByFileName } from '../util/commonUtil';
 import { UiUtilWrapper } from '../util/uiUtil';
 
-export async function handleCodeSelected(fileSelected: string, codeSelected: string) {
+export async function handleCodeSelected(fileSelected: string, codeSelected: string, startLine: number) {
     // get file name from fileSelected
     const fileName = path.basename(fileSelected);
 
@@ -22,6 +22,7 @@ export async function handleCodeSelected(fileSelected: string, codeSelected: str
     const data = {
 		languageId: languageId,
 		path: relativePath,
+		startLine: startLine,
 		content: codeSelected
 	};
 	const jsonData = JSON.stringify(data);

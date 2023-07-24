@@ -5,7 +5,8 @@ import messageHistory from '../util/messageHistory';
 import { TopicManager } from '../topic/topicManager';
 import CustomCommands from '../command/customCommand';
 
-let WaitCreateTopic = false;
+
+let waitCreateTopic = false;
 
 
 function parseDateStringToTimestamp(dateString: string): number {
@@ -24,7 +25,7 @@ function parseDateStringToTimestamp(dateString: string): number {
 }
 
 export function getWaitCreateTopic(): boolean {
-	return WaitCreateTopic;
+	return waitCreateTopic;
 }
 
 // Add this function to messageHandler.ts
@@ -94,19 +95,20 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 	}
 
 	chatOptions.header = getInstructionFiles();
-	if (message.text !== newText2) {
+	if ((parsedMessage.instruction && parsedMessage.instruction.length > 0) || newText2 !== message.text) {
 		chatOptions.header = parsedMessage.instruction;
 	}
 
 	if (parsedMessage.reference.length > 0) {
 		chatOptions.reference = parsedMessage.reference;
 	}
+
 	return parsedMessage;
 }
 
 
 export async function handleTopic(parentHash:string | undefined, message: any, chatResponse: ChatResponse) {
-	WaitCreateTopic = true;
+	waitCreateTopic = true;
 	try {
 		if (!chatResponse.isError) {
 			messageHistory.add({ request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
@@ -121,7 +123,7 @@ export async function handleTopic(parentHash:string | undefined, message: any, c
 			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], parseDateStringToTimestamp(chatResponse.date), message.text, chatResponse.response);
 		}
 	} finally {
-		WaitCreateTopic = false;
+		waitCreateTopic = false;
 	}
 }
 
@@ -138,9 +140,8 @@ export async function handlerResponseText(partialDataText: string, chatResponse:
 }
 
 // 重构后的sendMessage函数
-export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
+export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void, function_name: string| undefined = undefined): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
 	userStop = false;
-	
 	const chatOptions: any = {};
 	const parsedMessage = await parseMessageAndSetOptions(message, chatOptions);
 
@@ -148,6 +149,12 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 		chatOptions.parent = message.parent_hash;
 	}
 	logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
+
+	chatOptions.functions = "./.chat/functions.json";
+	if (function_name) {
+		chatOptions.function_name = function_name;
+		chatOptions.role = "function";
+	}
 
 	let partialDataText = '';
 	const onData = (partialResponse: ChatResponse) => {

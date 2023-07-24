@@ -19,6 +19,9 @@ export interface ChatOptions {
 	parent?: string;
 	reference?: string[];
 	header?: string[];
+	functions?: string;
+	role?: string;
+	function_name?: string;
 	context?: string[];
 }
 
@@ -41,11 +44,30 @@ export interface LogEntry {
 	}>;
 }
 
+// define TopicEntry interface
+/*
+[
+	{
+		root_prompt: LogEntry,
+		latest_time: 1689849274,
+		hidden: false,
+		title: null
+	}
+]
+*/
+export interface TopicEntry {
+	root_prompt: LogEntry;
+	latest_time: number;
+	hidden: boolean;
+	title: string | null;
+}
+
 export interface ChatResponse {
 	"prompt-hash": string;
 	user: string;
 	date: string;
 	response: string;
+	finish_reason: string;
 	isError: boolean;
 }
 
@@ -80,6 +102,14 @@ class DevChat {
 			}
 		}
 
+		if (options.functions) {
+			args.push("-f", options.functions);
+		}
+
+		if (options.function_name) {
+			args.push("-n", options.function_name);
+		}
+
 		if (options.parent) {
 			args.push("-p", options.parent);
 		}
@@ -96,6 +126,7 @@ class DevChat {
 				user: "",
 				date: "",
 				response: "",
+				finish_reason: "",
 				isError: isPartial ? false : true,
 			};
 		}
@@ -116,16 +147,27 @@ class DevChat {
 			}
 		}
 
+		let finishReasonLine = "";
+		for (let i = responseLines.length - 1; i >= 0; i--) {
+			if (responseLines[i].startsWith("finish_reason:")) {
+				finishReasonLine = responseLines[i];
+				responseLines.splice(i, 1);
+				break;
+			}
+		}
+
 		if (!promptHashLine) {
 			return {
 				"prompt-hash": "",
 				user: user,
 				date: date,
 				response: responseLines.join("\n"),
+				finish_reason: "",
 				isError: isPartial ? false : true,
 			};
 		}
 
+		const finishReason = finishReasonLine.split(" ")[1];
 		const promptHash = promptHashLine.split(" ")[1];
 		const response = responseLines.join("\n");
 
@@ -134,6 +176,7 @@ class DevChat {
 			user,
 			date,
 			response,
+			finish_reason: finishReason,
 			isError: false,
 		};
 	}
@@ -218,6 +261,7 @@ class DevChat {
 					user: "",
 					date: "",
 					response: stderr,
+					finish_reason: "",
 					isError: true,
 				};
 			}
@@ -230,6 +274,7 @@ class DevChat {
 				user: "",
 				date: "",
 				response: `Error: ${error.stderr}\nExit code: ${error.code}`,
+				finish_reason: "",
 				isError: true,
 			};
 		}
@@ -296,10 +341,15 @@ class DevChat {
 			return [];
 		}
 
-		return JSON.parse(stdout.trim()).reverse();
+		const logs = JSON.parse(stdout.trim()).reverse();
+		for (const log of logs) {
+			log.response = log.responses[0];
+			delete log.responses;
+		}
+		return logs;
 	}
 
-	async topics(): Promise<LogEntry[]> {
+	async topics(): Promise<TopicEntry[]> {
 		const args = ["topic", "-l"];
 		const devChat = this.getDevChatPath();
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
@@ -322,7 +372,16 @@ class DevChat {
 		}
 
 		try {
-			return JSON.parse(stdout.trim()).reverse();
+			const topics = JSON.parse(stdout.trim()).reverse();
+			// convert responses to respose, and remove responses field
+			// responses is in TopicEntry.root_prompt.responses
+			for (const topic of topics) {
+				if (topic.root_prompt.responses) {
+					topic.root_prompt.response = topic.root_prompt.responses[0];
+					delete topic.root_prompt.responses;
+				}
+			}
+			return topics;
 		} catch (error) {
 			logger.channel()?.error(`Error parsing JSON: ${error}`);
 			logger.channel()?.show();

@@ -1,6 +1,18 @@
 import * as vscode from 'vscode';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
+import ActionManager from '../action/actionManager';
+import { MessageHandler } from './messageHandler';
+import { sendMessage } from './sendMessage';
+import { logger } from '../util/logger';
 
+function compressText(text: string, maxLength: number): string {
+	if (text.length <= maxLength) {
+	  return text;
+	}
+  
+	const halfLength = Math.floor(maxLength / 2);
+	return text.slice(0, halfLength) + " ... " + text.slice(-halfLength);
+}
 
 async function replaceFileContent(uri: vscode.Uri, newContent: string) {
 	try {

@@ -70,6 +70,13 @@ export const chatSlice = createSlice({
                 parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
             });
         },
+		startSystemMessage: (state, action) => {
+			state.generating = true;
+            state.responsed = false;
+            state.hasDone = false;
+            state.errorMessage = '';
+            state.currentMessage = '';
+		},
         reGenerating: (state) => {
             state.generating = true;
             state.responsed = false;
@@ -184,6 +191,7 @@ export const selectIsLastPage = (state: RootState) => state.chat.isLastPage;
 
 export const {
     startGenerating,
+	startSystemMessage,
     stopGenerating,
     reGenerating,
     startResponsing,

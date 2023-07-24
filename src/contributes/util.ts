@@ -14,8 +14,8 @@ export async function sendFileSelectMessage(panel: vscode.WebviewPanel|vscode.We
 }
 
 regOutMessage({command: 'appendContext', context: ''});
-export async function sendCodeSelectMessage(panel: vscode.WebviewPanel|vscode.WebviewView, filePath: string, codeBlock: string): Promise<void> {
+export async function sendCodeSelectMessage(panel: vscode.WebviewPanel|vscode.WebviewView, filePath: string, codeBlock: string, startLine: number): Promise<void> {
 	logger.channel()?.info(`File selected: ${filePath}`);
-	const codeContext = await handleCodeSelected(filePath, codeBlock);
+	const codeContext = await handleCodeSelected(filePath, codeBlock, startLine);
 	MessageHandler.sendMessage(panel, { command: 'appendContext', context: codeContext });
 }

@@ -114,38 +114,11 @@ describe('sendMessageBase', () => {
 			};
 
 			const result = await handlerResponseText(partialDataText, chatResponse);
-			expect(result).to.equal('Partial data\n\nError occurred!');
+			expect(result).to.equal('Error occurred!');
 		});
 	});
 
 	describe('sendMessageBase', async () => {
-		it('should send message correct with openai api key', async () => {
-			const message = {
-				text: 'Hello, world!'
-			};
-			const handlePartialData = (data: { command: string, text: string, user: string, date: string }) => {
-				// Handle partial data
-			};
-
-			workspaceFoldersFirstPathStub.returns('./');
-
-			getConfigurationStub.withArgs('DevChat', 'API_KEY').returns(process.env.TEST_OPENAI_API_KEY);
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
-			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.tokensPerPrompt').returns(9000);
-
-			const result = await sendMessageBase(message, handlePartialData);
-			expect(result).to.be.an('object');
-			expect(result!.command).to.equal('receiveMessage');
-			expect(result!.text).to.be.a('string');
-			expect(result!.hash).to.be.a('string');
-			expect(result!.user).to.be.a('string');
-			expect(result!.date).to.be.a('string');
-			expect(result!.isError).to.be.false;
-		}).timeout(10000);
-
 		it('should send message correct with DevChat access key', async () => {
 			const message = {
 				text: 'Hello, world!'

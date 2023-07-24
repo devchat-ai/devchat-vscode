@@ -18,6 +18,6 @@ export const gitDiffContext: ChatContext = {
 
 	logger.channel()?.debug(`  stdout:`, result.stdout);
 	logger.channel()?.debug(`  stderr:`, result.stderr);
-    return `[context|${diffFile}]`;
+    return [`[context|${diffFile}]`];
   },
 };

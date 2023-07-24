@@ -59,7 +59,7 @@ describe('ApiKeyManager', () => {
       sinon.stub(UiUtilWrapper, 'getConfiguration').returns(undefined);
 
       const endPoint = ApiKeyManager.getEndPoint('DC.key');
-      expect(endPoint).to.equal('https://xw4ymuy6qj.ap-southeast-1.awsapprunner.com/api/v1');
+      expect(endPoint).to.equal('https://api.devchat.ai/v1');
     });
   });
 

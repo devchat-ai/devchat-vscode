@@ -77,9 +77,8 @@ export async function loadTopicHistoryLogs(topicId: string | undefined) : Promis
 		topic: topic.firstMessageHash
 	};
 	const logEntries = await devChat.log(logOptions);
-	const logEntriesFlat = logEntries.flat();
 
-	return logEntriesFlat;
+	return logEntries;
 }
 
 export function updateCurrentMessageHistory(topicId: string, logEntries: Array<LogEntry>): void {
