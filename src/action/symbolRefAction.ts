@@ -46,14 +46,17 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 	if (!symbolPosition) {
 		return [];
 	}
-
+	
 	// get all references of symbol
 	const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 		'vscode.executeReferenceProvider',
 		vscode.Uri.file(symbolFile),
 		symbolPosition
 	);
-
+	if (!refLocations) {
+		return [];
+	}
+	
 	// get related source lines
 	let contextList: Set<string> = new Set();
 	for (const refLocation of refLocations) {
@@ -70,13 +73,18 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 			'vscode.executeDocumentSymbolProvider',
 			refLocation.uri
 		);
+		if (!symbolsT) {
+			continue;
+		}
 		let symbolsList: vscode.DocumentSymbol[] = [];
 		const visitSymbol = (symbol: vscode.DocumentSymbol) => {
 			symbolsList.push(symbol);
-			for (const child of symbol.children) {
-				visitSymbol(child);
+			if (symbol.children) {
+				for (const child of symbol.children) {
+					visitSymbol(child);
+				}
 			}
-		}
+		};
 		for (const symbol of symbolsT) {
 			visitSymbol(symbol);
 		}
@@ -87,6 +95,9 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 				symbol = symbolT;
 				break;
 			}
+		}
+		if (!symbol) {
+			continue;
 		}
 
 		const symbolName = symbol ? symbol.name : '';
