@@ -22,10 +22,13 @@ import {
     onMessagesTop,
     onMessagesMiddle,
     fetchHistoryMessages,
+	newMessage,
+	startSystemMessage,
 } from './chatSlice';
 
 import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
+import { clearContexts, setValue } from './inputSlice';
 
 const RegenerationButton = () => {
     const dispatch = useAppDispatch();
@@ -130,6 +133,16 @@ const chatPanel = () => {
                 dispatch(happendError(message.text));
             }
         });
+
+		messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
+            dispatch(newMessage({ type: 'system', message: message.text}));
+            // start generating
+            dispatch(startSystemMessage(message.text));
+            // Clear the input field
+            dispatch(setValue(''));
+            dispatch(clearContexts());
+        });
+
         timer.start();
         return () => {
             timer.clear();
