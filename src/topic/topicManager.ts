@@ -117,7 +117,7 @@ export class TopicManager {
 
 	deleteMessage(topicId: string, messageHash: string): void {
 		const topic = this._topics[topicId];
-		if (topic) {
+		if (topic && messageHash === topic.firstMessageHash) {
 			topic.updateFirstMessageHashAndName(undefined, undefined);
 			topic.lastMessageHash = undefined;
 			this._notifyUpdateTopicListeners(topicId);
