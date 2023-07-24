@@ -2,9 +2,6 @@
 import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Container, Text } from "@mantine/core";
-import {
-    selectResponsed,
-} from './chatSlice';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import CodeBlock from "@/views/CodeBlock";
 
@@ -14,7 +11,7 @@ import {
     selectGenerating,
     selectCurrentMessage,
     selecLastMessage,
-    selecHasDone,
+    selectResponsed,
 } from './chatSlice';
 
 const MessageBlink = () => {
@@ -61,7 +58,7 @@ const CurrentMessage = (props: any) => {
     const currentMessage = useAppSelector(selectCurrentMessage);
     const lastMessage = useAppSelector(selecLastMessage);
     const generating = useAppSelector(selectGenerating);
-    const hasDone = useAppSelector(selecHasDone);
+    const responsed = useAppSelector(selectResponsed);
 
     // split blocks
     const messageBlocks = getBlocks(currentMessage);
@@ -75,17 +72,13 @@ const CurrentMessage = (props: any) => {
             // new a bot message
             dispatch(newMessage({ type: 'bot', message: currentMessage }));
         }
-        if (hasDone) {
-            // update the last one bot message
-            dispatch(updateLastMessage({ type: 'bot', message: currentMessage }));
-        }
-    }, [generating, hasDone]);
+    }, [generating]);
 
     useEffect(() => {
-        if (receivedCount - fixedCount >= 1) {
+        if (receivedCount - fixedCount >= 1 || !responsed) {
             dispatch(updateLastMessage({ type: 'bot', message: currentMessage }));
         }
-    }, [currentMessage]);
+    }, [currentMessage, responsed]);
 
     return generating
         ? <Container
