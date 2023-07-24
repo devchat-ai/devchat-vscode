@@ -108,7 +108,7 @@ export async function parseMessageAndSetOptions(message: any, chatOptions: any):
 
 
 export async function handleTopic(parentHash:string | undefined, message: any, chatResponse: ChatResponse) {
-	WaitCreateTopic = true;
+	waitCreateTopic = true;
 	try {
 		if (!chatResponse.isError) {
 			messageHistory.add({ request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
