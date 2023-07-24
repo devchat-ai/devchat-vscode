@@ -28,7 +28,7 @@ describe('handleCodeSelected', () => {
     const fileSelected = path.join(__dirname, 'testFile.ts');
     const codeSelected = 'console.log("Hello, world!");';
 
-    const contextFile = await handleCodeSelected(fileSelected, codeSelected);
+    const contextFile = await handleCodeSelected(fileSelected, codeSelected, 0);
 
     // Check if the mocked functions were called with the correct arguments
     expect(languageIdStub.calledWith(fileSelected)).to.be.true;

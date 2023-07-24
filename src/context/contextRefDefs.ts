@@ -63,7 +63,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 	const selection = activeEditor!.selection;
 	const selectedText = document.getText(selection);
 
-	let contextList: string[] = [await handleCodeSelected(activeEditor!.document.uri.fsPath, selectedText)];
+	let contextList: string[] = [await handleCodeSelected(activeEditor!.document.uri.fsPath, selectedText, selection.start.line)];
 	let hasVisitedSymbols: Set<string> = new Set();
 
 	// visit each symbol in symbolList, and get it's define
@@ -138,9 +138,9 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 
 						if (targetSymbol.kind === vscode.SymbolKind.Variable) {
 							const renageNew = new vscode.Range(targetSymbol.range.start.line, 0, targetSymbol.range.end.line, 10000);
-							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(renageNew)));
+							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
 						} else {
-							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(targetSymbol.range)));
+							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
 						}
 					}
 				}
@@ -153,7 +153,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 
 export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
-	description: 'Context of symbol definition in selected text',
+	description: 'Definitions of symbol',
 	handler: async () => {
 		const selectedText = await getCurrentSelectText();
 		const symbolList = await getUndefinedSymbols(selectedText);

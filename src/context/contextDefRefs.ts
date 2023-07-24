@@ -53,7 +53,7 @@ async function getSelectedSymbol(): Promise<vscode.DocumentSymbol | undefined> {
 
 export const defRefsContext: ChatContext = {
 	name: 'symbol references',
-	description: 'The context where the selected symbol is referenced',
+	description: 'References of symble',
 	handler: async () => {
 		const activeEditor = vscode.window.activeTextEditor;
 		if (!activeEditor) {
@@ -91,8 +91,9 @@ export const defRefsContext: ChatContext = {
 				const refLocationFile = refLocation.uri.fsPath;
 				const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
 
-				const renageNew = new vscode.Range(refLocation.range.start.line - 2, 0, refLocation.range.end.line + 2, 10000);
-				contextList.push(await handleCodeSelected(refLocationFile, documentNew.getText(renageNew)));
+				const startLine = refLocation.range.start.line - 2 > 0 ? refLocation.range.start.line - 2 : 0;
+				const renageNew = new vscode.Range(startLine, 0, refLocation.range.end.line + 2, 10000);
+				contextList.push(await handleCodeSelected(refLocationFile, documentNew.getText(renageNew), startLine));
 			}
 		}
 		return contextList;

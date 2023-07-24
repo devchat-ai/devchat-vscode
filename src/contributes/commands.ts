@@ -42,7 +42,7 @@ function registerAskForCodeCommand(context: vscode.ExtensionContext) {
 			}
 
 			const selectedText = editor.document.getText(editor.selection);
-			await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText);
+			await sendCodeSelectMessage(ExtensionContextHolder.provider?.view()!, editor.document.fileName, selectedText, editor.selection.start.line);
 		}
 	};
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForCode', callback));
