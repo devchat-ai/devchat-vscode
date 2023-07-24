@@ -29,7 +29,13 @@ async function findSymbolInWorkspace(symbolName: string) {
 					for (const symbol of newSymbolList) {
 						if (symbol.name === symbolName) {
 							const documentNew = await vscode.workspace.openTextDocument(fileUri);
-							defList.push(documentNew.getText(symbol.range));
+
+							const data = {
+								path: fileUri,
+								start_line: symbol.range.start.line,
+								content: documentNew.getText(symbol.range)
+							};
+							defList.push(JSON.stringify(data));
 						}
 					}
 				}
