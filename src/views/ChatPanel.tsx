@@ -1,16 +1,15 @@
 import * as React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
-import { Button } from '@mantine/core';
-import { useListState, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
-import { IconPlayerStop, IconRotateDot } from '@tabler/icons-react';
+import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import CurrentMessage from "@/views/CurrentMessage";
+import StopButton from '@/views/StopButton';
+import RegenerationButton from '@/views/RegenerationButton';
 
 import {
-    reGenerating,
     stopGenerating,
     startResponsing,
     happendError,
@@ -30,57 +29,6 @@ import InputMessage from './InputMessage';
 import MessageContainer from './MessageContainer';
 import { clearContexts, setValue } from './inputSlice';
 
-const RegenerationButton = () => {
-    const dispatch = useAppDispatch();
-    return (<Button
-        size='xs'
-        leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
-        sx={{
-            backgroundColor: 'var(--vscode-button-background)',
-        }}
-        styles={{
-            icon: {
-                color: 'var(--vscode-button-foreground)'
-            },
-            label: {
-                color: 'var(--vscode-button-foreground)',
-                fontSize: 'var(--vscode-editor-font-size)',
-            }
-        }}
-        onClick={() => dispatch(reGenerating())}
-        variant="white" >
-        Regeneration
-    </Button >);
-};
-
-const StopButton = () => {
-    const dispatch = useAppDispatch();
-    return (
-        <Button
-            size='xs'
-            leftIcon={<IconPlayerStop color='var(--vscode-button-foreground)' />}
-            sx={{
-                backgroundColor: 'var(--vscode-button-background)',
-            }}
-            styles={{
-                icon: {
-                    color: 'var(--vscode-button-foreground)'
-                },
-                label: {
-                    color: 'var(--vscode-button-foreground)',
-                    fontSize: 'var(--vscode-editor-font-size)',
-                }
-            }}
-            onClick={() => {
-                dispatch(stopGenerating({ hasDone: false, message: null }));
-                messageUtil.sendMessage({
-                    command: 'stopDevChat'
-                });
-            }}
-            variant="white">
-            Stop generating
-        </Button>);
-};
 
 const chatPanel = () => {
     const dispatch = useAppDispatch();
