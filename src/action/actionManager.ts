@@ -8,6 +8,7 @@ import { logger } from '../util/logger';
 import { SymbolRefAction } from './symbolRefAction';
 import { SymbolDefAction } from './symbolDefAction';
 import { AskInputAction } from './askInputAction';
+import { SymbolInFileAction } from './symbolInFileAction';
 
 
 // extend Action
@@ -58,6 +59,7 @@ export default class ActionManager {
 		ActionManager.instance.registerAction(new SymbolRefAction());
 		ActionManager.instance.registerAction(new SymbolDefAction());
 		ActionManager.instance.registerAction(new AskInputAction());
+		ActionManager.instance.registerAction(new SymbolInFileAction());
 
 		return ActionManager.instance;
 	}
@@ -170,7 +172,7 @@ export default class ActionManager {
 	}
 
 	public actionInstruction(): string {
-		let functionsDefList = []
+		let functionsDefList : {[key: string]: any}[] = [];
 		for (const action of this.actions) {
 			try {
 				if (action.name === "command_run") {
