@@ -9,6 +9,8 @@ import { SymbolRefAction } from './symbolRefAction';
 import { SymbolDefAction } from './symbolDefAction';
 import { AskInputAction } from './askInputAction';
 import { SymbolInFileAction } from './symbolInFileAction';
+import { CurrentDocumentAction } from './currentDocumentAction';
+import { SelectContextAction } from './selectContextAction';
 
 
 // extend Action
@@ -59,6 +61,8 @@ export default class ActionManager {
 			ActionManager.instance.registerAction(new SymbolDefAction());
 			ActionManager.instance.registerAction(new AskInputAction());
 			ActionManager.instance.registerAction(new SymbolInFileAction());
+			ActionManager.instance.registerAction(new CurrentDocumentAction());
+			ActionManager.instance.registerAction(new SelectContextAction());
 		}
 
 		return ActionManager.instance;
