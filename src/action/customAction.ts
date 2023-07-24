@@ -16,7 +16,7 @@ export interface Action {
 }
 
 // generate instruction for action
-export function getActionInstruction(action: Action): any {
+export function getActionInstruction(action: Action): { name: string, description: string, parameters: any } {
 	logger.channel()?.info(`Action Name: ${action.name}`);
 	const actionSchema = {
 		name: action.name,
