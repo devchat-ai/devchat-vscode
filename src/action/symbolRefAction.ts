@@ -7,75 +7,99 @@ import { CommandResult } from '../util/commonUtil';
 import { logger } from '../util/logger';
 import { handleCodeSelected } from '../context/contextCodeSelected';
 
+import * as fs from 'fs';
+import * as util from 'util';
+import { UiUtilWrapper } from '../util/uiUtil';
+import path from 'path';
 
-async function findSymbolInWorkspace(symbolName: string, symbolType: string, symbolFile: string): Promise<string[]> {
-	// const workspaceSymbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-	// 	'vscode.executeWorkspaceSymbolProvider',
-	// 	symbolName
-	// );
-	
-	// let refList: string[] = [];
-	// for (const symbol of workspaceSymbols) {
-	// 	const refLocationFile = symbol.location.uri.fsPath;
+const readFile = util.promisify(fs.readFile);
 
-	// 	const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
-	// 	const rangeNew = new vscode.Range(symbol.location.range.start.line, 0, symbol.location.range.end.line + 4, 10000);
-		
-	// 	const data = {
-	// 		path: refLocationFile,
-	// 		start_line: symbol.location.range.start.line,
-	// 		content: documentNew.getText(rangeNew)
-	// 	};
-	// 	refList.push( JSON.stringify(data) );
-	// }
-	// return refList;
-	
-	
-	// 通过vscode.commands.executeCommand执行相关命令，获取当前工作区中对应的符号定义信息
-	const symbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>(
-		'vscode.executeWorkspaceSymbolProvider', 
-		symbolName
-	);
+async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
+    // Read the file
+    let content = await readFile(symbolFile, 'utf-8');
 
-	if (!(symbols && symbols.length > 0)) {
+    // Split the content into lines
+    let lines = content.split('\n');
+
+    // Check if the line number is valid
+    if (symbolLine < 0 || symbolLine >= lines.length) {
+        return undefined;
+    }
+
+    // Get the line text
+	let symbolIndex = -1;
+	for (let i = symbolLine; i < lines.length; i++) {
+		let lineText = lines[i];
+
+		// Find the symbol in the line
+		symbolIndex = lineText.indexOf(symbolName);
+		if (symbolIndex > -1) {
+			return new vscode.Position(i, symbolIndex);
+		}
+	}
+
+    return undefined;
+}
+
+async function findSymbolInWorkspace(symbolName: string, symbolline: number, symbolFile: string): Promise<string[]> {
+	const symbolPosition = await getSymbolPosition(symbolName, symbolline, symbolFile);
+	if (!symbolPosition) {
 		return [];
 	}
 
-	// handle symbol in symbols
-	let contextList: Set<string> = new Set();
+	// get all references of symbol
+	const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
+		'vscode.executeReferenceProvider',
+		vscode.Uri.file(symbolFile),
+		symbolPosition
+	);
 
-	for (const symbol of symbols) {
-		if (symbol.name !== symbolName) {
-			continue;
+	// get related source lines
+	let contextList: Set<string> = new Set();
+	for (const refLocation of refLocations) {
+		const refLocationFile = refLocation.uri.fsPath;
+
+		// calculate the line number, if refLocation.range.start.line - 2 < 0, then set it to 0
+		const startLine = refLocation.range.start.line - 2 < 0 ? 0 : refLocation.range.start.line - 2;
+
+		const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
+		const rangeNew = new vscode.Range(startLine, 0, refLocation.range.end.line + 2, 10000);
+		
+		// get symbol define in symbolFile
+		const symbolsT: vscode.DocumentSymbol[] = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+			'vscode.executeDocumentSymbolProvider',
+			refLocation.uri
+		);
+		let symbolsList: vscode.DocumentSymbol[] = [];
+		const visitSymbol = (symbol: vscode.DocumentSymbol) => {
+			symbolsList.push(symbol);
+			for (const child of symbol.children) {
+				visitSymbol(child);
+			}
 		}
-		if (symbolType &&  symbol.kind !== (<any>vscode.SymbolKind)[symbolType]) {
-			continue;
-		}
-		if (symbolFile && symbol.location.uri.fsPath.endsWith(symbolFile)) {
-			continue;
+		for (const symbol of symbolsT) {
+			visitSymbol(symbol);
 		}
 		
-		// get all references of symbol
-		const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
-			'vscode.executeReferenceProvider',
-			symbol.location.uri,
-			symbol.location.range.start
-		);
-
-		// get related source lines
-		for (const refLocation of refLocations) {
-			const refLocationFile = refLocation.uri.fsPath;
-
-			const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
-			const rangeNew = new vscode.Range(refLocation.range.start.line, 0, refLocation.range.end.line + 4, 10000);
-			
-			const data = {
-				path: refLocationFile,
-				start_line: refLocation.range.start.line,
-				content: documentNew.getText(rangeNew)
-			};
-			contextList.add(JSON.stringify(data));
+		let symbol: vscode.DocumentSymbol | undefined = undefined;
+		for (const symbolT of symbolsList.reverse()) {
+			if (symbolT.range.contains(refLocation.range)) {
+				symbol = symbolT;
+				break;
+			}
 		}
+
+		const symbolName = symbol ? symbol.name : '';
+		const symbolLine = symbol ? symbol.range.start.line : 0;
+
+		const data = {
+			path: refLocationFile,
+			start_line: startLine,
+			content: documentNew.getText(rangeNew),
+			parentDefine: symbolName,
+			parentDefineStartLine: symbolLine
+		};
+		contextList.add(JSON.stringify(data));
 	}
 
 	return Array.from(contextList);
@@ -86,7 +110,7 @@ export class SymbolRefAction implements Action {
 	type: string[];
 	action: string;
 	handler: string[];
-	args: { "name": string, "description": string, "type": string, "as"?: string, "from": string }[];
+	args: { "name": string, "description": string, "type": string, "as"?: string, "required": boolean, "from": string }[];
 
 	constructor() {
 		this.name = 'symbol_ref';
@@ -99,16 +123,19 @@ export class SymbolRefAction implements Action {
 				"name": "symbol", 
 				"description": "The symbol variable specifies the symbol for which reference information is to be retrieved.", 
 				"type": "string", 
+				"required": true,
 				"from": "content.content.symbol"
 			}, {
-				"name": "type", 
-				"description": 'Symbol type. value is one of ["File", "Module", "Namespace", "Package", "Class", "Method","Property","Field","Constructor","Enum","Interface","Function","Variable","Constant","String","Number","Boolean","Array","Object","Key","Null","EnumMember","Struct","Event","Operator","TypeParameter"]', 
-				"type": "string", 
-				"from": "content.content.type"
+				"name": "line", 
+				"description": 'The line variable specifies the line number of the symbol for which reference information is to be retrieved.', 
+				"type": "number", 
+				"required": true,
+				"from": "content.content.line"
 			}, {
 				"name": "file", 
 				"description": 'File contain that symbol. This field is not required.', 
 				"type": "string", 
+				"required": true,
 				"from": "content.content.file"
 			}
 		];
@@ -117,11 +144,17 @@ export class SymbolRefAction implements Action {
 	async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
 		try {
 			const symbolName = args.symbol;
-			const symbolType = args.type;
-			const symbolFile = args.file;
+			const symbolLine = args.line;
+			let symbolFile = args.file;
+
+			// if symbolFile is not absolute path, then get it's absolute path
+			if (!path.isAbsolute(symbolFile)) {
+				const basePath = UiUtilWrapper.workspaceFoldersFirstPath();
+				symbolFile = path.join(basePath!, symbolFile);
+			}
 
 			// get reference information
-			const refList = await findSymbolInWorkspace(symbolName, symbolType, symbolFile);
+			const refList = await findSymbolInWorkspace(symbolName, symbolLine, symbolFile);
 
 			return {exitCode: 0, stdout: JSON.stringify(refList), stderr: ""};
 		} catch (error) {
