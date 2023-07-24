@@ -14,7 +14,7 @@ import path from 'path';
 
 const readFile = util.promisify(fs.readFile);
 
-async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
+export async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
     // Read the file
     let content = await readFile(symbolFile, 'utf-8');
 
@@ -46,14 +46,17 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 	if (!symbolPosition) {
 		return [];
 	}
-
+	
 	// get all references of symbol
 	const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 		'vscode.executeReferenceProvider',
 		vscode.Uri.file(symbolFile),
 		symbolPosition
 	);
-
+	if (!refLocations) {
+		return [];
+	}
+	
 	// get related source lines
 	let contextList: Set<string> = new Set();
 	for (const refLocation of refLocations) {
@@ -70,13 +73,18 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 			'vscode.executeDocumentSymbolProvider',
 			refLocation.uri
 		);
+		if (!symbolsT) {
+			continue;
+		}
 		let symbolsList: vscode.DocumentSymbol[] = [];
 		const visitSymbol = (symbol: vscode.DocumentSymbol) => {
 			symbolsList.push(symbol);
-			for (const child of symbol.children) {
-				visitSymbol(child);
+			if (symbol.children) {
+				for (const child of symbol.children) {
+					visitSymbol(child);
+				}
 			}
-		}
+		};
 		for (const symbol of symbolsT) {
 			visitSymbol(symbol);
 		}
@@ -133,7 +141,7 @@ export class SymbolRefAction implements Action {
 				"from": "content.content.line"
 			}, {
 				"name": "file", 
-				"description": 'File contain that symbol. This field is not required.', 
+				"description": 'File contain that symbol.', 
 				"type": "string", 
 				"required": true,
 				"from": "content.content.file"
