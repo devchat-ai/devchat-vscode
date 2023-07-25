@@ -14,8 +14,45 @@ import path from 'path';
 
 const readFile = util.promisify(fs.readFile);
 
+
+async function isCorrectIndexSymbol(filename: string, position: vscode.Position, symbolName: string): Promise< boolean > {
+	const defLocations = await vscode.commands.executeCommand<any[]>(
+		'vscode.executeDefinitionProvider',
+		vscode.Uri.file(filename),
+		position
+	);
+	if (!defLocations) {
+		return false;
+	}
+
+	for (const defLocation of defLocations) {
+		let range = undefined;
+		let uri = undefined;
+		if (defLocation.targetSelectionRange) {
+			range = defLocation.targetSelectionRange;
+			uri = defLocation.targetUri;
+		} else if (defLocation.targetRange) {
+			range = defLocation.targetRange;
+			uri = defLocation.targetUri;
+		} else {
+			range = defLocation.range;
+			uri = defLocation.uri;
+		}
+		if (!range) {
+			continue;
+		}
+
+		const documentNew = await vscode.workspace.openTextDocument(uri);
+		const sbName = await documentNew.getText(range);
+		if (sbName === symbolName) {
+			return true;
+		}
+	}
+	return false;
+}
+
 export async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
-    // Read the file
+	// Read the file
     let content = await readFile(symbolFile, 'utf-8');
 
     // Split the content into lines
@@ -28,13 +65,21 @@ export async function getSymbolPosition(symbolName: string, symbolLine: number, 
 
     // Get the line text
 	let symbolIndex = -1;
-	for (let i = symbolLine; i < lines.length; i++) {
+	const maxLine = lines.length < symbolLine + 6 ? lines.length : symbolLine + 6;
+	for (let i = symbolLine; i < maxLine; i++) {
 		let lineText = lines[i];
 
 		// Find the symbol in the line
-		symbolIndex = lineText.indexOf(symbolName);
-		if (symbolIndex > -1) {
-			return new vscode.Position(i, symbolIndex);
+		let lineOffsetPos = -1;
+		while (true) {
+			symbolIndex = lineText.indexOf(symbolName, lineOffsetPos+1);
+			if (symbolIndex > -1 && await isCorrectIndexSymbol(symbolFile, new vscode.Position(i, symbolIndex), symbolName)) {
+				return new vscode.Position(i, symbolIndex);
+			}
+			if (symbolIndex === -1) {
+				break;
+			}
+			lineOffsetPos = symbolIndex;
 		}
 	}
 
@@ -46,7 +91,7 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 	if (!symbolPosition) {
 		return [];
 	}
-	
+
 	// get all references of symbol
 	const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 		'vscode.executeReferenceProvider',
@@ -74,6 +119,7 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 			refLocation.uri
 		);
 		if (!symbolsT) {
+			logger.channel()?.info(`Symbol ref continue...`);
 			continue;
 		}
 		let symbolsList: vscode.DocumentSymbol[] = [];
@@ -109,7 +155,7 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 		};
 		contextList.add(JSON.stringify(data));
 	}
-
+	
 	return Array.from(contextList);
 }
 export class SymbolRefAction implements Action {
