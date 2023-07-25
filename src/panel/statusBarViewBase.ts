@@ -92,18 +92,16 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		}, undefined, undefined);
 
 		// UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} "${UiUtilWrapper.extensionPath() + "/tools/install.py"}"`);
-		if (errorInstall) {
-			devchatStatus = 'An error occurred during the installation of DevChat';
-		} else {
-			// ==> devchatCommandEnv:  /Users/admin/work/devchat-vscode/tools/devchat/bin/devchat
-			const devchatCommandEnv = installLogs.match(/devchatCommandEnv:  (.*)/)?.[1];
+		const devchatCommandEnv = installLogs.match(/devchatCommandEnv:  (.*)/)?.[1];
+		if (devchatCommandEnv) {
 			logger.channel()?.info(`devchatCommandEnv: ${devchatCommandEnv}`);
-			if (devchatCommandEnv) {
-				UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommandEnv);
-			}
-			
+			await UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommandEnv);
 			devchatStatus = 'DevChat has been installed';
+		} else {
+			logger.channel()?.info(`devchatCommandEnv: undefined`);
+			devchatStatus = 'An error occurred during the installation of DevChat';
 		}
+
 		isVersionChangeCompare = true;
 	}
 
