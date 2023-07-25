@@ -34,7 +34,7 @@ export function checkDevChatDependency(pythonCommand: string, showError: boolean
 		const expectVersion = 'DevChat 0.2.0';
 		const devchatVersion = runCommand(`"${devChat}" --version`).toString().trim();
 		if (devchatVersion < expectVersion) {
-			logger.channel()?.info("devchat version: ${devchatVersion}, but expect version: ${expectVersion}");
+			logger.channel()?.info(`devchat version: ${devchatVersion}, but expect version: ${expectVersion}`);
 			return false;
 		}
 

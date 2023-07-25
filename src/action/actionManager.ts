@@ -10,7 +10,7 @@ import { SymbolDefAction } from './symbolDefAction';
 import { AskInputAction } from './askInputAction';
 import { SymbolInFileAction } from './symbolInFileAction';
 import { CurrentDocumentAction } from './currentDocumentAction';
-import { SelectContextAction } from './selectContextAction';
+import { SelectTextAction, SelectBlockAction } from './selectContextAction';
 
 
 // extend Action
@@ -62,7 +62,8 @@ export default class ActionManager {
 			ActionManager.instance.registerAction(new AskInputAction());
 			ActionManager.instance.registerAction(new SymbolInFileAction());
 			ActionManager.instance.registerAction(new CurrentDocumentAction());
-			ActionManager.instance.registerAction(new SelectContextAction());
+			ActionManager.instance.registerAction(new SelectTextAction());
+			ActionManager.instance.registerAction(new SelectBlockAction());
 		}
 
 		return ActionManager.instance;
