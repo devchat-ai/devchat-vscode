@@ -1,6 +1,8 @@
 import os
 import subprocess
 import sys
+import tempfile
+
 
 # replace python3 with sys.executable, we will do everything in the same envrionment
 pythonCommand = sys.executable
@@ -40,25 +42,17 @@ def pip_cmd_run(pipcmd, with_user: bool, with_local_source: bool):
         pipcmd.append("-i")
         pipcmd.append("https://pypi.tuna.tsinghua.edu.cn/simple")
         
-    file = open('test.txt', 'wb')
-    try:
-        # before command run, output runnning command
-        print("run command: ", *pipcmd)
-        subprocess.run(pipcmd, check=True,     stdout=sys.stdout, stderr=file, text=True)
-        
-        file.close()
-        os.remove('test.txt')
-        return True, ''
-    except Exception as error:
-        file.flush()
-        file.close()
-        file = open('test.txt', 'rb')
-        error_out = file.read()
-        file.close()
-        os.remove('test.txt')
-        
-        print(error)
-        return False, error_out
+    with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+        try:
+            # before command run, output runnning command
+            print("run command: ", *pipcmd)
+            subprocess.run(pipcmd, check=True, stdout=sys.stdout, stderr=temp_file, text=True)
+            return True, ''
+        except Exception as error:
+            temp_file.flush()
+            error_out = temp_file.read()
+            print(error)
+            return False, error_out
 
 
 def pip_cmd_with_retries(pipcmd, retry_times: int, with_user: bool):
