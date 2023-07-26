@@ -28,7 +28,7 @@ def get_pythoncmd_in_env(venvdir, envname):
         return False
 
 
-def pip_cmd_run(pipcmd: list[str], with_user: bool, with_local_source: bool):
+def pip_cmd_run(pipcmd, with_user: bool, with_local_source: bool):
     """
     run pip cmd
     with_user: --user
@@ -61,7 +61,7 @@ def pip_cmd_run(pipcmd: list[str], with_user: bool, with_local_source: bool):
         return False, error_out
 
 
-def pip_cmd_with_retries(pipcmd: list[str], retry_times: int, with_user: bool):
+def pip_cmd_with_retries(pipcmd, retry_times: int, with_user: bool):
     """
     when pip cmd fails, then retry for retry_times
     with_user: --user   whether use --user, if pipcmd error output include --user, then remove --user while retry
