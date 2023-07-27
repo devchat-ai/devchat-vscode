@@ -16,39 +16,48 @@ const readFile = util.promisify(fs.readFile);
 
 
 async function isCorrectIndexSymbol(filename: string, position: vscode.Position, symbolName: string): Promise< boolean > {
-	const defLocations = await vscode.commands.executeCommand<any[]>(
-		'vscode.executeDefinitionProvider',
-		vscode.Uri.file(filename),
-		position
-	);
-	if (!defLocations) {
-		return false;
-	}
+    let defLocations = await vscode.commands.executeCommand<any[]>(
+        'vscode.executeDefinitionProvider',
+        vscode.Uri.file(filename),
+        position
+    );
 
-	for (const defLocation of defLocations) {
-		let range = undefined;
-		let uri = undefined;
-		if (defLocation.targetSelectionRange) {
-			range = defLocation.targetSelectionRange;
-			uri = defLocation.targetUri;
-		} else if (defLocation.targetRange) {
-			range = defLocation.targetRange;
-			uri = defLocation.targetUri;
-		} else {
-			range = defLocation.range;
-			uri = defLocation.uri;
-		}
-		if (!range) {
-			continue;
-		}
+    if (!defLocations || defLocations.length === 0) {
+        defLocations = await vscode.commands.executeCommand<any[]>(
+            'vscode.executeReferenceProvider',
+            vscode.Uri.file(filename),
+            position
+        );
+    }
 
-		const documentNew = await vscode.workspace.openTextDocument(uri);
-		const sbName = await documentNew.getText(range);
-		if (sbName === symbolName) {
-			return true;
-		}
-	}
-	return false;
+    if (!defLocations) {
+        return false;
+    }
+
+    for (const defLocation of defLocations) {
+        let range = undefined;
+        let uri = undefined;
+        if (defLocation.targetSelectionRange) {
+            range = defLocation.targetSelectionRange;
+            uri = defLocation.targetUri;
+        } else if (defLocation.targetRange) {
+            range = defLocation.targetRange;
+            uri = defLocation.targetUri;
+        } else {
+            range = defLocation.range;
+            uri = defLocation.uri;
+        }
+        if (!range) {
+            continue;
+        }
+
+        const documentNew = await vscode.workspace.openTextDocument(uri);
+        const sbName = await documentNew.getText(range);
+        if (sbName === symbolName) {
+            return true;
+        }
+    }
+    return false;
 }
 
 export async function getSymbolPosition(symbolName: string, symbolLine: number, symbolFile: string): Promise<vscode.Position | undefined> {
@@ -89,8 +98,10 @@ export async function getSymbolPosition(symbolName: string, symbolLine: number, 
 async function findSymbolInWorkspace(symbolName: string, symbolline: number, symbolFile: string): Promise<string[]> {
 	const symbolPosition = await getSymbolPosition(symbolName, symbolline, symbolFile);
 	if (!symbolPosition) {
-		return [];
-	}
+        throw new Error(`Symbol "${symbolName}" not found in file "${symbolFile}" at line ${symbolline}.`);
+    }
+
+	logger.channel()?.info(`symbol position: ${symbolPosition.line}:${symbolPosition.character}`);
 
 	// get all references of symbol
 	const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
@@ -98,9 +109,9 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 		vscode.Uri.file(symbolFile),
 		symbolPosition
 	);
-	if (!refLocations) {
-		return [];
-	}
+	if (!refLocations || refLocations.length === 0) {
+        throw new Error(`No references found for symbol "${symbolName}" in file "${symbolFile}" at line ${symbolline}.`);
+    }
 	
 	// get related source lines
 	let contextList: Set<string> = new Set();
@@ -118,10 +129,6 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 			'vscode.executeDocumentSymbolProvider',
 			refLocation.uri
 		);
-		if (!symbolsT) {
-			logger.channel()?.info(`Symbol ref continue...`);
-			continue;
-		}
 		let symbolsList: vscode.DocumentSymbol[] = [];
 		const visitSymbol = (symbol: vscode.DocumentSymbol) => {
 			symbolsList.push(symbol);
@@ -131,8 +138,10 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 				}
 			}
 		};
-		for (const symbol of symbolsT) {
-			visitSymbol(symbol);
+		if (symbolsT) {
+			for (const symbol of symbolsT) {
+				visitSymbol(symbol);
+			}
 		}
 		
 		let symbol: vscode.DocumentSymbol | undefined = undefined;
@@ -149,6 +158,7 @@ async function findSymbolInWorkspace(symbolName: string, symbolline: number, sym
 		const data = {
 			path: refLocationFile,
 			start_line: startLine,
+			ref_line: refLocation.range.start.line,
 			content: documentNew.getText(rangeNew),
 			parentDefine: symbolName,
 			parentDefineStartLine: symbolLine
@@ -168,7 +178,19 @@ export class SymbolRefAction implements Action {
 
 	constructor() {
 		this.name = 'symbol_ref';
-		this.description = 'Retrieve the reference information related to the symbol';
+		this.description = `
+		Function Purpose: This function retrieves the reference information for a given symbol.
+		Input: The symbol should not be in string format or in 'a.b' format. To find the reference of 'a.b', simply refer to 'b'.
+		Output: The function returns a dictionary with the following keys:
+		'exitCode': If 'exitCode' is 0, the function execution was successful. If 'exitCode' is not 0, the function execution failed.
+		'stdout': If the function executes successfully, 'stdout' is a list of JSON strings. Each JSON string contains:
+		'path': The file path.
+		'ref_line': The ref line of the symbol.
+		'content': The source code related to the reference.
+		'parentDefine': The parent symbol name of the reference, which is always a function name or class name.
+		'parentDefineStartLine': The start line of the parent symbol name of the reference.
+		'stderr': Error output if any.
+		Error Handling: If the function execution fails, 'exitCode' will not be 0 and 'stderr' will contain the error information.`;
 		this.type = ['symbol'];
 		this.action = 'symbol_ref';
 		this.handler = [];
@@ -196,25 +218,40 @@ export class SymbolRefAction implements Action {
 	}
 
 	async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
-		try {
-			const symbolName = args.symbol;
-			const symbolLine = args.line;
-			let symbolFile = args.file;
+    try {
+        const symbolName = args.symbol;
+        const symbolLine = args.line;
+        let symbolFile = args.file;
 
-			// if symbolFile is not absolute path, then get it's absolute path
-			if (!path.isAbsolute(symbolFile)) {
-				const basePath = UiUtilWrapper.workspaceFoldersFirstPath();
-				symbolFile = path.join(basePath!, symbolFile);
-			}
+        // Check if the symbol name is valid
+        if (!symbolName || typeof symbolName !== 'string') {
+            throw new Error('Invalid symbol name. It should be a non-empty string.');
+        }
 
-			// get reference information
-			const refList = await findSymbolInWorkspace(symbolName, symbolLine, symbolFile);
+        // Check if the symbol line is valid
+        if (!symbolLine || typeof symbolLine !== 'number' || symbolLine < 0) {
+            throw new Error('Invalid symbol line. It should be a non-negative number.');
+        }
 
-			return {exitCode: 0, stdout: JSON.stringify(refList), stderr: ""};
-		} catch (error) {
-			logger.channel()?.error(`${this.name} handle error: ${error}`);
-			logger.channel()?.show();
-			return {exitCode: -1, stdout: '', stderr: `${this.name} handle error: ${error}`};
-		}
-	}
+        // Check if the symbol file is valid
+        if (!symbolFile || typeof symbolFile !== 'string') {
+            throw new Error('Invalid symbol file. It should be a non-empty string.');
+        }
+
+        // if symbolFile is not absolute path, then get it's absolute path
+        if (!path.isAbsolute(symbolFile)) {
+            const basePath = UiUtilWrapper.workspaceFoldersFirstPath();
+            symbolFile = path.join(basePath!, symbolFile);
+        }
+
+        // get reference information
+        const refList = await findSymbolInWorkspace(symbolName, symbolLine, symbolFile);
+
+        return {exitCode: 0, stdout: JSON.stringify(refList), stderr: ""};
+    } catch (error) {
+        logger.channel()?.error(`${this.name} handle error: ${error}`);
+        logger.channel()?.show();
+        return {exitCode: -1, stdout: '', stderr: `${this.name} handle error: ${error}`};
+    }
+}
 };
