@@ -36,6 +36,9 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, function_name: string|undefined = undefined): Promise<void> {
     _lastMessage = [message, function_name];
 
+    // Add a new field to store the names of temporary files
+    let tempFiles: string[] = [];
+
     // Handle the contextInfo field in the message
     if (Array.isArray(message.contextInfo)) {
         for (let context of message.contextInfo) {
@@ -45,6 +48,8 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
                     try {
                         const contextStr = JSON.stringify(context.context);
                         context.file = createTempFile(contextStr);
+                        // Add the file name to the tempFiles array
+                        tempFiles.push(context.file);
                     } catch (err) {
                         console.error('Failed to create temporary file:', err);
                         throw err;
@@ -64,12 +69,8 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
     }
 
     // Delete all temporary files created
-    if (message.contextInfo) {
-        for (let context of message.contextInfo) {
-            if (context.file) {
-                deleteTempFiles(context.file);
-            }
-        }
+    for (let file of tempFiles) {
+        deleteTempFiles(file);
     }
 }
 
