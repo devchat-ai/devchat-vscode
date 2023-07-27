@@ -51,25 +51,27 @@ export const chatSlice = createSlice({
         isTop: false,
     },
     reducers: {
-        startGenerating: (state, action) => {
-            state.generating = true;
-            state.responsed = false;
-            state.hasDone = false;
-            state.errorMessage = '';
-            state.currentMessage = '';
-            let lastNonEmptyHash;
-            for (let i = state.messages.length - 1; i >= 0; i--) {
-                if (state.messages[i].hash) {
-                    lastNonEmptyHash = state.messages[i].hash;
-                    break;
-                }
-            }
-            messageUtil.sendMessage({
-                command: 'sendMessage',
-                text: action.payload,
-                parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
-            });
-        },
+    	startGenerating: (state, action) => {
+			state.generating = true;
+			state.responsed = false;
+			state.hasDone = false;
+			state.errorMessage = '';
+			state.currentMessage = '';
+			let lastNonEmptyHash;
+			for (let i = state.messages.length - 1; i >= 0; i--) {
+				if (state.messages[i].hash) {
+					lastNonEmptyHash = state.messages[i].hash;
+					break;
+				}
+			}
+			const { text, contextInfo } = action.payload;
+			messageUtil.sendMessage({
+				command: 'sendMessage',
+				text,
+				contextInfo,
+				parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
+			});
+		},
 		startSystemMessage: (state, action) => {
 			state.generating = true;
             state.responsed = false;

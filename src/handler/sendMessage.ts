@@ -4,9 +4,27 @@ import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { stopDevChatBase, sendMessageBase, deleteChatMessageBase } from './sendMessageBase';
 import { UiUtilWrapper } from '../util/uiUtil';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as path from 'path';
 
 
 let _lastMessage: any = undefined;
+
+export function createTempFile(content: string): string {
+    // Generate a unique file name
+    const fileName = path.join(os.tmpdir(), `temp_${Date.now()}.txt`);
+
+    // Write the content to the file
+    fs.writeFileSync(fileName, content);
+
+    return fileName;
+}
+
+export function deleteTempFiles(fileName: string): void {
+    // Delete the file
+    fs.unlinkSync(fileName);
+}
 
 regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
@@ -16,15 +34,45 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
 export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, function_name: string|undefined = undefined): Promise<void> {
-	_lastMessage = [message, function_name];
+    _lastMessage = [message, function_name];
 
-	const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
-		MessageHandler.sendMessage(panel, data, false);
-	}, function_name);
-	if (responseMessage) {
-		MessageHandler.sendMessage(panel, responseMessage);
-	}
+    // Handle the contextInfo field in the message
+    if (Array.isArray(message.contextInfo)) {
+        for (let context of message.contextInfo) {
+            if (typeof context === 'object' && context !== null && 'context' in context) {
+                // If the file name is not present, create a temporary file
+                if (!context.file) {
+                    try {
+                        const contextStr = JSON.stringify(context.context);
+                        context.file = createTempFile(contextStr);
+                    } catch (err) {
+                        console.error('Failed to create temporary file:', err);
+                        throw err;
+                    }
+                }
+                // Insert the file name into the text field
+                message.text += ` [context|${context.file}]`;
+            }
+        }
+    }
+
+    const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
+        MessageHandler.sendMessage(panel, data, false);
+    }, function_name);
+    if (responseMessage) {
+        MessageHandler.sendMessage(panel, responseMessage);
+    }
+
+    // Delete all temporary files created
+    if (message.contextInfo) {
+        for (let context of message.contextInfo) {
+            if (context.file) {
+                deleteTempFiles(context.file);
+            }
+        }
+    }
 }
+
 
 // regeneration last message again
 regInMessage({command: 'regeneration'});
