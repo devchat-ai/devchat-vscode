@@ -52,15 +52,33 @@ export function checkDevChatDependency(pythonCommand: string, showError: boolean
 	}
 }
 
+function isValidPythonCommand(pythonCommand): boolean {
+	// check whether pythonCommand is valid python
+	try{
+		runCommand(`"${pythonCommand}" -V`).toString();
+		return true;
+	} catch (error) {
+		return false;
+	}
+}
+
 function getDefaultPythonCommand(): string | undefined {
 	try {
 		runCommand('python3 -V');
-		return locateCommand('python3');
+		const pythonCommand = locateCommand('python3');
+		if (isValidPythonCommand(pythonCommand)) {
+			return pythonCommand;
+		}
+		return 'python3';
 	} catch (error) {
 		try {
 			const version = runCommand('python -V');
 			if (version.includes('Python 3')) {
-				return locateCommand('python');
+				const pythonCommand = locateCommand('python');
+				if (isValidPythonCommand(pythonCommand)) {
+					return pythonCommand;
+				}
+				return 'python';
 			}
 			return undefined;
 		} catch (error) {
@@ -72,7 +90,7 @@ function getDefaultPythonCommand(): string | undefined {
 export function getValidPythonCommand(): string | undefined {
 	try {
 		const pythonCommand = UiUtilWrapper.getConfiguration('DevChat', 'PythonPath');
-		if (pythonCommand) {
+		if (pythonCommand && isValidPythonCommand(pythonCommand)) {
 			return pythonCommand;
 		}
 
