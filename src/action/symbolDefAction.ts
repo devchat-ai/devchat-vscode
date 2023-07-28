@@ -18,132 +18,162 @@ const readFile = util.promisify(fs.readFile);
 
 
 async function findSymbolInWorkspace(symbolName: string, symbolline: number, symbolFile: string): Promise<string[]> {
-	const symbolPosition = await getSymbolPosition(symbolName, symbolline, symbolFile);
-	if (!symbolPosition) {
-		return [];
-	}
-	
-	// get definition of symbol
-	const refLocations = await vscode.commands.executeCommand<vscode.LocationLink[]>(
-		'vscode.executeDefinitionProvider',
-		vscode.Uri.file(symbolFile),
-		symbolPosition
-	);
-	if (!refLocations) {
-		return [];
-	}
-	
-	// get related source lines
-	let contextList: Set<string> = new Set();
-	for (const refLocation of refLocations) {
-		const refLocationFile = refLocation.targetUri.fsPath;
-		const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
+    const symbolPosition = await getSymbolPosition(symbolName, symbolline, symbolFile);
+    if (!symbolPosition) {
+        return [];
+    }
+    
+    // get definition of symbol
+    const refLocations = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
+        'vscode.executeDefinitionProvider',
+        vscode.Uri.file(symbolFile),
+        symbolPosition
+    );
+    if (!refLocations) {
+        return [];
+    }
+    
+    // get related source lines
+    const contextListPromises = refLocations.map(async (refLocation) => {
+        let refLocationFile: string;
+        let targetRange: vscode.Range;
 
-		const data = {
-			path: refLocation.targetUri.fsPath,
-			start_line: refLocation.targetRange.start.line,
-			end_line: refLocation.targetRange.end.line,
-			content: documentNew.getText(refLocation.targetRange)
-		};
-		contextList.add(JSON.stringify(data));
-		
-		// // get symbol define in symbolFile
-		// const symbolsT: vscode.DocumentSymbol[] = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
-		// 	'vscode.executeDocumentSymbolProvider',
-		// 	refLocation.targetUri
-		// );
-		// if (!symbolsT) {
-		// 	continue;
-		// }
-		// let symbolsList: vscode.DocumentSymbol[] = [];
-		// const visitSymbol = (symbol: vscode.DocumentSymbol) => {
-		// 	symbolsList.push(symbol);
-		// 	if (symbol.children) {
-		// 		for (const child of symbol.children) {
-		// 			visitSymbol(child);
-		// 		}
-		// 	}
-		// };
-		// for (const symbol of symbolsT) {
-		// 	visitSymbol(symbol);
-		// }
-		
-		// let symbol: vscode.DocumentSymbol | undefined = undefined;
-		// for (const symbolT of symbolsList.reverse()) {
-		// 	if (symbolT.range.contains(refLocation.) && symbolT.name === symbolName) {
-		// 		symbol = symbolT;
-		// 		break;
-		// 	}
-		// }
-		// if (symbol) {
-		// 	const data = {
-		// 		path: refLocation.uri,
-		// 		start_line: symbol.range.start.line,
-		// 		content: documentNew.getText(symbol.range)
-		// 	};
-		// 	contextList.add(JSON.stringify(data));
-		// }
-	}
+        if (refLocation instanceof vscode.Location) {
+            refLocationFile = refLocation.uri.fsPath;
+            targetRange = refLocation.range;
 
-	return Array.from(contextList);
+            // get symbols in file
+            const symbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+                'vscode.executeDocumentSymbolProvider',
+                vscode.Uri.file(refLocationFile)
+            );
+
+            // find the smallest symbol definition that contains the target range
+            let smallestSymbol: vscode.DocumentSymbol | undefined;
+            for (const symbol of symbols) {
+                smallestSymbol = findSmallestSymbol(symbol, targetRange, smallestSymbol);
+            }
+
+            if (smallestSymbol) {
+                targetRange = smallestSymbol.range;
+            }
+        } else {
+            refLocationFile = refLocation.targetUri.fsPath;
+            targetRange = refLocation.targetRange;
+        }
+
+        const documentNew = await vscode.workspace.openTextDocument(refLocationFile);
+
+        const data = {
+            path: refLocationFile,
+            start_line: targetRange.start.line,
+            end_line: targetRange.end.line,
+            content: documentNew.getText(targetRange)
+        };
+        return JSON.stringify(data);
+    });
+
+    const contextList = await Promise.all(contextListPromises);
+
+    return contextList;
 }
+
+function findSmallestSymbol(symbol: vscode.DocumentSymbol, targetRange: vscode.Range, smallestSymbol: vscode.DocumentSymbol | undefined): vscode.DocumentSymbol | undefined {
+    if (symbol.range.contains(targetRange) && 
+        (!smallestSymbol || smallestSymbol.range.contains(symbol.range))) {
+        smallestSymbol = symbol;
+    }
+
+    for (const child of symbol.children) {
+        smallestSymbol = findSmallestSymbol(child, targetRange, smallestSymbol);
+    }
+
+    return smallestSymbol;
+}
+
 export class SymbolDefAction implements Action {
-	name: string;
-	description: string;
-	type: string[];
-	action: string;
-	handler: string[];
-	args: { "name": string, "description": string, "type": string, "as"?: string, "required": boolean, "from": string }[];
+    name: string;
+    description: string;
+    type: string[];
+    action: string;
+    handler: string[];
+    args: { "name": string, "description": string, "type": string, "as"?: string, "required": boolean, "from": string }[];
 
-	constructor() {
-		this.name = 'symbol_def';
-		this.description = 'Retrieve the definition of symbol.';
-		this.type = ['symbol'];
-		this.action = 'symbol_def';
-		this.handler = [];
-		this.args = [
-			{
-				"name": "symbol", 
-				"description": "The symbol variable specifies the symbol for which definition information is to be retrieved.", 
-				"type": "string", 
-				"required": true,
-				"from": "content.content.symbol"
-			}, {
-				"name": "line", 
-				"description": 'The line variable specifies the line number of the symbol for which definition information is to be retrieved.', 
-				"type": "number", 
-				"required": true,
-				"from": "content.content.line"
-			}, {
-				"name": "file", 
-				"description": 'File contain that symbol.', 
-				"type": "string", 
-				"required": true,
-				"from": "content.content.file"
-			}
-		];
-	}
+    constructor() {
+        this.name = 'symbol_def';
+        this.description = `
+        Function Purpose: This function retrieves the definition information for a given symbol.
+        Input: The symbol should not be in string format or in 'a.b' format. To find the definition of 'a.b', simply refer to 'b'.
+        Output: The function returns a dictionary with the following keys:
+        'exitCode': If 'exitCode' is 0, the function execution was successful. If 'exitCode' is not 0, the function execution failed.
+        'stdout': If the function executes successfully, 'stdout' is a list of JSON strings. Each JSON string contains:
+        'path': The file path.
+        'start_line': The start line of the content.
+        'end_line': The end line of the content.
+        'content': The source code related to the definition.
+        'stderr': Error output if any.
+        Error Handling: If the function execution fails, 'exitCode' will not be 0 and 'stderr' will contain the error information.`;
+        this.type = ['symbol'];
+        this.action = 'symbol_def';
+        this.handler = [];
+        this.args = [
+            {
+                "name": "symbol", 
+                "description": "The symbol variable specifies the symbol for which definition information is to be retrieved.", 
+                "type": "string", 
+                "required": true,
+                "from": "content.content.symbol"
+            }, {
+                "name": "line", 
+                "description": 'The line variable specifies the line number of the symbol for which definition information is to be retrieved.', 
+                "type": "number", 
+                "required": true,
+                "from": "content.content.line"
+            }, {
+                "name": "file", 
+                "description": 'File contain that symbol.', 
+                "type": "string", 
+                "required": true,
+                "from": "content.content.file"
+            }
+        ];
+    }
 
-	async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
-		try {
-			const symbolName = args.symbol;
-			const symbolLine = args.line;
-			let symbolFile = args.file;
+ async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
+    try {
+        const symbolName = args.symbol;
+        const symbolLine = args.line;
+        let symbolFile = args.file;
 
-			// if symbolFile is not absolute path, then get it's absolute path
-			if (!path.isAbsolute(symbolFile)) {
-				const basePath = UiUtilWrapper.workspaceFoldersFirstPath();
-				symbolFile = path.join(basePath!, symbolFile);
-			}
+        // Check if the symbol name is valid
+        if (!symbolName || typeof symbolName !== 'string') {
+            throw new Error('Invalid symbol name. It should be a non-empty string.');
+        }
 
-			// get reference information
-			const refList = await findSymbolInWorkspace(symbolName, symbolLine, symbolFile);
+        // Check if the symbol line is valid
+        if (!symbolLine || typeof symbolLine !== 'number' || symbolLine < 0) {
+            throw new Error('Invalid symbol line. It should be a non-negative number.');
+        }
 
-			return {exitCode: 0, stdout: JSON.stringify(refList), stderr: ""};
-		} catch (error) {
-			logger.channel()?.error(`${this.name} handle error: ${error}`);
-			logger.channel()?.show();
-			return {exitCode: -1, stdout: '', stderr: `${this.name} handle error: ${error}`};
-		}
-	}
+        // Check if the symbol file is valid
+        if (!symbolFile || typeof symbolFile !== 'string') {
+            throw new Error('Invalid symbol file. It should be a non-empty string.');
+        }
+
+        // if symbolFile is not absolute path, then get it's absolute path
+        if (!path.isAbsolute(symbolFile)) {
+            const basePath = UiUtilWrapper.workspaceFoldersFirstPath();
+            symbolFile = path.join(basePath!, symbolFile);
+        }
+
+        // get reference information
+        const refList = await findSymbolInWorkspace(symbolName, symbolLine, symbolFile);
+
+        return {exitCode: 0, stdout: JSON.stringify(refList), stderr: ""};
+    } catch (error) {
+        logger.channel()?.error(`${this.name} handle error: ${error}`);
+        logger.channel()?.show();
+        return {exitCode: -1, stdout: '', stderr: `${this.name} handle error: ${error}`};
+    }
+}
 };
