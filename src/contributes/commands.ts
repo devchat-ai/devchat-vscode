@@ -49,6 +49,48 @@ function registerAskForCodeCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForCode_chinese', callback));
 }
 
+export function registerCodeLenses(context: vscode.ExtensionContext) {
+	// This is the list of commands that will be shown as code lenses
+	// whenever selection is non empty.
+	// TODO: Add more commands
+	const lensCommands = [
+		{
+			title: '</?>',
+			tooltip: 'Ask code',
+			command: 'devchat.askForCode',
+		},
+	];
+
+	const codeLensProvider = new class implements vscode.CodeLensProvider {
+		private _onDidChangeCodeLenses: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+		public readonly onDidChangeCodeLenses: vscode.Event<void> = this._onDidChangeCodeLenses.event;
+
+		constructor() {
+			// Update code lenses each time selection changes
+			vscode.window.onDidChangeTextEditorSelection((_) => {
+				this._onDidChangeCodeLenses.fire();
+			});
+		}
+
+		async provideCodeLenses(_: vscode.TextDocument): Promise<vscode.CodeLens[]> {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				return [];
+			}
+
+			const selection = editor.selection;
+			if (selection.isEmpty) {
+				return [];
+			}
+
+			return lensCommands.map(command => new vscode.CodeLens(selection, command));
+		}
+	};
+
+	vscode.languages.registerCodeLensProvider("*", codeLensProvider);
+}
+
+
 function registerAskForFileCommand(context: vscode.ExtensionContext) {
 	const callback = async () => {
 		const editor = vscode.window.activeTextEditor;

@@ -5,6 +5,7 @@ import {
 	registerAddContextCommand,
 	registerAskForCodeCommand,
 	registerAskForFileCommand,
+	registerCodeLenses,
 	registerOpenAiApiKeySettingCommand,
 	registerDevChatApiKeySettingCommand,
 	regTopicDeleteCommand,
@@ -45,6 +46,8 @@ function activate(context: vscode.ExtensionContext) {
 	registerAskForCodeCommand(context);
 	registerAskForFileCommand(context);
 	registerStatusBarItemClickCommand(context);
+
+	registerCodeLenses(context);
 
 	createStatusBarItem(context);
 
