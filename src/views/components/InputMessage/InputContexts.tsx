@@ -6,7 +6,7 @@ import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import {
     selectContexts,
     removeContext,
-} from './inputSlice';
+} from '@/views/reducers/inputSlice';
 
 const InputContexts = () => {
     const dispatch = useAppDispatch();

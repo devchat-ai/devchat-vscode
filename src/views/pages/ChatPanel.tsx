@@ -1,13 +1,13 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { Alert, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import CurrentMessage from "@/views/CurrentMessage";
-import StopButton from '@/views/StopButton';
-import RegenerationButton from '@/views/RegenerationButton';
+import CurrentMessage from "@/views/components/CurrentMessage";
+import StopButton from '@/views/components/StopButton';
+import RegenerationButton from '@/views/components/RegenerationButton';
 
 import {
     stopGenerating,
@@ -21,13 +21,14 @@ import {
     onMessagesTop,
     onMessagesMiddle,
     fetchHistoryMessages,
-	newMessage,
-	startSystemMessage,
-} from './chatSlice';
+    newMessage,
+    startSystemMessage,
+} from '@/views/reducers/chatSlice';
 
-import InputMessage from './InputMessage';
-import MessageContainer from './MessageContainer';
-import { clearContexts, setValue } from './inputSlice';
+import InputMessage from '@/views/components/InputMessage';
+import MessageContainer from '../components/MessageContainer';
+import { clearContexts, setValue } from '@/views/reducers/inputSlice';
+import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
 
 
 const chatPanel = () => {
@@ -82,8 +83,8 @@ const chatPanel = () => {
             }
         });
 
-		messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
-            dispatch(newMessage({ type: 'system', message: message.text}));
+        messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
+            dispatch(newMessage({ type: 'system', message: message.text }));
             // start generating
             dispatch(startSystemMessage(message.text));
             // Clear the input field
@@ -108,8 +109,13 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
+            {!isBottom && <ActionIcon
+                onClick={() => { scrollToBottom() }}
+                title='Bottom'
+                variant='transparent' sx={{ position: "absolute", bottom: 60, right: 20, zIndex: 999 }}>
+                <IconCircleArrowDownFilled size="1.125rem" />
+            </ActionIcon>}
             <ScrollArea
-                type="never"
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),
                     width: chatContainerRect.width,

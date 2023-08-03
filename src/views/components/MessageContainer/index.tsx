@@ -1,13 +1,13 @@
 
 import { Center, Text, Accordion, Box, Stack, Container, Divider } from "@mantine/core";
 import React from "react";
-import CodeBlock from "@/views/CodeBlock";
-import MessageHeader from "@/views/MessageHeader";
+import CodeBlock from "@/views/components/CodeBlock";
+import MessageHeader from "@/views/components/MessageHeader";
 
 import { useAppSelector } from '@/views/hooks';
 import {
     selectMessages,
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 
 const MessageContext = (props: any) => {

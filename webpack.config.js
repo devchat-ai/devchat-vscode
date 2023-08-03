@@ -168,11 +168,6 @@ const webviewConfig = {
       filename: 'welcome.html',
       chunks: ['welcome']
     }),
-    new CopyWebpackPlugin({
-      patterns: [
-        { from: 'assets', to: 'assets' },
-      ],
-    })
   ]
 };
 

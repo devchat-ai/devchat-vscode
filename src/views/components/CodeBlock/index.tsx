@@ -3,7 +3,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
-import CodeButtons from "@/views/CodeButtons";
+import CodeButtons from "./CodeButtons";
 
 const CodeBlock = (props: any) => {
     const { messageText, messageType } = props;

@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/views/hooks';
 
 import {
     stopGenerating,
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 const StopButton = () => {
     const dispatch = useAppDispatch();
