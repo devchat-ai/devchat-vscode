@@ -74,8 +74,8 @@ export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
 				placeHolder: "Set OPENAI_API_KEY (or DevChat Access Key)"
 			}) ?? '';
 
-			if (!isValidApiKey(passwordInput)) {
-				UiUtilWrapper.showErrorMessage("You access key is invalid!");
+			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
+				UiUtilWrapper.showErrorMessage("Your access key is invalid!");
 				return ;
 			}
 			ApiKeyManager.writeApiKeySecret(passwordInput);

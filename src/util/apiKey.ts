@@ -15,7 +15,7 @@ export class ApiKeyManager {
 	}
 
 	static getKeyType(apiKey: string): string | undefined {
-		if (apiKey.startsWith("sk.")) {
+		if (apiKey.startsWith("sk-")) {
 			return "sk";
 		} else if (apiKey.startsWith("DC.")) {
 			return "DC";
