@@ -2,7 +2,7 @@ import React from "react";
 import { Text, Flex, Avatar, ActionIcon, Tooltip, CopyButton, SimpleGrid } from "@mantine/core";
 
 // @ts-ignore
-import SvgAvatarDevChat from '/avatar_devchat.svg';
+import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy, Icon360, IconEdit, IconTrash } from "@tabler/icons-react";
