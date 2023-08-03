@@ -85,7 +85,7 @@ describe('ApiKeyManager', () => {
       const storeSecretStub = sinon.stub(UiUtilWrapper, 'storeSecret').resolves();
 
       await ApiKeyManager.writeApiKeySecret('sk-secret');
-      expect(storeSecretStub.calledWith('devchat_OPENAI_API_KEY', 'sk-secret')).to.be.true;
+      expect(storeSecretStub.calledWith('openai_OPENAI_API_KEY', 'sk-secret')).to.be.true;
     });
   });
 });

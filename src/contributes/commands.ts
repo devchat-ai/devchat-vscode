@@ -64,21 +64,40 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForFile_chinese', callback));
 }
 
-export function registerApiKeySettingCommand(context: vscode.ExtensionContext) {
+export function registerOpenAiApiKeySettingCommand(context: vscode.ExtensionContext) {
 	const secretStorage: vscode.SecretStorage = context.secrets;
 	context.subscriptions.push(
-		vscode.commands.registerCommand('DevChat.OPENAI_API_KEY', async () => {
+		vscode.commands.registerCommand('DevChat.Api_Key_OpenAI', async () => {
 			const passwordInput: string = await vscode.window.showInputBox({
 				password: true,
-				title: "Input Access Key",
-				placeHolder: "Set OPENAI_API_KEY (or DevChat Access Key)"
+				title: "Input OpenAi Api Key",
+				placeHolder: "Set OpenAI Api Key.(Leave blank if clearing stored key.)"
+			}) ?? '';
+
+			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
+				UiUtilWrapper.showErrorMessage("Your api key is invalid!");
+				return ;
+			}
+			ApiKeyManager.writeApiKeySecret(passwordInput, "OpenAI");
+		})
+	);
+}
+
+export function registerDevChatApiKeySettingCommand(context: vscode.ExtensionContext) {
+	const secretStorage: vscode.SecretStorage = context.secrets;
+	context.subscriptions.push(
+		vscode.commands.registerCommand('DevChat.Access_Key_DevChat', async () => {
+			const passwordInput: string = await vscode.window.showInputBox({
+				password: true,
+				title: "Input DevChat Access Key",
+				placeHolder: "Set DevChat Access Key.(Leave blank if clearing stored key.)"
 			}) ?? '';
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your access key is invalid!");
 				return ;
 			}
-			ApiKeyManager.writeApiKeySecret(passwordInput);
+			ApiKeyManager.writeApiKeySecret(passwordInput, "DevChat");
 		})
 	);
 }
