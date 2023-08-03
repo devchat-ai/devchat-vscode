@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { Alert, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
@@ -28,6 +28,7 @@ import {
 import InputMessage from '@/views/components/InputMessage';
 import MessageContainer from './components/MessageContainer';
 import { clearContexts, setValue } from '@/views/reducers/inputSlice';
+import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
 
 
 const chatPanel = () => {
@@ -108,6 +109,12 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
+            {!isBottom && <ActionIcon
+                onClick={() => { scrollToBottom() }}
+                title='Bottom'
+                variant='transparent' sx={{ position: "absolute", bottom: 60, right: 20, zIndex: 999 }}>
+                <IconCircleArrowDownFilled size="1.125rem" />
+            </ActionIcon>}
             <ScrollArea
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),
