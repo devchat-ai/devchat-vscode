@@ -109,7 +109,6 @@ const chatPanel = () => {
                 minWidth: 240
             }}>
             <ScrollArea
-                type="never"
                 sx={{
                     height: generating ? height - px('8rem') : height - px('5rem'),
                     width: chatContainerRect.width,
