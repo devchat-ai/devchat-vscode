@@ -12,7 +12,7 @@ import {
     selectCurrentMessage,
     selecLastMessage,
     selectResponsed,
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 const MessageBlink = () => {
     const responsed = useAppSelector(selectResponsed);

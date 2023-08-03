@@ -12,12 +12,12 @@ import { useAppDispatch } from '@/views/hooks';
 import {
     setContexts,
     setValue,
-} from './inputSlice';
+} from '@/views/reducers/inputSlice';
 
 import {
     deleteMessage,
     popMessage
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 const MessageHeader = (props: any) => {
     const { item, showEdit = false, showDelete = true } = props;

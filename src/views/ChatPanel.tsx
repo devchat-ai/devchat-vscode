@@ -23,11 +23,11 @@ import {
     fetchHistoryMessages,
     newMessage,
     startSystemMessage,
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 import InputMessage from '@/views/components/InputMessage';
 import MessageContainer from './MessageContainer';
-import { clearContexts, setValue } from './inputSlice';
+import { clearContexts, setValue } from '@/views/reducers/inputSlice';
 
 
 const chatPanel = () => {

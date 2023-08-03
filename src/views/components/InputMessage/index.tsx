@@ -23,12 +23,12 @@ import {
     closeMenu,
     fetchContextMenus,
     fetchCommandMenus,
-} from '@/views/inputSlice';
+} from '@/views/reducers/inputSlice';
 import {
     selectGenerating,
     newMessage,
     startGenerating,
-} from '@/views/chatSlice';
+} from '@/views/reducers/chatSlice';
 
 const InputMessage = (props: any) => {
     const { width } = props;

@@ -7,7 +7,7 @@ import MessageHeader from "@/views/MessageHeader";
 import { useAppSelector } from '@/views/hooks';
 import {
     selectMessages,
-} from './chatSlice';
+} from '@/views/reducers/chatSlice';
 
 
 const MessageContext = (props: any) => {
