@@ -5,7 +5,7 @@ import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import CurrentMessage from "@/views/CurrentMessage";
+import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
 import RegenerationButton from '@/views/components/RegenerationButton';
 
