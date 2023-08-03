@@ -2,10 +2,10 @@ import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, C
 import { useListState, useResizeObserver } from "@mantine/hooks";
 import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
-import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "./Icons";
+import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "../../Icons";
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import InputContexts from '@/views/InputContexts';
+import InputContexts from './InputContexts';
 
 import {
     setValue,
@@ -23,12 +23,12 @@ import {
     closeMenu,
     fetchContextMenus,
     fetchCommandMenus,
-} from './inputSlice';
+} from '@/views/inputSlice';
 import {
     selectGenerating,
     newMessage,
     startGenerating,
-} from './chatSlice';
+} from '@/views/chatSlice';
 
 const InputMessage = (props: any) => {
     const { width } = props;
@@ -64,23 +64,23 @@ const InputMessage = (props: any) => {
         dispatch(setValue(value));
     };
 
-const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    if (input) {
-        // Process and send the message to the extension
-        const contextInfo = contexts.map((item: any, index: number) => {
-            const { file, context } = item;
-            return { file, context };
-        });
-        const text = input;
-        // Add the user's message to the chat UI
-        dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
-        // start generating
-        dispatch(startGenerating({ text, contextInfo }));
-        // Clear the input field
-        dispatch(setValue(''));
-        dispatch(clearContexts());
-    }
-};
+    const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+        if (input) {
+            // Process and send the message to the extension
+            const contextInfo = contexts.map((item: any, index: number) => {
+                const { file, context } = item;
+                return { file, context };
+            });
+            const text = input;
+            // Add the user's message to the chat UI
+            dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            // start generating
+            dispatch(startGenerating({ text, contextInfo }));
+            // Clear the input field
+            dispatch(setValue(''));
+            dispatch(clearContexts());
+        }
+    };
 
     const handleContextClick = (contextName: string) => {
         // Process and send the message to the extension

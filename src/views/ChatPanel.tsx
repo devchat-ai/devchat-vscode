@@ -25,7 +25,7 @@ import {
     startSystemMessage,
 } from './chatSlice';
 
-import InputMessage from './InputMessage';
+import InputMessage from '@/views/components/InputMessage';
 import MessageContainer from './MessageContainer';
 import { clearContexts, setValue } from './inputSlice';
 
