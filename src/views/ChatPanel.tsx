@@ -26,7 +26,7 @@ import {
 } from '@/views/reducers/chatSlice';
 
 import InputMessage from '@/views/components/InputMessage';
-import MessageContainer from './MessageContainer';
+import MessageContainer from './components/MessageContainer';
 import { clearContexts, setValue } from '@/views/reducers/inputSlice';
 
 
