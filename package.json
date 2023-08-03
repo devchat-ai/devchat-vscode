@@ -107,10 +107,15 @@
 					"description": "The max number of tokens of a prompt.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
-				"DevChat.API_KEY": {
+				"DevChat.Access_Key_DevChat": {
 					"type": "string",
 					"default": "",
-					"description": "API key for accessing the LLM model",
+					"description": "DevChat's secret key for accessing multiple LLM models"
+				},
+				"DevChat.Api_Key_OpenAI": {
+					"type": "string",
+					"default": "",
+					"description": "OpenAI's secret key for accessing LLM models. (Leave blank if using DevChat's key.)",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.API_ENDPOINT": {
@@ -205,8 +210,13 @@
 				"title": "Create Entry"
 			},
 			{
-				"command": "DevChat.OPENAI_API_KEY",
-				"title": "Input Access Key",
+				"command": "DevChat.Api_Key_OpenAI",
+				"title": "Input OpenAI Api Key",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.Access_Key_DevChat",
+				"title": "Input DevChat Access Key",
 				"category": "DevChat"
 			},
 			{

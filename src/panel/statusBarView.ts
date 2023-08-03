@@ -45,7 +45,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			if (apiKeyStatus !== 'ready') {
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${apiKeyStatus}`;
-				statusBarItem.command = 'DevChat.OPENAI_API_KEY';
+				statusBarItem.command = 'DevChat.Access_Key_DevChat';
 				return;
 			}
 

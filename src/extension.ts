@@ -5,7 +5,8 @@ import {
 	registerAddContextCommand,
 	registerAskForCodeCommand,
 	registerAskForFileCommand,
-	registerApiKeySettingCommand,
+	registerOpenAiApiKeySettingCommand,
+	registerDevChatApiKeySettingCommand,
 	regTopicDeleteCommand,
 	regAddTopicCommand,
 	regDeleteSelectTopicCommand,
@@ -37,7 +38,8 @@ function activate(context: vscode.ExtensionContext) {
 	regDevChatView(context);
 	regTopicView(context);
 
-	registerApiKeySettingCommand(context);
+	registerOpenAiApiKeySettingCommand(context);
+	registerDevChatApiKeySettingCommand(context);
 	registerOpenChatPanelCommand(context);
 	registerAddContextCommand(context);
 	registerAskForCodeCommand(context);

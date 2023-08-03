@@ -3,13 +3,28 @@
 import { UiUtilWrapper } from './uiUtil';
 
 export class ApiKeyManager {
-	static async getApiKey(): Promise<string | undefined> {
-		let apiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+	static async getApiKey(llmType: string = "OpenAI"): Promise<string | undefined> {
+		let apiKey: string|undefined = undefined;
+		
+		if (llmType === "OpenAI") {
+			apiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
+		} 
 		if (!apiKey) {
-			apiKey = UiUtilWrapper.getConfiguration('DevChat', 'API_KEY');
+			apiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+		}
+		
+		if (!apiKey) {
+			if (llmType === "OpenAI") {
+				apiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
+			}
+			if (!apiKey) {
+				apiKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
+			}
 		}
 		if (!apiKey) {
-			apiKey = process.env.OPENAI_API_KEY;
+			if (llmType === "OpenAI") {
+				apiKey = process.env.OPENAI_API_KEY;
+			}
 		}
 		return apiKey;
 	}
@@ -24,8 +39,18 @@ export class ApiKeyManager {
 		}
 	}
 
-	static async writeApiKeySecret(apiKey: string): Promise<void> {
-		await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
+	static async writeApiKeySecret(apiKey: string, llmType: string = "Unknow"): Promise<void> {
+		if (apiKey.startsWith("sk-")) {
+			await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", apiKey);
+		} else if (apiKey.startsWith("DC.")) {
+			await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
+		} else {
+			if (llmType === "OpenAI") {
+				await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", apiKey);
+			} else if (llmType === "DevChat") {
+				await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
+			}
+		}
 	}
 
 	static getEndPoint(apiKey: string | undefined): string | undefined {
