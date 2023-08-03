@@ -3,7 +3,7 @@ import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Container, Text } from "@mantine/core";
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import CodeBlock from "@/views/CodeBlock";
+import CodeBlock from "@/views/components/CodeBlock";
 
 import {
     newMessage,
