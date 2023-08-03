@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { MantineProvider } from '@mantine/core';
 import { Provider } from 'react-redux';
 import App from '@/views/App';
-import { store } from '@/views/store';
+import { store } from '@/views/reducers/store';
 
 const container = document.getElementById('app')!;
 const root = createRoot(container); // createRoot(container!) if you use TypeScript

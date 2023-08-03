@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import messageUtil from '@/util/MessageUtil';
-import type { RootState } from '@/views/store';
+import type { RootState } from '@/views/reducers/store';
 
 export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entries: [] }, { pageIndex: number }>('input/fetchHistoryMessages', async (params) => {
     const { pageIndex } = params;
@@ -51,34 +51,34 @@ export const chatSlice = createSlice({
         isTop: false,
     },
     reducers: {
-    	startGenerating: (state, action) => {
-			state.generating = true;
-			state.responsed = false;
-			state.hasDone = false;
-			state.errorMessage = '';
-			state.currentMessage = '';
-			let lastNonEmptyHash;
-			for (let i = state.messages.length - 1; i >= 0; i--) {
-				if (state.messages[i].hash) {
-					lastNonEmptyHash = state.messages[i].hash;
-					break;
-				}
-			}
-			const { text, contextInfo } = action.payload;
-			messageUtil.sendMessage({
-				command: 'sendMessage',
-				text,
-				contextInfo,
-				parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
-			});
-		},
-		startSystemMessage: (state, action) => {
-			state.generating = true;
+        startGenerating: (state, action) => {
+            state.generating = true;
             state.responsed = false;
             state.hasDone = false;
             state.errorMessage = '';
             state.currentMessage = '';
-		},
+            let lastNonEmptyHash;
+            for (let i = state.messages.length - 1; i >= 0; i--) {
+                if (state.messages[i].hash) {
+                    lastNonEmptyHash = state.messages[i].hash;
+                    break;
+                }
+            }
+            const { text, contextInfo } = action.payload;
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text,
+                contextInfo,
+                parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
+            });
+        },
+        startSystemMessage: (state, action) => {
+            state.generating = true;
+            state.responsed = false;
+            state.hasDone = false;
+            state.errorMessage = '';
+            state.currentMessage = '';
+        },
         reGenerating: (state) => {
             state.generating = true;
             state.responsed = false;
@@ -193,7 +193,7 @@ export const selectIsLastPage = (state: RootState) => state.chat.isLastPage;
 
 export const {
     startGenerating,
-	startSystemMessage,
+    startSystemMessage,
     stopGenerating,
     reGenerating,
     startResponsing,
