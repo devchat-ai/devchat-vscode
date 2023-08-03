@@ -6,7 +6,7 @@ import { useAppDispatch } from '@/views/hooks';
 
 import {
     reGenerating,
-} from './chatSlice';
+} from '@/views/chatSlice';
 
 const RegenerationButton = () => {
     const dispatch = useAppDispatch();

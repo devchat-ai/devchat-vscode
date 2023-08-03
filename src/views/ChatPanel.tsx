@@ -6,8 +6,8 @@ import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import CurrentMessage from "@/views/CurrentMessage";
-import StopButton from '@/views/StopButton';
-import RegenerationButton from '@/views/RegenerationButton';
+import StopButton from '@/views/components/StopButton';
+import RegenerationButton from '@/views/components/RegenerationButton';
 
 import {
     stopGenerating,
@@ -21,8 +21,8 @@ import {
     onMessagesTop,
     onMessagesMiddle,
     fetchHistoryMessages,
-	newMessage,
-	startSystemMessage,
+    newMessage,
+    startSystemMessage,
 } from './chatSlice';
 
 import InputMessage from './InputMessage';
@@ -82,8 +82,8 @@ const chatPanel = () => {
             }
         });
 
-		messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
-            dispatch(newMessage({ type: 'system', message: message.text}));
+        messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
+            dispatch(newMessage({ type: 'system', message: message.text }));
             // start generating
             dispatch(startSystemMessage(message.text));
             // Clear the input field
