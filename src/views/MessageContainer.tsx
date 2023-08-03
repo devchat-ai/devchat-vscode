@@ -2,7 +2,7 @@
 import { Center, Text, Accordion, Box, Stack, Container, Divider } from "@mantine/core";
 import React from "react";
 import CodeBlock from "@/views/components/CodeBlock";
-import MessageHeader from "@/views/MessageHeader";
+import MessageHeader from "@/views/components/MessageHeader";
 
 import { useAppSelector } from '@/views/hooks';
 import {
