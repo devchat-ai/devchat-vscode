@@ -52,7 +52,7 @@ const MessageHeader = (props: any) => {
                 align="center"
                 direction="row"
                 wrap="wrap"
-                style={{ marginLeft: 'auto' }}>
+                style={{ marginLeft: 'auto', marginRight: '10px' }}>
                 <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={done ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
@@ -89,7 +89,7 @@ const MessageHeader = (props: any) => {
             : <CopyButton value={message} timeout={2000}>
                 {({ copied, copy }) => (
                     <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy message'} withArrow position="left" color="gray">
-                        <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy} style={{ marginLeft: 'auto' }}>
+                        <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy} style={{ marginLeft: 'auto', marginRight: '10px' }}>
                             {copied ? <IconCheck size="1rem" /> : <IconCopy size="1rem" />}
                         </ActionIcon>
                     </Tooltip>
