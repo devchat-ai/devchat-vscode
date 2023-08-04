@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import messageUtil from '@/util/MessageUtil';
 import type { RootState } from '@/views/reducers/store';
 
-export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entries: [] }, { pageIndex: number }>('input/fetchHistoryMessages', async (params) => {
+export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entries: [] }, { pageIndex: number, length: number, startIndex: number }>('input/fetchHistoryMessages', async (params) => {
     const { pageIndex } = params;
     return new Promise((resolve, reject) => {
         try {
@@ -159,11 +159,11 @@ export const chatSlice = createSlice({
                             ];
                         })
                         .flat();
-                    if (state.pageIndex === 0) {
-                        state.messages = messages;
-                    } else if (state.pageIndex > 0) {
-                        state.messages = messages.concat(state.messages);
-                    }
+                    // if (state.pageIndex === 0) {
+                    state.messages = messages;
+                    // } else if (state.pageIndex > 0) {
+                    //     state.messages = messages.concat(state.messages);
+                    // }
                 } else {
                     state.isLastPage = true;
                 }

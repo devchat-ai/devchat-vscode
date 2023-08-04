@@ -1,11 +1,9 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
-import { ScrollArea } from '@mantine/core';
-import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { Center, Container, Stack, px } from '@mantine/core';
+import { useResizeObserver, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
 import RegenerationButton from '@/views/components/RegenerationButton';
 
@@ -15,12 +13,6 @@ import {
     happendError,
     selectGenerating,
     selectErrorMessage,
-    selectIsBottom,
-    selectIsLastPage,
-    onMessagesBottom,
-    onMessagesTop,
-    onMessagesMiddle,
-    fetchHistoryMessages,
     newMessage,
     startSystemMessage,
 } from '@/views/reducers/chatSlice';
@@ -28,53 +20,19 @@ import {
 import InputMessage from '@/views/components/InputMessage';
 import MessageContainer from '../components/MessageContainer';
 import { clearContexts, setValue } from '@/views/reducers/inputSlice';
-import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
 
 
 const chatPanel = () => {
     const dispatch = useAppDispatch();
     const generating = useAppSelector(selectGenerating);
-    const isBottom = useAppSelector(selectIsBottom);
-    const isLastPage = useAppSelector(selectIsLastPage);
     const errorMessage = useAppSelector(selectErrorMessage);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
 
-    const scrollToBottom = () =>
-        scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
-
-    const timer = useTimeout(() => {
-        if (isBottom) {
-            scrollToBottom();
-        }
-    }, 1000);
-
-    const onScrollPositionChange = ({ x, y }) => {
-        const sh = scrollViewport.current?.scrollHeight || 0;
-        const vh = scrollViewport.current?.clientHeight || 0;
-        const gap = sh - vh - y;
-        const isBottom = sh < vh ? true : gap < 100;
-        const isTop = y === 0;
-        // console.log(`sh:${sh},vh:${vh},x:${x},y:${y},gap:${gap}`);
-        if (isBottom) {
-            dispatch(onMessagesBottom());
-        } else if (isTop) {
-            dispatch(onMessagesTop());
-            if (!isLastPage) {
-                //TODO: Data loading flickers and has poor performance, so I temporarily disabled the loading logic.
-                // dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
-            }
-        } else {
-            dispatch(onMessagesMiddle());
-        }
-    };
-
     useEffect(() => {
-        dispatch(fetchHistoryMessages({ pageIndex: 0 }));
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             dispatch(startResponsing(message.text));
-            timer.start();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean, hash }) => {
             dispatch(stopGenerating({ hasDone: true, message: message }));
@@ -91,11 +49,6 @@ const chatPanel = () => {
             dispatch(setValue(''));
             dispatch(clearContexts());
         });
-
-        timer.start();
-        return () => {
-            timer.clear();
-        };
     }, []);
 
     return (
@@ -109,29 +62,9 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
-            {!isBottom && <ActionIcon
-                onClick={() => { scrollToBottom() }}
-                title='Bottom'
-                variant='transparent' sx={{ position: "absolute", bottom: 60, right: 20, zIndex: 999 }}>
-                <IconCircleArrowDownFilled size="1.125rem" />
-            </ActionIcon>}
-            <ScrollArea
-                sx={{
-                    height: generating ? height - px('8rem') : height - px('5rem'),
-                    width: chatContainerRect.width,
-                    padding: 0,
-                    margin: 0,
-                }}
-                onScrollPositionChange={onScrollPositionChange}
-                viewportRef={scrollViewport}>
-                <MessageContainer
-                    width={chatContainerRect.width} />
-                <CurrentMessage width={chatContainerRect.width} />
-                {errorMessage &&
-                    <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {errorMessage}
-                    </Alert>}
-            </ScrollArea>
+            <MessageContainer
+                height={generating ? height - px('8rem') : height - px('5rem')}
+                width={chatContainerRect.width} />
             <Stack
                 spacing={5}
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
