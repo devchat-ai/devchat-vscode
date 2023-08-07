@@ -7,23 +7,25 @@ import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
 
 
+// startIndex: 可选参数，没有代表最末尾
+// 最开始消息索引为0
 
-regInMessage({command: 'historyMessages', page: 0});
-regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
-export async function historyMessages(message: {command: string, page: number}, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+regInMessage({command: 'historyMessages', length: 0, startIndex: 0});
+regOutMessage({command: 'loadHistoryMessages', total: 0, entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
+export async function historyMessages(message: {command: string, length: number, startIndex: number}, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// if history message has load, send it to webview
-	const maxCount = Number(UiUtilWrapper.getConfiguration('DevChat', 'maxLogCount'));
-	const skip = maxCount * (message.page ? message.page : 0);
-
+	const lenght = message.length;
 	if (messageHistory.getTopic() !== TopicManager.getInstance().currentTopicId) {
 		const historyMessageAll = await historyMessagesBase();
-		if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
+		if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length <= lenght) {
 			MessageHandler.sendMessage(panel, historyMessageAll!);
 			return;
 		}
 	}
 
-	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(skip, maxCount);
+	const startIndex = message.startIndex? message.startIndex : 0-lenght; 
+
+	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(startIndex, lenght);
 	if (historyMessage) {
 		MessageHandler.sendMessage(panel, historyMessage);
 	}

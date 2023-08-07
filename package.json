@@ -459,6 +459,7 @@
 		"quote": "^0.4.0",
 		"react-markdown": "^8.0.7",
 		"react-syntax-highlighter": "^15.5.0",
+		"react-virtuoso": "^4.4.2",
 		"shell-escape": "^0.2.0",
 		"string-argv": "^0.3.2",
 		"uuid": "^9.0.0"

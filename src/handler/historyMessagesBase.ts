@@ -128,9 +128,18 @@ export function loadTopicHistoryFromCurrentMessageHistory(skip: number, count: n
 		} as LogEntry;
 	});
 
-	const logEntriesFlat = newEntries.reverse().slice(skip, skip + count).reverse();
+	let fix_skip = skip;
+	if (skip < 0) {
+		fix_skip = newEntries.length + skip;
+	}
+	if (fix_skip < 0) {
+		fix_skip = 0;
+	}
+
+	const logEntriesFlat = newEntries.slice(fix_skip, fix_skip + count);
 	return {
 		command: 'loadHistoryMessages',
+		total: newEntries.length,
 		entries: logEntriesFlat,
 	} as LoadHistoryMessages;
 }
@@ -144,6 +153,7 @@ export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefi
 		
 		return {
 			command: 'loadHistoryMessages',
+			total: 1,
 			entries: startMessage,
 		} as LoadHistoryMessages;
 	} else {
@@ -170,6 +180,7 @@ export async function historyMessagesBase(): Promise<LoadHistoryMessages | undef
 	
 	return {
 		command: 'loadHistoryMessages',
+		total: logEntriesFlat.length > 0 ? logEntriesFlat.length : 1,
 		entries: logEntriesFlat.length>0? logEntriesFlat : [welcomeMessage()],
 	} as LoadHistoryMessages;
 }

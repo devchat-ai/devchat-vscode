@@ -22,7 +22,7 @@ export async function applyAction(message: any, panel: vscode.WebviewPanel|vscod
 		
 			// send error message to devchat
 			const commandObj = JSON.parse(message.content)
-			const newMessage = `{"exit_code": ${result.exitCode}, stdout: ${result.stdout}, stderr: ${result.stderr}}`;
+			const newMessage = `{exit_code: ${result.exitCode}, stdout: ${result.stdout}, stderr: ${result.stderr}}`;
 			MessageHandler.sendMessage(panel, { "command": "systemMessage", "text": "waitting command reponse..." });
 			sendMessage({command: 'sendMessage', text: newMessage, parent_hash: message.parentHash}, panel, commandObj.name);
 		
