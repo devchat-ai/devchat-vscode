@@ -6,7 +6,7 @@
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
-		"vscode": "^1.74.0"
+		"vscode": "^1.75.0"
 	},
 	"repository": {
 		"type": "git",
@@ -402,7 +402,7 @@
 		"@types/shell-escape": "^0.2.1",
 		"@types/sinon": "^10.0.15",
 		"@types/uuid": "^9.0.1",
-		"@types/vscode": "^1.74.0",
+		"@types/vscode": "^1.75.0",
 		"@typescript-eslint/eslint-plugin": "^5.56.0",
 		"@typescript-eslint/parser": "^5.56.0",
 		"@vscode/test-electron": "^2.3.0",
