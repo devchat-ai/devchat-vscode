@@ -102,7 +102,8 @@ class DevChat {
 			}
 		}
 
-		if (options.functions) {
+		const isEnableFunctionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
+		if (options.functions && isEnableFunctionCalling) {
 			args.push("-f", options.functions);
 		}
 
