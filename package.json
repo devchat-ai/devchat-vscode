@@ -149,6 +149,12 @@
 						}
 					},
 					"description": "Which Python interpreter to use with DevChat?"
+				},
+				"DevChat.EnableFunctionCalling": {
+					"type": "boolean",
+					"default": false,
+					"description": "Enable/Disable function calling for GPT.",
+					"when": "DevChat.llmModel == 'OpenAI'"
 				}
 			}
 		},
