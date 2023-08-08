@@ -12,7 +12,6 @@ import { SymbolInFileAction } from './symbolInFileAction';
 import { CurrentDocumentAction } from './currentDocumentAction';
 import { SelectTextAction, SelectBlockAction } from './selectContextAction';
 import { RunVSCodeCommandAction } from './runVSCodeCommand';
-import { OpenVSCodeTerminalAction } from './openVSCodeTerminalAction';
 
 
 // extend Action
@@ -67,7 +66,6 @@ export default class ActionManager {
 			ActionManager.instance.registerAction(new SelectTextAction());
 			ActionManager.instance.registerAction(new SelectBlockAction());
 			ActionManager.instance.registerAction(new RunVSCodeCommandAction());
-			ActionManager.instance.registerAction(new OpenVSCodeTerminalAction());
 		}
 
 		return ActionManager.instance;
