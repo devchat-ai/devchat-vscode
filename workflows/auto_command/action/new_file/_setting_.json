@@ -20,9 +20,5 @@
 		}
 	],
 	"action": "new_file",
-	"handler": [
-		"cp",
-		"${content}",
-		"${fileName}"
-	]
+	"handler": ["python", "${CurDir}/handler.py", "${content}", "${fileName}"]
 }

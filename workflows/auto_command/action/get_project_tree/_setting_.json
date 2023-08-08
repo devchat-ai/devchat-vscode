@@ -1,9 +1,9 @@
 {
 	"name": "get_project_tree",
-	"description": "Get project file list",
+	"description": "Get project file list.",
 	"type": ["project"],
 	"action": "get_project_tree",
 	"args": [
 	],
-	"handler": ["git", "ls-files"]
+	"handler": ["python", "${CurDir}/handler.py"]
 }
