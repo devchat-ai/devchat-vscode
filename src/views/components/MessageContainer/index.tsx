@@ -13,6 +13,9 @@ import {
     selectErrorMessage,
     selectIsBottom,
     fetchHistoryMessages,
+    selectTotalCount,
+    selectNextFirstItemIndex,
+    selectPageSize,
 } from '@/views/reducers/chatSlice';
 import { IconCircleArrowDownFilled } from "@tabler/icons-react";
 
@@ -136,25 +139,25 @@ const MessageContainer = (props: any) => {
     const [behavior, setBehavior] = useState("smooth");
     const virtuoso = useRef<any>(null);
     const { height, width } = props;
-    const START_INDEX = 100;
-    const INITIAL_ITEM_COUNT = 10;
-    const [firstItemIndex, setFirstItemIndex] = useState(START_INDEX);
-
+    const totalCount = useAppSelector<number>(selectTotalCount);
+    const nextFirstItemIndex = useAppSelector<number>(selectNextFirstItemIndex);
+    const pageSize = useAppSelector<number>(selectPageSize);
     const prependItems = useCallback(() => {
-        const messagesToPrepend = 10;
-        const nextFirstItemIndex = firstItemIndex - messagesToPrepend;
-
+        if (nextFirstItemIndex + pageSize < 0) {
+            console.log('the last page');
+            return true;
+        }
+        const length = nextFirstItemIndex < 0 ? pageSize + nextFirstItemIndex : pageSize;
+        const startIndex = nextFirstItemIndex < 0 ? 0 : nextFirstItemIndex;
+        // console.log('prependItems startIndex = %s, length = %s', startIndex, length);
         setTimeout(() => {
-            setFirstItemIndex(() => nextFirstItemIndex);
-            const pageIndex = (START_INDEX - nextFirstItemIndex) / messagesToPrepend;
-            dispatch(fetchHistoryMessages({ pageIndex: pageIndex, length: messagesToPrepend, startIndex: nextFirstItemIndex }));
+            dispatch(fetchHistoryMessages({ length: length, startIndex: startIndex }));
         }, 500);
-
         return false;
-    }, [firstItemIndex, messages]);
+    }, [nextFirstItemIndex, messages]);
 
     useEffect(() => {
-        dispatch(fetchHistoryMessages({ pageIndex: 0, length: INITIAL_ITEM_COUNT, startIndex: START_INDEX }));
+        dispatch(fetchHistoryMessages({ length: pageSize, startIndex: totalCount }));
     }, []);
 
     return (
@@ -182,10 +185,10 @@ const MessageContainer = (props: any) => {
                     overflowX: 'hidden',
                     overflowY: 'auto',
                 }}
-                overscan={200}
+                overscan={300}
                 alignToBottom={true}
-                firstItemIndex={firstItemIndex}
-                initialTopMostItemIndex={INITIAL_ITEM_COUNT - 1}
+                firstItemIndex={nextFirstItemIndex}
+                initialTopMostItemIndex={pageSize - 1}
                 data={messages}
                 startReached={prependItems}
                 itemContent={(index, item) => {

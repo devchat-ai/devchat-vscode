@@ -10,9 +10,9 @@ import { UiUtilWrapper } from '../util/uiUtil';
 // startIndex: 可选参数，没有代表最末尾
 // 最开始消息索引为0
 
-regInMessage({command: 'historyMessages', length: 0, startIndex: 0});
-regOutMessage({command: 'loadHistoryMessages', total: 0, entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
-export async function historyMessages(message: {command: string, length: number, startIndex: number}, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+regInMessage({ command: 'historyMessages', length: 0, startIndex: 0 });
+regOutMessage({ command: 'loadHistoryMessages', total: 0, entries: [{ hash: '', user: '', date: '', request: '', response: '', context: [{ content: '', role: '' }] }] });
+export async function historyMessages(message: { command: string, length: number, startIndex: number }, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
 	// if history message has load, send it to webview
 	const lenght = message.length;
 	if (messageHistory.getTopic() !== TopicManager.getInstance().currentTopicId) {
@@ -23,7 +23,7 @@ export async function historyMessages(message: {command: string, length: number,
 		}
 	}
 
-	const startIndex = message.startIndex? message.startIndex : 0-lenght; 
+	const startIndex = message.startIndex !== undefined ? message.startIndex : 0 - lenght;
 
 	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(startIndex, lenght);
 	if (historyMessage) {
@@ -31,7 +31,7 @@ export async function historyMessages(message: {command: string, length: number,
 	}
 }
 
-export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
 	const resMessage = await onApiKeyBase(apiKey);
 	MessageHandler.sendMessage(panel, resMessage);
 }

@@ -2,14 +2,19 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import messageUtil from '@/util/MessageUtil';
 import type { RootState } from '@/views/reducers/store';
 
-export const fetchHistoryMessages = createAsyncThunk<{ pageIndex: number, entries: [] }, { pageIndex: number, length: number, startIndex: number }>('input/fetchHistoryMessages', async (params) => {
-    const { pageIndex } = params;
+export const fetchHistoryMessages = createAsyncThunk<{ startIndex: number, total: number, entries: [] }, { length: number, startIndex: number }>('input/fetchHistoryMessages', async (params) => {
+    const { length, startIndex } = params;
     return new Promise((resolve, reject) => {
         try {
-            messageUtil.sendMessage({ command: 'historyMessages', page: pageIndex });
+            if (startIndex === 100100100100) {
+                messageUtil.sendMessage({ command: 'historyMessages', length: length / 2 });
+            } else {
+                messageUtil.sendMessage({ command: 'historyMessages', startIndex: startIndex / 2, length: length / 2 });
+            }
             messageUtil.registerHandler('loadHistoryMessages', (message: any) => {
                 resolve({
-                    pageIndex: pageIndex,
+                    startIndex: startIndex,
+                    total: message.total,
                     entries: message.entries
                 });
             });
@@ -45,7 +50,9 @@ export const chatSlice = createSlice({
         hasDone: false,
         errorMessage: '',
         messages: <any>[],
-        pageIndex: 0,
+        totalCount: 100100100100,
+        pageSize: 10,
+        nextFirstItemIndex: <number>100100100080,
         isLastPage: false,
         isBottom: true,
         isTop: false,
@@ -113,6 +120,7 @@ export const chatSlice = createSlice({
         newMessage: (state, action) => {
             state.messages.push(action.payload);
             state.lastMessage = action.payload;
+            state.totalCount++;
         },
         updateLastMessage: (state, action) => {
             state.messages[state.messages.length - 1] = action.payload;
@@ -120,12 +128,15 @@ export const chatSlice = createSlice({
         },
         shiftMessage: (state) => {
             state.messages.splice(0, 1);
+            state.totalCount--;
         },
         popMessage: (state) => {
             state.messages.pop();
+            state.totalCount--;
         },
         clearMessages: (state) => {
             state.messages.length = 0;
+            state.totalCount = 0;
         },
         happendError: (state, action) => {
             state.errorMessage = action.payload;
@@ -146,9 +157,14 @@ export const chatSlice = createSlice({
     extraReducers: (builder) => {
         builder
             .addCase(fetchHistoryMessages.fulfilled, (state, action) => {
-                const { pageIndex, entries } = action.payload;
+                const { startIndex, total, entries } = action.payload;
+                const { pageSize } = state;
+                state.totalCount = total * 2;
+                const currentStarIndex = startIndex === 100100100100 ? state.totalCount - state.pageSize : startIndex;
+                state.nextFirstItemIndex = currentStarIndex - pageSize;
+                // console.log('total count = %s,currentStarIndex = %s, nextFirstItemIndex = %s', state.totalCount, currentStarIndex, state.nextFirstItemIndex);
+
                 if (entries.length > 0) {
-                    state.pageIndex = pageIndex;
                     const messages = entries
                         .map((item: any, index) => {
                             const { hash, user, date, request, response, context } = item;
@@ -159,11 +175,11 @@ export const chatSlice = createSlice({
                             ];
                         })
                         .flat();
-                    // if (state.pageIndex === 0) {
-                    state.messages = messages;
-                    // } else if (state.pageIndex > 0) {
-                    //     state.messages = messages.concat(state.messages);
-                    // }
+                    if (startIndex === 100100100100) {
+                        state.messages = messages;
+                    } else {
+                        state.messages = messages.concat(state.messages);
+                    }
                 } else {
                     state.isLastPage = true;
                 }
@@ -173,6 +189,7 @@ export const chatSlice = createSlice({
                 const index = state.messages.findIndex((item: any) => item.hash === hash);
                 if (index > -1) {
                     state.messages.splice(index);
+                    state.totalCount = state.totalCount - 2;
                 }
             });
     }
@@ -187,7 +204,9 @@ export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
 export const selectIsBottom = (state: RootState) => state.chat.isBottom;
 export const selectIsTop = (state: RootState) => state.chat.isTop;
-export const selectPageIndex = (state: RootState) => state.chat.pageIndex;
+export const selectTotalCount = (state: RootState) => state.chat.totalCount;
+export const selectNextFirstItemIndex = (state: RootState) => state.chat.nextFirstItemIndex;
+export const selectPageSize = (state: RootState) => state.chat.pageSize;
 export const selectIsLastPage = (state: RootState) => state.chat.isLastPage;
 
 
