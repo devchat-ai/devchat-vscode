@@ -1,4 +1,6 @@
 import os
+import re
+import pathlib
 import subprocess
 import sys
 import tempfile
@@ -39,7 +41,7 @@ def get_pythoncmd_in_env(venvdir, envname):
         subprocess.run([pythonCommandEnv, "-V"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
         return pythonCommandEnv
     except Exception:
-        return False
+        return ''
 
 
 def pip_cmd_run(pipcmd, with_user: bool, with_local_source: bool):
@@ -112,7 +114,9 @@ def pip_install_devchat(pythoncmd):
     
     # second step: install devchat
     if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "devchat", "--force"], 3, False)):
-        pip_command_env = pythoncmd.replace("/python", "/devchat")
+        # get parent path for pythoncmd
+        pythoncmd_parent_path = pathlib.Path(pythoncmd).parent
+        pip_command_env = os.path.join(pythoncmd_parent_path, "devchat")
         print("==> devchatCommandEnv: ", pip_command_env)
         return True
     else:
@@ -143,6 +147,13 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
             return True
         except Exception:
             return False
+    
+    def extract_actual_location(text):
+        match = re.search(r'Actual location:\s+"(.*?)"', text)
+        if match:
+            return match.group(1)
+        else:
+            return None
 
     # second step: check if env already exists
     if os.path.exists(venvdir + "/" + envname):
@@ -170,8 +181,23 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
     try:
         # before command run, output runnning command
         print("run command: ", pythoncmd, "-m virtualenv", venvdir + "/" + envname)
-        subprocess.run([pythoncmd, "-m", "virtualenv", venvdir + "/" + envname], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
-        return get_pythoncmd_in_env(venvdir, envname)
+        with tempfile.NamedTemporaryFile(delete=True) as temp_file:
+            try:
+                subprocess.run([pythoncmd, "-m", "virtualenv", venvdir + "/" + envname], check=True, stdout=temp_file, stderr=sys.stderr, text=True)
+                pythonCmd = get_pythoncmd_in_env(venvdir, envname)
+                if pythonCmd == '':
+                    temp_file.flush()
+                    outputText = temp_file.read()
+                    pythonCmd = extract_actual_location(outputText)
+                    if pythonCmd is None:
+                        print('create env failed')
+                        print(error)
+                        return False
+                return pythonCmd
+            except Exception as error:
+                print('create env failed')
+                print(error)
+                return False
     except Exception as error:
         print('create env failed')
         print(error)
