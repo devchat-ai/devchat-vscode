@@ -72,6 +72,10 @@ export default class ActionManager {
 	}
 
 	public registerAction(action: Action): void {
+		const existAction = this.actions.find(a => a.name === action.name);
+		if (existAction) {
+			return ;
+		}
 		this.actions.push(action);
 	}
 
@@ -169,7 +173,6 @@ export default class ActionManager {
 	}
 
 	public loadCustomActions(workflowsDir: string): void {
-		this.actions = [];
 		const customActionsInstance = CustomActions.getInstance();
 		customActionsInstance.parseActions(workflowsDir);
 
