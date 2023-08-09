@@ -52,6 +52,11 @@ export class MessageHandler {
 			if (message.text.indexOf('/autox') !== -1) {
 				autox = true;
 			}
+			// if "/ask-code" in message.text, then call devchat-ask to get result
+			if (message.text.indexOf('/ask-code') !== -1) {
+				message.command = 'askCode';
+				message.text = message.text.replace('/ask-code', '');
+			}
 		}
 
 		const handler = this.handlers[message.command];
