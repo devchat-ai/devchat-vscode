@@ -169,8 +169,8 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
     print("create env: ", venvdir + "/" + envname)
     try:
         # before command run, output runnning command
-        print("run command: ", pythoncmd, "-m virtualenv", venvdir + "/" + envname + " --python=python3.11.4")
-        subprocess.run([pythoncmd, "-m", "virtualenv", venvdir + "/" + envname, "--python=python3.11.4"], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
+        print("run command: ", pythoncmd, "-m virtualenv", venvdir + "/" + envname)
+        subprocess.run([pythoncmd, "-m", "virtualenv", venvdir + "/" + envname], check=True,     stdout=sys.stdout, stderr=sys.stderr, text=True)
         return get_pythoncmd_in_env(venvdir, envname)
     except Exception as error:
         print('create env failed')
