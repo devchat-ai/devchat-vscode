@@ -27,7 +27,10 @@ export interface ChatContext {
     }
   
     registerContext(context: ChatContext): void {
-      this.contexts.push(context);
+		const existContext = this.contexts.find(c => c.name === context.name);
+      	if (!existContext) {
+			this.contexts.push(context);
+		}
     }
 
 	public async loadCustomContexts(workflowsDir: string): Promise<void> {

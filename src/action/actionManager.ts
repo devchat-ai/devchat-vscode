@@ -169,6 +169,7 @@ export default class ActionManager {
 	}
 
 	public loadCustomActions(workflowsDir: string): void {
+		this.actions = [];
 		const customActionsInstance = CustomActions.getInstance();
 		customActionsInstance.parseActions(workflowsDir);
 
