@@ -8,6 +8,12 @@ import { ApiKeyManager } from '../util/apiKey';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { isValidApiKey } from '../handler/historyMessagesBase';
 
+import { logger } from '../util/logger';
+import { CommandRun } from '../util/commonUtil';
+import { updateIndexingStatus, updateLastModifyTime } from '../util/askCodeUtil';
+
+let indexProcess: CommandRun | null = null;
+
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
@@ -220,6 +226,131 @@ export function TestDevChatCommand(context: vscode.ExtensionContext) {
 			TopicManager.getInstance().loadTopics();
 		})
 	);
+}
+
+
+
+export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStart', async () => {
+        const config = getConfig();
+        const pythonVirtualEnv = config.pythonVirtualEnv;
+        const pythonPath = config.pythonPath;
+        const supportedFileTypes = config.supportedFileTypes;
+
+		updateIndexingStatus("started");
+
+        if (!pythonVirtualEnv) {
+            await installAskCode(pythonPath, supportedFileTypes);
+        } else {
+            await indexCode(pythonVirtualEnv, supportedFileTypes);
+        }
+
+		updateIndexingStatus("stopped");
+    });
+    context.subscriptions.push(disposable);
+}
+
+function getConfig() {
+    return {
+        pythonVirtualEnv: vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv'),
+        pythonPath: vscode.workspace.getConfiguration('DevChat').get('PythonPath'),
+        supportedFileTypes: vscode.workspace.getConfiguration('DevChat.askcode').get('supportedFileTypes'),
+    };
+}
+
+async function installAskCode(pythonPath, supportedFileTypes) {
+    const command = pythonPath;
+    const args = [UiUtilWrapper.extensionPath() + "/tools/install_askcode.py"];
+    const options = { cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.' };
+
+    indexProcess = new CommandRun();
+    let pythonEnvPath: string | null = null;
+    const result = await indexProcess.spawnAsync(command, args, options, (data) => {
+        logger.channel()?.info(`stdout: ${data}`);
+        // Extract the Python path from the output
+        const match = data.match(/==> askPythonEnv: (.*)/);
+        if (match) {
+            pythonEnvPath = match[1];
+            // Use the extracted Python path to update the configuration
+            UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
+        }
+    }, (data) => {
+        logger.channel()?.info(`${data}`);
+    }, undefined, undefined);
+
+    if (pythonEnvPath === null) {
+		logger.channel()?.error(`Installation failed: ${result.stderr}`);
+		logger.channel()?.show();
+        vscode.window.showErrorMessage(`Installation failed: ${result.stderr}`);
+        return;
+    }
+
+    logger.channel()?.info(`Installation finished.`);
+    
+    // Execute the indexing command after the installation is finished
+    await indexCode(pythonEnvPath, supportedFileTypes);
+}
+
+async function indexCode(pythonVirtualEnv, supportedFileTypes) {
+    let envs = {};
+
+    let openaiApiKey = await ApiKeyManager.getApiKey();
+    if (!openaiApiKey) {
+        logger.channel()?.error('The OpenAI key is invalid!');
+        logger.channel()?.show();
+        return;
+    }
+    envs['OPENAI_API_KEY'] = openaiApiKey;
+
+    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    if (openAiApiBase) {
+        envs['OPENAI_API_BASE'] = openAiApiBase;
+    }
+
+    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+    
+    const command = pythonVirtualEnv.trim();
+    const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "index", ".", supportedFileTypes];
+    const options = { env: envs, cwd: workspaceDir };
+
+    indexProcess = new CommandRun();
+    const result = await indexProcess.spawnAsync(command, args, options, (data) => {
+        if (data.includes('Skip file:')) {
+			return;
+		}
+		logger.channel()?.info(`${data}`);
+    }, (data) => {
+		if (data.includes('Skip file:')) {
+			return;
+		}
+        logger.channel()?.info(`${data}`);
+    }, undefined, undefined);
+
+    if (result.exitCode !== 0) {
+		if (result.exitCode === null) {
+			logger.channel()?.info(`Indexing stopped!`);
+		} else {
+			logger.channel()?.error(`Indexing failed: ${result.stderr}`);
+			logger.channel()?.show();
+			vscode.window.showErrorMessage(`Indexing failed: ${result.stderr}`);
+		}
+        return;
+    }
+
+	updateLastModifyTime();
+    logger.channel()?.info(`index finished.`);
+    vscode.window.showInformationMessage('Indexing finished.');
+}
+
+
+export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStop', async () => {
+        if (indexProcess) {
+			indexProcess.stop();
+			indexProcess = null;
+		}
+    });
+    context.subscriptions.push(disposable);
 }
 
 export {

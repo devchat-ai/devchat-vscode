@@ -7,7 +7,13 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import { ApiKeyManager } from '../util/apiKey';
+import { logger } from '../util/logger';
+import { exec as execCb } from 'child_process';
+import { promisify } from 'util';
+import { CommandRun, createTempSubdirectory } from '../util/commonUtil';
 
+const exec = promisify(execCb);
 
 let _lastMessage: any = undefined;
 
@@ -25,6 +31,87 @@ export function deleteTempFiles(fileName: string): void {
     // Delete the file
     fs.unlinkSync(fileName);
 }
+
+regInMessage({command: 'askCode', text: '', parent_hash: undefined});
+regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
+export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+    _lastMessage = [message];
+	_lastMessage[0]['askCode'] = true;
+
+    let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+    if (!pythonVirtualEnv) {
+		try {
+			await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
+		} catch (error) {
+			logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
+			logger.channel()?.show();
+			return;
+		}
+
+		pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		if (!pythonVirtualEnv) {
+	        MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
+    	    return ;
+		}
+    }
+
+    let envs = {};
+
+    let openaiApiKey = await ApiKeyManager.getApiKey();
+    if (!openaiApiKey) {
+        logger.channel()?.error('The OpenAI key is invalid!');
+        logger.channel()?.show();
+        return;
+    }
+    envs['OPENAI_API_KEY'] = openaiApiKey;
+
+    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    if (openAiApiBase) {
+        envs['OPENAI_API_BASE'] = openAiApiBase;
+    }
+
+    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+    
+    try {
+        // create temp directory and file
+        const tempDir = await createTempSubdirectory('devchat/context');
+        const tempFile = path.join(tempDir, "doc_context.txt");
+
+        // If tempFile already exists, delete it
+        if (fs.existsSync(tempFile)) {
+            fs.unlinkSync(tempFile);
+        }
+
+        const commandRun = new CommandRun();
+        const command = pythonVirtualEnv.trim();
+        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, tempFile];
+        const result = await commandRun.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
+            logger.channel()?.info(data);
+        }, (data) => {
+            logger.channel()?.error(data);
+        }, undefined, undefined);
+
+        // Check if tempFile has been written to
+        if (!fs.existsSync(tempFile) || fs.readFileSync(tempFile, 'utf8') === '') {
+            logger.channel()?.error(`Did not get relevant context from AskCode.`);
+            logger.channel()?.show();
+			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
+            return;
+        }
+
+        // Send message
+        await sendMessage({command: "sendMessage", contextInfo: [{file: tempFile, context: ""}], text: message.text, parent_hash: message.hash}, panel);
+    } catch (error) {
+        if (error instanceof Error) {
+            logger.channel()?.error(`error: ${error.message}`);
+        } else {
+            logger.channel()?.error(`An unknown error occurred: ${error}`);
+        }
+        logger.channel()?.show();
+		MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
+    }
+}
+
 
 regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
@@ -80,7 +167,11 @@ regInMessage({command: 'regeneration'});
 export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// call sendMessage to send last message again
 	if (_lastMessage) {
-		sendMessage(_lastMessage[0], panel, _lastMessage[1]);
+		if (_lastMessage[0]['askCode']) {
+			await askCode(_lastMessage[0], panel);
+		} else {
+			await sendMessage(_lastMessage[0], panel, _lastMessage[1]);
+		}
 	}
 }
 
