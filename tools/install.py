@@ -1,5 +1,6 @@
 import os
 import re
+import pathlib
 import subprocess
 import sys
 import tempfile
@@ -113,7 +114,9 @@ def pip_install_devchat(pythoncmd):
     
     # second step: install devchat
     if (pip_cmd_with_retries([pythoncmd, "-m", "pip", "install", "devchat", "--force"], 3, False)):
-        pip_command_env = pythoncmd.replace("/python", "/devchat")
+        # get parent path for pythoncmd
+        pythoncmd_parent_path = pathlib.Path(pythoncmd).parent
+        pip_command_env = os.path.join(pythoncmd_parent_path, "devchat")
         print("==> devchatCommandEnv: ", pip_command_env)
         return True
     else:
