@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
-import { logger } from '@/util/logger';
+import { isIndexingStopped, isNeedIndexingCode } from '../util/askCodeUtil';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-
+	
     // Set the status bar item properties
     statusBarItem.text = `$(warning)DevChat`;
     statusBarItem.tooltip = 'DevChat is checking ..., please wait';
@@ -66,4 +66,33 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 
 	context.subscriptions.push(statusBarItem);
     return statusBarItem;
+}
+
+export function createAskCodeStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
+	const askCodeBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
+
+	askCodeBarItem.text = `AskCode`;
+	askCodeBarItem.tooltip = `Wait for check status for /ask-code`;
+	askCodeBarItem.command = undefined;
+
+	setInterval(async () => {
+		if (isIndexingStopped()) {
+			if (isNeedIndexingCode()) {
+				askCodeBarItem.tooltip = `Click to index code for /ask-code`;
+				askCodeBarItem.command = 'DevChat.AskCodeIndexStart';
+			} else {
+				askCodeBarItem.tooltip = `No need to index code for /ask-code`;
+				askCodeBarItem.command = undefined;
+			}
+			
+		} else {
+			askCodeBarItem.tooltip = `Click to stop indexing code for /ask-code`;
+			askCodeBarItem.command = 'DevChat.AskCodeIndexStop';
+		}
+	}, 10000);
+
+	askCodeBarItem.show();
+	context.subscriptions.push(askCodeBarItem);
+
+	return askCodeBarItem;
 }

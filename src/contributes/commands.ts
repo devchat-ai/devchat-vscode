@@ -10,6 +10,7 @@ import { isValidApiKey } from '../handler/historyMessagesBase';
 
 import { logger } from '../util/logger';
 import { CommandRun } from '../util/commonUtil';
+import { updateIndexingStatus, updateLastModifyTime } from '../util/askCodeUtil';
 
 let indexProcess: CommandRun | null = null;
 
@@ -236,11 +237,15 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
         const pythonPath = config.pythonPath;
         const supportedFileTypes = config.supportedFileTypes;
 
+		updateIndexingStatus("started");
+
         if (!pythonVirtualEnv) {
             await installAskCode(pythonPath, supportedFileTypes);
         } else {
             await indexCode(pythonVirtualEnv, supportedFileTypes);
         }
+
+		updateIndexingStatus("stopped");
     });
     context.subscriptions.push(disposable);
 }
@@ -332,6 +337,7 @@ async function indexCode(pythonVirtualEnv, supportedFileTypes) {
         return;
     }
 
+	updateLastModifyTime();
     logger.channel()?.info(`index finished.`);
     vscode.window.showInformationMessage('Indexing finished.');
 }

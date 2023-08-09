@@ -24,7 +24,7 @@ import { regDevChatView, regTopicView } from './contributes/views';
 import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
 import { LoggerChannelVscode } from './util/logger_vscode';
-import { createStatusBarItem } from './panel/statusBarView';
+import { createStatusBarItem, createAskCodeStatusBarItem } from './panel/statusBarView';
 import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
 
@@ -49,6 +49,7 @@ function activate(context: vscode.ExtensionContext) {
 	registerStatusBarItemClickCommand(context);
 
 	createStatusBarItem(context);
+	createAskCodeStatusBarItem(context);
 
 	regTopicDeleteCommand(context);
 	regAddTopicCommand(context);
