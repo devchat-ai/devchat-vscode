@@ -1,0 +1,13 @@
+{
+	"name": "query_data",
+	"description": "Search for content information related to the problem from the vector database",
+	"type": ["question"],
+	"args": [{
+			"name": "question",
+			"description": "selected question",
+			"type": "string",
+			"from": "content.content.question"
+		}],
+	"action": "query_data",
+	"handler": ["${PythonVirtualEnv}", "${CurDir}/handler.py", "${question}"]
+}
