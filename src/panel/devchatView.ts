@@ -28,10 +28,7 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		return this._view;
 	}
 
-	resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken): void {
-		// 创建 .chat 目录并复制 workflows
-		createChatDirectoryAndCopyInstructionsSync(ExtensionContextHolder.context?.extensionUri!);
-
+	reloadCustomDefines() {
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
@@ -42,6 +39,13 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			const actionInstrucFile = path.join(UiUtilWrapper.workspaceFoldersFirstPath()!, './.chat/functions.json');
 			ActionManager.getInstance().saveActionInstructionFile( actionInstrucFile);
 		}
+	}
+
+	resolveWebviewView(webviewView: vscode.WebviewView, context: vscode.WebviewViewResolveContext, _token: vscode.CancellationToken): void {
+		// 创建 .chat 目录并复制 workflows
+		createChatDirectoryAndCopyInstructionsSync(ExtensionContextHolder.context?.extensionUri!);
+
+		this.reloadCustomDefines();
 
 		this._view = webviewView;
 
@@ -52,6 +56,7 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 
 	public reloadWebview(): void {
 		if (this._webviewManager) {
+			this.reloadCustomDefines();
 			this._webviewManager.reloadWebviewContent();
 		}
 	}
