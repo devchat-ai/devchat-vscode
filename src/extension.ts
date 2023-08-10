@@ -15,6 +15,8 @@ import {
 	regApplyDiffResultCommand,
 	registerStatusBarItemClickCommand,
 	regPythonPathCommand,
+	registerAskCodeIndexStartCommand,
+    registerAskCodeIndexStopCommand,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -56,5 +58,7 @@ function activate(context: vscode.ExtensionContext) {
 	regApplyDiffResultCommand(context);
 
 	regPythonPathCommand(context);
+	registerAskCodeIndexStartCommand(context);
+    registerAskCodeIndexStopCommand(context);
 }
 exports.activate = activate;
