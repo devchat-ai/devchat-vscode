@@ -22,12 +22,7 @@
 
 ## What is DevChat?
 
-DevChat is the open-source solution to help you write prompts to generate code and documentation, going beyond simple code auto-completion.
-It isn't limited to performing predefined operations on short code snippets.
-
-DevChat is the way developers interact and collaborate with AI.
-
-💬 Build the future with prompts, _not_ code.
+DevChat is an open-source platform that empowers developers to leverage AI for code generation and documentation. We aim to go beyond simple code auto-completion and limited operations on brief code snippets. DevChat offers a highly *practical* and *effective* way for developers to interact and collaborate with AI.
 
 ## Why DevChat?
 
