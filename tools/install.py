@@ -149,7 +149,7 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
             return False
     
     def extract_actual_location(text):
-        match = re.search(r'Actual location:\s+"(.*?)"', text)
+        match = re.search(rb'Actual location:\s+"(.*?)"', text)
         if match:
             return match.group(1)
         else:
@@ -193,6 +193,8 @@ def virtualenv_create_venv(pythoncmd, venvdir, envname):
                         print('create env failed')
                         print(error)
                         return False
+                    else:
+                        pythonCmd = pythonCmd.decode()
                 return pythonCmd
             except Exception as error:
                 print('create env failed')
