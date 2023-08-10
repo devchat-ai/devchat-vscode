@@ -26,6 +26,15 @@ DevChat is an open-source platform that empowers developers to leverage AI for c
 
 ## Why DevChat?
 
+While there are many AI coding tools available, we created DevChat based on our unique insights gained from generating tens of thousands of lines of code. If you agree with our perspectives outlined below, DevChat could be the perfect choice for you.
+
+- The value of prompt "engineering" is often overestimated. While a well-crafted prompt template can be helpful, it's not worth spending more than an hour or two to create a few effective ones and share them with your team.
+- The art of writing prompts is a skill honed through practice. It's not about templates or engineering, but about refining individual prompts for specific tasks on a case-by-case basis.
+- The key to success lies in embedding the right context in a prompt. This isn't about the token limit of an AI model. Even with infinite tokens, AI would struggle to deliver good results without proper separation of concerns.
+- Use AI only when it truly adds value. The issue of AI hallucination is less of a concern compared to our overestimation of AI's capabilities. What we need is a tool that boosts productivity, not merely an experimental tool.
+
+## Explore Our Features
+
 - Great output requires great input, to maximize the power of AI, DevChat assists you seamlessly to **provide the right context** to the AI.
     
   Chat history, code, files, directory trees, `git diff --cached`, or the output of any command.
@@ -34,13 +43,11 @@ DevChat is an open-source platform that empowers developers to leverage AI for c
 
   ![20230523-220717-00 00 28 206-00 00 44 950](https://github.com/devchat-ai/devchat-vscode/assets/592493/d5556310-bc7f-4abb-86a3-8e76e4aa720e)  
 
-- Once you have generated code with AI, DevChat **streamlines the actions** to properly integrate and ship.
+Once you have generated code with AI, DevChat **streamlines the actions** to properly integrate and ship.
   
   View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
   
   ![20230523-220717-00 00 46 728-00 01 00 120](https://github.com/devchat-ai/devchat-vscode/assets/592493/a2bab011-8e31-47a9-838f-36e43cd2e98c)
-
-  ![20230523-220717-00 01 00 120-00 01 14 452](https://github.com/devchat-ai/devchat-vscode/assets/592493/31e90fd5-e797-4726-b5b2-5c4dce1c7551)
 
 - To guide AI in your work, define **your own workflows** with DevChat.
   
@@ -104,6 +111,6 @@ Check out our [Automated Publishing Process](./docs/publish.md) for a detailed w
 
 ## Contact Information
   
-hello@merico.dev
+hello@devchat.ai
 
 We are creators of [Apache DevLake](https://devlake.apache.org/).
