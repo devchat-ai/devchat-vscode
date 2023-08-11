@@ -22,16 +22,20 @@
 
 ## What is DevChat?
 
-DevChat is an open-source platform that empowers developers to leverage AI for code generation and documentation. We aim to go beyond simple code auto-completion and limited operations on brief code snippets. DevChat offers a highly *practical* and *effective* way for developers to interact and collaborate with AI.
+DevChat is an open-source platform that empowers developers to leverage AI for code generation and documentation. We aim to go beyond simple code auto-completion and limited operations on brief code snippets. DevChat offers a highly *practical* and *effective* way for developers to interact and collaborate with large language models (LLMs).
 
 ## Why DevChat?
 
 While there are many AI coding tools available, we created DevChat based on our unique insights gained from generating tens of thousands of lines of code. If you agree with our perspectives outlined below, DevChat could be the perfect choice for you.
 
-- The value of prompt "engineering" is often overestimated. While a well-crafted prompt template can be helpful, it's not worth spending more than an hour or two to create a few effective ones and share them with your team.
-- The art of writing prompts is a skill honed through practice. It's not about templates or engineering, but about refining individual prompts for specific tasks on a case-by-case basis.
-- The key to success lies in embedding the right context in a prompt. This isn't about the token limit of an AI model. Even with infinite tokens, AI would struggle to deliver good results without proper separation of concerns.
-- Use AI only when it truly adds value. The issue of AI hallucination is less of a concern compared to our overestimation of AI's capabilities. What we need is a tool that boosts productivity, not merely an experimental tool.
+- **The value of prompt "engineering" is often overestimated**. While a well-crafted prompt template can be helpful, it's not worth spending more than an hour or two to create a few effective ones and share them with your team.
+- The art of writing prompts is a skill honed through practice. It's not about templates or engineering, but about **refining individual prompts for specific tasks on a case-by-case basis**.
+- **The bottleneck in harnessing AI's capabilities lies in how to embed the right context in a prompt**. This isn't merely about the token limit of an AI model's input. Even with an infinite number of tokens, existing AI models would struggle to yield satisfactory results without a proper separation of concerns.
+- **Use AI only when it truly adds value**. Our misconception about AI's capabilities is even a greater issue than hallucination of LLMs. What we need is a tool that boosts productivity, not merely an experimental tool.
+
+In alignment with our perspectives, DevChat incorporates the following design choices:
+- **A simple, extensible prompt directory**. This allows developers or teams to easily integrate their own predefined prompt snippets into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need [LangChain](https://github.com/langchain-ai/langchain) to make AI work for you.
+- **Precise, manual control over the context embedded in a prompt**. This isn't a feature to be overlooked in the quest for greater intelligence or autonomy. Just as manual driving remains a reliable choice until autonomous driving fully matures, manual control over context is crucial for effective AI use. In our view, [Sourcegraph Cody](https://marketplace.visualstudio.com/items?itemName=sourcegraph.cody-ai) tends to over-guess what a user needs to put into the context of a prompt, which exceeds the actual intelligence of the Claude model it employs.
 
 ## Explore Our Features
 
@@ -54,10 +58,6 @@ Once you have generated code with AI, DevChat **streamlines the actions** to pro
   ![20230523-220717-00 01 14 614-00 01 41 680](https://github.com/devchat-ai/devchat-vscode/assets/592493/94502efd-781b-448d-b945-dffcc41d7af3)
 
   Explore more prompt templates, iterative calls to AI, and program operations.
-  
-- To ensure the experience fits your preferences, customize **your own experiences** with DevChat.
-  
-  Open-source, no waiting for opaque feature schedules. Access GPT-4 today and more models in the future.
   
 ## What is Prompt-Centric Software Development (PCSD)?
 
