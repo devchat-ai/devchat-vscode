@@ -14,21 +14,10 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     statusBarItem.command = undefined;
 
     // add a timer to update the status bar item
-	let runStatus = 0;
-	let continueTimes = 0
-
 	setInterval(async () => {
-		if (runStatus > 0 && continueTimes < 60) {
-			continueTimes += 1;
-			return ;
-		}
-
-		runStatus = 1;
-		continueTimes = 0;
-
 		try {
 			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
-			if (devchatStatus !== 'ready') {
+			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${devchatStatus}`;
 
@@ -42,7 +31,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 				return;
 			}
 
-			if (apiKeyStatus !== 'ready') {
+			if (apiKeyStatus !== 'has valid access key') {
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${apiKeyStatus}`;
 				statusBarItem.command = 'DevChat.Access_Key_DevChat';
@@ -56,8 +45,6 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `Error: ${error}`;
 			statusBarItem.command = undefined;
-		} finally {
-			runStatus = 0;
 		}
 	}, 3000);
 
