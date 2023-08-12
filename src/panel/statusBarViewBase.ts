@@ -25,6 +25,8 @@ let apiKeyStatus = '';
 let preDevchatStatus = '';
 let preApiKeyStatus = '';
 
+let hasLoadTopics: boolean = false;
+
 export async function dependencyCheck(): Promise<[string, string]> {
 	// there are some different status of devchat:
 	// 0. not checked
@@ -96,6 +98,15 @@ export async function dependencyCheck(): Promise<[string, string]> {
 
 	const devchatPackageStatus = await getDevChatStatus();
 	const apiAccessKeyStatus = await getApiKeyStatus();
+
+	if (devchatPackageStatus === 'has statisfied the dependency' || devchatPackageStatus === 'DevChat has been installed') {
+		if (apiAccessKeyStatus === 'has valid access key') {
+			if (!hasLoadTopics) {
+				TopicManager.getInstance().loadTopics();
+			}
+			hasLoadTopics = true;
+		}
+	}
 
 	if (devchatPackageStatus !== preDevchatStatus) {
 		logger.channel()?.info(`devchat status: ${devchatPackageStatus}`);
