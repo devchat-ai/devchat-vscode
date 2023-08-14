@@ -147,7 +147,7 @@ export const chatSlice = createSlice({
                 const { pageSize } = state;
                 state.totalCount = total * 2;
                 const currentStarIndex = startIndex === 100100100100 ? state.totalCount - state.pageSize : startIndex;
-                state.nextFirstItemIndex = currentStarIndex - pageSize;
+                state.nextFirstItemIndex = currentStarIndex >= pageSize ? currentStarIndex - pageSize : 0;
                 // console.log('total count = %s,currentStarIndex = %s, nextFirstItemIndex = %s', state.totalCount, currentStarIndex, state.nextFirstItemIndex);
 
                 if (entries.length > 0) {
