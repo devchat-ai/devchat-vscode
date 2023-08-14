@@ -123,10 +123,10 @@ const MessageItem = (props: any) => {
                     whiteSpace: 'break-spaces'
                 },
             }}>
+            <Divider my={3} key={`message-divider-${index}`} />
             <MessageContext key={`message-context-${index}`} contexts={contexts} />
             <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
         </Container >
-        {index !== total - 1 && <Divider my={3} key={`message-divider-${index}`} />}
     </Stack >);
 };
 
