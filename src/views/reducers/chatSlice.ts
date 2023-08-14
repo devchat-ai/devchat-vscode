@@ -51,7 +51,7 @@ export const chatSlice = createSlice({
         errorMessage: '',
         messages: <any>[],
         totalCount: 100100100100,
-        pageSize: 10,
+        pageSize: 40,
         nextFirstItemIndex: <number>100100100080,
         isLastPage: false,
         isBottom: true,
