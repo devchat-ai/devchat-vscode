@@ -57,8 +57,7 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)'
             }}>
             <MessageContainer
-                height={height}
-                width={chatContainerRect.width} />
+                height={height} />
             <InputMessage
                 width={chatContainerRect.width - 20} />
         </Stack>

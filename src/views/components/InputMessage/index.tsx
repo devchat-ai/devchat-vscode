@@ -305,7 +305,9 @@ const InputMessage = (props: any) => {
     }, [input, commandMenus, currentMenuIndex]);
 
     return (
-        <Container sx={{ margin: 0, padding: '0 5px' }}>
+        <Container
+            fluid={true}
+            sx={{ margin: 0, padding: '0 5px' }}>
             {contexts && contexts.length > 0 &&
                 <InputContexts />
             }

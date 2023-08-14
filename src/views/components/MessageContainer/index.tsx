@@ -99,14 +99,13 @@ const MessageContext = (props: any) => {
 
 const MessageItem = (props: any) => {
 
-    const { index, width, item, total } = props;
+    const { index, item, total } = props;
     const { message: messageText, type: messageType, contexts } = item;
 
     return (<Stack
         spacing={0}
         key={`message-${index}`}
         sx={{
-            width: width,
             padding: 0,
             margin: 0,
         }}>
@@ -115,11 +114,11 @@ const MessageItem = (props: any) => {
             showDelete={index === total - 2}
             item={item} />
         <Container
+            fluid={true}
             key={`message-container-${index}`}
             sx={{
                 margin: 0,
                 padding: 0,
-                width: width,
                 pre: {
                     whiteSpace: 'break-spaces'
                 },
@@ -141,7 +140,7 @@ const MessageContainer = (props: any) => {
     const [align, setAlign] = useState("start");
     const [behavior, setBehavior] = useState("smooth");
     const virtuoso = useRef<any>(null);
-    const { height, width } = props;
+    const { height } = props;
     const totalCount = useAppSelector<number>(selectTotalCount);
     const nextFirstItemIndex = useAppSelector<number>(selectNextFirstItemIndex);
     const pageSize = useAppSelector<number>(selectPageSize);
@@ -182,7 +181,6 @@ const MessageContainer = (props: any) => {
                 ref={virtuoso}
                 style={{
                     height: generating ? height - 100 : height - 70,
-                    width: width,
                     padding: 0,
                     margin: 10,
                     overflowX: 'hidden',
@@ -197,13 +195,13 @@ const MessageContainer = (props: any) => {
                 startReached={prependItems}
                 itemContent={(index, item) => {
                     return (
-                        <MessageItem index={index} item={item} width={width} total={messages.length} />
+                        <MessageItem index={index} item={item} total={messages.length} />
                     );
                 }}
             />
-            <CurrentMessage width={width} />
+            <CurrentMessage />
             {errorMessage &&
-                <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={width} mb={20} color="gray" variant="filled">
+                <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} mb={20} color="gray" variant="filled">
                     {errorMessage}
                 </Alert>}
             {generating &&
