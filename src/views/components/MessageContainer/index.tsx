@@ -163,7 +163,7 @@ const MessageContainer = (props: any) => {
     }, []);
 
     return (
-        <>
+        <Stack spacing='xs' h={height - 60}>
             {!isBottom && <ActionIcon
                 onClick={() => {
                     virtuoso.current?.scrollToIndex({
@@ -214,7 +214,7 @@ const MessageContainer = (props: any) => {
                     <RegenerationButton />
                 </Center>
             }
-        </>
+        </Stack>
     );
 };
 

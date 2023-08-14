@@ -46,8 +46,8 @@ const chatPanel = () => {
 
     return (
         <Stack
+            spacing='xs'
             ref={chatContainerRef}
-            spacing={0}
             sx={{
                 height: '100%',
                 margin: 0,
