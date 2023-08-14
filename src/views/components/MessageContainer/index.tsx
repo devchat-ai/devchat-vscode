@@ -109,6 +109,7 @@ const MessageItem = (props: any) => {
             padding: 0,
             margin: 0,
         }}>
+        <Divider my={3} key={`message-divider-${index}`} />
         <MessageHeader
             key={`message-header-${index}`}
             showDelete={index === total - 2}
@@ -123,7 +124,6 @@ const MessageItem = (props: any) => {
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <Divider my={3} key={`message-divider-${index}`} />
             <MessageContext key={`message-context-${index}`} contexts={contexts} />
             <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
         </Container >
