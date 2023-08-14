@@ -1,4 +1,4 @@
-import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider } from "@mantine/core";
+import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Container } from "@mantine/core";
 import { useListState, useResizeObserver } from "@mantine/hooks";
 import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
@@ -305,7 +305,7 @@ const InputMessage = (props: any) => {
     }, [input, commandMenus, currentMenuIndex]);
 
     return (
-        <>
+        <Container sx={{ margin: 0, padding: '0 5px' }}>
             {contexts && contexts.length > 0 &&
                 <InputContexts />
             }
@@ -440,7 +440,7 @@ const InputMessage = (props: any) => {
                             : <></>
                 }
             </Popover>
-        </>);
+        </Container>);
 };
 
 export default InputMessage;

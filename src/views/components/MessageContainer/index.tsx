@@ -1,20 +1,22 @@
 
-import { Center, Text, Accordion, Box, Stack, Container, Divider, Alert, ActionIcon } from "@mantine/core";
+import { Center, Text, Accordion, Box, Stack, Container, Divider, Alert, ActionIcon, px } from "@mantine/core";
 import React from "react";
 import CodeBlock from "@/views/components/CodeBlock";
 import MessageHeader from "@/views/components/MessageHeader";
 import { Virtuoso } from 'react-virtuoso';
 import CurrentMessage from "@/views/components/CurrentMessage";
+import StopButton from '@/views/components/StopButton';
+import RegenerationButton from '@/views/components/RegenerationButton';
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 
 import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import {
     selectMessages,
     selectErrorMessage,
-    selectIsBottom,
     fetchHistoryMessages,
     selectTotalCount,
     selectNextFirstItemIndex,
+    selectGenerating,
     selectPageSize,
 } from '@/views/reducers/chatSlice';
 import { IconCircleArrowDownFilled } from "@tabler/icons-react";
@@ -134,7 +136,8 @@ const MessageContainer = (props: any) => {
     const dispatch = useAppDispatch();
     const messages = useAppSelector(selectMessages);
     const errorMessage = useAppSelector(selectErrorMessage);
-    const isBottom = useAppSelector(selectIsBottom);
+    const generating = useAppSelector(selectGenerating);
+    const [isBottom, setIsBottom] = useState(true);
     const [align, setAlign] = useState("start");
     const [behavior, setBehavior] = useState("smooth");
     const virtuoso = useRef<any>(null);
@@ -178,13 +181,14 @@ const MessageContainer = (props: any) => {
             <Virtuoso
                 ref={virtuoso}
                 style={{
-                    height: height,
+                    height: generating ? height - 100 : height - 70,
                     width: width,
                     padding: 0,
-                    margin: 0,
+                    margin: 10,
                     overflowX: 'hidden',
                     overflowY: 'auto',
                 }}
+                atBottomStateChange={(isAtBottom: boolean) => setIsBottom(isAtBottom)}
                 overscan={300}
                 alignToBottom={true}
                 firstItemIndex={nextFirstItemIndex}
@@ -202,6 +206,16 @@ const MessageContainer = (props: any) => {
                 <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={width} mb={20} color="gray" variant="filled">
                     {errorMessage}
                 </Alert>}
+            {generating &&
+                <Center>
+                    <StopButton />
+                </Center>
+            }
+            {errorMessage &&
+                <Center>
+                    <RegenerationButton />
+                </Center>
+            }
         </>
     );
 };

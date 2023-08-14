@@ -54,8 +54,6 @@ export const chatSlice = createSlice({
         pageSize: 40,
         nextFirstItemIndex: <number>100100100080,
         isLastPage: false,
-        isBottom: true,
-        isTop: false,
     },
     reducers: {
         startGenerating: (state, action) => {
@@ -140,18 +138,6 @@ export const chatSlice = createSlice({
         },
         happendError: (state, action) => {
             state.errorMessage = action.payload;
-        },
-        onMessagesTop: (state) => {
-            state.isTop = true;
-            state.isBottom = false;
-        },
-        onMessagesBottom: (state) => {
-            state.isTop = false;
-            state.isBottom = true;
-        },
-        onMessagesMiddle: (state) => {
-            state.isTop = false;
-            state.isBottom = false;
         }
     },
     extraReducers: (builder) => {
@@ -202,8 +188,6 @@ export const selecLastMessage = (state: RootState) => state.chat.lastMessage;
 export const selectCurrentMessage = (state: RootState) => state.chat.currentMessage;
 export const selectErrorMessage = (state: RootState) => state.chat.errorMessage;
 export const selectMessages = (state: RootState) => state.chat.messages;
-export const selectIsBottom = (state: RootState) => state.chat.isBottom;
-export const selectIsTop = (state: RootState) => state.chat.isTop;
 export const selectTotalCount = (state: RootState) => state.chat.totalCount;
 export const selectNextFirstItemIndex = (state: RootState) => state.chat.nextFirstItemIndex;
 export const selectPageSize = (state: RootState) => state.chat.pageSize;
@@ -222,9 +206,6 @@ export const {
     popMessage,
     clearMessages,
     updateLastMessage,
-    onMessagesTop,
-    onMessagesBottom,
-    onMessagesMiddle,
 } = chatSlice.actions;
 
 export default chatSlice.reducer;

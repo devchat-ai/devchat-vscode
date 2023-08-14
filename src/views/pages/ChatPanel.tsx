@@ -1,18 +1,14 @@
 import * as React from 'react';
-import { useEffect, useRef } from 'react';
-import { Center, Container, Stack, px } from '@mantine/core';
+import { useEffect } from 'react';
+import { Stack } from '@mantine/core';
 import { useResizeObserver, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
-import StopButton from '@/views/components/StopButton';
-import RegenerationButton from '@/views/components/RegenerationButton';
+import { useAppDispatch } from '@/views/hooks';
 
 import {
     stopGenerating,
     startResponsing,
     happendError,
-    selectGenerating,
-    selectErrorMessage,
     newMessage,
     startSystemMessage,
 } from '@/views/reducers/chatSlice';
@@ -24,10 +20,7 @@ import { clearContexts, setValue } from '@/views/reducers/inputSlice';
 
 const chatPanel = () => {
     const dispatch = useAppDispatch();
-    const generating = useAppSelector(selectGenerating);
-    const errorMessage = useAppSelector(selectErrorMessage);
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
-    const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
 
     useEffect(() => {
@@ -52,36 +45,23 @@ const chatPanel = () => {
     }, []);
 
     return (
-        <Container
+        <Stack
             ref={chatContainerRef}
+            spacing={0}
             sx={{
                 height: '100%',
                 margin: 0,
-                padding: 10,
+                padding: 0,
+                overflow: 'hidden',
                 background: 'var(--vscode-sideBar-background)',
-                color: 'var(--vscode-editor-foreground)',
-                minWidth: 240
+                color: 'var(--vscode-editor-foreground)'
             }}>
             <MessageContainer
-                height={generating ? height - px('8rem') : height - px('5rem')}
+                height={height}
                 width={chatContainerRect.width} />
-            <Stack
-                spacing={5}
-                sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
-                {generating &&
-                    <Center>
-                        <StopButton />
-                    </Center>
-                }
-                {errorMessage &&
-                    <Center>
-                        <RegenerationButton />
-                    </Center>
-                }
-                <InputMessage
-                    width={chatContainerRect.width} />
-            </Stack>
-        </Container>
+            <InputMessage
+                width={chatContainerRect.width - 20} />
+        </Stack>
     );
 };
 
