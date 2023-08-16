@@ -47,6 +47,8 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 
 - You can incorporate the output of any command, such as `tree ./src`, into a prompt with DevChat. For example, you can add the output of `git diff --cached` to DevChat, which can then generate a commit message for you.
 
+    ![Generate a commit message.](https://github.com/devchat-ai/devchat-vscode/assets/592493/1c1724f7-37d5-4221-88d7-653d895f9267)
+
 - Program analysis can assist in building the necessary context. Suppose you want DevChat to explain some code to you. DevChat can perform better if it's aware of the dependent functions that the code calls. In this scenario, you select the target code to explain and add "symbol definitions" to the context. DevChat will then generate a prompt that explains the target code, taking into account the dependent functions.
 
 ### Prompt Extension
