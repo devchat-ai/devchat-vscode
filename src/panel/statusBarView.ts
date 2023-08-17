@@ -14,39 +14,58 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     statusBarItem.command = undefined;
 
     // add a timer to update the status bar item
-	setInterval(async () => {
-		try {
-			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
-			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
-				statusBarItem.text = `$(warning)DevChat`;
-				statusBarItem.tooltip = `${devchatStatus}`;
+	vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: 'DevChat',
+        cancellable: false
+    }, (progress, token) => {
+        return new Promise<void>(resolve => {
+			const timer = setInterval(async () => {
+				try {
+					progress.report({ message: `Checking devchat dependency environment` });
 
-				if (devchatStatus === 'Missing required dependency: Python3') {
-					statusBarItem.command = "devchat.PythonPath";
-				} else {
+					const [devchatStatus, apiKeyStatus] = await dependencyCheck();
+					if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
+						statusBarItem.text = `$(warning)DevChat`;
+						statusBarItem.tooltip = `${devchatStatus}`;
+		
+						if (devchatStatus === 'Missing required dependency: Python3') {
+							statusBarItem.command = "devchat.PythonPath";
+						} else {
+							statusBarItem.command = undefined;
+						}
+						
+						// set statusBarItem warning color
+						progress.report({ message: `Checking devchat dependency environment: ${devchatStatus}` });
+						return;
+					}
+		
+					if (apiKeyStatus !== 'has valid access key') {
+						statusBarItem.text = `$(warning)DevChat`;
+						statusBarItem.tooltip = `${apiKeyStatus}`;
+						statusBarItem.command = 'DevChat.Access_Key_DevChat';
+						progress.report({ message: `Checking devchat dependency environment: ${apiKeyStatus}.` });
+						return;
+					}
+		
+					statusBarItem.text = `$(pass)DevChat`;
+					statusBarItem.tooltip = `ready to chat`;
+					statusBarItem.command = 'devcaht.onStatusBarClick';
+					progress.report({ message: `Checking devchat dependency environment: Success` });
+
+					clearInterval(timer);
+                    resolve();
+				} catch (error) {
+					statusBarItem.text = `$(warning)DevChat`;
+					statusBarItem.tooltip = `Error: ${error}`;
 					statusBarItem.command = undefined;
+					progress.report({ message: `Checking devchat dependency environment: Fail with exception.` });
 				}
-				
-				// set statusBarItem warning color
-				return;
-			}
+			}, 3000);
+        });
+    });
 
-			if (apiKeyStatus !== 'has valid access key') {
-				statusBarItem.text = `$(warning)DevChat`;
-				statusBarItem.tooltip = `${apiKeyStatus}`;
-				statusBarItem.command = 'DevChat.Access_Key_DevChat';
-				return;
-			}
-
-			statusBarItem.text = `$(pass)DevChat`;
-			statusBarItem.tooltip = `ready to chat`;
-			statusBarItem.command = 'devcaht.onStatusBarClick';
-		} catch (error) {
-			statusBarItem.text = `$(warning)DevChat`;
-			statusBarItem.tooltip = `Error: ${error}`;
-			statusBarItem.command = undefined;
-		}
-	}, 3000);
+	
 
 	// Add the status bar item to the status bar
 	statusBarItem.show();
