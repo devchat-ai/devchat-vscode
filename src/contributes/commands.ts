@@ -248,7 +248,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 
         if (!pythonVirtualEnv) {
 			progressBar.update("Install devchat-ask package ...", 0);
-            await installAskCode(supportedFileTypes);
+            await installAskCode(supportedFileTypes, progressBar);
         } else {
 			progressBar.update("Index source files ...", 0);
             await indexCode(pythonVirtualEnv, supportedFileTypes, progressBar);
@@ -266,7 +266,7 @@ function getConfig() {
     };
 }
 
-async function installAskCode(supportedFileTypes) {
+async function installAskCode(supportedFileTypes, progressBar: any) {
 	const pythonEnvPath : string = await installAskCodeFun();
 	if (!pythonEnvPath) {
 		logger.channel()?.error(`Installation failed!`);
@@ -278,7 +278,7 @@ async function installAskCode(supportedFileTypes) {
     logger.channel()?.info(`Installation finished.`);
     
     // Execute the indexing command after the installation is finished
-    await indexCode(pythonEnvPath, supportedFileTypes);
+    await indexCode(pythonEnvPath, supportedFileTypes, progressBar);
 }
 
 async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
