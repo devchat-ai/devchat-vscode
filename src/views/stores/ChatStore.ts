@@ -164,8 +164,8 @@ export const ChatStore = types.model('Chat', {
             self.isTop = false;
             self.isBottom = false;
         },
-        fetchHistoryMessages: async function (params: { pageIndex: number }) {
-            const { pageIndex, entries } = await fetchHistoryMessages(params);
+        fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
+            const { pageIndex, entries } = yield fetchHistoryMessages(params);
             if (entries.length > 0) {
                 self.pageIndex = pageIndex;
                 const messages = entries
@@ -186,12 +186,12 @@ export const ChatStore = types.model('Chat', {
             } else {
                 self.isLastPage = true;
             }
-        },
-        deleteMessage: async function (params: { hash: string }) {
-            const { hash } = await deleteMessage(params);
+        }),
+        deleteMessage: flow(function* (params: { hash: string }) {
+            const { hash } = yield deleteMessage(params);
             const index = self.messages.findIndex((item: any) => item.hash === hash);
             if (index > -1) {
                 self.messages.splice(index);
             }
-        }
+        })
     }));

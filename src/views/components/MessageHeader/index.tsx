@@ -67,7 +67,7 @@ const MessageHeader = observer((props: any) => {
                     <ActionIcon size='sm'
                         onClick={() => {
                             if (item.hash) {
-                                chat.deleteMessage(item);
+                                chat.deleteMessage(item).then();
                             } else {
                                 chat.popMessage();
                                 chat.popMessage();

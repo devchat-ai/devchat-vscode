@@ -54,7 +54,7 @@ const chatPanel = observer(() => {
     };
 
     useEffect(() => {
-        chat.fetchHistoryMessages({ pageIndex: 0 });
+        chat.fetchHistoryMessages({ pageIndex: 0 }).then();
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             chat.startResponsing(message.text);
             timer.start();
