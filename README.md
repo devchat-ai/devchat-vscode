@@ -43,7 +43,9 @@ In alignment with our insights, DevChat incorporates the following design choice
 
 Great output requires great input, to maximize the power of AI, DevChat assists you seamlessly to **provide the right context** to the AI.
 
-- The most fundamental operation involves selecting code (either files or snippets) and adding it to DevChat. For instance, you can add a function along with an existing test file to the prompt context, and ask DevChat to generate several test cases for the function. The test file serves as a useful reference for DevChat, enabling it to understand how to write a valid test case in your environment, thus eliminating the need for you to specify every requirement or setup in your prompt.
+- The most fundamental operation involves selecting code (either files or snippets) and adding it to DevChat. For instance, you can add a function along with an existing test case to the prompt context, and ask DevChat to generate several test cases for the function. The test case serves as a useful reference for DevChat, enabling it to understand how to write a valid test case in your environment, thus eliminating the need for you to specify every requirement or setup in your prompt.
+
+    ![Add code to context](https://github.com/devchat-ai/devchat-vscode/assets/592493/24245e01-79d3-4bb3-9681-2a8706e9a233)
 
 - You can incorporate the output of any command, such as `tree ./src`, into a prompt with DevChat. For example, you can add the output of `git diff --cached` to DevChat, which can then generate a commit message for you.
 
