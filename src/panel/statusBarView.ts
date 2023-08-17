@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
 import { isIndexingStopped, isNeedIndexingCode } from '../util/askCodeUtil';
+import { ProgressBar } from '../util/progressBar';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
@@ -13,59 +14,53 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 	// when statsBarItem.command is '', then there is "command '' not found" error.
     statusBarItem.command = undefined;
 
+	const progressBar = new ProgressBar();
+    progressBar.init();
+
     // add a timer to update the status bar item
-	vscode.window.withProgress({
-        location: vscode.ProgressLocation.Notification,
-        title: 'DevChat',
-        cancellable: false
-    }, (progress, token) => {
-        return new Promise<void>(resolve => {
-			const timer = setInterval(async () => {
-				try {
-					progress.report({ message: `Checking devchat dependency environment` });
+	progressBar.update("Checking devchat dependency environment", 0);
+	const timer = setInterval(async () => {
+		try {
+			progressBar.update("Checking devchat dependency environment", 0);
 
-					const [devchatStatus, apiKeyStatus] = await dependencyCheck();
-					if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
-						statusBarItem.text = `$(warning)DevChat`;
-						statusBarItem.tooltip = `${devchatStatus}`;
-		
-						if (devchatStatus === 'Missing required dependency: Python3') {
-							statusBarItem.command = "devchat.PythonPath";
-						} else {
-							statusBarItem.command = undefined;
-						}
-						
-						// set statusBarItem warning color
-						progress.report({ message: `Checking devchat dependency environment: ${devchatStatus}` });
-						return;
-					}
-		
-					if (apiKeyStatus !== 'has valid access key') {
-						statusBarItem.text = `$(warning)DevChat`;
-						statusBarItem.tooltip = `${apiKeyStatus}`;
-						statusBarItem.command = 'DevChat.Access_Key_DevChat';
-						progress.report({ message: `Checking devchat dependency environment: ${apiKeyStatus}.` });
-						return;
-					}
-		
-					statusBarItem.text = `$(pass)DevChat`;
-					statusBarItem.tooltip = `ready to chat`;
-					statusBarItem.command = 'devcaht.onStatusBarClick';
-					progress.report({ message: `Checking devchat dependency environment: Success` });
+			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
+			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
+				statusBarItem.text = `$(warning)DevChat`;
+				statusBarItem.tooltip = `${devchatStatus}`;
 
-					clearInterval(timer);
-                    resolve();
-				} catch (error) {
-					statusBarItem.text = `$(warning)DevChat`;
-					statusBarItem.tooltip = `Error: ${error}`;
+				if (devchatStatus === 'Missing required dependency: Python3') {
+					statusBarItem.command = "devchat.PythonPath";
+				} else {
 					statusBarItem.command = undefined;
-					progress.report({ message: `Checking devchat dependency environment: Fail with exception.` });
 				}
-			}, 3000);
-        });
-    });
+				
+				// set statusBarItem warning color
+				progressBar.update(`Checking devchat dependency environment: ${devchatStatus}`, 0);
+				return;
+			}
 
+			if (apiKeyStatus !== 'has valid access key') {
+				statusBarItem.text = `$(warning)DevChat`;
+				statusBarItem.tooltip = `${apiKeyStatus}`;
+				statusBarItem.command = 'DevChat.Access_Key_DevChat';
+				progressBar.update(`Checking devchat dependency environment: ${apiKeyStatus}.`, 0);
+				return;
+			}
+
+			statusBarItem.text = `$(pass)DevChat`;
+			statusBarItem.tooltip = `ready to chat`;
+			statusBarItem.command = 'devcaht.onStatusBarClick';
+			progressBar.update(`Checking devchat dependency environment: Success`, 0);
+			progressBar.end();
 	
+			clearInterval(timer);
+		} catch (error) {
+			statusBarItem.text = `$(warning)DevChat`;
+			statusBarItem.tooltip = `Error: ${error}`;
+			statusBarItem.command = undefined;
+			progressBar.endWithError(`Checking devchat dependency environment: Fail with exception.`);
+		}
+	}, 3000);
 
 	// Add the status bar item to the status bar
 	statusBarItem.show();
