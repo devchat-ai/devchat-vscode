@@ -8,6 +8,7 @@ interface Context {
 
 interface Entry {
     hash: string;
+    type: string,
     user: string;
     date: string;
     request: string;
@@ -56,6 +57,7 @@ export const deleteMessage = async (params) => {
 export const Message = types.model({
     index: types.maybe(types.number),
     hash: types.maybe(types.string),
+    type: types.enumeration(['user', 'bot', 'system']),
     message: types.string,
     date: types.maybe(types.string),
 });
