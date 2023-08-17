@@ -2,14 +2,12 @@
 import * as React from 'react';
 import { Button } from '@mantine/core';
 import { IconRotateDot } from '@tabler/icons-react';
-import { useAppDispatch } from '@/views/hooks';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import {
-    reGenerating,
-} from '@/views/reducers/chatSlice';
 
-const RegenerationButton = () => {
-    const dispatch = useAppDispatch();
+const RegenerationButton = observer(() => {
+    const { chat } = useMst();
     return (<Button
         size='xs'
         leftIcon={<IconRotateDot color='var(--vscode-button-foreground)' />}
@@ -25,10 +23,10 @@ const RegenerationButton = () => {
                 fontSize: 'var(--vscode-editor-font-size)',
             }
         }}
-        onClick={() => dispatch(reGenerating())}
+        onClick={() => chat.reGenerating()}
         variant="white" >
         Regeneration
     </Button >);
-};
+});
 
 export default RegenerationButton;
