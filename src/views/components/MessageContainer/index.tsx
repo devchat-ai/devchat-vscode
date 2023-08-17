@@ -3,11 +3,8 @@ import { Center, Text, Accordion, Box, Stack, Container, Divider } from "@mantin
 import React from "react";
 import CodeBlock from "@/views/components/CodeBlock";
 import MessageHeader from "@/views/components/MessageHeader";
-
-import { useAppSelector } from '@/views/hooks';
-import {
-    selectMessages,
-} from '@/views/reducers/chatSlice';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
 
 const MessageContext = (props: any) => {
@@ -87,42 +84,43 @@ const MessageContext = (props: any) => {
 };
 
 
-const MessageContainer = (props: any) => {
+const MessageContainer = observer((props: any) => {
     const { width } = props;
+    const { chat } = useMst();
 
-    const messages = useAppSelector(selectMessages);
-
-    return messages.map((item: any, index: number) => {
-        const { message: messageText, type: messageType, contexts } = item;
-        // setMessage(messageText);
-        return <Stack
-            spacing={0}
-            key={`message-${index}`}
-            sx={{
-                width: width,
-                padding: 0,
-                margin: 0,
-            }}>
-            <MessageHeader
-                key={`message-header-${index}`}
-                showDelete={index === messages.length - 2}
-                item={item} />
-            <Container
-                key={`message-container-${index}`}
+    return (<>
+        {chat.messages.map((item: any, index: number) => {
+            const { message: messageText, type: messageType, contexts } = item;
+            // setMessage(messageText);
+            return <Stack
+                spacing={0}
+                key={`message-${index}`}
                 sx={{
-                    margin: 0,
-                    padding: 0,
                     width: width,
-                    pre: {
-                        whiteSpace: 'break-spaces'
-                    },
+                    padding: 0,
+                    margin: 0,
                 }}>
-                <MessageContext key={`message-context-${index}`} contexts={contexts} />
-                <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
-            </Container >
-            {index !== messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
-        </Stack >;
-    });
-};
+                <MessageHeader
+                    key={`message-header-${index}`}
+                    showDelete={index === chat.messages.length - 2}
+                    item={item} />
+                <Container
+                    key={`message-container-${index}`}
+                    sx={{
+                        margin: 0,
+                        padding: 0,
+                        width: width,
+                        pre: {
+                            whiteSpace: 'break-spaces'
+                        },
+                    }}>
+                    <MessageContext key={`message-context-${index}`} contexts={contexts} />
+                    <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
+                </Container >
+                {index !== chat.messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
+            </Stack >;
+        })}
+    </>);
+});
 
 export default MessageContainer;
