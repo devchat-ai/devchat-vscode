@@ -24,37 +24,56 @@ async function getCurrentSelectText(): Promise<string> {
 }
 
 async function getUndefinedSymbols(content: string): Promise<string[]> {
-	// run devchat prompt command
-	const devChat = new DevChat();
-	const chatOptions: ChatOptions = {};
+    // run devchat prompt command
+    const devChat = new DevChat();
+    const chatOptions: ChatOptions = {};
 
-	const onData = (partialResponse) => { };
-	const newContent = content + `\n只列出当前代码中缺少定义的符号列表，不需要其他处理。应答形式为markdown code block，例如：
-	\`\`\`json
-	["f1", "f2"]
-	\`\`\`
-	不能调用GPT function.`;
+    const onData = (partialResponse) => { };
+    const newContent = content + `\n只列出当前代码中缺少定义的符号列表，不需要其他处理。应答形式为markdown code block，例如：
+    \`\`\`json
+    ["f1", "f2"]
+    \`\`\`
+    不能调用GPT function.`;
 
-	const chatResponse = await devChat.chat(newContent, chatOptions, onData);
-	if (!chatResponse.isError) {
-		await devChat.delete(chatResponse['prompt-hash']);
-	}
+    const chatResponse = await devChat.chat(newContent, chatOptions, onData);
+    if (chatResponse && chatResponse.response) {
+        logger.channel()?.info(chatResponse.response);
+    }
 
-	// parse data in chatResponse.response
-	// data format as:
-	// ```json {data} ```
-	// so, parse data between ```json and ```
-	if (!chatResponse || !chatResponse.response) {
-		return [];
-	}
-	if (!chatResponse.response.match(/```json([\s\S]*)```/)) {
-		return [];
-	}
+    if (!chatResponse.isError) {
+        await devChat.delete(chatResponse['prompt-hash']);
+    }
 
-	logger.channel()?.info(`getUndefinedSymbols: ${chatResponse.response}`);
-	const responseText = chatResponse.response.match(/```json([\s\S]*)```/)![1];
-	// parse responseText to json
-	return JSON.parse(responseText);
+    // parse data in chatResponse.response
+    // data format as:
+    // ```json {data} ```
+    // or [data]
+    // or plain text
+    // so, parse data between ```json and ``` or directly parse the array, or return an empty array
+    if (!chatResponse || !chatResponse.response) {
+        return [];
+    }
+
+    let responseText = chatResponse.response;
+    let symbols: string[];
+
+    if (responseText.startsWith("```json") && responseText.endsWith("```")) {
+        responseText = responseText.substring(7, responseText.length - 3);
+        try {
+            symbols = JSON.parse(responseText);
+        } catch (error) {
+            symbols = [];
+        }
+    } else {
+        try {
+            symbols = JSON.parse(responseText);
+        } catch (error) {
+            symbols = [];
+        }
+    }
+
+    logger.channel()?.info(`getUndefinedSymbols: ${chatResponse.response}`);
+    return symbols;
 }
 
 async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
