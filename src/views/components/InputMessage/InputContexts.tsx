@@ -1,16 +1,11 @@
 import { Accordion, Box, ActionIcon, ScrollArea, Center, Text } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import React from "react";
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import {
-    selectContexts,
-    removeContext,
-} from '@/views/reducers/inputSlice';
-
-const InputContexts = () => {
-    const dispatch = useAppDispatch();
-    const contexts = useAppSelector(selectContexts);
+const InputContexts = observer(() => {
+    const { input } = useMst();
     return (<Accordion variant="contained" chevronPosition="left"
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
@@ -55,7 +50,7 @@ const InputContexts = () => {
             }
         }}>
         {
-            contexts.map((item: any, index: number) => {
+            input.contexts.map((item: any, index: number) => {
                 const { context } = item;
                 return (
                     <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
@@ -76,7 +71,7 @@ const InputContexts = () => {
                                     }
                                 }}
                                 onClick={() => {
-                                    dispatch(removeContext(index));
+                                    input.removeContext(index);
                                 }}>
                                 <IconX size="1rem" />
                             </ActionIcon>
@@ -97,6 +92,6 @@ const InputContexts = () => {
             })
         }
     </Accordion>);
-};
+});
 
 export default InputContexts;

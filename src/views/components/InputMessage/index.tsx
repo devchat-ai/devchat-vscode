@@ -4,50 +4,22 @@ import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from 
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import InputContexts from './InputContexts';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import {
-    setValue,
-    selectValue,
-    selectContexts,
-    selectMenuOpend,
-    selectMenuType,
-    selectCurrentMenuIndex,
-    selectContextMenus,
-    selectCommandMenus,
-    setCurrentMenuIndex,
-    clearContexts,
-    newContext,
-    openMenu,
-    closeMenu,
-    fetchContextMenus,
-    fetchCommandMenus,
-} from '@/views/reducers/inputSlice';
-import {
-    selectGenerating,
-    newMessage,
-    startGenerating,
-} from '@/views/reducers/chatSlice';
-
-const InputMessage = (props: any) => {
+const InputMessage = observer((props: any) => {
     const { width } = props;
+    const { input, chat } = useMst();
+    const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus } = input;
+    const { generating } = chat;
 
-    const dispatch = useAppDispatch();
-    const input = useAppSelector(selectValue);
-    const generating = useAppSelector(selectGenerating);
-    const contexts = useAppSelector(selectContexts);
-    const menuOpend = useAppSelector(selectMenuOpend);
-    const menuType = useAppSelector(selectMenuType);
-    const currentMenuIndex = useAppSelector(selectCurrentMenuIndex);
-    const contextMenus = useAppSelector(selectContextMenus);
-    const commandMenus = useAppSelector(selectCommandMenus);
     const theme = useMantineTheme();
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
     const [inputRef, inputRect] = useResizeObserver();
 
     const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        dispatch(openMenu('contexts'));
+        input.openMenu('contexts');
         inputRef.current.focus();
         event.stopPropagation();
     };
@@ -56,29 +28,29 @@ const InputMessage = (props: any) => {
         const value = event.target.value;
         // if value start with '/' command show menu
         if (value.startsWith('/')) {
-            dispatch(openMenu('commands'));
-            dispatch(setCurrentMenuIndex(0));
+            input.openMenu('commands');
+            input.setCurrentMenuIndex(0);
         } else {
-            dispatch(closeMenu());
+            input.closeMenu();
         }
-        dispatch(setValue(value));
+        input.setValue(value);
     };
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         if (input) {
             // Process and send the message to the extension
-            const contextInfo = contexts.map((item: any, index: number) => {
+            const contextInfo = input.contexts.map((item: any, index: number) => {
                 const { file, context } = item;
                 return { file, context };
             });
-            const text = input;
+            const text = input.value;
             // Add the user's message to the chat UI
-            dispatch(newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined }));
+            chat.newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
             // start generating
-            dispatch(startGenerating({ text, contextInfo }));
+            chat.startGenerating(text);
             // Clear the input field
-            dispatch(setValue(''));
-            dispatch(clearContexts());
+            input.setValue('');
+            input.clearContexts();
         }
     };
 
@@ -93,23 +65,23 @@ const InputMessage = (props: any) => {
     const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (menuOpend) {
             if (event.key === 'Escape') {
-                dispatch(closeMenu());
+                input.closeMenu();
             }
             if (menuType === 'commands') {
                 if (event.key === 'ArrowDown') {
                     const newIndex = currentMenuIndex + 1;
-                    dispatch(setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0));
+                    input.setCurrentMenuIndex(newIndex < commandMenusNode.length ? newIndex : 0);
                     event.preventDefault();
                 }
                 if (event.key === 'ArrowUp') {
                     const newIndex = currentMenuIndex - 1;
-                    dispatch(setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex));
+                    input.setCurrentMenuIndex(newIndex < 0 ? commandMenusNode.length - 1 : newIndex);
                     event.preventDefault();
                 }
                 if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
-                    dispatch(setValue(`/${commandNode.props['data-pattern']} `));
-                    dispatch(closeMenu());
+                    input.setValue(`/${commandNode.props['data-pattern']} `);
+                    input.closeMenu();
                     event.preventDefault();
                 }
             }
@@ -175,7 +147,7 @@ const InputMessage = (props: any) => {
                     }}
                     onClick={() => {
                         handleContextClick(name);
-                        dispatch(closeMenu());
+                        input.closeMenu();
                     }}
                 >
                     {contextMenuIcon(name)}
@@ -215,8 +187,8 @@ const InputMessage = (props: any) => {
     };
 
     useEffect(() => {
-        dispatch(fetchContextMenus());
-        dispatch(fetchCommandMenus());
+        input.fetchContextMenus().then();
+        input.fetchCommandMenus().then();
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);
@@ -241,19 +213,21 @@ const InputMessage = (props: any) => {
             // };
             const context = JSON.parse(message.result);
             if (typeof context !== 'undefined' && context) {
-                dispatch(newContext({
+                input.newContext({
                     file: message.file,
                     context: context,
-                }));
+                });
             }
         });
         inputRef.current.focus();
     }, []);
 
     useEffect(() => {
-        let filtered = commandMenus;
-        if (input) {
-            filtered = commandMenus.filter((item) => `/${item.pattern}`.startsWith(input));
+        let filtered;
+        if (input.value) {
+            filtered = commandMenus.filter((item) => `/${item.pattern}`.startsWith(input.value));
+        } else {
+            filtered = commandMenus;
         }
         const node = filtered.map(({ pattern, description, name }, index) => {
             return (
@@ -274,8 +248,8 @@ const InputMessage = (props: any) => {
                         }
                     }}
                     onClick={() => {
-                        dispatch(setValue(`/${pattern} `));
-                        dispatch(closeMenu());
+                        input.setValue(`/${pattern} `);
+                        input.closeMenu();
                     }}
                     aria-checked={index === currentMenuIndex}
                     data-pattern={pattern}
@@ -300,9 +274,9 @@ const InputMessage = (props: any) => {
         });
         setCommandMenusNode(node);
         if (node.length === 0) {
-            dispatch(closeMenu());
+            input.closeMenu();
         }
-    }, [input, commandMenus, currentMenuIndex]);
+    }, [input.value, commandMenus, currentMenuIndex]);
 
     return (
         <>
@@ -317,17 +291,17 @@ const InputMessage = (props: any) => {
                 width={width}
                 opened={menuOpend}
                 onChange={() => {
-                    dispatch(closeMenu());
+                    input.closeMenu();
                     inputRef.current.focus();
                 }}
-                onClose={() => dispatch(closeMenu())}
-                onOpen={() => menuType !== '' ? dispatch(openMenu(menuType)) : dispatch(closeMenu())}
+                onClose={() => input.closeMenu()}
+                onOpen={() => menuType !== '' ? input.openMenu(menuType) : input.closeMenu()}
                 returnFocus={true}>
                 <Popover.Target>
                     <Textarea
                         id='chat-textarea'
                         disabled={generating}
-                        value={input}
+                        value={input.value}
                         ref={inputRef}
                         onKeyDown={handleKeyDown}
                         onChange={handleInputChange}
@@ -439,8 +413,8 @@ const InputMessage = (props: any) => {
                             </Popover.Dropdown>
                             : <></>
                 }
-            </Popover>
+            </Popover >
         </>);
-};
+});
 
 export default InputMessage;
