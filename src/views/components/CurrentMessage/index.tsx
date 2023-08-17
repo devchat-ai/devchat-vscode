@@ -2,20 +2,13 @@
 import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Container, Text } from "@mantine/core";
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import CodeBlock from "@/views/components/CodeBlock";
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import {
-    newMessage,
-    updateLastMessage,
-    selectGenerating,
-    selectCurrentMessage,
-    selecLastMessage,
-    selectResponsed,
-} from '@/views/reducers/chatSlice';
 
-const MessageBlink = () => {
-    const responsed = useAppSelector(selectResponsed);
+const MessageBlink = observer(() => {
+    const { chat } = useMst();
 
     const blink = keyframes({
         '50%': { opacity: 0 },
@@ -24,11 +17,11 @@ const MessageBlink = () => {
     return <Text sx={{
         animation: `${blink} 0.5s infinite;`,
         width: 5,
-        marginTop: responsed ? 0 : '1em',
+        marginTop: chat.responsed ? 0 : '1em',
         backgroundColor: 'black',
         display: 'block'
     }}>|</Text>;
-};
+});
 
 const getBlocks = (message) => {
     const messageText = message || '';
@@ -51,36 +44,31 @@ const getBlocks = (message) => {
     return blocks;
 }
 
-const CurrentMessage = (props: any) => {
+const CurrentMessage = observer((props: any) => {
     const { width } = props;
-
-    const dispatch = useAppDispatch();
-    const currentMessage = useAppSelector(selectCurrentMessage);
-    const lastMessage = useAppSelector(selecLastMessage);
-    const generating = useAppSelector(selectGenerating);
-    const responsed = useAppSelector(selectResponsed);
+    const { chat } = useMst();
 
     // split blocks
-    const messageBlocks = getBlocks(currentMessage);
-    const lastMessageBlocks = getBlocks(lastMessage?.message);
+    const messageBlocks = getBlocks(chat.currentMessage);
+    const lastMessageBlocks = getBlocks(chat.lastMessage?.message);
     const fixedCount = lastMessageBlocks.length;
     const receivedCount = messageBlocks.length;
     const renderBlocks = messageBlocks.splice(-1);
 
     useEffect(() => {
-        if (generating) {
+        if (chat.generating) {
             // new a bot message
-            dispatch(newMessage({ type: 'bot', message: currentMessage }));
+            chat.newMessage({ type: 'bot', message: chat.currentMessage });
         }
-    }, [generating]);
+    }, [chat.generating]);
 
     useEffect(() => {
-        if (receivedCount - fixedCount >= 1 || !responsed) {
-            dispatch(updateLastMessage({ type: 'bot', message: currentMessage }));
+        if (receivedCount - fixedCount >= 1 || !chat.responsed) {
+            chat.updateLastMessage({ type: 'bot', message: chat.currentMessage });
         }
-    }, [currentMessage, responsed]);
+    }, [chat.currentMessage, chat.responsed]);
 
-    return generating
+    return chat.generating
         ? <Container
             sx={{
                 margin: 0,
@@ -94,6 +82,6 @@ const CurrentMessage = (props: any) => {
             <MessageBlink />
         </Container>
         : <></>;
-};
+});
 
 export default CurrentMessage;
