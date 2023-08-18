@@ -13,7 +13,7 @@ import { IMessage } from "@/views/stores/ChatStore";
 
 interface IProps {
     item: IMessage,
-    showEdit: boolean,
+    showEdit?: boolean,
     showDelete: boolean
 }
 
