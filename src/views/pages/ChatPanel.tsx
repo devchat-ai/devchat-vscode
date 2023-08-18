@@ -60,7 +60,7 @@ const chatPanel = observer(() => {
             timer.start();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean, hash }) => {
-            const messageItem = Message.create({ message: message.text, hash: message.hash });
+            const messageItem = Message.create({ type: 'bot', message: message.text, hash: message.hash });
             chat.stopGenerating(true, messageItem);
             if (message.isError) {
                 chat.happendError(message.text);
@@ -68,7 +68,8 @@ const chatPanel = observer(() => {
         });
 
         messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
-            chat.newMessage({ type: 'system', message: message.text });
+            const messageItem = Message.create({ type: 'system', message: message.text });
+            chat.newMessage(messageItem);
             // start generating
             chat.startSystemMessage();
             // Clear the input field

@@ -66,7 +66,6 @@ export const Message = types.model({
 export const ChatStore = types.model('Chat', {
     generating: false,
     responsed: false,
-    lastMessage: types.maybe(Message),
     currentMessage: '',
     hasDone: false,
     errorMessage: '',
@@ -131,17 +130,17 @@ export const ChatStore = types.model('Chat', {
                 }
             }
         },
-        startResponsing: (action) => {
+        startResponsing: (message: string) => {
             self.responsed = true;
-            self.currentMessage = action.payload;
+            self.currentMessage = message;
         },
         newMessage: (message: IMessage) => {
             self.messages.push(message);
-            self.lastMessage = message;
         },
-        updateLastMessage: (message: IMessage) => {
-            self.messages[self.messages.length - 1] = message;
-            self.lastMessage = message;
+        updateLastMessage: (message: string) => {
+            if (self.messages.length > 0) {
+                self.messages[self.messages.length - 1].message = message;
+            }
         },
         shiftMessage: () => {
             self.messages.splice(0, 1);

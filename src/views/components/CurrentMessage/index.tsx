@@ -5,6 +5,7 @@ import { Container, Text } from "@mantine/core";
 import CodeBlock from "@/views/components/CodeBlock";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
+import { Message } from "@/views/stores/ChatStore";
 
 
 const MessageBlink = observer(() => {
@@ -50,7 +51,7 @@ const CurrentMessage = observer((props: any) => {
 
     // split blocks
     const messageBlocks = getBlocks(chat.currentMessage);
-    const lastMessageBlocks = getBlocks(chat.lastMessage?.message);
+    const lastMessageBlocks = getBlocks(chat.messages[chat.messages.length - 1]?.message);
     const fixedCount = lastMessageBlocks.length;
     const receivedCount = messageBlocks.length;
     const renderBlocks = messageBlocks.splice(-1);
@@ -58,13 +59,14 @@ const CurrentMessage = observer((props: any) => {
     useEffect(() => {
         if (chat.generating) {
             // new a bot message
-            chat.newMessage({ type: 'bot', message: chat.currentMessage });
+            const messageItem = Message.create({ type: 'bot', message: chat.currentMessage });
+            chat.newMessage(messageItem);
         }
     }, [chat.generating]);
 
     useEffect(() => {
         if (receivedCount - fixedCount >= 1 || !chat.responsed) {
-            chat.updateLastMessage({ type: 'bot', message: chat.currentMessage });
+            chat.updateLastMessage(chat.currentMessage);
         }
     }, [chat.currentMessage, chat.responsed]);
 
