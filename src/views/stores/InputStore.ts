@@ -70,11 +70,11 @@ export const InputStore = types
         },
         setContexts(contexts: IMessage['contexts']) {
             self.contexts.clear();
-            contexts.forEach(context => {
+            contexts?.forEach(context => {
                 self.contexts.push({ ...context });
             });
         },
-        newContext(context) {
+        newContext(context: IChatContext) {
             self.contexts.push(context);
         },
         openMenu(menuType: string) {

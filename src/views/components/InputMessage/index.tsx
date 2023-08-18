@@ -7,6 +7,7 @@ import messageUtil from '@/util/MessageUtil';
 import InputContexts from './InputContexts';
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
+import { ChatContext } from "@/views/stores/InputStore";
 
 const InputMessage = observer((props: any) => {
     const { width } = props;
@@ -208,10 +209,12 @@ const InputMessage = observer((props: any) => {
             // };
             const context = JSON.parse(message.result);
             if (typeof context !== 'undefined' && context) {
-                input.newContext({
+                const chatContext = ChatContext.create({
                     file: message.file,
+                    command: context.command,
                     content: context.content,
                 });
+                input.newContext(chatContext);
             }
         });
         inputRef.current.focus();
