@@ -90,9 +90,15 @@ export const ChatStore = types.model('Chat', {
                 }
             }
             // Process and send the message to the extension
-            const contextInfo = chatContexts.map((item: any, index: number) => {
+            const contextInfo = chatContexts.map((item, index: number) => {
                 const { file, content, command } = item;
-                return { file, context: content };
+                return {
+                    file,
+                    context: {
+                        command: command,
+                        content: content,
+                    }
+                };
             });
             messageUtil.sendMessage({
                 command: 'sendMessage',
@@ -176,10 +182,13 @@ export const ChatStore = types.model('Chat', {
             if (entries.length > 0) {
                 self.pageIndex = pageIndex;
                 const messages = entries
-                    .map((item, index) => {
-                        const { hash, user, date, request, response, context } = item;
+                    .map((entry, index) => {
+                        const { hash, user, date, request, response, context } = entry;
+                        const chatContexts = context?.map(({ content }) => {
+                            return JSON.parse(content);
+                        });
                         return [
-                            { type: 'user', message: request, contexts: context, date: date, hash: hash },
+                            { type: 'user', message: request, contexts: chatContexts, date: date, hash: hash },
                             { type: 'bot', message: response, date: date, hash: hash },
                         ];
                     })
