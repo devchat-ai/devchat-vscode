@@ -76,7 +76,7 @@ export const ChatStore = types.model('Chat', {
     isTop: false,
 })
     .actions(self => ({
-        startGenerating: (text: string) => {
+        startGenerating: (text: string, chatContexts) => {
             self.generating = true;
             self.responsed = false;
             self.hasDone = false;
@@ -89,10 +89,15 @@ export const ChatStore = types.model('Chat', {
                     break;
                 }
             }
+            // Process and send the message to the extension
+            const contextInfo = chatContexts.map((item: any, index: number) => {
+                const { file, content, command } = item;
+                return { file, context: content };
+            });
             messageUtil.sendMessage({
                 command: 'sendMessage',
                 text: text,
-                // context: contextInfo,
+                contextInfo: contextInfo,
                 parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
             });
         },
@@ -171,14 +176,10 @@ export const ChatStore = types.model('Chat', {
             if (entries.length > 0) {
                 self.pageIndex = pageIndex;
                 const messages = entries
-                    .map((item: any, index) => {
+                    .map((item, index) => {
                         const { hash, user, date, request, response, context } = item;
-                        const contexts = context?.map(({ content, role }) => {
-                            const context = JSON.parse(content);
-                            return { ...context };
-                        });
                         return [
-                            { type: 'user', message: request, contexts: contexts, date: date, hash: hash },
+                            { type: 'user', message: request, contexts: context, date: date, hash: hash },
                             { type: 'bot', message: response, date: date, hash: hash },
                         ];
                     })

@@ -8,6 +8,7 @@ import InputContexts from './InputContexts';
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { ChatContext } from "@/views/stores/InputStore";
+import { Message } from "@/views/stores/ChatStore";
 
 const InputMessage = observer((props: any) => {
     const { width } = props;
@@ -41,9 +42,15 @@ const InputMessage = observer((props: any) => {
         if (input.value) {
             const text = input.value;
             // Add the user's message to the chat UI
-            chat.newMessage({ type: 'user', message: input.value, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
+            const chatContexts = contexts ? [...contexts].map((item) => ({ ...item })) : undefined;
+            const newMessage = Message.create({
+                type: 'user',
+                message: input.value,
+                contexts: chatContexts
+            });
+            chat.newMessage(newMessage);
             // start generating
-            chat.startGenerating(text);
+            chat.startGenerating(text, chatContexts);
             // Clear the input field
             input.setValue('');
             input.clearContexts();
