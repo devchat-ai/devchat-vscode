@@ -4,11 +4,15 @@ import React from "react";
 import CodeBlock from "@/views/components/CodeBlock";
 import MessageHeader from "@/views/components/MessageHeader";
 import { observer } from "mobx-react-lite";
+import { types } from "mobx-state-tree";
 import { useMst } from "@/views/stores/RootStore";
+import { IInputStore } from "@/views/stores/InputStore";
 
+interface IProps {
+    contexts: IInputStore['contexts'];
+}
 
-const MessageContext = (props: any) => {
-    const { contexts } = props;
+const MessageContext = ({ contexts }: IProps) => {
     return (contexts &&
         <Accordion variant="contained" chevronPosition="left"
             sx={{
@@ -56,19 +60,19 @@ const MessageContext = (props: any) => {
             }}
         >
             {
-                contexts?.map((item: any, index: number) => {
-                    const { context } = item;
+                contexts?.map((item, index: number) => {
+                    const { content, command, file } = item;
                     return (
                         <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} mah='200'>
                             <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                 <Accordion.Control >
-                                    <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
+                                    <Text truncate='end'>{command ? command : file}</Text>
                                 </Accordion.Control>
                             </Box>
                             <Accordion.Panel>
                                 {
-                                    context.content
-                                        ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
+                                    content
+                                        ? <pre style={{ overflowWrap: 'normal' }}>{content}</pre>
                                         : <Center>
                                             <Text c='gray.3'>No content</Text>
                                         </Center>
@@ -89,7 +93,7 @@ const MessageContainer = observer((props: any) => {
     const { chat } = useMst();
 
     return (<>
-        {chat.messages.map((item: any, index: number) => {
+        {chat.messages.map((item, index: number) => {
             const { message: messageText, type: messageType, contexts } = item;
             // setMessage(messageText);
             return <Stack

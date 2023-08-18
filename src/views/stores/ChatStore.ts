@@ -1,5 +1,6 @@
 import { types, flow, Instance } from "mobx-state-tree";
 import messageUtil from '@/util/MessageUtil';
+import { ChatContext } from '@/views/stores/InputStore';
 
 interface Context {
     content: string;
@@ -59,7 +60,7 @@ export const Message = types.model({
     hash: types.maybe(types.string),
     type: types.enumeration(['user', 'bot', 'system']),
     message: types.string,
-    date: types.maybe(types.string),
+    contexts: types.array(ChatContext),
 });
 
 export const ChatStore = types.model('Chat', {
@@ -173,7 +174,10 @@ export const ChatStore = types.model('Chat', {
                 const messages = entries
                     .map((item: any, index) => {
                         const { hash, user, date, request, response, context } = item;
-                        const contexts = context?.map(({ content, role }) => ({ context: JSON.parse(content) }));
+                        const contexts = context?.map(({ content, role }) => {
+                            const context = JSON.parse(content);
+                            return { ...context };
+                        });
                         return [
                             { type: 'user', message: request, contexts: contexts, date: date, hash: hash },
                             { type: 'bot', message: response, date: date, hash: hash },
