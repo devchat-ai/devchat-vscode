@@ -60,7 +60,7 @@ export const Message = types.model({
     hash: types.maybe(types.string),
     type: types.enumeration(['user', 'bot', 'system']),
     message: types.string,
-    contexts: types.array(ChatContext),
+    contexts: types.maybe(types.array(ChatContext)),
 });
 
 export const ChatStore = types.model('Chat', {
@@ -135,13 +135,13 @@ export const ChatStore = types.model('Chat', {
             self.responsed = true;
             self.currentMessage = action.payload;
         },
-        newMessage: (action) => {
-            self.messages.push(action.payload);
-            self.lastMessage = action.payload;
+        newMessage: (message: IMessage) => {
+            self.messages.push(message);
+            self.lastMessage = message;
         },
-        updateLastMessage: (action) => {
-            self.messages[self.messages.length - 1] = action.payload;
-            self.lastMessage = action.payload;
+        updateLastMessage: (message: IMessage) => {
+            self.messages[self.messages.length - 1] = message;
+            self.lastMessage = message;
         },
         shiftMessage: () => {
             self.messages.splice(0, 1);

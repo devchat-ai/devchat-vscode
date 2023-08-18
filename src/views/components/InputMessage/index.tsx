@@ -37,15 +37,10 @@ const InputMessage = observer((props: any) => {
     };
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        if (input) {
-            // Process and send the message to the extension
-            const contextInfo = input.contexts.map((item: any, index: number) => {
-                const { file, context } = item;
-                return { file, context };
-            });
+        if (input.value) {
             const text = input.value;
             // Add the user's message to the chat UI
-            chat.newMessage({ type: 'user', message: input, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
+            chat.newMessage({ type: 'user', message: input.value, contexts: contexts ? [...contexts].map((item) => ({ ...item })) : undefined });
             // start generating
             chat.startGenerating(text);
             // Clear the input field
