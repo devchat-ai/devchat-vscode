@@ -1,5 +1,6 @@
 import { types, flow, Instance } from "mobx-state-tree";
 import messageUtil from '@/util/MessageUtil';
+import { IMessage } from '@/views/stores/ChatStore';
 
 interface Item {
     name: string;
@@ -67,9 +68,11 @@ export const InputStore = types
         clearContexts() {
             self.contexts.clear();
         },
-        setContexts(contexts) {
+        setContexts(contexts: IMessage['contexts']) {
             self.contexts.clear();
-            self.contexts.push(...contexts);
+            contexts.forEach(context => {
+                self.contexts.push({ ...context });
+            });
         },
         newContext(context) {
             self.contexts.push(context);
@@ -105,3 +108,4 @@ export const InputStore = types
 
 
 export type IInputStore = Instance<typeof InputStore>;
+export type IChatContext = Instance<typeof ChatContext>;

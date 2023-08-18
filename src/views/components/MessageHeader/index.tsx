@@ -9,8 +9,15 @@ import { IconCheck, IconCopy, Icon360, IconEdit, IconTrash } from "@tabler/icons
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 
+import { IMessage } from "@/views/stores/ChatStore";
 
-const MessageHeader = observer((props: any) => {
+interface IProps {
+    item: IMessage,
+    showEdit: boolean,
+    showDelete: boolean
+}
+
+const MessageHeader = observer((props: IProps) => {
     const { item, showEdit = false, showDelete = true } = props;
     const { contexts, message, type, hash } = item;
     const { input, chat } = useMst();
