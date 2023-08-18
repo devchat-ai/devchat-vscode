@@ -54,18 +54,44 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 - Program analysis can assist in building the necessary context. Suppose you want DevChat to explain some code to you. DevChat can perform better if it's aware of the dependent functions that the code calls. In this scenario, you select the target code to explain and add "symbol definitions" to the context. DevChat will then generate a prompt that explains the target code, taking into account the dependent functions.
 
 ### Prompt Extension
-  
-  ![20230523-220717-cut-merged-1684855581224](https://github.com/devchat-ai/devchat-vscode/assets/592493/16bc09e4-4185-4bcb-8d5a-2173b0bfc3ed)
 
-  ![20230523-220717-00 00 28 206-00 00 44 950](https://github.com/devchat-ai/devchat-vscode/assets/592493/d5556310-bc7f-4abb-86a3-8e76e4aa720e)  
+DevChat uses a directory to organize predefined prompts (templates). You can add your own or customize them simply using an editor. Let's explore the directory and see how it works.
 
-Once you have generated code with AI, DevChat **streamlines the actions** to properly integrate and ship.
-  
-  View diffs, copy or insert, commit & sync, or export to documentation, wikis, and more.
-  
-  ![20230523-220717-00 00 46 728-00 01 00 120](https://github.com/devchat-ai/devchat-vscode/assets/592493/a2bab011-8e31-47a9-838f-36e43cd2e98c)
+- **Location**: By default, the directory is named `workflows` and located in the `.chat` folder under your project root. If you've opened a project on VS Code, you can create a new terminal and run `ls .chat/workflows` to check what is in there.
 
-***
+- **Paths**: The directory contains three subdirectories, `sys`, `org`, and `usr`. They determine the priorities of prompt templates with the same name. That means you can overwrite existing prompts provided by the system. Take the following structure for example. If you create `commit_message` in `usr` and define your own `prompt.txt`, DevChat will use yours, instead of the one in `sys`.
+
+```
+workflows
+├── sys
+│   └── commit_message
+│       └── prompt.txt
+└── usr
+    └── commit_message
+        └── prompt.txt
+```
+
+Besides `sys` and `usr`, `org` is reserved for team-wise conventions. Suppose your team requires a specific format for a programming language. Your team can maintain a Git repository to store prompts in `org` and every team member can sync `org` with the repository. Those prompts will overwrite `sys` but you can still further customize them for yourself by providing any in `usr`.
+
+- **Names**: You can include a prompt template by typing a "command" with the corresponding name to the DevChat input. The command is input by typing `/` and its name, as shown below for example.
+
+Prompt templates can be organized in the directory hierarchy. Suppose you want to write a general `code` template with specific requirements for different programming languages. The prompts can be organized as the following structure.
+
+```
+workflows
+└── usr
+    └── code
+        ├── prompt.txt
+        ├── go
+        │   └── prompt.txt
+        ├── js
+        │   └── prompt.txt
+        └── py
+            └── prompt.txt
+```
+
+The `/`-separated path to the prompt directory in `usr` is corresponding to a `.`-separated command name to cite the `prompt.txt` file. For example, `path/to/dir` is represented as `/path.to.dir` in the command input.
+So, with the above directory, you can type `/code.py` in DevChat to include the `prompt.txt` in `usr/py/prompt.txt`. Note that `sys`/`org`/`usr` need not to be included in either path or command. DevChat will first look up in `usr` and then `org` and `sys` in order.
 
 ## Quick Start
 
@@ -76,9 +102,7 @@ Once you have generated code with AI, DevChat **streamlines the actions** to pro
   
   &nbsp; &nbsp; <img width="220" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/c30f76fe-321a-4145-88fa-a0ef3d36bde5">
 
-  - Be sure to open a Git or SVN project.
-  - Set your [OpenAI API Key](https://platform.openai.com/account/api-keys) by running `export OPENAI_API_KEY="[sk-...]"` (or set it to your DevChat access key instead).
-  - Click on the DevChat icon in the status bar. If the API key setting is not configured, it will prompt you to enter it. Simply input the key.
+  - Click on the DevChat icon in the status bar. If the API key is not set, DevChat will prompt you to enter it. Simply input your OpenAI's key.
 
   &nbsp; &nbsp; <img width="400" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/56f261c0-3aae-4df6-b699-c9e757bd91c1">
 
