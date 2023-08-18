@@ -218,6 +218,7 @@ const InputMessage = observer((props: any) => {
             if (typeof context !== 'undefined' && context) {
                 const chatContext = ChatContext.create({
                     file: message.file,
+                    path: context.path,
                     command: context.command,
                     content: context.content,
                 });

@@ -52,7 +52,7 @@ const InputContexts = observer(() => {
         }}>
         {
             input.contexts.map((context, index: number) => {
-                const { content, command, file } = context;
+                const { content, command, file, path } = context;
                 return (
                     <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
                         <Box sx={{
@@ -60,7 +60,7 @@ const InputContexts = observer(() => {
                             backgroundColor: 'var(--vscode-menu-background)',
                         }}>
                             <Accordion.Control w={'calc(100% - 40px)'}>
-                                <Text truncate='end'>{command ? command : file}</Text>
+                                <Text truncate='end'>{command ? command : path}</Text>
                             </Accordion.Control>
                             <ActionIcon
                                 mr={8}

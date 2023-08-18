@@ -91,10 +91,11 @@ export const ChatStore = types.model('Chat', {
             }
             // Process and send the message to the extension
             const contextInfo = chatContexts.map((item, index: number) => {
-                const { file, content, command } = item;
+                const { file, path, content, command } = item;
                 return {
                     file,
                     context: {
+                        path: path,
                         command: command,
                         content: content,
                     }

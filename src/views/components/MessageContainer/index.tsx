@@ -62,12 +62,12 @@ const MessageContext = ({ contexts }: IProps) => {
                 }}>
                 {
                     contexts?.map((item, index: number) => {
-                        const { content, command, file } = item;
+                        const { content, command, file, path } = item;
                         return (
                             <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} mah='200'>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                     <Accordion.Control >
-                                        <Text truncate='end'>{command ? command : file}</Text>
+                                        <Text truncate='end'>{command ? command : path}</Text>
                                     </Accordion.Control>
                                 </Box>
                                 <Accordion.Panel>
