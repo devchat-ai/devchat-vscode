@@ -36,6 +36,7 @@ const regCommandMenus = async () => {
 
 export const ChatContext = types.model({
     file: types.string,
+    command: types.maybe(types.string),
     content: types.string
 });
 

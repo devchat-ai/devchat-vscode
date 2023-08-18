@@ -3,6 +3,7 @@ import { IconX } from "@tabler/icons-react";
 import React from "react";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
+import { ChatContext } from "@/views/stores/InputStore";
 
 const InputContexts = observer(() => {
     const { input } = useMst();
@@ -50,8 +51,8 @@ const InputContexts = observer(() => {
             }
         }}>
         {
-            input.contexts.map((item: any, index: number) => {
-                const { context } = item;
+            input.contexts.map((context, index: number) => {
+                const { content, command, file } = context;
                 return (
                     <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
                         <Box sx={{
@@ -59,7 +60,7 @@ const InputContexts = observer(() => {
                             backgroundColor: 'var(--vscode-menu-background)',
                         }}>
                             <Accordion.Control w={'calc(100% - 40px)'}>
-                                <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
+                                <Text truncate='end'>{command ? command : file}</Text>
                             </Accordion.Control>
                             <ActionIcon
                                 mr={8}
@@ -79,8 +80,8 @@ const InputContexts = observer(() => {
                         <Accordion.Panel mah={300}>
                             <ScrollArea h={300} type="never">
                                 {
-                                    context.content
-                                        ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
+                                    content
+                                        ? <pre style={{ overflowWrap: 'normal' }}>{content}</pre>
                                         : <Center>
                                             <Text c='gray.3'>No content</Text>
                                         </Center>

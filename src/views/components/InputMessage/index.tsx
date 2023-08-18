@@ -215,7 +215,7 @@ const InputMessage = observer((props: any) => {
             if (typeof context !== 'undefined' && context) {
                 input.newContext({
                     file: message.file,
-                    context: context,
+                    content: context.content,
                 });
             }
         });
