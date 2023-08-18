@@ -6,23 +6,21 @@ import SvgAvatarDevChat from './avatar_devchat.svg';
 // @ts-ignore
 import SvgAvatarUser from './avatar_spaceman.png';
 import { IconCheck, IconCopy, Icon360, IconEdit, IconTrash } from "@tabler/icons-react";
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import { useAppDispatch } from '@/views/hooks';
+import { IMessage } from "@/views/stores/ChatStore";
 
-import {
-    setContexts,
-    setValue,
-} from '@/views/reducers/inputSlice';
+interface IProps {
+    item: IMessage,
+    showEdit?: boolean,
+    showDelete: boolean
+}
 
-import {
-    deleteMessage,
-    popMessage
-} from '@/views/reducers/chatSlice';
-
-const MessageHeader = (props: any) => {
+const MessageHeader = observer((props: IProps) => {
     const { item, showEdit = false, showDelete = true } = props;
     const { contexts, message, type, hash } = item;
-    const dispatch = useAppDispatch();
+    const { input, chat } = useMst();
     const [done, setDone] = React.useState(false);
     return (<Flex
         m='10px 0 10px 0'
@@ -56,8 +54,8 @@ const MessageHeader = (props: any) => {
                 <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={done ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
-                            dispatch(setValue(message));
-                            dispatch(setContexts(contexts));
+                            input.setValue(message);
+                            input.setContexts(contexts);
                             setDone(true);
                             setTimeout(() => { setDone(false); }, 2000);
                         }}>
@@ -76,10 +74,10 @@ const MessageHeader = (props: any) => {
                     <ActionIcon size='sm'
                         onClick={() => {
                             if (item.hash) {
-                                dispatch(deleteMessage(item));
+                                chat.deleteMessage(item).then();
                             } else {
-                                dispatch(popMessage());
-                                dispatch(popMessage());
+                                chat.popMessage();
+                                chat.popMessage();
                             }
                         }}>
                         <IconTrash size="1.125rem" />
@@ -97,6 +95,6 @@ const MessageHeader = (props: any) => {
             </CopyButton>
         }
     </Flex >);
-};
+});
 
 export default MessageHeader;

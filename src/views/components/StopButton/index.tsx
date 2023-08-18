@@ -2,14 +2,12 @@ import * as React from 'react';
 import { Button } from '@mantine/core';
 import { IconPlayerStop } from '@tabler/icons-react';
 import messageUtil from '@/util/MessageUtil';
-import { useAppDispatch } from '@/views/hooks';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 
-import {
-    stopGenerating,
-} from '@/views/reducers/chatSlice';
 
-const StopButton = () => {
-    const dispatch = useAppDispatch();
+const StopButton = observer(() => {
+    const { chat } = useMst();
     return (
         <Button
             size='xs'
@@ -27,7 +25,7 @@ const StopButton = () => {
                 }
             }}
             onClick={() => {
-                dispatch(stopGenerating({ hasDone: false, message: null }));
+                chat.stopGenerating(false, null);
                 messageUtil.sendMessage({
                     command: 'stopDevChat'
                 });
@@ -35,6 +33,6 @@ const StopButton = () => {
             variant="white">
             Stop generating
         </Button>);
-};
+});
 
 export default StopButton;

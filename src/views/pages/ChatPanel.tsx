@@ -4,39 +4,22 @@ import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
 import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
 import RegenerationButton from '@/views/components/RegenerationButton';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
+import { Message } from "@/views/stores/ChatStore";
 
-import {
-    stopGenerating,
-    startResponsing,
-    happendError,
-    selectGenerating,
-    selectErrorMessage,
-    selectIsBottom,
-    selectIsLastPage,
-    onMessagesBottom,
-    onMessagesTop,
-    onMessagesMiddle,
-    fetchHistoryMessages,
-    newMessage,
-    startSystemMessage,
-} from '@/views/reducers/chatSlice';
 
 import InputMessage from '@/views/components/InputMessage';
 import MessageContainer from '../components/MessageContainer';
-import { clearContexts, setValue } from '@/views/reducers/inputSlice';
 import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
 
 
-const chatPanel = () => {
-    const dispatch = useAppDispatch();
-    const generating = useAppSelector(selectGenerating);
-    const isBottom = useAppSelector(selectIsBottom);
-    const isLastPage = useAppSelector(selectIsLastPage);
-    const errorMessage = useAppSelector(selectErrorMessage);
+const chatPanel = observer(() => {
+    const { input, chat } = useMst();
+
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
@@ -45,7 +28,7 @@ const chatPanel = () => {
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
     const timer = useTimeout(() => {
-        if (isBottom) {
+        if (chat.isBottom) {
             scrollToBottom();
         }
     }, 1000);
@@ -58,38 +41,40 @@ const chatPanel = () => {
         const isTop = y === 0;
         // console.log(`sh:${sh},vh:${vh},x:${x},y:${y},gap:${gap}`);
         if (isBottom) {
-            dispatch(onMessagesBottom());
+            chat.onMessagesBottom();
         } else if (isTop) {
-            dispatch(onMessagesTop());
-            if (!isLastPage) {
+            chat.onMessagesTop()
+            if (!chat.isLastPage) {
                 //TODO: Data loading flickers and has poor performance, so I temporarily disabled the loading logic.
                 // dispatch(fetchHistoryMessages({ pageIndex: pageIndex + 1 }));
             }
         } else {
-            dispatch(onMessagesMiddle());
+            chat.onMessagesMiddle();
         }
     };
 
     useEffect(() => {
-        dispatch(fetchHistoryMessages({ pageIndex: 0 }));
+        chat.fetchHistoryMessages({ pageIndex: 0 }).then();
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
-            dispatch(startResponsing(message.text));
+            chat.startResponsing(message.text);
             timer.start();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean, hash }) => {
-            dispatch(stopGenerating({ hasDone: true, message: message }));
+            const messageItem = Message.create({ type: 'bot', message: message.text, hash: message.hash });
+            chat.stopGenerating(true, messageItem);
             if (message.isError) {
-                dispatch(happendError(message.text));
+                chat.happendError(message.text);
             }
         });
 
         messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
-            dispatch(newMessage({ type: 'system', message: message.text }));
+            const messageItem = Message.create({ type: 'system', message: message.text });
+            chat.newMessage(messageItem);
             // start generating
-            dispatch(startSystemMessage(message.text));
+            chat.startSystemMessage();
             // Clear the input field
-            dispatch(setValue(''));
-            dispatch(clearContexts());
+            input.setValue('');
+            input.clearContexts();
         });
 
         timer.start();
@@ -109,7 +94,7 @@ const chatPanel = () => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
-            {!isBottom && <ActionIcon
+            {!chat.isBottom && <ActionIcon
                 onClick={() => { scrollToBottom() }}
                 title='Bottom'
                 variant='transparent' sx={{ position: "absolute", bottom: 60, right: 20, zIndex: 999 }}>
@@ -117,7 +102,7 @@ const chatPanel = () => {
             </ActionIcon>}
             <ScrollArea
                 sx={{
-                    height: generating ? height - px('8rem') : height - px('5rem'),
+                    height: chat.generating ? height - px('8rem') : height - px('5rem'),
                     width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
@@ -127,20 +112,20 @@ const chatPanel = () => {
                 <MessageContainer
                     width={chatContainerRect.width} />
                 <CurrentMessage width={chatContainerRect.width} />
-                {errorMessage &&
+                {chat.errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {errorMessage}
+                        {chat.errorMessage}
                     </Alert>}
             </ScrollArea>
             <Stack
                 spacing={5}
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
-                {generating &&
+                {chat.generating &&
                     <Center>
                         <StopButton />
                     </Center>
                 }
-                {errorMessage &&
+                {chat.errorMessage &&
                     <Center>
                         <RegenerationButton />
                     </Center>
@@ -150,6 +135,6 @@ const chatPanel = () => {
             </Stack>
         </Container>
     );
-};
+});
 
 export default chatPanel;

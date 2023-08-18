@@ -1,16 +1,12 @@
 import { Accordion, Box, ActionIcon, ScrollArea, Center, Text } from "@mantine/core";
 import { IconX } from "@tabler/icons-react";
 import React from "react";
-import { useAppDispatch, useAppSelector } from '@/views/hooks';
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
+import { ChatContext } from "@/views/stores/InputStore";
 
-import {
-    selectContexts,
-    removeContext,
-} from '@/views/reducers/inputSlice';
-
-const InputContexts = () => {
-    const dispatch = useAppDispatch();
-    const contexts = useAppSelector(selectContexts);
+const InputContexts = observer(() => {
+    const { input } = useMst();
     return (<Accordion variant="contained" chevronPosition="left"
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
@@ -55,8 +51,8 @@ const InputContexts = () => {
             }
         }}>
         {
-            contexts.map((item: any, index: number) => {
-                const { context } = item;
+            input.contexts.map((context, index: number) => {
+                const { content, command, file, path } = context;
                 return (
                     <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} >
                         <Box sx={{
@@ -64,7 +60,7 @@ const InputContexts = () => {
                             backgroundColor: 'var(--vscode-menu-background)',
                         }}>
                             <Accordion.Control w={'calc(100% - 40px)'}>
-                                <Text truncate='end'>{'command' in context ? context.command : context.path}</Text>
+                                <Text truncate='end'>{command ? command : path}</Text>
                             </Accordion.Control>
                             <ActionIcon
                                 mr={8}
@@ -76,7 +72,7 @@ const InputContexts = () => {
                                     }
                                 }}
                                 onClick={() => {
-                                    dispatch(removeContext(index));
+                                    input.removeContext(index);
                                 }}>
                                 <IconX size="1rem" />
                             </ActionIcon>
@@ -84,8 +80,8 @@ const InputContexts = () => {
                         <Accordion.Panel mah={300}>
                             <ScrollArea h={300} type="never">
                                 {
-                                    context.content
-                                        ? <pre style={{ overflowWrap: 'normal' }}>{context.content}</pre>
+                                    content
+                                        ? <pre style={{ overflowWrap: 'normal' }}>{content}</pre>
                                         : <Center>
                                             <Text c='gray.3'>No content</Text>
                                         </Center>
@@ -97,6 +93,6 @@ const InputContexts = () => {
             })
         }
     </Accordion>);
-};
+});
 
 export default InputContexts;
