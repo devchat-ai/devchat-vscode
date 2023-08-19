@@ -45,11 +45,11 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 
 - The most fundamental operation involves selecting code (either files or snippets) and adding it to DevChat. For instance, you can add a function along with an existing test case to the prompt context, and ask DevChat to generate several test cases for the function. The test case serves as a useful reference for DevChat, enabling it to understand how to write a valid test case in your environment, thus eliminating the need for you to specify every requirement or setup in your prompt.
 
-    ![Add to context](https://github.com/devchat-ai/devchat-vscode/assets/592493/9b19c798-d06f-4373-8f8a-6a950c3a8ba5)
+  ![Add to context](https://github.com/devchat-ai/devchat-vscode/assets/592493/9b19c798-d06f-4373-8f8a-6a950c3a8ba5)
 
 - You can incorporate the output of any command, such as `tree ./src`, into a prompt with DevChat. For example, you can add the output of `git diff --cached` to DevChat, which can then generate a commit message for you.
 
-    ![Generate a commit message](https://github.com/devchat-ai/devchat-vscode/assets/592493/7bd34547-762c-4f97-b792-8d05a9eb1dcf)
+  ![Generate a commit message](https://github.com/devchat-ai/devchat-vscode/assets/592493/7bd34547-762c-4f97-b792-8d05a9eb1dcf)
 
 - Program analysis can assist in building the necessary context. Suppose you want DevChat to explain some code to you. DevChat can perform better if it's aware of the dependent functions that the code calls. In this scenario, you select the target code to explain and add "symbol definitions" to the context. DevChat will then generate a prompt that explains the target code, taking into account the dependent functions.
 
@@ -57,52 +57,44 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 
 DevChat utilizes a directory to manage predefined prompt templates. You can easily add your own or modify existing ones using a text editor. Let's delve into the directory structure and its functionality.
 
-#### Location
+- **Location**: By default, the directory is named `workflows` and located in the `.chat` folder at the root of your project. If you're working on a project in VS Code, you can run `ls .chat/workflows` in a terminal to see what's inside.
 
-By default, the directory is named `workflows` and located in the `.chat` folder at the root of your project. If you're working on a project in VS Code, you can run `ls .chat/workflows` in a terminal to see what's inside.
+- **Paths**: The `workflows` directory contains three subdirectories, `sys`, `org`, and `usr`. The `sys` (system) directory is a clone of https://github.com/devchat-ai/workflows, which contains the default templates. You can overwrite those system prompts. For instance, if you create `commit_message` in the `usr` directory and define your own `prompt.txt`, DevChat will use your version instead of the default one in `sys`.
 
-#### Paths
+  ```
+  workflows
+  ├── sys
+  │   └── commit_message
+  │       └── prompt.txt
+  └── usr
+      └── commit_message
+          └── prompt.txt
+  ```
 
-The `workflows` directory contains three subdirectories, `sys`, `org`, and `usr`. The `sys` (system) directory is a clone of https://github.com/devchat-ai/workflows, which contains the default templates. You can overwrite those system prompts. For instance, if you create `commit_message` in the `usr` directory and define your own `prompt.txt`, DevChat will use your version instead of the default one in `sys`.
+  In addition to `sys` and `usr`, the `org` directory is reserved for team-wise conventions. Your team can maintain a Git repository to store prompts in `org`, and every team member can locally sync `org` with the repository. Those prompts will overwrite those in `sys`, while you can still further customize them for yourself by providing any in `usr`.
 
-```
-workflows
-├── sys
-│   └── commit_message
-│       └── prompt.txt
-└── usr
-    └── commit_message
-        └── prompt.txt
-```
+- **Names**: You can utilize a prompt template by typing a "command" with the corresponding name in the DevChat input. Type `/` followed by the command name.
 
-In addition to `sys` and `usr`, the `org` directory is reserved for team-wise conventions. Your team can maintain a Git repository to store prompts in `org`, and every team member can locally sync `org` with the repository. Those prompts will overwrite those in `sys`, while you can still further customize them for yourself by providing any in `usr`.
+  <img width="386" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/145d94eb-a3e8-42ca-bb88-a462b6070b2f">
 
-#### Names
+  The `/`-separated path to the prompt directory in `usr` corresponds to a `.`-separated command name to incorporate the `prompt.txt` file in the directory. For example, `path/to/dir` is represented as `/path.to.dir` for the DevChat input. Note that `sys`, `org`, or `usr` do not need to be included in a command name. DevChat will first look up the corresponding path under `usr`, then `org`, and finally `sys`.
 
-You can utilize a prompt template by typing a "command" with the corresponding name in the DevChat input. Type `/` followed by the command name.
+- **Inheritance**: By default, a command will incorporate the `prompt.txt` file in the corresponding directory and all the `prompt.txt` files in the parent and ancestor directories. For example, if you want to write a general `code` template with specific requirements for different programming languages, the prompts can be organized as follows:
 
-The `/`-separated path to the prompt directory in `usr` corresponds to a `.`-separated command name to incorporate the `prompt.txt` file in the directory. For example, `path/to/dir` is represented as `/path.to.dir` for the DevChat input.
+  ```
+  workflows
+  └── usr
+      └── code
+          ├── prompt.txt
+          ├── go
+          │   └── prompt.txt
+          ├── js
+          │   └── prompt.txt
+          └── py
+              └── prompt.txt
+  ```
 
-Note that `sys`, `org`, or `usr` do not need to be included in a command name. DevChat will first look up the corresponding path under `usr`, then `org`, and finally `sys`.
-
-## Inheritance
-
-By default, a command will incorporate the `prompt.txt` file in the corresponding directory and all the `prompt.txt` files in the parent and ancestor directories. For example, if you want to write a general `code` template with specific requirements for different programming languages, the prompts can be organized as follows:
-
-```
-workflows
-└── usr
-    └── code
-        ├── prompt.txt
-        ├── go
-        │   └── prompt.txt
-        ├── js
-        │   └── prompt.txt
-        └── py
-            └── prompt.txt
-```
-
-When you type `/code.py` in DevChat, it will include both `prompt.txt` in `usr/code/` and `prompt.txt` in `usr/code/py/`. This structure aligns with our `sys` directory. You can refer to the contents of sys/code/prompt.txt and sys/code/py/prompt.txt for more details.
+  When you type `/code.py` in DevChat, it will include both `prompt.txt` in `usr/code/` and `prompt.txt` in `usr/code/py/`. This structure aligns with our `sys` directory. You can refer to the contents of [sys/code/prompt.txt](https://github.com/devchat-ai/workflows/blob/main/code/prompt.txt) and [sys/code/py/prompt.txt](https://github.com/devchat-ai/workflows/blob/main/code/py/prompt.txt) for more details.
 
 ## Quick Start
 
