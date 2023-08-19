@@ -28,7 +28,7 @@ DevChat is an open-source platform that empowers developers to leverage AI for c
 
 While there are many AI coding tools available, we created DevChat based on our insights gained from generating tens of thousands of lines of code. If you agree with our perspectives outlined below, DevChat could be the perfect choice for you.
 
-- **The value of prompt "engineering" is often overstated**. While a well-crafted prompt template can be beneficial, it doesn't justify spending days or weeks of study. Instead, dedicate an hour or two to create a few effective templates and share them with your team.
+- **The value of prompt "engineering" is often overstated**. While a well-crafted prompt template is helpful, it doesn't justify spending days or weeks of study. Instead, dedicate an hour or two to create a few effective templates and share them with your team.
 - The art of writing prompts is a skill honed through practice. It's not about templates or engineering, but about **refining individual prompts for specific tasks on a case-by-case basis**.
 - **The bottleneck in harnessing AI's capabilities lies in how to embed the right context in a prompt**. This isn't merely about the token limit of an AI model's input. Even with an infinite number of tokens, existing AI models would struggle to yield satisfactory results without a proper separation of concerns.
 - **Use AI only when it truly adds value**. Our misconception about AI's capabilities in reality is even a greater issue than hallucination of LLMs. What we need is a tool that boosts productivity, not merely an experiment.
@@ -36,8 +36,8 @@ While there are many AI coding tools available, we created DevChat based on our 
 ## Our Features
 
 In alignment with our insights, DevChat incorporates the following design choices:
-- **Precise control over the context embedded in a prompt**. This isn't a feature to be overlooked in the quest for greater intelligence or autonomy. Precise control over context is crucial for effective AI use. In our view, most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than the Claude model it utilizes can effectively manage.
-- **A simple, extensible prompt directory**. This allows developers or teams to easily integrate their own predefined prompt snippets into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need [LangChain](https://github.com/langchain-ai/langchain) to make AI work for you.
+- **Precise control over the context embedded in a prompt**. This isn't a feature to be overlooked in the quest for greater intelligence or autonomy. Precise control over context is crucial for effective AI use. In our view, most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than LLMs can effectively manage.
+- **A simple, extensible prompt directory**. This enables developers or teams to easily integrate their own predefined prompt templates into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need a complex framework to make AI work for you. All it takes is a standard editor operating on your filesystem.
 
 ### Context Building
 
@@ -55,11 +55,15 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 
 ### Prompt Extension
 
-DevChat uses a directory to organize predefined prompts (templates). You can add your own or customize them simply using an editor. Let's explore the directory and see how it works.
+DevChat uses a directory to organize predefined prompt templates. You can add your own or customize them simply using an editor. Let's explore the directory and see how it works.
 
-- **Location**: By default, the directory is named `workflows` and located in the `.chat` folder under your project root. If you've opened a project on VS Code, you can create a new terminal and run `ls .chat/workflows` to check what is in there.
+#### Location
 
-- **Paths**: The directory contains three subdirectories, `sys`, `org`, and `usr`. They determine the priorities of prompt templates with the same name. That means you can overwrite existing prompts provided by the system. Take the following structure for example. If you create `commit_message` in `usr` and define your own `prompt.txt`, DevChat will use yours, instead of the one in `sys`.
+By default, the directory is named `workflows` and located in the `.chat` folder under your project root. If you open a project on VS Code, you can run `ls .chat/workflows` in a terminal to check what is in there.
+
+#### Path
+
+The directory contains three subdirectories, `sys`, `org`, and `usr`. The `sys` (system) directory is a clone of https://github.com/devchat-ai/workflows, containing the default templates. You can overwrite those system prompts. Take the following structure for example. If you create `commit_message` in `usr` and define your own `prompt.txt`, DevChat will use your version, instead of the default one in `sys`.
 
 ```
 workflows
@@ -71,11 +75,21 @@ workflows
         └── prompt.txt
 ```
 
-Besides `sys` and `usr`, `org` is reserved for team-wise conventions. Suppose your team requires a specific format for a programming language. Your team can maintain a Git repository to store prompts in `org` and every team member can sync `org` with the repository. Those prompts will overwrite `sys` but you can still further customize them for yourself by providing any in `usr`.
+Besides `sys` and `usr`, `org` is reserved for team-wise conventions. Your team can maintain a Git repository to store prompts in `org` and every team member can locally sync `org` with the repository. Those prompts will overwrite `sys` but you can still further customize them for yourself by providing any in `usr`.
 
-- **Names**: You can include a prompt template by typing a "command" with the corresponding name to the DevChat input. The command is input by typing `/` and its name, as shown below for example.
+#### Name
 
-Prompt templates can be organized in the directory hierarchy. Suppose you want to write a general `code` template with specific requirements for different programming languages. The prompts can be organized as the following structure.
+You can use a prompt template by typing a "command" with the corresponding name in the DevChat input. Type `/` and the command name, as shown below for example.
+
+
+
+The `/`-separated path to the prompt directory in `usr` is corresponding to a `.`-separated command name to incorporate the `prompt.txt` file in the directory. For example, `path/to/dir` is represented as `/path.to.dir` for the DevChat input.
+
+Note that `sys`, `org`, or `usr` need not be included in a command name. DevChat will first look up the corresponding path under `usr` and then `org` and `sys` in order.
+
+## Inheritance
+
+By default, a command will incorporate the prompt.txt file in the corresponding directory and all the prompt.txt files in the parent and ancestor directories. Suppose you want to write a general `code` template with specific requirements for different programming languages. The prompts can be organized in the following structure.
 
 ```
 workflows
@@ -90,8 +104,8 @@ workflows
             └── prompt.txt
 ```
 
-The `/`-separated path to the prompt directory in `usr` is corresponding to a `.`-separated command name to cite the `prompt.txt` file. For example, `path/to/dir` is represented as `/path.to.dir` in the command input.
-So, with the above directory, you can type `/code.py` in DevChat to include the `prompt.txt` in `usr/py/prompt.txt`. Note that `sys`/`org`/`usr` need not to be included in either path or command. DevChat will first look up in `usr` and then `org` and `sys` in order.
+
+When you type `/code.py` in DevChat, it will include both `prompt.txt` in `usr/code/py/` and `prompt.txt` in `usr/code` as well. This structure is actually aligned with our `sys` directory. Check out the contents of sys/code/prompt.txt and sys/code/py/prompt.txt for reference.
 
 ## Quick Start
 
