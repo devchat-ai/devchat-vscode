@@ -69,7 +69,7 @@ export const InputStore = types
         clearContexts() {
             self.contexts.clear();
         },
-        setContexts(contexts: IMessage['contexts']) {
+        setContexts(contexts: IChatContext[]) {
             self.contexts.clear();
             contexts?.forEach(context => {
                 self.contexts.push({ ...context });

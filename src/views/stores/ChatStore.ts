@@ -39,11 +39,10 @@ export const fetchHistoryMessages = async (params) => {
     });
 };
 
-export const deleteMessage = async (item: IMessage) => {
-    const { hash } = item;
+export const deleteMessage = async (messageHash: string) => {
     return new Promise<{ hash: string }>((resolve, reject) => {
         try {
-            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: hash });
+            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: messageHash });
             messageUtil.registerHandler('deletedChatMessage', (message) => {
                 resolve({
                     hash: message.hash
@@ -203,8 +202,8 @@ export const ChatStore = types.model('Chat', {
                 self.isLastPage = true;
             }
         }),
-        deleteMessage: flow(function* (item: IMessage) {
-            const { hash } = yield deleteMessage(item);
+        deleteMessage: flow(function* (messageHash: string) {
+            const { hash } = yield deleteMessage(messageHash);
             const index = self.messages.findIndex((item: any) => item.hash === hash);
             if (index > -1) {
                 self.messages.splice(index);

@@ -10,19 +10,33 @@ import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 
 import { IMessage } from "@/views/stores/ChatStore";
+import { IChatContext } from "@/views/stores/InputStore";
 
 interface IProps {
-    item: IMessage,
+    key?: string,
+    item?: IMessage,
+    avatarType?: "user" | "bot" | "system",
+    copyMessage?: string,
+    messageContexts?: IChatContext[],
+    deleteHash?: string,
     showEdit?: boolean,
-    showDelete: boolean
+    showDelete?: boolean
 }
 
 const MessageAvatar = observer((props: IProps) => {
-    const { item, showEdit = false, showDelete = true } = props;
-    const { contexts, message, type, hash } = item;
+    const {
+        messageContexts = [],
+        copyMessage = "",
+        deleteHash = undefined,
+        avatarType = "user",
+        showEdit = false,
+        showDelete = false,
+        key
+    } = props;
     const { input, chat } = useMst();
     const [done, setDone] = React.useState(false);
     return (<Flex
+        key={key}
         m='10px 0 10px 0'
         gap="sm"
         justify="flex-start"
@@ -30,7 +44,7 @@ const MessageAvatar = observer((props: IProps) => {
         direction="row"
         wrap="wrap">
         {
-            type === 'bot'
+            avatarType === 'bot'
                 ? <Avatar
                     color="indigo"
                     size={25}
@@ -42,8 +56,8 @@ const MessageAvatar = observer((props: IProps) => {
                     radius="xl"
                     src={SvgAvatarUser} />
         }
-        <Text weight='bold'>{type === 'bot' ? 'DevChat' : 'User'}</Text>
-        {type === 'user'
+        <Text weight='bold'>{avatarType === 'bot' ? 'DevChat' : 'User'}</Text>
+        {avatarType === 'user'
             ? <Flex
                 gap="xs"
                 justify="flex-end"
@@ -54,8 +68,8 @@ const MessageAvatar = observer((props: IProps) => {
                 <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={done ? 'Refilled' : 'Refill prompt'} withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
-                            input.setValue(message);
-                            input.setContexts(contexts);
+                            input.setValue(copyMessage);
+                            input.setContexts(messageContexts);
                             setDone(true);
                             setTimeout(() => { setDone(false); }, 2000);
                         }}>
@@ -70,11 +84,11 @@ const MessageAvatar = observer((props: IProps) => {
                         <IconEdit size="1.125rem" />
                     </ActionIcon>
                 </Tooltip >}
-                {showDelete && hash !== 'message' && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
+                {showDelete && deleteHash !== 'message' && <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label="Delete message" withArrow position="left" color="gray">
                     <ActionIcon size='sm'
                         onClick={() => {
-                            if (item.hash) {
-                                chat.deleteMessage(item).then();
+                            if (deleteHash) {
+                                chat.deleteMessage(deleteHash).then();
                             } else {
                                 chat.popMessage();
                                 chat.popMessage();
@@ -84,7 +98,7 @@ const MessageAvatar = observer((props: IProps) => {
                     </ActionIcon>
                 </Tooltip >}
             </Flex >
-            : <CopyButton value={message} timeout={2000}>
+            : <CopyButton value={copyMessage} timeout={2000}>
                 {({ copied, copy }) => (
                     <Tooltip sx={{ padding: '3px', fontSize: 'var(--vscode-editor-font-size)' }} label={copied ? 'Copied' : 'Copy message'} withArrow position="left" color="gray">
                         <ActionIcon size='xs' color={copied ? 'teal' : 'gray'} onClick={copy} style={{ marginLeft: 'auto', marginRight: '10px' }}>

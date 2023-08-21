@@ -14,7 +14,7 @@ const MessageList = observer((props: any) => {
 
     return (<>
         {chat.messages.map((item, index: number) => {
-            const { message: messageText, type: messageType, contexts } = item;
+            const { message: messageText, type: messageType, hash: messageHash, contexts } = item;
             // setMessage(messageText);
             return <Stack
                 spacing={0}
@@ -27,7 +27,10 @@ const MessageList = observer((props: any) => {
                 <MessageAvatar
                     key={`message-header-${index}`}
                     showDelete={index === chat.messages.length - 2}
-                    item={item} />
+                    deleteHash={messageHash}
+                    avatarType={messageType}
+                    copyMessage={messageText}
+                    messageContexts={contexts} />
                 <Container
                     key={`message-container-${index}`}
                     sx={{
