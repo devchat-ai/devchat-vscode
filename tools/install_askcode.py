@@ -11,6 +11,17 @@ print('Python command:', pythonCommand)
 tools_dir = os.path.dirname(os.path.realpath(__file__))
 
 
+def get_app_data_dir(app_name):
+    home = os.path.expanduser("~")
+    if os.name == "nt":  # For Windows
+        appPath = os.path.join(home, "AppData", "Roaming", app_name)
+    else:  # For Unix and Linux
+        appPath = os.path.join(home, ".local", "share", app_name)
+    
+    if not os.path.exists(appPath):
+        os.makedirs(appPath)
+    return appPath
+
 def get_pythoncmd_in_env(venvdir, envname):
     """
     return pythoncmd in virtual env
@@ -226,7 +237,7 @@ def main():
     install devchat 
     """
     pythoncommand = pythonCommand
-    venvdir = tools_dir
+    venvdir = get_app_data_dir('devchat')
     envname = "devchat-ask"
     # install pip
     if not install_pip(pythoncommand):
