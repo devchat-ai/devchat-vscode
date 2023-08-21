@@ -11,6 +11,7 @@ import { isValidApiKey } from '../handler/historyMessagesBase';
 import { logger } from '../util/logger';
 import { CommandRun } from '../util/commonUtil';
 import { updateIndexingStatus, updateLastModifyTime } from '../util/askCodeUtil';
+import { installAskCode as installAskCodeFun } from '../util/python_installer/install_askcode';
 
 let indexProcess: CommandRun | null = null;
 
@@ -234,13 +235,12 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStart', async () => {
         const config = getConfig();
         const pythonVirtualEnv = config.pythonVirtualEnv;
-        const pythonPath = config.pythonPath;
         const supportedFileTypes = config.supportedFileTypes;
 
 		updateIndexingStatus("started");
 
         if (!pythonVirtualEnv) {
-            await installAskCode(pythonPath, supportedFileTypes);
+            await installAskCode(supportedFileTypes);
         } else {
             await indexCode(pythonVirtualEnv, supportedFileTypes);
         }
@@ -253,38 +253,19 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 function getConfig() {
     return {
         pythonVirtualEnv: vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv'),
-        pythonPath: vscode.workspace.getConfiguration('DevChat').get('PythonPath'),
         supportedFileTypes: vscode.workspace.getConfiguration('DevChat.askcode').get('supportedFileTypes'),
     };
 }
 
-async function installAskCode(pythonPath, supportedFileTypes) {
-    const command = pythonPath;
-    const args = [UiUtilWrapper.extensionPath() + "/tools/install_askcode.py"];
-    const options = { cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.' };
-
-    indexProcess = new CommandRun();
-    let pythonEnvPath: string | null = null;
-    const result = await indexProcess.spawnAsync(command, args, options, (data) => {
-        logger.channel()?.info(`stdout: ${data}`);
-        // Extract the Python path from the output
-        const match = data.match(/==> askPythonEnv: (.*)/);
-        if (match) {
-            pythonEnvPath = match[1];
-            // Use the extracted Python path to update the configuration
-            UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
-        }
-    }, (data) => {
-        logger.channel()?.info(`${data}`);
-    }, undefined, undefined);
-
-    if (pythonEnvPath === null) {
-		logger.channel()?.error(`Installation failed: ${result.stderr}`);
+async function installAskCode(supportedFileTypes) {
+	const pythonEnvPath : string = await installAskCodeFun();
+	if (!pythonEnvPath) {
+		logger.channel()?.error(`Installation failed!`);
 		logger.channel()?.show();
-        vscode.window.showErrorMessage(`Installation failed: ${result.stderr}`);
         return;
-    }
+	}
 
+	UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
     logger.channel()?.info(`Installation finished.`);
     
     // Execute the indexing command after the installation is finished
