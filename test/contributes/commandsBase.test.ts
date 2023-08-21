@@ -51,34 +51,4 @@ describe('commandsBase', () => {
       expect(result).to.be.false;
     });
   });
-
-  describe('getPipxEnvironmentPath', () => {
-    afterEach(() => {
-      sinon.restore();
-    });
-
-    it('should return the pipx environment path if found', () => {
-      sinon.stub(commonUtil, 'runCommand').callsFake((command: string) => {
-        if (command === 'python3 -m pipx environment') {
-          return 'PIPX_BIN_DIR=/path/to/bin';
-        }
-        return '';
-      });
-
-      const result = commandsBase.getPipxEnvironmentPath("python3");
-      expect(result).to.equal('/path/to/bin');
-    });
-
-    it('should return null if pipx environment path is not found', () => {
-      sinon.stub(commonUtil, 'runCommand').callsFake((command: string) => {
-        if (command === 'python3 -m pipx environment') {
-          return 'No pipx environment found';
-        }
-        return '';
-      });
-
-      const result = commandsBase.getPipxEnvironmentPath("python3");
-      expect(result).to.be.null;
-    });
-  });
 });

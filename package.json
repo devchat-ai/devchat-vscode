@@ -155,6 +155,16 @@
 					"default": false,
 					"description": "Enable/Disable function calling for GPT.",
 					"when": "DevChat.llmModel == 'OpenAI'"
+				},
+				"DevChat.PythonVirtualEnv": {
+                    "type": "string",
+                    "default": "",
+                    "description": "Path to the Python virtual environment for AskCode."
+                },
+				"DevChat.askcode.supportedFileTypes": {
+					"type": "string",
+					"default": ".+\\.js$, .+\\.ts$, .+\\.jsx$, .+\\.tsx$, .+\\.java$, .+\\.py$, .+\\.go$, .+\\.rb$, .+\\.php$, .+\\.cpp$, .+\\.c$, .+\\.cs$, .+\\.swift$, .+\\.rs$, .+\\.sh$, .+\\.bash$, .+\\.zsh$, .+\\.m$, .+\\.mm$, .+\\.h$, .+\\.hpp$, .+\\.hh$, .+\\.html$, .+\\.htm$, .+\\.xhtml$, .+\\.xml$, .+\\.css$, .+\\.scss$, .+\\.sass$, .+\\.less$, .+\\.json$, .+\\.yaml$, .+\\.yml$, .+\\.toml$, .+\\.ini$, .+\\.md$, .+\\.markdown$, .+\\.txt$, .+\\.csv$, .+\\.sql$, .+\\.sqlite$, .+\\.db$, .+\\.hql$, .+\\.psql$, .+\\.pgsql$, .+\\.plpgsql$",
+					"description": "Comma-separated list of regular expressions for supported file types for analysis."
 				}
 			}
 		},
@@ -239,6 +249,10 @@
 				"title": "Add to DevChat"
 			},
 			{
+				"command": "devchat.addSummaryContext",
+				"title": "Add summary to DevChat"
+			},
+			{
 				"command": "devchat.askForCode",
 				"title": "Add to DevChat"
 			},
@@ -257,6 +271,26 @@
 			{
 				"command": "devchat.askForFile_chinese",
 				"title": "添加到DevChat"
+			},
+			{
+				"command": "DevChat.AskCodeIndexStart",
+				"title": "Start AskCode Index",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AskCodeIndexStop",
+				"title": "Stop AskCode Index",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AskCodeSummaryIndexStart",
+				"title": "Start AskCode Summary Index",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AskCodeIndexSummaryStop",
+				"title": "Stop AskCode Summary Index",
+				"category": "DevChat"
 			}
 		],
 		"menus": {
@@ -321,6 +355,10 @@
 					"when": "false"
 				},
 				{
+					"command": "devchat.addSummaryContext",
+					"when": "false"
+				},
+				{
 					"command": "devchat.askForCode",
 					"when": "false"
 				},
@@ -350,6 +388,11 @@
 				{
 					"when": "!isChineseLocale && resourceLangId != 'git'",
 					"command": "devchat.addConext",
+					"group": "navigation"
+				},
+				{
+					"when": "!isChineseLocale && resourceLangId != 'git'",
+					"command": "devchat.addSummaryContext",
 					"group": "navigation"
 				}
 			],

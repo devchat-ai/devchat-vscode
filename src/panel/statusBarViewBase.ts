@@ -4,9 +4,10 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency, getPipxEnvironmentPath, getValidPythonCommand } from "../contributes/commandsBase";
+import { checkDevChatDependency } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
 import { CommandRun } from '../util/commonUtil';
+import { installDevchat } from '../util/python_installer/install_devchat';
 
 
 
@@ -20,100 +21,101 @@ function getExtensionVersion(): string {
 
 let devchatStatus = '';
 let apiKeyStatus = '';
-let isVersionChangeCompare: boolean|undefined = undefined;
+
+let preDevchatStatus = '';
+let preApiKeyStatus = '';
+
+let hasLoadTopics: boolean = false;
+
 export async function dependencyCheck(): Promise<[string, string]> {
-	let versionChanged = false;
-	if (isVersionChangeCompare === undefined) {
-		try {
-			const versionOld = await UiUtilWrapper.secretStorageGet("DevChatVersionOld");
-			const versionNew = getExtensionVersion();
-			versionChanged = versionOld !== versionNew;
-			UiUtilWrapper.storeSecret("DevChatVersionOld", versionNew!);
+	// there are some different status of devchat:
+	// 0. not checked
+	// 1. has statisfied the dependency
+	// 2. is installing
+	// 3. install failed
+	// 4. install success
 
-			isVersionChangeCompare = true;
-			logger.channel()?.info(`versionOld: ${versionOld}, versionNew: ${versionNew}, versionChanged: ${versionChanged}`);
-		} catch (error) {
-			isVersionChangeCompare = false;
-		}
-	}
-	
-	const pythonCommand = getValidPythonCommand();
-	if (!pythonCommand) {
+	// key status:
+	// 0. not checked
+	// 1. invalid or not set
+	// 2. valid key
+
+	// define subfunction to check devchat dependency
+	const getDevChatStatus = async (): Promise<string> => {
 		if (devchatStatus === '') {
-			UiUtilWrapper.showErrorMessage('Missing required dependency: Python3');
-			logger.channel()?.error('Missing required dependency: Python3');
-			logger.channel()?.show();
-		}
-		
-		devchatStatus = 'Missing required dependency: Python3';
-	} else if (devchatStatus === 'Missing required dependency: Python3') {
-		devchatStatus = '';
-	}
-	
-	// status item has three status type
-	// 1. not in a folder
-	// 2. dependence is invalid
-	// 3. ready
-	if (devchatStatus === '' ||
-		devchatStatus === 'An error occurred during the installation of DevChat' ||
-		devchatStatus === 'DevChat has been installed') {
-		let bOk = false;
-		if (!bOk) {
-			const showError = devchatStatus == ''? false : true;
-			bOk = checkDevChatDependency(pythonCommand!, showError);
-		}
+			const bOk = checkDevChatDependency(false);
+			if (bOk) {
+				devchatStatus = 'has statisfied the dependency';
+				return devchatStatus;
+			} 
 
-		if (bOk) {
-			devchatStatus = 'ready';
-			TopicManager.getInstance().loadTopics();
-		} else {
-			if (devchatStatus === '') {
-				devchatStatus = 'not ready';
+			devchatStatus = 'installing devchat';
+			const devchatCommandEnv = await installDevchat();
+			if (devchatCommandEnv) {
+				logger.channel()?.info(`devchatCommandEnv: ${devchatCommandEnv}`);
+				await UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommandEnv);
+
+				devchatStatus = 'DevChat has been installed';
+				return devchatStatus;
+			} else {
+				logger.channel()?.info(`devchatCommandEnv: undefined`);
+
+				devchatStatus = 'An error occurred during the installation of DevChat';
+				return devchatStatus;
 			}
+		} else if (devchatStatus === 'has statisfied the dependency') {
+			return devchatStatus;
+		} else if (devchatStatus === 'installing devchat') {
+			return devchatStatus;
+		} else if (devchatStatus === 'DevChat has been installed') {
+			return devchatStatus;
+		} else if (devchatStatus === 'An error occurred during the installation of DevChat') {
+			const bOk = checkDevChatDependency(false);
+			if (bOk) {
+				devchatStatus = 'has statisfied the dependency';
+				return devchatStatus;
+			}
+			return devchatStatus;
 		}
-	}
-	if (devchatStatus === 'not ready') {
-		// auto install devchat
-		const run = new CommandRun();
-		const options = {
-			cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
-		};
+		return "";
+	};
 
-		let errorInstall = false;
-		let installLogs = '';
-		await run.spawnAsync(pythonCommand!, [UiUtilWrapper.extensionPath() + "/tools/install.py"], options, 
-		(data) => {
-			installLogs += data;
-			logger.channel()?.info(data.trim());
-		}, 
-		(data) => {
-			errorInstall = true;
-			logger.channel()?.info(data.trim());
-		}, undefined, undefined);
-
-		// UiUtilWrapper.runTerminal('DevChat Install', `${pythonCommand} "${UiUtilWrapper.extensionPath() + "/tools/install.py"}"`);
-		const devchatCommandEnv = installLogs.match(/devchatCommandEnv:  (.*)/)?.[1];
-		if (devchatCommandEnv) {
-			logger.channel()?.info(`devchatCommandEnv: ${devchatCommandEnv}`);
-			await UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommandEnv);
-			devchatStatus = 'DevChat has been installed';
+	// define subfunction to check api key
+	const getApiKeyStatus = async (): Promise<string> => {
+		if (apiKeyStatus === '' || apiKeyStatus === 'Please set the API key') {
+			const accessKey = await ApiKeyManager.getApiKey();
+			if (accessKey) {
+				apiKeyStatus = 'has valid access key';
+				return apiKeyStatus;
+			} else {
+				apiKeyStatus = 'Please set the API key';
+				return apiKeyStatus;
+			}
 		} else {
-			logger.channel()?.info(`devchatCommandEnv: undefined`);
-			devchatStatus = 'An error occurred during the installation of DevChat';
+			return apiKeyStatus;
 		}
+	};
 
-		isVersionChangeCompare = true;
+	const devchatPackageStatus = await getDevChatStatus();
+	const apiAccessKeyStatus = await getApiKeyStatus();
+
+	if (devchatPackageStatus === 'has statisfied the dependency' || devchatPackageStatus === 'DevChat has been installed') {
+		if (apiAccessKeyStatus === 'has valid access key') {
+			if (!hasLoadTopics) {
+				TopicManager.getInstance().loadTopics();
+			}
+			hasLoadTopics = true;
+		}
 	}
 
-	// check api key
-	if (apiKeyStatus === '' || apiKeyStatus === 'Please set the API key') {
-		const bOk = await ApiKeyManager.getApiKey();
-		if (bOk) {
-			apiKeyStatus = 'ready';
-		} else {
-			apiKeyStatus = 'Please set the API key';
-		}
+	if (devchatPackageStatus !== preDevchatStatus) {
+		logger.channel()?.info(`devchat status: ${devchatPackageStatus}`);
+		preDevchatStatus = devchatPackageStatus;
+	}
+	if (apiAccessKeyStatus !== preApiKeyStatus) {
+		logger.channel()?.info(`api key status: ${apiAccessKeyStatus}`);
+		preApiKeyStatus = apiAccessKeyStatus;
 	}
 
-	return [devchatStatus, apiKeyStatus];
+	return [devchatPackageStatus, apiAccessKeyStatus];
 }

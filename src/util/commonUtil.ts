@@ -8,7 +8,22 @@ import { parseArgsStringToArgv } from 'string-argv';
 import { logger } from './logger';
 import { spawn, exec } from 'child_process';
 import { UiUtilWrapper } from './uiUtil';
+import { ApiKeyManager } from './apiKey';
 
+async function createOpenAiKeyEnv() {
+	let envs = {...process.env};
+	let openaiApiKey = await ApiKeyManager.getApiKey();
+    if (openaiApiKey) {
+        envs['OPENAI_API_KEY'] = openaiApiKey;
+    }
+    
+    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    if (openAiApiBase) {
+        envs['OPENAI_API_BASE'] = openAiApiBase;
+    }
+
+	return envs;
+}
 export function createTempSubdirectory(subdir: string): string {
 	// 获取系统临时目录
 	const tempDir = os.tmpdir();
@@ -116,6 +131,7 @@ export async function runCommandAndWriteOutput(
 	const run = new CommandRun();
 	const options = {
 		cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
+		env: await createOpenAiKeyEnv()
 	};
 
 	return run.spawnAsync(command, args, options, undefined, undefined, undefined, outputFile);
@@ -127,7 +143,8 @@ export async function runCommandStringAndWriteOutput(
 ): Promise<CommandResult> {
     const run = new CommandRun();
     const options = {
-        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.'
+        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
+		env: await createOpenAiKeyEnv()
     };
 
     // Split the commandString into command and args array using string-argv
@@ -152,7 +169,8 @@ export async function runCommandStringArrayAndWriteOutput(
 ): Promise<CommandResult> {
     const run = new CommandRun();
     const options = {
-        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.'
+        cwd: UiUtilWrapper.workspaceFoldersFirstPath() || '.',
+		env: await createOpenAiKeyEnv()
     };
 
 	const commandString = commandStringList[0];
