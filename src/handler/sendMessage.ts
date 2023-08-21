@@ -35,12 +35,24 @@ export function deleteTempFiles(fileName: string): void {
 regInMessage({command: 'askCode', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
 export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-    _lastMessage = message;
+    _lastMessage = [message];
+	_lastMessage[0]['askCode'] = true;
 
-    const pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+    let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
     if (!pythonVirtualEnv) {
-        MessageHandler.sendMessage(panel, { "command": "systemMessage", "text": "请先设置DevChat.PythonVirtualEnv" });
-        return ;
+		try {
+			await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
+		} catch (error) {
+			logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
+			logger.channel()?.show();
+			return;
+		}
+
+		pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		if (!pythonVirtualEnv) {
+	        MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
+    	    return ;
+		}
     }
 
     let envs = {};
@@ -157,7 +169,11 @@ regInMessage({command: 'regeneration'});
 export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// call sendMessage to send last message again
 	if (_lastMessage) {
-		sendMessage(_lastMessage[0], panel, _lastMessage[1]);
+		if (_lastMessage[0]['askCode']) {
+			await askCode(_lastMessage[0], panel);
+		} else {
+			await sendMessage(_lastMessage[0], panel, _lastMessage[1]);
+		}
 	}
 }
 
