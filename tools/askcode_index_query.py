@@ -102,7 +102,6 @@ def index(repo_path: str):
         )
 
         q.insert(data)
-        sys.exit(0)
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -134,7 +133,6 @@ def query(question: str, doc_context: str):
             print(f"  location: {d.metadata.get('reference')}\n")
 
         print(f"Save doc context to {doc_context}")
-        sys.exit(0)
     except Exception as e:
         print(e)
         sys.exit(1)
@@ -193,7 +191,7 @@ if __name__ == "__main__":
                 json.dump({"SOURCE_NAME": SOURCE_NAME}, f)
         main()
         save_file_last_modified('./.chat/.index_modified.json', g_file_last_modified_saved)
-        sys.exit(3)
+        sys.exit(0)
     except Exception as e:
         print(e)
         sys.exit(1)
