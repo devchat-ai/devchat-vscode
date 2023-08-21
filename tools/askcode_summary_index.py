@@ -48,12 +48,18 @@ def is_file_modified(filePath: str, supportedFileTypes) -> bool:
     return False
 
 def custom_file_filter(file_path: str, supportedFileTypes) -> bool:
-    print("==> ", file_path)
+    needIndex = simple_file_filter(file_path)
+    if not needIndex:
+        print("==> ", file_path, needIndex)
+        return needIndex
     
     if os.path.isdir(file_path):
-        return True
-    
-    return is_file_modified(file_path, supportedFileTypes)
+        needIndex = True
+    else:
+        needIndex = is_file_modified(file_path, supportedFileTypes)
+    print("==> ", file_path, needIndex)
+
+    return needIndex
 
 def index_directory(repo_dir: str, repo_cache_path: str, supportedFileTypes):
     """
