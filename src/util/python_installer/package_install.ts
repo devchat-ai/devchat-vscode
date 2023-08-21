@@ -12,6 +12,8 @@ import { logger } from '../logger';
 // else return false
 export async function installPackage(pythonCommand: string, pkgName: string) : Promise<boolean> {
     return new Promise((resolve, reject) => {
+		let errorOut = '';
+
         const cmd = pythonCommand;
         const args = ['-m', 'pip', 'install', pkgName];
         const child = spawn(cmd, args);
@@ -21,7 +23,9 @@ export async function installPackage(pythonCommand: string, pkgName: string) : P
         });
 
         child.stderr.on('data', (data) => {
-            console.error(`stderr: ${data}`);
+			logger.channel()?.error(`${data}`);
+			logger.channel()?.show();
+			errorOut += data;
         });
 
         child.on('error', (error) => {
@@ -31,7 +35,7 @@ export async function installPackage(pythonCommand: string, pkgName: string) : P
         });
 
         child.on('close', (code) => {
-            if (code !== 0) {
+            if (code !== 0 && errorOut !== "") {
                 resolve(false);
             } else {
                 resolve(true);
