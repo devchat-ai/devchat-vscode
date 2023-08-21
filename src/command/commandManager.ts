@@ -23,7 +23,7 @@ class CommandManager {
 				description: 'ask code',
 				args: 0,
 				handler: async (commandName: string, userInput: string) => {
-					return;
+					return '';
 				}
 			});
 		}
