@@ -90,7 +90,7 @@ const MessageContext = ({ contexts }: IProps) => {
 };
 
 
-const MessageContainer = observer((props: any) => {
+const MessageList = observer((props: any) => {
     const { width } = props;
     const { chat } = useMst();
 
@@ -129,4 +129,4 @@ const MessageContainer = observer((props: any) => {
     </>);
 });
 
-export default MessageContainer;
+export default MessageList;
