@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
 import ExtensionContextHolder from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
@@ -9,14 +10,16 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { isValidApiKey } from '../handler/historyMessagesBase';
 
 import { logger } from '../util/logger';
-import { CommandRun } from '../util/commonUtil';
+import { CommandRun, createTempSubdirectory, runCommandAndWriteOutput, runCommandStringAndWriteOutput, runCommandStringArrayAndWriteOutput } from '../util/commonUtil';
 import { updateIndexingStatus, updateLastModifyTime } from '../util/askCodeUtil';
 import { installAskCode as installAskCodeFun } from '../util/python_installer/install_askcode';
 
 import { ProgressBar } from '../util/progressBar';
+import path from 'path';
+import { MessageHandler } from '../handler/messageHandler';
 
 let indexProcess: CommandRun | null = null;
-
+let summaryIndexProcess: CommandRun | null = null;
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
@@ -248,7 +251,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 
         if (!pythonVirtualEnv) {
 			progressBar.update("Install devchat-ask package ...", 0);
-            await installAskCode(supportedFileTypes, progressBar);
+            await installAskCode(supportedFileTypes, progressBar, indexCode);
         } else {
 			progressBar.update("Index source files ...", 0);
             await indexCode(pythonVirtualEnv, supportedFileTypes, progressBar);
@@ -266,19 +269,20 @@ function getConfig() {
     };
 }
 
-async function installAskCode(supportedFileTypes, progressBar: any) {
-	const pythonEnvPath : string = await installAskCodeFun();
-	if (!pythonEnvPath) {
-		logger.channel()?.error(`Installation failed!`);
-		logger.channel()?.show();
-        return;
-	}
 
-	UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
+async function installAskCode(supportedFileTypes, progressBar: any, callback: Function) {
+    const pythonEnvPath : string = await installAskCodeFun();
+    if (!pythonEnvPath) {
+        logger.channel()?.error(`Installation failed!`);
+        logger.channel()?.show();
+        return;
+    }
+
+    UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
     logger.channel()?.info(`Installation finished.`);
     
-    // Execute the indexing command after the installation is finished
-    await indexCode(pythonEnvPath, supportedFileTypes, progressBar);
+    // Execute the callback function after the installation is finished
+    await callback(pythonEnvPath, supportedFileTypes, progressBar);
 }
 
 async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
@@ -348,6 +352,136 @@ export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext
     });
     context.subscriptions.push(disposable);
 }
+
+export function registerAskCodeSummaryIndexStartCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.AskCodeSummaryIndexStart', async () => {
+        const progressBar = new ProgressBar();
+        progressBar.init();
+
+        progressBar.update("Index source code files for ask codebase summary...", 0);
+
+        const config = getConfig();
+        const pythonVirtualEnv = config.pythonVirtualEnv;
+        const supportedFileTypes = config.supportedFileTypes;
+
+        updateIndexingStatus("started");
+
+        if (!pythonVirtualEnv) {
+            progressBar.update("Install devchat-ask package ...", 0);
+            await installAskCode(supportedFileTypes, progressBar, indexCodeSummary);
+        } else {
+            progressBar.update("Index source files for summary...", 0);
+            await indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar);
+        }
+
+        updateIndexingStatus("stopped");
+    });
+    context.subscriptions.push(disposable);
+}
+
+async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
+    let envs = {};
+
+    let openaiApiKey = await ApiKeyManager.getApiKey();
+    if (!openaiApiKey) {
+        logger.channel()?.error('The OpenAI key is invalid!');
+        logger.channel()?.show();
+
+        progressBar.endWithError("The OpenAI key is invalid!");
+        return;
+    }
+    envs['OPENAI_API_KEY'] = openaiApiKey;
+
+    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    if (openAiApiBase) {
+        envs['OPENAI_API_BASE'] = openAiApiBase;
+    }
+
+    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+    
+    const command = pythonVirtualEnv.trim();
+    const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "index", supportedFileTypes];
+    const options = { env: envs, cwd: workspaceDir };
+
+    summaryIndexProcess = new CommandRun();
+    const result = await summaryIndexProcess.spawnAsync(command, args, options, (data) => {
+        if (data.includes('Skip file:')) {
+            return;
+        }
+        logger.channel()?.info(`${data}`);
+    }, (data) => {
+        if (data.includes('Skip file:')) {
+            return;
+        }
+        logger.channel()?.info(`${data}`);
+    }, undefined, undefined);
+
+    if (result.exitCode !== 0) {
+        if (result.exitCode === null) {
+            logger.channel()?.info(`Indexing stopped!`);
+            progressBar.endWithError(`Indexing stopped!`);
+        } else {
+            logger.channel()?.error(`Indexing failed: ${result.stderr}`);
+            logger.channel()?.show();
+            progressBar.endWithError(`Indexing failed: ${result.stderr}`);
+        }
+
+        return;
+    }
+
+    updateLastModifyTime();
+    logger.channel()?.info(`index finished.`);
+
+    progressBar.update("Indexing finished.");
+    progressBar.end();
+}
+
+export function registerAskCodeSummaryIndexStopCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexSummaryStop', async () => {
+        // 在这里实现停止索引的功能
+        // 你可能需要检查summaryIndexProcess变量是否为null，如果不为null，那么停止索引进程
+        if (summaryIndexProcess) {
+            summaryIndexProcess.stop();
+            summaryIndexProcess = null;
+        }
+    });
+    context.subscriptions.push(disposable);
+}
+
+export function registerAddSummaryContextCommand(context: vscode.ExtensionContext) {
+    const callback = async (uri: { fsPath: any; }) => {
+        if (!await ensureChatPanel(context)) {
+            return;
+        }
+
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		if (!workspaceDir) {
+			return ;
+		}
+		// check whether workspaceDir/.chat/.summary.json文件存在
+		if (!fs.existsSync(path.join(workspaceDir, '.chat', '.summary.json'))) {
+			logger.channel()?.info(`You should index this workspace first.`);
+			logger.channel()?.show();
+			return;
+		}
+
+		const config = getConfig();
+        const pythonVirtualEnv: any = config.pythonVirtualEnv;
+        
+		const tempDir = await createTempSubdirectory('devchat/context');
+        const summaryFile = path.join(tempDir, 'summary.txt');
+
+		const summaryArgs = [pythonVirtualEnv, UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "desc", uri.fsPath];
+		const result = await runCommandStringArrayAndWriteOutput(summaryArgs, summaryFile);
+		logger.channel()?.info(`  exit code:`, result.exitCode);
+
+		logger.channel()?.debug(`  stdout:`, result.stdout);
+		logger.channel()?.debug(`  stderr:`, result.stderr);
+        MessageHandler.sendMessage(ExtensionContextHolder.provider?.view()!, { command: 'appendContext', context: `[context|${summaryFile}]` });
+    };
+    context.subscriptions.push(vscode.commands.registerCommand('devchat.addSummaryContext', callback));
+}
+
 
 export {
 	registerOpenChatPanelCommand,
