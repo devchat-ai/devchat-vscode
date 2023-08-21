@@ -2,7 +2,7 @@
 import { Center, Text, Accordion, Box, Stack, Container, Divider } from "@mantine/core";
 import React from "react";
 import CodeBlock from "@/views/components/CodeBlock";
-import MessageHeader from "@/views/components/MessageHeader";
+import MessageAvatar from "@/views/components/MessageAvatar";
 import { observer } from "mobx-react-lite";
 import { types } from "mobx-state-tree";
 import { useMst } from "@/views/stores/RootStore";
@@ -106,7 +106,7 @@ const MessageList = observer((props: any) => {
                     padding: 0,
                     margin: 0,
                 }}>
-                <MessageHeader
+                <MessageAvatar
                     key={`message-header-${index}`}
                     showDelete={index === chat.messages.length - 2}
                     item={item} />

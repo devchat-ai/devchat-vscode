@@ -17,7 +17,7 @@ interface IProps {
     showDelete: boolean
 }
 
-const MessageHeader = observer((props: IProps) => {
+const MessageAvatar = observer((props: IProps) => {
     const { item, showEdit = false, showDelete = true } = props;
     const { contexts, message, type, hash } = item;
     const { input, chat } = useMst();
@@ -97,4 +97,4 @@ const MessageHeader = observer((props: IProps) => {
     </Flex >);
 });
 
-export default MessageHeader;
+export default MessageAvatar;
