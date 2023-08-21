@@ -1,7 +1,7 @@
 
 import { Stack, Container, Divider } from "@mantine/core";
 import React from "react";
-import CodeBlock from "@/views/components/CodeBlock";
+import MessageBody from "@/views/components/MessageBody";
 import MessageAvatar from "@/views/components/MessageAvatar";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
@@ -39,7 +39,7 @@ const MessageList = observer((props: any) => {
                         },
                     }}>
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
-                    <CodeBlock key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
+                    <MessageBody key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
                 </Container >
                 {index !== chat.messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
             </Stack >;

@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
 
-const CodeBlock = (props: any) => {
+const MessageBody = (props: any) => {
     const { messageText, messageType } = props;
 
     const LanguageCorner = (props: any) => {
@@ -67,4 +67,4 @@ const CodeBlock = (props: any) => {
     );
 };
 
-export default CodeBlock;
+export default MessageBody;

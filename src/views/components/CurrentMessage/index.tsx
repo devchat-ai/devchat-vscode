@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Container, Text } from "@mantine/core";
-import CodeBlock from "@/views/components/CodeBlock";
+import MessageBody from "@/views/components/MessageBody";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
@@ -80,7 +80,7 @@ const CurrentMessage = observer((props: any) => {
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <CodeBlock messageText={renderBlocks.join('\n\n')} messageType="bot" />
+            <MessageBody messageText={renderBlocks.join('\n\n')} messageType="bot" />
             <MessageBlink />
         </Container>
         : <></>;
