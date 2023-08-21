@@ -60,6 +60,8 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
             }
         }
     }
+	// clear message.contextInfo
+	message.contextInfo = undefined;
 
     const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
         MessageHandler.sendMessage(panel, data, false);
