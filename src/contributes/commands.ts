@@ -13,6 +13,8 @@ import { CommandRun } from '../util/commonUtil';
 import { updateIndexingStatus, updateLastModifyTime } from '../util/askCodeUtil';
 import { installAskCode as installAskCodeFun } from '../util/python_installer/install_askcode';
 
+import { ProgressBar } from '../util/progressBar';
+
 let indexProcess: CommandRun | null = null;
 
 
@@ -233,16 +235,23 @@ export function TestDevChatCommand(context: vscode.ExtensionContext) {
 
 export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStart', async () => {
-        const config = getConfig();
+        const progressBar = new ProgressBar();
+		progressBar.init();
+
+		progressBar.update("Index source code files for ask codebase ...", 0);
+
+		const config = getConfig();
         const pythonVirtualEnv = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
 
 		updateIndexingStatus("started");
 
         if (!pythonVirtualEnv) {
+			progressBar.update("Install devchat-ask package ...", 0);
             await installAskCode(supportedFileTypes);
         } else {
-            await indexCode(pythonVirtualEnv, supportedFileTypes);
+			progressBar.update("Index source files ...", 0);
+            await indexCode(pythonVirtualEnv, supportedFileTypes, progressBar);
         }
 
 		updateIndexingStatus("stopped");
@@ -272,13 +281,15 @@ async function installAskCode(supportedFileTypes) {
     await indexCode(pythonEnvPath, supportedFileTypes);
 }
 
-async function indexCode(pythonVirtualEnv, supportedFileTypes) {
+async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};
 
     let openaiApiKey = await ApiKeyManager.getApiKey();
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
+
+		progressBar.endWithError("The OpenAI key is invalid!");
         return;
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
@@ -310,17 +321,21 @@ async function indexCode(pythonVirtualEnv, supportedFileTypes) {
     if (result.exitCode !== 0) {
 		if (result.exitCode === null) {
 			logger.channel()?.info(`Indexing stopped!`);
+			progressBar.endWithError(`Indexing stopped!`);
 		} else {
 			logger.channel()?.error(`Indexing failed: ${result.stderr}`);
 			logger.channel()?.show();
-			vscode.window.showErrorMessage(`Indexing failed: ${result.stderr}`);
+			progressBar.endWithError(`Indexing failed: ${result.stderr}`);
 		}
+
         return;
     }
 
 	updateLastModifyTime();
     logger.channel()?.info(`index finished.`);
-    vscode.window.showInformationMessage('Indexing finished.');
+
+	progressBar.update("Indexing finished.");
+	progressBar.end();
 }
 
 
