@@ -19,7 +19,20 @@ from chat.ask_codebase.chains.simple_qa import SimpleQA
 from chat.ask_codebase.chains.stuff_dc_qa import StuffDocumentCodeQa
 
 
-STORAGE_FILE = os.path.join(tempfile.gettempdir(), "qdrant_storage2")
+def get_app_data_dir(app_name):
+    home = os.path.expanduser("~")
+    if os.name == "nt":  # For Windows
+        appPath = os.path.join(home, "AppData", "Roaming", app_name)
+    else:  # For Unix and Linux
+        appPath = os.path.join(home, ".local", "share", app_name)
+    
+    if not os.path.exists(appPath):
+        os.makedirs(appPath)
+    return appPath
+
+supportedFileTypes = []
+
+STORAGE_FILE = os.path.join(get_app_data_dir("devchat"), "qdrant_storage2")
 SOURCE_NAME = ""
 
 
