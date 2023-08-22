@@ -148,6 +148,9 @@ export const ChatStore = types.model('Chat', {
         newMessage: (message: IMessage) => {
             self.messages.push(message);
         },
+        addMessages: (messages: IMessage[]) => {
+            self.messages.push(...messages);
+        },
         updateLastMessage: (message: string) => {
             if (self.messages.length > 0) {
                 self.messages[self.messages.length - 1].message = message;
