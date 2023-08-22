@@ -7,6 +7,7 @@ from chat.ask_codebase.indexing.module_summary import SummaryWrapper
 
 # 为已经分析的文件记录最后修改时间
 g_file_last_modified_saved = {}
+g_file_need_index = {}
 
 def load_file_last_modified(filePath: str):
     if not os.path.exists(filePath):
@@ -31,12 +32,14 @@ def is_source_code_new(filePath: str, supportedFileTypes):
 
 def is_file_modified(filePath: str, supportedFileTypes) -> bool:
     if not is_source_code_new(filePath, supportedFileTypes):
+        print("Not source code file: ", filePath)
         return False
     
     relativePath = os.path.relpath(filePath, os.getcwd())
     
     for part in relativePath.split(os.sep):
         if part.startswith('.'):
+            print("Not hidden file: ", filePath)
             return False
     
     fileLastModified = g_file_last_modified_saved.get(relativePath, 0)
@@ -44,20 +47,21 @@ def is_file_modified(filePath: str, supportedFileTypes) -> bool:
 
     if fileLastModified != fileCurrentModified:
         g_file_last_modified_saved[relativePath] = fileCurrentModified
-        return True  
+        return True
+    
     return False
 
 def custom_file_filter(file_path: str, supportedFileTypes) -> bool:
-    needIndex = simple_file_filter(file_path)
-    if not needIndex:
-        print("==> ", file_path, needIndex)
-        return needIndex
+    needIndex = False
+    file_path = os.path.abspath(file_path)
+    if file_path in g_file_need_index:
+        return g_file_need_index[file_path]
     
     if os.path.isdir(file_path):
         needIndex = True
     else:
         needIndex = is_file_modified(file_path, supportedFileTypes)
-    print("==> ", file_path, needIndex)
+    g_file_need_index[file_path] = needIndex
 
     return needIndex
 
