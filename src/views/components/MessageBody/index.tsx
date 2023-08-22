@@ -1,6 +1,7 @@
 import { Container } from "@mantine/core";
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
@@ -35,6 +36,7 @@ const MessageBody = observer((props: IProps) => {
     return (
         messageType === 'bot'
             ? <ReactMarkdown
+                rehypePlugins={[rehypeRaw]}
                 components={{
                     code({ node, inline, className, children, ...props }) {
 

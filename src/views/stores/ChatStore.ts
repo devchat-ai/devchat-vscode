@@ -216,6 +216,21 @@ export const ChatStore = types.model('Chat', {
 Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
             
 Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
+
+To get started, here are the things that DevChat can do:
+
+[/code: write code based on your prompt](#code)
+
+[/commit_message: write a commit message based on your code](#commit_message)
+
+[/release_note: write the release code based on your code](#release_note)
+
+[/ask_code: ask questions about your own codebase](#ask_code)
+
+[/extension: create extensions for DevChat](#extension)
+
+<button>Settings</button>
+<button>Start Indexing</button>
                             `}));
                 }
             }
