@@ -80,6 +80,8 @@ To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette 
         switch (value) {
             case "settings": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat'] }); break;
             case "start_indexing": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
+            case "setting_openai_key": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat: Api_key_OpenAI'] }); break;
+            case "setting_devchat_key": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat: Access_key_DevChat'] }); break;
         }
     };
 
