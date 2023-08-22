@@ -229,8 +229,8 @@ To get started, here are the things that DevChat can do:
 
 [/extension: create extensions for DevChat](#extension)
 
-<button>Settings</button>
-<button>Start Indexing</button>
+<button value="settings">Settings</button>
+<button value="start_indexing">Start Indexing</button>
                             `}));
                 }
             }
