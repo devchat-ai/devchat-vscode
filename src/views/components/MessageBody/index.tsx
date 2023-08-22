@@ -4,8 +4,15 @@ import ReactMarkdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
+import { observer } from "mobx-react-lite";
 
-const MessageBody = (props: any) => {
+interface IProps {
+    messageText: string,
+    messageType: string
+}
+
+
+const MessageBody = observer((props: IProps) => {
     const { messageText, messageType } = props;
 
     const LanguageCorner = (props: any) => {
@@ -25,7 +32,6 @@ const MessageBody = (props: any) => {
             )}
         </div>);
     };
-
     return (
         messageType === 'bot'
             ? <ReactMarkdown
@@ -49,8 +55,7 @@ const MessageBody = (props: any) => {
                             </code>
                         );
                     }
-                }}
-            >
+                }}>
                 {messageText}
             </ReactMarkdown >
             : <Container
@@ -65,6 +70,6 @@ const MessageBody = (props: any) => {
                 <pre>{messageText}</pre>
             </Container>
     );
-};
+});
 
 export default MessageBody;

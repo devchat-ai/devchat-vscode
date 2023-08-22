@@ -13,7 +13,6 @@ import { IMessage } from "@/views/stores/ChatStore";
 import { IChatContext } from "@/views/stores/InputStore";
 
 interface IProps {
-    key?: string,
     item?: IMessage,
     avatarType?: "user" | "bot" | "system",
     copyMessage?: string,
@@ -30,13 +29,11 @@ const MessageAvatar = observer((props: IProps) => {
         deleteHash = undefined,
         avatarType = "user",
         showEdit = false,
-        showDelete = false,
-        key
+        showDelete = false
     } = props;
     const { input, chat } = useMst();
     const [done, setDone] = React.useState(false);
     return (<Flex
-        key={key}
         m='10px 0 10px 0'
         gap="sm"
         justify="flex-start"
