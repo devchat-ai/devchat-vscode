@@ -57,6 +57,10 @@ def custom_file_filter(file_path: str, supportedFileTypes) -> bool:
     if file_path in g_file_need_index:
         return g_file_need_index[file_path]
     
+	# check size of true value in g_file_need_index > 100
+    if sum(g_file_need_index.values()) > 100:
+        return False
+    
     if os.path.isdir(file_path):
         needIndex = True
     else:
