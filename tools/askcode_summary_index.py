@@ -32,7 +32,6 @@ def is_source_code_new(filePath: str, supportedFileTypes):
 
 def is_file_modified(filePath: str, supportedFileTypes) -> bool:
     if not is_source_code_new(filePath, supportedFileTypes):
-        print("Not source code file: ", filePath)
         return False
     
     relativePath = os.path.relpath(filePath, os.getcwd())
