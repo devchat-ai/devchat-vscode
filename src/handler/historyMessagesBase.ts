@@ -40,6 +40,9 @@ function apiKeyMissedMessage(): LogEntry {
 		request: 'Is OPENAI_API_KEY ready?',
 		response: `
 OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI or DevChat key, and I'll ensure DevChat is all set for you.
+	
+<button value="setting_openai_key">Set OpenAI key</button>
+<button value="setting_devchat_key">Set DevChat key</button>
 		`,
 		context: []
 	} as LogEntry;
@@ -74,7 +77,7 @@ export async function isWaitForApiKey() {
 	return !isApiSet;
 }
 
-export async function loadTopicHistoryLogs(topicId: string | undefined) : Promise<Array<LogEntry> | undefined>  {
+export async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
 	if (!topicId) {
 		return [];
 	}
@@ -135,13 +138,13 @@ export function loadTopicHistoryFromCurrentMessageHistory(skip: number, count: n
 	} as LoadHistoryMessages;
 }
 
-export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages|undefined> {
+export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages | undefined> {
 	const apiKey = await ApiKeyManager.getApiKey();
 	isApiSet = true;
 	if (!apiKey) {
-		const startMessage = [ apiKeyMissedMessage() ];
+		const startMessage = [apiKeyMissedMessage()];
 		isApiSet = false;
-		
+
 		return {
 			command: 'loadHistoryMessages',
 			entries: startMessage,
@@ -162,19 +165,19 @@ export async function historyMessagesBase(): Promise<LoadHistoryMessages | undef
 		return undefined;
 	}
 	updateCurrentMessageHistory(topicId!, logEntriesFlat);
-	
+
 	const apiKeyMessage = await apiKeyInvalidMessage();
 	if (apiKeyMessage !== undefined) {
 		return apiKeyMessage;
 	}
-	
+
 	return {
 		command: 'loadHistoryMessages',
-		entries: logEntriesFlat.length>0? logEntriesFlat : [welcomeMessage()],
+		entries: logEntriesFlat.length > 0 ? logEntriesFlat : [],
 	} as LoadHistoryMessages;
 }
 
-export async function onApiKeyBase(apiKey: string): Promise<{command: string, text: string,  hash: string, user: string, date: string, isError: boolean}> {
+export async function onApiKeyBase(apiKey: string): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }> {
 	if (!isValidApiKey(apiKey)) {
 		return { command: 'receiveMessage', text: 'Your API key is invalid. We support OpenAI and DevChat keys. Please reset the key.', hash: '', user: 'system', date: '', isError: false };
 	}
@@ -182,6 +185,8 @@ export async function onApiKeyBase(apiKey: string): Promise<{command: string, te
 	isApiSet = true;
 	ApiKeyManager.writeApiKeySecret(apiKey);
 
-	const welcomeMessageText =  welcomeMessage().response;
-	return { command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false };
+	const welcomeMessageText = welcomeMessage().response;
+	return {
+		command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false
+	};
 }

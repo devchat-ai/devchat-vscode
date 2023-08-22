@@ -157,10 +157,10 @@
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
 				"DevChat.PythonVirtualEnv": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Path to the Python virtual environment for AskCode."
-                },
+					"type": "string",
+					"default": "",
+					"description": "Path to the Python virtual environment for AskCode."
+				},
 				"DevChat.askcode.supportedFileTypes": {
 					"type": "string",
 					"default": ".+\\.js$, .+\\.ts$, .+\\.jsx$, .+\\.tsx$, .+\\.java$, .+\\.py$, .+\\.go$, .+\\.rb$, .+\\.php$, .+\\.cpp$, .+\\.c$, .+\\.cs$, .+\\.swift$, .+\\.rs$, .+\\.sh$, .+\\.bash$, .+\\.zsh$, .+\\.m$, .+\\.mm$, .+\\.h$, .+\\.hpp$, .+\\.hh$, .+\\.html$, .+\\.htm$, .+\\.xhtml$, .+\\.xml$, .+\\.css$, .+\\.scss$, .+\\.sass$, .+\\.less$, .+\\.json$, .+\\.yaml$, .+\\.yml$, .+\\.toml$, .+\\.ini$, .+\\.md$, .+\\.markdown$, .+\\.txt$, .+\\.csv$, .+\\.sql$, .+\\.sqlite$, .+\\.db$, .+\\.hql$, .+\\.psql$, .+\\.pgsql$, .+\\.plpgsql$",
@@ -507,6 +507,7 @@
 		"quote": "^0.4.0",
 		"react-markdown": "^8.0.7",
 		"react-syntax-highlighter": "^15.5.0",
+		"rehype-raw": "^6.1.1",
 		"shell-escape": "^0.2.0",
 		"string-argv": "^0.3.2",
 		"uuid": "^9.0.0"

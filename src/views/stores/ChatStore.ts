@@ -39,11 +39,10 @@ export const fetchHistoryMessages = async (params) => {
     });
 };
 
-export const deleteMessage = async (item: IMessage) => {
-    const { hash } = item;
+export const deleteMessage = async (messageHash: string) => {
     return new Promise<{ hash: string }>((resolve, reject) => {
         try {
-            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: hash });
+            messageUtil.sendMessage({ command: 'deleteChatMessage', hash: messageHash });
             messageUtil.registerHandler('deletedChatMessage', (message) => {
                 resolve({
                     hash: message.hash
@@ -74,6 +73,7 @@ export const ChatStore = types.model('Chat', {
     isLastPage: false,
     isBottom: true,
     isTop: false,
+    scrollBottom: 0
 })
     .actions(self => ({
         startGenerating: (text: string, chatContexts) => {
@@ -149,6 +149,9 @@ export const ChatStore = types.model('Chat', {
         newMessage: (message: IMessage) => {
             self.messages.push(message);
         },
+        addMessages: (messages: IMessage[]) => {
+            self.messages.push(...messages);
+        },
         updateLastMessage: (message: string) => {
             if (self.messages.length > 0) {
                 self.messages[self.messages.length - 1].message = message;
@@ -178,6 +181,9 @@ export const ChatStore = types.model('Chat', {
             self.isTop = false;
             self.isBottom = false;
         },
+        goScrollBottom: () => {
+            self.scrollBottom++;
+        },
         fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
             const { pageIndex, entries } = yield fetchHistoryMessages(params);
             if (entries.length > 0) {
@@ -201,10 +207,31 @@ export const ChatStore = types.model('Chat', {
                 }
             } else {
                 self.isLastPage = true;
+                if (self.messages.length === 0) {
+                    self.messages.push(
+                        Message.create({
+                            type: 'user',
+                            message: "How do I use DevChat?"
+                        }));
+                    self.messages.push(
+                        Message.create({
+                            type: 'bot',
+                            message: `
+Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
+            
+Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
+
+To get started, here are the things that DevChat can do:
+
+[/ask_code: ask questions about your own codebase](#ask_code)
+
+<button value="settings">Settings</button>
+                            `}));
+                }
             }
         }),
-        deleteMessage: flow(function* (item: IMessage) {
-            const { hash } = yield deleteMessage(item);
+        deleteMessage: flow(function* (messageHash: string) {
+            const { hash } = yield deleteMessage(messageHash);
             const index = self.messages.findIndex((item: any) => item.hash === hash);
             if (index > -1) {
                 self.messages.splice(index);

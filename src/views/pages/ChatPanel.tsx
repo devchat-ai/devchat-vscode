@@ -13,7 +13,7 @@ import { Message } from "@/views/stores/ChatStore";
 
 
 import InputMessage from '@/views/components/InputMessage';
-import MessageContainer from '../components/MessageContainer';
+import MessageList from '@/views/components/MessageList';
 import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
 
 
@@ -83,6 +83,10 @@ const chatPanel = observer(() => {
         };
     }, []);
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [chat.scrollBottom]);
+
     return (
         <Container
             ref={chatContainerRef}
@@ -109,7 +113,7 @@ const chatPanel = observer(() => {
                 }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageContainer
+                <MessageList
                     width={chatContainerRect.width} />
                 <CurrentMessage width={chatContainerRect.width} />
                 {chat.errorMessage &&

@@ -2,7 +2,7 @@
 import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
 import { Container, Text } from "@mantine/core";
-import CodeBlock from "@/views/components/CodeBlock";
+import MessageBody from "@/views/components/MessageBody";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
@@ -48,29 +48,36 @@ const getBlocks = (message) => {
 const CurrentMessage = observer((props: any) => {
     const { width } = props;
     const { chat } = useMst();
+    const { messages, currentMessage, generating, responsed, hasDone } = chat;
 
     // split blocks
-    const messageBlocks = getBlocks(chat.currentMessage);
-    const lastMessageBlocks = getBlocks(chat.messages[chat.messages.length - 1]?.message);
+    const messageBlocks = getBlocks(currentMessage);
+    const lastMessageBlocks = getBlocks(messages[messages.length - 1]?.message);
     const fixedCount = lastMessageBlocks.length;
     const receivedCount = messageBlocks.length;
     const renderBlocks = messageBlocks.splice(-1);
 
     useEffect(() => {
-        if (chat.generating) {
+        if (generating) {
             // new a bot message
-            const messageItem = Message.create({ type: 'bot', message: chat.currentMessage });
+            const messageItem = Message.create({ type: 'bot', message: currentMessage });
             chat.newMessage(messageItem);
         }
-    }, [chat.generating]);
+    }, [generating]);
 
     useEffect(() => {
-        if (receivedCount - fixedCount >= 1 || !chat.responsed) {
-            chat.updateLastMessage(chat.currentMessage);
+        if (generating && (receivedCount - fixedCount >= 1 || !responsed)) {
+            chat.updateLastMessage(currentMessage);
         }
-    }, [chat.currentMessage, chat.responsed]);
+    }, [currentMessage, responsed, generating]);
 
-    return chat.generating
+    useEffect(() => {
+        if (hasDone) {
+            chat.updateLastMessage(currentMessage);
+        }
+    }, [hasDone]);
+
+    return generating
         ? <Container
             sx={{
                 margin: 0,
@@ -80,7 +87,7 @@ const CurrentMessage = observer((props: any) => {
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <CodeBlock messageText={renderBlocks.join('\n\n')} messageType="bot" />
+            <MessageBody messageText={renderBlocks.join('\n\n')} messageType="bot" />
             <MessageBlink />
         </Container>
         : <></>;
