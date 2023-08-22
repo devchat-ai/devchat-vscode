@@ -1,16 +1,33 @@
 
 import { Stack, Container, Divider } from "@mantine/core";
-import React from "react";
+import React, { useEffect } from "react";
 import MessageBody from "@/views/components/MessageBody";
 import MessageAvatar from "@/views/components/MessageAvatar";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
+import { Message } from "@/views/stores/ChatStore";
 import MessageContext from "@/views/components/MessageContext";
 
 
 const MessageList = observer((props: any) => {
     const { width } = props;
     const { chat } = useMst();
+
+    useEffect(() => {
+        chat.addMessages([
+            Message.create({
+                type: 'user',
+                message: "How do I use DevChat?"
+            }),
+            Message.create({
+                type: 'bot',
+                message: `
+Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
+
+Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
+                `}),
+        ])
+    }, []);
 
     return (<>
         {chat.messages.map((item, index: number) => {
