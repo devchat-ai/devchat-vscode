@@ -203,6 +203,21 @@ export const ChatStore = types.model('Chat', {
                 }
             } else {
                 self.isLastPage = true;
+                if (self.messages.length === 0) {
+                    self.messages.push(
+                        Message.create({
+                            type: 'user',
+                            message: "How do I use DevChat?"
+                        }));
+                    self.messages.push(
+                        Message.create({
+                            type: 'bot',
+                            message: `
+Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
+            
+Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
+                            `}));
+                }
             }
         }),
         deleteMessage: flow(function* (messageHash: string) {
