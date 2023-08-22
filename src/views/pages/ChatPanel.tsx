@@ -83,6 +83,10 @@ const chatPanel = observer(() => {
         };
     }, []);
 
+    useEffect(() => {
+        scrollToBottom();
+    }, [chat.scrollBottom]);
+
     return (
         <Container
             ref={chatContainerRef}

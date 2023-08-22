@@ -73,6 +73,7 @@ export const ChatStore = types.model('Chat', {
     isLastPage: false,
     isBottom: true,
     isTop: false,
+    scrollBottom: 0
 })
     .actions(self => ({
         startGenerating: (text: string, chatContexts) => {
@@ -180,6 +181,9 @@ export const ChatStore = types.model('Chat', {
             self.isTop = false;
             self.isBottom = false;
         },
+        goScrollBottom: () => {
+            self.scrollBottom++;
+        },
         fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
             const { pageIndex, entries } = yield fetchHistoryMessages(params);
             if (entries.length > 0) {
@@ -230,7 +234,6 @@ To get started, here are the things that DevChat can do:
 [/extension: create extensions for DevChat](#extension)
 
 <button value="settings">Settings</button>
-<button value="start_indexing">Start Indexing</button>
                             `}));
                 }
             }
