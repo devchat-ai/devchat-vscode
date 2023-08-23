@@ -5,7 +5,7 @@ Update config
 import * as vscode from 'vscode';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { logger } from '../util/logger';
-import { UiUtilWrapper } from '@/util/uiUtil';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 regInMessage({command: 'updateSetting', key1: "DevChat", key2: "OpenAI", value:"xxxx"});
 export async function updateSetting(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
