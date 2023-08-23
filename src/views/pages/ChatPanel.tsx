@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Box, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
@@ -88,7 +88,7 @@ const chatPanel = observer(() => {
     }, [chat.scrollBottom]);
 
     return (
-        <Container
+        <Box
             ref={chatContainerRef}
             sx={{
                 height: '100%',
@@ -107,15 +107,13 @@ const chatPanel = observer(() => {
             <ScrollArea
                 sx={{
                     height: chat.generating ? height - px('8rem') : height - px('5rem'),
-                    width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
                 }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageList
-                    width={chatContainerRect.width} />
-                <CurrentMessage width={chatContainerRect.width} />
+                <MessageList />
+                <CurrentMessage />
                 {chat.errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {chat.errorMessage}
@@ -134,10 +132,9 @@ const chatPanel = observer(() => {
                         <RegenerationButton />
                     </Center>
                 }
-                <InputMessage
-                    width={chatContainerRect.width} />
+                <InputMessage width={chatContainerRect.width} />
             </Stack>
-        </Container>
+        </Box>
     );
 });
 
