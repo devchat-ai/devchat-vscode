@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Box, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
@@ -23,6 +23,8 @@ const chatPanel = observer(() => {
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
+
+    const chatPanelWidth = chatContainerRect.width;
 
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
@@ -88,7 +90,7 @@ const chatPanel = observer(() => {
     }, [chat.scrollBottom]);
 
     return (
-        <Container
+        <Box
             ref={chatContainerRef}
             sx={{
                 height: '100%',
@@ -107,15 +109,13 @@ const chatPanel = observer(() => {
             <ScrollArea
                 sx={{
                     height: chat.generating ? height - px('8rem') : height - px('5rem'),
-                    width: chatContainerRect.width,
                     padding: 0,
                     margin: 0,
                 }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageList
-                    width={chatContainerRect.width} />
-                <CurrentMessage width={chatContainerRect.width} />
+                <MessageList chatPanelWidth={chatPanelWidth} />
+                <CurrentMessage />
                 {chat.errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
                         {chat.errorMessage}
@@ -134,10 +134,9 @@ const chatPanel = observer(() => {
                         <RegenerationButton />
                     </Center>
                 }
-                <InputMessage
-                    width={chatContainerRect.width} />
+                <InputMessage chatPanelWidth={chatPanelWidth} />
             </Stack>
-        </Container>
+        </Box>
     );
 });
 

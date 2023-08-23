@@ -1,5 +1,5 @@
 
-import { Stack, Container, Divider } from "@mantine/core";
+import { Stack, Container, Divider, Box } from "@mantine/core";
 import React, { useEffect } from "react";
 import MessageBody from "@/views/components/MessageBody";
 import MessageAvatar from "@/views/components/MessageAvatar";
@@ -10,8 +10,8 @@ import MessageContext from "@/views/components/MessageContext";
 
 
 const MessageList = observer((props: any) => {
-    const { width } = props;
     const { chat } = useMst();
+    const { chatPanelWidth } = props;
 
     return (<>
         {chat.messages.map((item, index: number) => {
@@ -21,9 +21,9 @@ const MessageList = observer((props: any) => {
                 spacing={0}
                 key={`message-${index}`}
                 sx={{
-                    width: width,
                     padding: 0,
                     margin: 0,
+                    width: chatPanelWidth
                 }}>
                 <MessageAvatar
                     key={`message-header-${index}`}
@@ -32,19 +32,18 @@ const MessageList = observer((props: any) => {
                     avatarType={messageType}
                     copyMessage={messageText}
                     messageContexts={contexts} />
-                <Container
+                <Box
                     key={`message-container-${index}`}
                     sx={{
                         margin: 0,
                         padding: 0,
-                        width: width,
                         pre: {
                             whiteSpace: 'break-spaces'
                         },
                     }}>
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
                     <MessageBody key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
-                </Container >
+                </Box >
                 {index !== chat.messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
             </Stack >;
         })}

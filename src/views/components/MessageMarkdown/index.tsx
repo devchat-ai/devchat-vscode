@@ -92,12 +92,22 @@ To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette 
 
                 const match = /language-(\w+)/.exec(className || '');
                 const value = String(children).replace(/\n$/, '');
+                const lanugage = match && match[1];
 
-                return !inline && match ? (
+                let wrapLongLines = false;
+                if (lanugage === 'markdown' || lanugage === 'text') {
+                    wrapLongLines = true;
+                }
+                return !inline && lanugage ? (
                     <div style={{ position: 'relative' }}>
-                        <LanguageCorner language={match[1]} />
-                        <CodeButtons language={match[1]} code={value} />
-                        <SyntaxHighlighter {...props} language={match[1]} customStyle={{ padding: '3em 1em 1em 2em', }} style={okaidia} PreTag="div">
+                        <LanguageCorner language={lanugage} />
+                        <CodeButtons language={lanugage} code={value} />
+                        <SyntaxHighlighter {...props}
+                            language={lanugage}
+                            customStyle={{ padding: '3em 1em 1em 2em' }}
+                            style={okaidia}
+                            wrapLongLines={wrapLongLines}
+                            PreTag="div">
                             {value}
                         </SyntaxHighlighter>
                     </div >
