@@ -112,7 +112,7 @@ To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette 
                         </SyntaxHighlighter>
                     </div >
                 ) : (
-                    <code {...props} className={className} style={{ ...breakStyles }}>
+                    <code {...props} className={className}>
                         {children}
                     </code>
                 );
