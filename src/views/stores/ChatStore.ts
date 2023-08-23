@@ -93,7 +93,15 @@ Don't forget to check out the "+" button on the left of the input to add more co
 
 To get started, here are the things that DevChat can do:
 
+[/code: write code based on your prompt](#code)
+
+[/commit_message: write a commit message based on your code](#commit_message)
+
+[/release_note: write the release code based on your code](#release_note)
+
 [/ask_code: ask questions about your own codebase](#ask_code)
+
+[/extension: create extensions for DevChat](#extension)
 
 <button value="settings">Settings</button>
                     `}));
