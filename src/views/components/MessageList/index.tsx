@@ -9,8 +9,9 @@ import { Message } from "@/views/stores/ChatStore";
 import MessageContext from "@/views/components/MessageContext";
 
 
-const MessageList = observer(() => {
+const MessageList = observer((props: any) => {
     const { chat } = useMst();
+    const { chatPanelWidth } = props;
 
     return (<>
         {chat.messages.map((item, index: number) => {
@@ -22,6 +23,7 @@ const MessageList = observer(() => {
                 sx={{
                     padding: 0,
                     margin: 0,
+                    width: chatPanelWidth
                 }}>
                 <MessageAvatar
                     key={`message-header-${index}`}

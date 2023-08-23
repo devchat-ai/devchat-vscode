@@ -24,6 +24,8 @@ const chatPanel = observer(() => {
     const scrollViewport = useRef<HTMLDivElement>(null);
     const { height, width } = useViewportSize();
 
+    const chatPanelWidth = chatContainerRect.width;
+
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
@@ -112,7 +114,7 @@ const chatPanel = observer(() => {
                 }}
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}>
-                <MessageList />
+                <MessageList chatPanelWidth={chatPanelWidth} />
                 <CurrentMessage />
                 {chat.errorMessage &&
                     <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
@@ -132,7 +134,7 @@ const chatPanel = observer(() => {
                         <RegenerationButton />
                     </Center>
                 }
-                <InputMessage width={chatContainerRect.width} />
+                <InputMessage chatPanelWidth={chatPanelWidth} />
             </Stack>
         </Box>
     );

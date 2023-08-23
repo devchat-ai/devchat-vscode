@@ -11,7 +11,7 @@ import { ChatContext } from "@/views/stores/InputStore";
 import { Message } from "@/views/stores/ChatStore";
 
 const InputMessage = observer((props: any) => {
-    const { width } = props;
+    const { chatPanelWidth } = props;
     const { input, chat } = useMst();
     const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus } = input;
     const { generating } = chat;
@@ -300,7 +300,7 @@ const InputMessage = observer((props: any) => {
                 position='top-start'
                 closeOnClickOutside={true}
                 shadow="sm"
-                width={width}
+                width={chatPanelWidth}
                 opened={menuOpend}
                 onChange={() => {
                     input.closeMenu();
@@ -404,7 +404,7 @@ const InputMessage = observer((props: any) => {
                                     fz='sm'
                                     m='12px 5px'
                                     truncate='end'
-                                    w={width - 60}>
+                                    w={chatPanelWidth - 60}>
                                     Tips: Select code or file & right click
                                 </Text>
                             </Flex>
