@@ -83,7 +83,13 @@ const InputMessage = observer((props: any) => {
                 }
                 if ((event.key === 'Enter' || event.key === 'Tab') && !event.shiftKey) {
                     const commandNode = commandMenusNode[currentMenuIndex];
-                    input.setValue(`/${commandNode.props['data-pattern']} `);
+                    const commandPattern = commandNode.props['data-pattern'];
+                    if (commandPattern === 'help') {
+                        chat.helpMessage();
+                        input.setValue('');
+                    } else {
+                        input.setValue(`/${commandPattern} `);
+                    }
                     input.closeMenu();
                     event.preventDefault();
                 }
