@@ -101,6 +101,7 @@ export const InputStore = types
             try {
                 const items = yield regCommandMenus();
                 self.commandMenus.push(...items);
+                self.commandMenus.push({ name: 'help', description: 'View the DevChat documentation.', pattern: 'help' });
             } catch (error) {
                 console.error("Failed to fetch command menus", error);
             }
