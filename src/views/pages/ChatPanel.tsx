@@ -49,10 +49,6 @@ const chatPanel = observer(() => {
         }
     }, 1000);
 
-    const interval = useInterval(() => {
-        getSettings();
-    }, 3000);
-
     const onScrollPositionChange = ({ x, y }) => {
         const sh = scrollViewport.current?.scrollHeight || 0;
         const vh = scrollViewport.current?.clientHeight || 0;
@@ -107,10 +103,8 @@ const chatPanel = observer(() => {
 
 
         timer.start();
-        interval.start();
         return () => {
             timer.clear();
-            interval.stop();
         };
     }, []);
 
@@ -129,6 +123,7 @@ const chatPanel = observer(() => {
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
             }}>
+
             {!chat.isBottom && <ActionIcon
                 onClick={() => { scrollToBottom() }}
                 title='Bottom'
