@@ -236,7 +236,24 @@ export function TestDevChatCommand(context: vscode.ExtensionContext) {
 	);
 }
 
+function checkDevchatAskVersion() {
+	const config = getConfig();
+	const pythonVirtualEnv: any = config.pythonVirtualEnv;
+	const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
+			
+	let requireAskVersion = "0.0.8";
+	if (FT("ask-code-summary")) {
+		requireAskVersion = "0.0.10";
+	} else if (FT("ask-code-dfs")) {
+		requireAskVersion = "0.0.11";
+	}
 
+	if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
+		logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
+		return false;
+	}
+	return true;
+}
 
 export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStart', async () => {
@@ -256,19 +273,8 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 
 		updateIndexingStatus("started");
 
-		if (pythonVirtualEnv) {
-			// check whether pythonVirtualEnv is stisfy the requirement version
-			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
-			
-			let requireAskVersion = "0.0.8";
-			if (FT("ask-code-summary")) {
-				requireAskVersion = "0.0.10";
-			}
-
-			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
-				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
-				pythonVirtualEnv = undefined;
-			}
+		if (pythonVirtualEnv && !checkDevchatAskVersion()) {
+			pythonVirtualEnv = undefined;
 		}
 
         if (!pythonVirtualEnv) {
@@ -382,14 +388,25 @@ export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext
 
 export async function registerInstallDevchatAskCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('DevChat.AskCodeDfsInstall', async () => {
+        if (!FT("ask-code-dfs")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+
         const progressBar = new ProgressBar();
-        progressBar.init();
+		progressBar.init();
 
-        progressBar.update("Index source code files for ask codebase summary...", 0);
+		progressBar.update("Index source code files for ask codebase ...", 0);
 
-        const config = getConfig();
-        const pythonVirtualEnv = config.pythonVirtualEnv;
+		const config = getConfig();
+        let pythonVirtualEnv: any = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
+
+		updateIndexingStatus("started");
+
+		if (pythonVirtualEnv && !checkDevchatAskVersion()) {
+			pythonVirtualEnv = undefined;
+		}
 
         updateIndexingStatus("started");
 
@@ -421,19 +438,8 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 
         updateIndexingStatus("started");
 
-		if (pythonVirtualEnv) {
-			// check whether pythonVirtualEnv is stisfy the requirement version
-			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
-			
-			let requireAskVersion = "0.0.8";
-			if (FT("ask-code-summary")) {
-				requireAskVersion = "0.0.10";
-			}
-
-			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
-				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
-				pythonVirtualEnv = undefined;
-			}
+		if (pythonVirtualEnv && !checkDevchatAskVersion()) {
+			pythonVirtualEnv = undefined;
 		}
 
         if (!pythonVirtualEnv) {

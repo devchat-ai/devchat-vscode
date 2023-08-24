@@ -54,11 +54,13 @@ export class MessageHandler {
 				autox = true;
 			}
 			// if "/ask-code" in message.text, then call devchat-ask to get result
-			if (FT("ask-code")) {
+			if (FT("ask-code-dfs")) {
 				if (message.text.indexOf('/ask-code-dfs') !== -1) {
 					message.command = 'askCodeDfs';
 					message.text = message.text.replace('/ask-code-dfs', '');
 				}
+			}
+			if (FT("ask-code")) {
 				if (message.text.indexOf('/ask-code') !== -1) {
 					message.command = 'askCode';
 					message.text = message.text.replace('/ask-code', '');

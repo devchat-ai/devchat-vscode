@@ -28,6 +28,8 @@ class CommandManager {
 						return '';
 					}
 				});
+			}
+			if (FT("ask-code-dfs")) {
 				CommandManager.instance.registerCommand({
 					name: 'ask-code-dfs',
 					pattern: 'ask-code-dfs',
