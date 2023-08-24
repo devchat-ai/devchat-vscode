@@ -16,7 +16,8 @@ import { logger } from "../logger";
 		 let devchatAskVersion = '>=0.0.8';
 		 if (FT("ask-code-summary")) {
 			devchatAskVersion = '>=0.0.10';
-		 } else if (FT("ask-code-dfs")) {
+		 }
+		 if (FT("ask-code-dfs")) {
 			devchatAskVersion = '>=0.0.11';
 		 }
 		 const pythonCommand = await appInstall("devchat-ask", devchatAskVersion, '3.11.4');

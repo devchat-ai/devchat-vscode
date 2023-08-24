@@ -244,7 +244,8 @@ function checkDevchatAskVersion() {
 	let requireAskVersion = "0.0.8";
 	if (FT("ask-code-summary")) {
 		requireAskVersion = "0.0.10";
-	} else if (FT("ask-code-dfs")) {
+	}
+	if (FT("ask-code-dfs")) {
 		requireAskVersion = "0.0.11";
 	}
 
@@ -416,6 +417,8 @@ export async function registerInstallDevchatAskCommand(context: vscode.Extension
         }
 
         updateIndexingStatus("stopped");
+		progressBar.update("install finished.");
+		progressBar.end();
     });
     context.subscriptions.push(disposable);
 }
