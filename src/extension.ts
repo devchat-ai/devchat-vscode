@@ -30,6 +30,7 @@ import { LoggerChannelVscode } from './util/logger_vscode';
 import { createStatusBarItem, createAskCodeStatusBarItem } from './panel/statusBarView';
 import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
+import { FT } from './util/feature_flags/feature_toggles';
 
 
 function activate(context: vscode.ExtensionContext) {
@@ -52,7 +53,9 @@ function activate(context: vscode.ExtensionContext) {
     registerStatusBarItemClickCommand(context);
 
     createStatusBarItem(context);
-    createAskCodeStatusBarItem(context);
+	if (FT("ask-code")) {
+		createAskCodeStatusBarItem(context);
+	}
 
     regTopicDeleteCommand(context);
     regAddTopicCommand(context);
@@ -62,10 +65,12 @@ function activate(context: vscode.ExtensionContext) {
     regApplyDiffResultCommand(context);
 
     regPythonPathCommand(context);
-    registerAskCodeIndexStartCommand(context);
-    registerAskCodeIndexStopCommand(context);
-    registerAskCodeSummaryIndexStartCommand(context);
-    registerAskCodeSummaryIndexStopCommand(context);
+
+	registerAskCodeIndexStartCommand(context);
+	registerAskCodeIndexStopCommand(context);
+    
+	registerAskCodeSummaryIndexStartCommand(context);
+	registerAskCodeSummaryIndexStopCommand(context);
 	registerAddSummaryContextCommand(context);
 }
 exports.activate = activate;

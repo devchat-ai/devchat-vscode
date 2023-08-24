@@ -25,7 +25,7 @@ export async function installDevchat(): Promise<string> {
 	try {
 		logger.channel()?.info(`start installing devchat with python=3.11.4 ...`);
 		isDevChatInstalling = true;
-		const pythonCommand = await appInstall('devchat', '3.11.4');
+		const pythonCommand = await appInstall('devchat', "", '3.11.4');
 		if (!pythonCommand) {
 			logger.channel()?.error(`failed to install devchat with python=3.11.4`);
 			logger.channel()?.show();

@@ -37,6 +37,12 @@ const chatPanel = observer(() => {
         });
     };
 
+    const getFeatureToggles = () => {
+        messageUtil.sendMessage({
+            command: "featureToggles"
+        });
+    };
+
     const timer = useTimeout(() => {
         if (chat.isBottom) {
             scrollToBottom();
@@ -69,6 +75,7 @@ const chatPanel = observer(() => {
 
     useEffect(() => {
         getSettings();
+        getFeatureToggles();
         chat.fetchHistoryMessages({ pageIndex: 0 }).then();
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             chat.startResponsing(message.text);
@@ -93,6 +100,11 @@ const chatPanel = observer(() => {
         messageUtil.registerHandler('getSetting', (message: { value: string }) => {
             chat.changeChatModel(message.value);
         });
+        messageUtil.registerHandler('featureToggles', (message: { features: object }) => {
+            // chat.changeChatModel(message.value);
+            chat.updateFeatures(message.features);
+        });
+
 
         timer.start();
         interval.start();

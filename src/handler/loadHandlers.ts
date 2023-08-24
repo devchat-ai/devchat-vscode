@@ -17,6 +17,7 @@ import { regActionList } from './regActionList';
 import { applyAction } from './applyAction';
 import { doCommand } from './doCommand';
 import { getSetting, updateSetting } from './updateConfig';
+import { featureToggle, featureToggles } from './featureToggle';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -86,3 +87,5 @@ messageHandler.registerHandler('doCommand', doCommand);
 
 messageHandler.registerHandler('updateSetting', updateSetting);
 messageHandler.registerHandler('getSetting', getSetting);
+messageHandler.registerHandler('featureToggle', featureToggle);
+messageHandler.registerHandler('featureToggles', featureToggles);

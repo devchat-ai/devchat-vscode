@@ -17,6 +17,8 @@ import { installAskCode as installAskCodeFun } from '../util/python_installer/in
 import { ProgressBar } from '../util/progressBar';
 import path from 'path';
 import { MessageHandler } from '../handler/messageHandler';
+import { FT } from '../util/feature_flags/feature_toggles';
+import { getPackageVersion } from '../util/python_installer/pip_package_version';
 
 let indexProcess: CommandRun | null = null;
 let summaryIndexProcess: CommandRun | null = null;
@@ -238,16 +240,36 @@ export function TestDevChatCommand(context: vscode.ExtensionContext) {
 
 export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStart', async () => {
+		if (!FT("ask-code")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+
         const progressBar = new ProgressBar();
 		progressBar.init();
 
 		progressBar.update("Index source code files for ask codebase ...", 0);
 
 		const config = getConfig();
-        const pythonVirtualEnv = config.pythonVirtualEnv;
+        let pythonVirtualEnv: any = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
 
 		updateIndexingStatus("started");
+
+		if (pythonVirtualEnv) {
+			// check whether pythonVirtualEnv is stisfy the requirement version
+			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
+			
+			let requireAskVersion = "0.0.8";
+			if (FT("ask-code-summary")) {
+				requireAskVersion = "0.0.10";
+			}
+
+			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
+				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
+				pythonVirtualEnv = undefined;
+			}
+		}
 
         if (!pythonVirtualEnv) {
 			progressBar.update("Install devchat-ask package ...", 0);
@@ -345,6 +367,11 @@ async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any)
 
 export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexStop', async () => {
+		if (!FT("ask-code")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+
         if (indexProcess) {
 			indexProcess.stop();
 			indexProcess = null;
@@ -355,16 +382,36 @@ export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext
 
 export function registerAskCodeSummaryIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeSummaryIndexStart', async () => {
-        const progressBar = new ProgressBar();
+        if (!FT("ask-code-summary")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+
+		const progressBar = new ProgressBar();
         progressBar.init();
 
         progressBar.update("Index source code files for ask codebase summary...", 0);
 
         const config = getConfig();
-        const pythonVirtualEnv = config.pythonVirtualEnv;
+        let pythonVirtualEnv: any = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
 
         updateIndexingStatus("started");
+
+		if (pythonVirtualEnv) {
+			// check whether pythonVirtualEnv is stisfy the requirement version
+			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
+			
+			let requireAskVersion = "0.0.8";
+			if (FT("ask-code-summary")) {
+				requireAskVersion = "0.0.10";
+			}
+
+			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
+				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
+				pythonVirtualEnv = undefined;
+			}
+		}
 
         if (!pythonVirtualEnv) {
             progressBar.update("Install devchat-ask package ...", 0);
@@ -438,9 +485,12 @@ async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBa
 
 export function registerAskCodeSummaryIndexStopCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeIndexSummaryStop', async () => {
-        // 在这里实现停止索引的功能
-        // 你可能需要检查summaryIndexProcess变量是否为null，如果不为null，那么停止索引进程
-        if (summaryIndexProcess) {
+        if (!FT("ask-code-summary")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+
+		if (summaryIndexProcess) {
             summaryIndexProcess.stop();
             summaryIndexProcess = null;
         }
@@ -450,7 +500,12 @@ export function registerAskCodeSummaryIndexStopCommand(context: vscode.Extension
 
 export function registerAddSummaryContextCommand(context: vscode.ExtensionContext) {
     const callback = async (uri: { fsPath: any; }) => {
-        if (!await ensureChatPanel(context)) {
+        if (!FT("ask-code-summary")) {
+			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+			return;
+		}
+		
+		if (!await ensureChatPanel(context)) {
             return;
         }
 

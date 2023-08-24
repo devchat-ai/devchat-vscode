@@ -11,6 +11,7 @@ import { ApiKeyManager } from '../util/apiKey';
 import { regeneration, sendMessage as sendMessageX } from './sendMessage';
 import { codeFileApply } from './codeFileApply';
 import { applyAction } from './applyAction';
+import { FT } from '../util/feature_flags/feature_toggles';
 
 let autox = false;
 
@@ -53,9 +54,11 @@ export class MessageHandler {
 				autox = true;
 			}
 			// if "/ask-code" in message.text, then call devchat-ask to get result
-			if (message.text.indexOf('/ask-code') !== -1) {
-				message.command = 'askCode';
-				message.text = message.text.replace('/ask-code', '');
+			if (FT("ask-code")) {
+				if (message.text.indexOf('/ask-code') !== -1) {
+					message.command = 'askCode';
+					message.text = message.text.replace('/ask-code', '');
+				}
 			}
 		}
 
