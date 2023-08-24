@@ -1,6 +1,7 @@
 import { types, flow, Instance } from "mobx-state-tree";
 import messageUtil from '@/util/MessageUtil';
 import { ChatContext } from '@/views/stores/InputStore';
+import { features } from "process";
 
 interface Context {
     content: string;
@@ -75,20 +76,14 @@ export const ChatStore = types.model('Chat', {
     isTop: false,
     scrollBottom: 0,
     chatModel: 'gpt-4',
-    rechargeSite: 'https://test.devchat.ai/pricing/'
+    rechargeSite: 'https://test.devchat.ai/pricing/',
+    features: types.optional(types.frozen(), {})
 })
     .actions(self => {
 
         const helpMessage = (originalMessage = false) => {
-            self.messages.push(
-                Message.create({
-                    type: 'user',
-                    message: originalMessage ? "How do I use DevChat?" : '/help'
-                }));
-            self.messages.push(
-                Message.create({
-                    type: 'bot',
-                    message: `
+
+            let helps = `
 Do you want to write some code or have a question about the project? Simply right-click on your chosen files or code snippets and add them to DevChat. Feel free to ask me anything or let me help you with coding.
     
 Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
@@ -101,18 +96,31 @@ To get started, here are the things that DevChat can do:
 
 [/release_note: write the release code based on your code](#release_note)
 
-[/ask_code: ask questions about your own codebase](#ask_code)
+${self.features['ask-code'] ? '[/ask-code: ask questions about your own codebase](#ask_code)' : ''}
 
 [/extension: create extensions for DevChat](#extension)
 
-<button value="settings">Settings</button>
-                    `}));
+<button value="settings">Settings</button>`;
+
+            self.messages.push(
+                Message.create({
+                    type: 'user',
+                    message: originalMessage ? "How do I use DevChat?" : '/help'
+                }));
+            self.messages.push(
+                Message.create({
+                    type: 'bot',
+                    message: helps
+                }));
         };
 
         return {
             helpMessage,
             changeChatModel: (chatModel: string) => {
                 self.chatModel = chatModel;
+            },
+            updateFeatures: (features: any) => {
+                self.features = features;
             },
             startGenerating: (text: string, chatContexts) => {
                 self.generating = true;
