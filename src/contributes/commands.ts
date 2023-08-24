@@ -380,6 +380,29 @@ export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext
     context.subscriptions.push(disposable);
 }
 
+export async function registerInstallDevchatAskCommand(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('DevChat.AskCodeDfsInstall', async () => {
+        const progressBar = new ProgressBar();
+        progressBar.init();
+
+        progressBar.update("Index source code files for ask codebase summary...", 0);
+
+        const config = getConfig();
+        const pythonVirtualEnv = config.pythonVirtualEnv;
+        const supportedFileTypes = config.supportedFileTypes;
+
+        updateIndexingStatus("started");
+
+        if (!pythonVirtualEnv) {
+            progressBar.update("Install devchat-ask package ...", 0);
+            await installAskCode(supportedFileTypes, progressBar, async (a1, a2, a3) => {});
+        }
+
+        updateIndexingStatus("stopped");
+    });
+    context.subscriptions.push(disposable);
+}
+
 export function registerAskCodeSummaryIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeSummaryIndexStart', async () => {
         if (!FT("ask-code-summary")) {
@@ -425,6 +448,7 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
     });
     context.subscriptions.push(disposable);
 }
+
 
 async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};

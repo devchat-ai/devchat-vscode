@@ -28,6 +28,15 @@ class CommandManager {
 						return '';
 					}
 				});
+				CommandManager.instance.registerCommand({
+					name: 'ask-code-dfs',
+					pattern: 'ask-code-dfs',
+					description: 'ask code dfs',
+					args: 0,
+					handler: async (commandName: string, userInput: string) => {
+						return '';
+					}
+				});
 			}
 		}
 

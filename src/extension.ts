@@ -20,6 +20,7 @@ import {
     registerAskCodeSummaryIndexStartCommand,
     registerAskCodeSummaryIndexStopCommand,
 	registerAddSummaryContextCommand,
+	registerInstallDevchatAskCommand,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -72,5 +73,6 @@ function activate(context: vscode.ExtensionContext) {
 	registerAskCodeSummaryIndexStartCommand(context);
 	registerAskCodeSummaryIndexStopCommand(context);
 	registerAddSummaryContextCommand(context);
+	registerInstallDevchatAskCommand(context);
 }
 exports.activate = activate;

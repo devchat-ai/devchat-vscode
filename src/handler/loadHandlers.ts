@@ -6,7 +6,7 @@ import { doCommit } from './doCommit';
 import { historyMessages } from './historyMessages';
 import { regCommandList } from './regCommandList';
 import { regContextList } from './regContextList';
-import { sendMessage, stopDevChat, regeneration, deleteChatMessage, askCode } from './sendMessage';
+import { sendMessage, stopDevChat, regeneration, deleteChatMessage, askCode, askCodeDfs } from './sendMessage';
 import { blockApply } from './showDiff';
 import { showDiff } from './showDiff';
 import { addConext } from './addContext';
@@ -81,6 +81,7 @@ messageHandler.registerHandler('applyAction', applyAction);
 messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);
 
 messageHandler.registerHandler('askCode', askCode);
+messageHandler.registerHandler('askCodeDfs', askCodeDfs);
 // Execute vscode command
 // Response: none
 messageHandler.registerHandler('doCommand', doCommand);

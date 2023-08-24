@@ -296,6 +296,11 @@
 				"command": "DevChat.AskCodeIndexSummaryStop",
 				"title": "Stop AskCode Summary Index",
 				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AskCodeDfsInstall",
+				"title": "Install devchat-ask package for /ask-code-dfs",
+				"category": "DevChat"
 			}
 		],
 		"menus": {
