@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Box, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Anchor, Box, Button, Center, Container, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
@@ -14,7 +14,7 @@ import { Message } from "@/views/stores/ChatStore";
 
 import InputMessage from '@/views/components/InputMessage';
 import MessageList from '@/views/components/MessageList';
-import { IconCircleArrowDown, IconCircleArrowDownFilled } from '@tabler/icons-react';
+import { IconCircleArrowDown, IconCircleArrowDownFilled, IconExternalLink } from '@tabler/icons-react';
 
 
 const chatPanel = observer(() => {
@@ -117,9 +117,18 @@ const chatPanel = observer(() => {
                 <MessageList chatPanelWidth={chatPanelWidth} />
                 <CurrentMessage />
                 {chat.errorMessage &&
-                    <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} mb={20} color="gray" variant="filled">
-                        {chat.errorMessage}
-                    </Alert>}
+                    <Box mb={20} >
+                        <Alert styles={{ message: { fontSize: 'var(--vscode-editor-font-size)' } }} w={chatContainerRect.width} color="gray" variant="filled">
+                            {chat.errorMessage}
+                        </Alert>
+                        {
+                            chat.errorMessage.search('Insufficient balance') > -1 &&
+                            <Button size='xs' component="a" href={chat.rechargeSite} mt={5} variant="outline" leftIcon={<IconExternalLink size="0.9rem" />}>
+                                Open official website to recharge.
+                            </Button>
+                        }
+                    </Box>
+                }
             </ScrollArea>
             <Stack
                 spacing={5}
