@@ -299,7 +299,7 @@
 			},
 			{
 				"command": "DevChat.AskCodeDfsInstall",
-				"title": "Install devchat-ask package for /ask-code-dfs",
+				"title": "Install devchat-ask",
 				"category": "DevChat"
 			}
 		],
