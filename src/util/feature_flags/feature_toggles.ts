@@ -5,10 +5,11 @@ import * as path from 'path';
 const featureTogglesJson = `
 {
 	"ask-code-summary": false,
-	"ask-code": true,
+	"ask-code": false,
 	"ask-code-dfs": false
 }`;
 const featureToggles = JSON.parse(featureTogglesJson);
+
 
 export function FT(feature: string): boolean {
     const betaInvitationCode = vscode.workspace.getConfiguration('DevChat').get<string>('betaInvitationCode');
