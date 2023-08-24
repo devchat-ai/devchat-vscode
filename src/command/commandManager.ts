@@ -1,3 +1,4 @@
+import { FT } from "../util/feature_flags/feature_toggles";
 import CustomCommands from "./customCommand";
 
 export interface Command {
@@ -17,15 +18,17 @@ class CommandManager {
 	public static getInstance(): CommandManager {
 		if (!CommandManager.instance) {
 			CommandManager.instance = new CommandManager();
-			CommandManager.instance.registerCommand({
-				name: 'ask-code',
-				pattern: 'ask-code',
-				description: 'ask code',
-				args: 0,
-				handler: async (commandName: string, userInput: string) => {
-					return '';
-				}
-			});
+			if (FT("ask-code")) {
+				CommandManager.instance.registerCommand({
+					name: 'ask-code',
+					pattern: 'ask-code',
+					description: 'ask code',
+					args: 0,
+					handler: async (commandName: string, userInput: string) => {
+						return '';
+					}
+				});
+			}
 		}
 
 		return CommandManager.instance;

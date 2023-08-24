@@ -2,7 +2,8 @@
  Install DevChat with python=3.11.4
  */
 
- import { logger } from "../logger";
+ import { FT } from "../feature_flags/feature_toggles";
+import { logger } from "../logger";
  import { appInstall } from "./app_install"
  
  
@@ -12,7 +13,11 @@
  export async function installAskCode(): Promise<string> {
 	 try {
 		 logger.channel()?.info(`start installing AskCode with python=3.11.4 ...`);
-		 const pythonCommand = await appInstall('devchat-ask', '3.11.4');
+		 let devchatAskVersion = 'devchat-ask>=0.0.8';
+		 if (FT("ask-code-summary")) {
+			devchatAskVersion = 'devchat-ask>=0.0.10';
+		 }
+		 const pythonCommand = await appInstall(devchatAskVersion, '3.11.4');
 		 if (!pythonCommand) {
 			 logger.channel()?.error(`failed to install devchat-ask with python=3.11.4`);
 			 logger.channel()?.show();
