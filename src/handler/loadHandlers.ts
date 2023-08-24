@@ -16,7 +16,7 @@ import { listAllMessages } from './listMessages';
 import { regActionList } from './regActionList';
 import { applyAction } from './applyAction';
 import { doCommand } from './doCommand';
-import { updateSetting } from './updateConfig';
+import { getSetting, updateSetting } from './updateConfig';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -85,3 +85,4 @@ messageHandler.registerHandler('askCode', askCode);
 messageHandler.registerHandler('doCommand', doCommand);
 
 messageHandler.registerHandler('updateSetting', updateSetting);
+messageHandler.registerHandler('getSetting', getSetting);
