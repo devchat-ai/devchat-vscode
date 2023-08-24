@@ -11,7 +11,7 @@ import { installPython } from "./python_install";
 // step 2. create env with python 3.11.4
 // step 3. install devchat in the env
 
-export async function appInstall(pkgName: string, pythonVersion: string) : Promise<string> {
+export async function appInstall(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
 	// install conda
 	logger.channel()?.info('Install conda ...')
 	const condaCommand = await installConda();
@@ -44,7 +44,7 @@ export async function appInstall(pkgName: string, pythonVersion: string) : Promi
 	let isInstalled = false;
 	// try 3 times
 	for (let i = 0; i < 3; i++) {
-		isInstalled = await installPackage(pythonCommand, pkgName);
+		isInstalled = await installPackage(pythonCommand, pkgName + pkgVersion);
 		if (isInstalled) {
 			break;
 		}

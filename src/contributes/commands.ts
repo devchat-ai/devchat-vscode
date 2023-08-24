@@ -393,10 +393,25 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
         progressBar.update("Index source code files for ask codebase summary...", 0);
 
         const config = getConfig();
-        const pythonVirtualEnv = config.pythonVirtualEnv;
+        let pythonVirtualEnv: any = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
 
         updateIndexingStatus("started");
+
+		if (pythonVirtualEnv) {
+			// check whether pythonVirtualEnv is stisfy the requirement version
+			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
+			
+			let requireAskVersion = "0.0.8";
+			if (FT("ask-code-summary")) {
+				requireAskVersion = "0.0.10";
+			}
+
+			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
+				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
+				pythonVirtualEnv = undefined;
+			}
+		}
 
         if (!pythonVirtualEnv) {
             progressBar.update("Install devchat-ask package ...", 0);
