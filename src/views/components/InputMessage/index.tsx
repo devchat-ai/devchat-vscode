@@ -1,5 +1,5 @@
 import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider } from "@mantine/core";
-import { useListState, useResizeObserver } from "@mantine/hooks";
+import { useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
 import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
@@ -54,6 +54,9 @@ const InputMessage = observer((props: any) => {
             // Clear the input field
             input.setValue('');
             input.clearContexts();
+            setTimeout(() => {
+                chat.goScrollBottom();
+            }, 1000);
         }
     };
 
