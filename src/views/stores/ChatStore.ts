@@ -73,7 +73,8 @@ export const ChatStore = types.model('Chat', {
     isLastPage: false,
     isBottom: true,
     isTop: false,
-    scrollBottom: 0
+    scrollBottom: 0,
+    rechargeSite: 'https://test.devchat.ai/pricing/'
 })
     .actions(self => {
 
