@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { ActionIcon, Alert, Anchor, Box, Button, Center, Container, Flex, Group, Radio, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
-import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { useInterval, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
@@ -29,11 +29,23 @@ const chatPanel = observer(() => {
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
+    const getSettings = () => {
+        messageUtil.sendMessage({
+            command: "getSetting",
+            key1: "DevChat",
+            key2: "OpenAI.model"
+        });
+    };
+
     const timer = useTimeout(() => {
         if (chat.isBottom) {
             scrollToBottom();
         }
     }, 1000);
+
+    const interval = useInterval(() => {
+        getSettings();
+    }, 3000);
 
     const onScrollPositionChange = ({ x, y }) => {
         const sh = scrollViewport.current?.scrollHeight || 0;
@@ -56,6 +68,7 @@ const chatPanel = observer(() => {
     };
 
     useEffect(() => {
+        getSettings();
         chat.fetchHistoryMessages({ pageIndex: 0 }).then();
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             chat.startResponsing(message.text);
@@ -68,7 +81,6 @@ const chatPanel = observer(() => {
                 chat.happendError(message.text);
             }
         });
-
         messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
             const messageItem = Message.create({ type: 'system', message: message.text });
             chat.newMessage(messageItem);
@@ -78,10 +90,15 @@ const chatPanel = observer(() => {
             input.setValue('');
             input.clearContexts();
         });
+        messageUtil.registerHandler('getSetting', (message: { value: string }) => {
+            chat.changeChatModel(message.value);
+        });
 
         timer.start();
+        interval.start();
         return () => {
             timer.clear();
+            interval.stop();
         };
     }, []);
 
@@ -155,6 +172,12 @@ const chatPanel = observer(() => {
                         value={chat.chatModel}
                         onChange={(value) => {
                             chat.changeChatModel(value);
+                            messageUtil.sendMessage({
+                                command: 'updateSetting',
+                                key1: "DevChat",
+                                key2: "OpenAI.model",
+                                value: value
+                            });
                         }}
                         withAsterisk>
                         <Group mt="xs">
