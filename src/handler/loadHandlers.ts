@@ -16,6 +16,7 @@ import { listAllMessages } from './listMessages';
 import { regActionList } from './regActionList';
 import { applyAction } from './applyAction';
 import { doCommand } from './doCommand';
+import { updateSetting } from './updateConfig';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -82,3 +83,5 @@ messageHandler.registerHandler('askCode', askCode);
 // Execute vscode command
 // Response: none
 messageHandler.registerHandler('doCommand', doCommand);
+
+messageHandler.registerHandler('updateSetting', updateSetting);
