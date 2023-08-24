@@ -74,6 +74,7 @@ export const ChatStore = types.model('Chat', {
     isBottom: true,
     isTop: false,
     scrollBottom: 0,
+    chatModel: 'gpt-4',
     rechargeSite: 'https://test.devchat.ai/pricing/'
 })
     .actions(self => {
@@ -110,6 +111,9 @@ To get started, here are the things that DevChat can do:
 
         return {
             helpMessage,
+            changeChatModel: (chatModel: string) => {
+                self.chatModel = chatModel;
+            },
             startGenerating: (text: string, chatContexts) => {
                 self.generating = true;
                 self.responsed = false;

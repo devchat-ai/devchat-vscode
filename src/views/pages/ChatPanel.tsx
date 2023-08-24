@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Anchor, Box, Button, Center, Container, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Anchor, Box, Button, Center, Container, Flex, Group, Radio, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
-import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { useInterval, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
@@ -29,11 +29,23 @@ const chatPanel = observer(() => {
     const scrollToBottom = () =>
         scrollViewport?.current?.scrollTo({ top: scrollViewport.current.scrollHeight, behavior: 'smooth' });
 
+    const getSettings = () => {
+        messageUtil.sendMessage({
+            command: "getSetting",
+            key1: "DevChat",
+            key2: "OpenAI.model"
+        });
+    };
+
     const timer = useTimeout(() => {
         if (chat.isBottom) {
             scrollToBottom();
         }
     }, 1000);
+
+    const interval = useInterval(() => {
+        getSettings();
+    }, 3000);
 
     const onScrollPositionChange = ({ x, y }) => {
         const sh = scrollViewport.current?.scrollHeight || 0;
@@ -56,6 +68,7 @@ const chatPanel = observer(() => {
     };
 
     useEffect(() => {
+        getSettings();
         chat.fetchHistoryMessages({ pageIndex: 0 }).then();
         messageUtil.registerHandler('receiveMessagePartial', (message: { text: string; }) => {
             chat.startResponsing(message.text);
@@ -68,7 +81,6 @@ const chatPanel = observer(() => {
                 chat.happendError(message.text);
             }
         });
-
         messageUtil.registerHandler('systemMessage', (message: { text: string }) => {
             const messageItem = Message.create({ type: 'system', message: message.text });
             chat.newMessage(messageItem);
@@ -78,10 +90,15 @@ const chatPanel = observer(() => {
             input.setValue('');
             input.clearContexts();
         });
+        messageUtil.registerHandler('getSetting', (message: { value: string }) => {
+            chat.changeChatModel(message.value);
+        });
 
         timer.start();
+        interval.start();
         return () => {
             timer.clear();
+            interval.stop();
         };
     }, []);
 
@@ -95,7 +112,7 @@ const chatPanel = observer(() => {
             sx={{
                 height: '100%',
                 margin: 0,
-                padding: 10,
+                padding: '10px 10px 5px 10px',
                 background: 'var(--vscode-sideBar-background)',
                 color: 'var(--vscode-editor-foreground)',
                 minWidth: 240
@@ -103,12 +120,12 @@ const chatPanel = observer(() => {
             {!chat.isBottom && <ActionIcon
                 onClick={() => { scrollToBottom() }}
                 title='Bottom'
-                variant='transparent' sx={{ position: "absolute", bottom: 60, right: 20, zIndex: 999 }}>
+                variant='transparent' sx={{ position: "absolute", bottom: 75, right: 20, zIndex: 999 }}>
                 <IconCircleArrowDownFilled size="1.125rem" />
             </ActionIcon>}
             <ScrollArea
                 sx={{
-                    height: chat.generating ? height - px('8rem') : height - px('5rem'),
+                    height: chat.generating ? height - px('9rem') : height - px('6rem'),
                     padding: 0,
                     margin: 0,
                 }}
@@ -131,19 +148,45 @@ const chatPanel = observer(() => {
                 }
             </ScrollArea>
             <Stack
-                spacing={5}
+                spacing={0}
                 sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
                 {chat.generating &&
-                    <Center>
+                    <Center mb={5}>
                         <StopButton />
                     </Center>
                 }
                 {chat.errorMessage &&
-                    <Center>
+                    <Center mb={5}>
                         <RegenerationButton />
                     </Center>
                 }
                 <InputMessage chatPanelWidth={chatPanelWidth} />
+                <Flex
+                    gap="md"
+                    justify="flex-start"
+                    align="center"
+                    direction="row"
+                    wrap="wrap">
+
+                    <Radio.Group
+                        value={chat.chatModel}
+                        onChange={(value) => {
+                            chat.changeChatModel(value);
+                            messageUtil.sendMessage({
+                                command: 'updateSetting',
+                                key1: "DevChat",
+                                key2: "OpenAI.model",
+                                value: value
+                            });
+                        }}
+                        withAsterisk>
+                        <Group mt="xs">
+                            <Radio size="xs" value="gpt-4" label="gpt-4" />
+                            <Radio size="xs" value="gpt-3.5-turbo" label="gpt-3.5-turbo" />
+                            <Radio size="xs" value="gpt-3.5-turbo-16k" label="gpt-3.5-turbo-16k" />
+                        </Group>
+                    </Radio.Group>
+                </Flex>
             </Stack>
         </Box>
     );
