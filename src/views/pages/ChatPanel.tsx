@@ -125,7 +125,7 @@ const chatPanel = observer(() => {
     return (
         <Box
             ref={chatContainerRef}
-            miw={310}
+            miw={300}
             sx={{
                 height: '100%',
                 margin: 0,
@@ -166,7 +166,7 @@ const chatPanel = observer(() => {
             </ScrollArea>
             <Stack
                 spacing={0}
-                sx={{ position: 'absolute', bottom: 10, width: chatPanelWidth - 20 }}>
+                sx={{ position: 'absolute', bottom: 10, width: chatPanelWidth }}>
                 {chat.generating &&
                     <Center mb={5}>
                         <StopButton />
