@@ -5,7 +5,7 @@ import * as path from 'path';
 const featureTogglesJson = `
 {
 	"ask-code-summary": false,
-	"ask-code": false,
+	"ask-code": true,
 	"ask-code-dfs": false
 }`;
 const featureToggles = JSON.parse(featureTogglesJson);
