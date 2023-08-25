@@ -1,8 +1,0 @@
-{
-	"pattern": "extension",
-	"description": "Create extension for DevChat",
-	"message": "",
-	"default": false,
-	"args": 0,
-	"instructions": ["instruct.txt"]
-}

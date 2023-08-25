@@ -54,11 +54,12 @@ async function getUndefinedSymbols(content: string): Promise<string[]> {
         return [];
     }
 
-    let responseText = chatResponse.response;
+    let responseText = chatResponse.response.trim();
     let symbols: string[];
 
-    if (responseText.startsWith("```json") && responseText.endsWith("```")) {
-        responseText = responseText.substring(7, responseText.length - 3);
+    if (responseText.startsWith("```") && responseText.endsWith("```")) {
+		const index = responseText.indexOf('[');
+        responseText = responseText.substring(index, responseText.length - 3);
         try {
             symbols = JSON.parse(responseText);
         } catch (error) {

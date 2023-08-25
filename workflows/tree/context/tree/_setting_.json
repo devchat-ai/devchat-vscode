@@ -1,6 +1,0 @@
-{
-	"name": "tree",
-	"description": "Directory structure of workspace",
-	"edit": true,
-	"command": ["tree -I \"__pycache__|\\.pytest_cache\""]
-}
