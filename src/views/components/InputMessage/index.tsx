@@ -162,8 +162,7 @@ const InputMessage = observer((props: any) => {
                     onClick={() => {
                         handleContextClick(name);
                         input.closeMenu();
-                    }}
-                >
+                    }}>
                     {contextMenuIcon(name)}
                     <Stack spacing={0}>
                         <Text sx={{
@@ -440,8 +439,7 @@ const InputMessage = observer((props: any) => {
                                 align="center"
                                 direction="row"
                                 wrap="wrap"
-                                sx={{ overflow: 'hidden' }}
-                            >
+                                sx={{ overflow: 'hidden' }}>
                                 <IconMouseRightClick
                                     size={14}
                                     color={'var(--vscode-menu-foreground)'}
@@ -458,7 +456,9 @@ const InputMessage = observer((props: any) => {
                             </Flex>
                             <Divider />
                             <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
-                            {contextMenusNode}
+                            <ScrollArea.Autosize mah={240} type="always">
+                                {contextMenusNode}
+                            </ScrollArea.Autosize>
                         </Popover.Dropdown>)
                         : menuType === 'commands' && commandMenusNode.length > 0
                             ? <Popover.Dropdown
@@ -469,7 +469,9 @@ const InputMessage = observer((props: any) => {
                                     backgroundColor: 'var(--vscode-menu-background)'
                                 }}>
                                 <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
-                                {commandMenusNode}
+                                <ScrollArea.Autosize mah={240} type="always">
+                                    {commandMenusNode}
+                                </ScrollArea.Autosize>
                             </Popover.Dropdown>
                             : <></>
                 }
