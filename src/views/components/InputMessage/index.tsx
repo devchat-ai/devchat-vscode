@@ -1,6 +1,6 @@
-import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider } from "@mantine/core";
-import { useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
-import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend } from "@tabler/icons-react";
+import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Indicator, HoverCard, Drawer } from "@mantine/core";
+import { useDisclosure, useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
+import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
@@ -15,6 +15,8 @@ const InputMessage = observer((props: any) => {
     const { input, chat } = useMst();
     const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus } = input;
     const { generating } = chat;
+
+    const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 
     const theme = useMantineTheme();
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
@@ -293,10 +295,33 @@ const InputMessage = observer((props: any) => {
         }
     }, [input.value, commandMenus, currentMenuIndex]);
 
+    useEffect(() => {
+        if (drawerOpened && (!contexts || contexts.length === 0)) {
+            closeDrawer();
+        }
+    }, [contexts.length]);
+
     return (
         <>
             {contexts && contexts.length > 0 &&
-                <InputContexts />
+                <Drawer
+                    opened={drawerOpened}
+                    onClose={closeDrawer}
+                    position="bottom"
+                    title="DevChat Contexts"
+                    overlayProps={{ opacity: 0.5, blur: 4 }}
+                    styles={{
+                        content: {
+                            background: 'var(--vscode-sideBar-background)',
+                            color: 'var(--vscode-editor-foreground)',
+                        },
+                        header: {
+                            background: 'var(--vscode-sideBar-background)',
+                            color: 'var(--vscode-editor-foreground)',
+                        }
+                    }}>
+                    <InputContexts />
+                </Drawer >
             }
             <Popover
                 id='commandMenu'
@@ -329,7 +354,7 @@ const InputMessage = observer((props: any) => {
                         placeholder="Send a message."
                         styles={{
                             icon: { alignItems: 'center', paddingLeft: '5px' },
-                            rightSection: { alignItems: 'center', paddingRight: '5px' },
+                            rightSection: { alignItems: 'center', paddingRight: '5px', marginRight: (contexts.length > 0 ? '18px' : '0') },
                             input: {
                                 fontSize: 'var(--vscode-editor-font-size)',
                                 backgroundColor: 'var(--vscode-input-background)',
@@ -360,23 +385,43 @@ const InputMessage = observer((props: any) => {
                             </ActionIcon>
                         }
                         rightSection={
-                            <ActionIcon
-                                size='sm'
-                                disabled={generating}
-                                onClick={handleSendClick}
-                                sx={{
-                                    pointerEvents: 'all',
-                                    '&:hover': {
-                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                    },
-                                    '&[data-disabled]': {
-                                        borderColor: 'var(--vscode-input-border)',
-                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                    }
-                                }}
-                            >
-                                <IconSend size="1rem" />
-                            </ActionIcon>
+                            <Flex>
+                                <ActionIcon
+                                    size='sm'
+                                    disabled={generating}
+                                    onClick={handleSendClick}
+                                    sx={{
+                                        pointerEvents: 'all',
+                                        '&:hover': {
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        },
+                                        '&[data-disabled]': {
+                                            borderColor: 'var(--vscode-input-border)',
+                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                        }
+                                    }}>
+                                    <IconSend size="1rem" />
+                                </ActionIcon>
+                                {contexts.length > 0 &&
+                                    <Indicator label={contexts.length} size={12}>
+                                        <ActionIcon
+                                            size='sm'
+                                            disabled={generating}
+                                            onClick={openDrawer}
+                                            sx={{
+                                                pointerEvents: 'all',
+                                                '&:hover': {
+                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                                },
+                                                '&[data-disabled]': {
+                                                    borderColor: 'var(--vscode-input-border)',
+                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                                }
+                                            }}>
+                                            <IconPaperclip size="1rem" />
+                                        </ActionIcon>
+                                    </Indicator>}
+                            </Flex>
                         }
                     />
                 </Popover.Target>

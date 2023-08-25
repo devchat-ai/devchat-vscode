@@ -7,7 +7,10 @@ import { ChatContext } from "@/views/stores/InputStore";
 
 const InputContexts = observer(() => {
     const { input } = useMst();
-    return (<Accordion variant="contained" chevronPosition="left"
+    return (<Accordion
+        variant="contained"
+        chevronPosition="left"
+        multiple={true}
         sx={{
             backgroundColor: 'var(--vscode-menu-background)',
         }}
@@ -77,16 +80,14 @@ const InputContexts = observer(() => {
                                 <IconX size="1rem" />
                             </ActionIcon>
                         </Box>
-                        <Accordion.Panel mah={300}>
-                            <ScrollArea h={300} type="never">
-                                {
-                                    content
-                                        ? <pre style={{ overflowWrap: 'normal' }}>{content}</pre>
-                                        : <Center>
-                                            <Text c='gray.3'>No content</Text>
-                                        </Center>
-                                }
-                            </ScrollArea>
+                        <Accordion.Panel>
+                            {
+                                content
+                                    ? <pre style={{ overflowWrap: 'normal', fontSize: 'var(--vscode-editor-font-size)', margin: 0 }}>{content}</pre>
+                                    : <Center>
+                                        <Text c='gray.3'>No content</Text>
+                                    </Center>
+                            }
                         </Accordion.Panel>
                     </Accordion.Item>
                 );

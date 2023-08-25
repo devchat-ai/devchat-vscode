@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useEffect, useRef } from 'react';
 import { ActionIcon, Alert, Anchor, Box, Button, Center, Chip, Container, Flex, Group, Radio, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
-import { useInterval, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
+import { useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
 import CurrentMessage from "@/views/components/CurrentMessage";
 import StopButton from '@/views/components/StopButton';
@@ -14,7 +14,7 @@ import { Message } from "@/views/stores/ChatStore";
 
 import InputMessage from '@/views/components/InputMessage';
 import MessageList from '@/views/components/MessageList';
-import { IconCircleArrowDown, IconCircleArrowDownFilled, IconExternalLink } from '@tabler/icons-react';
+import { IconCircleArrowDownFilled, IconExternalLink } from '@tabler/icons-react';
 
 
 const chatPanel = observer(() => {
