@@ -420,7 +420,7 @@ const InputMessage = observer((props: any) => {
                                             }}>
                                             <IconPaperclip size="1rem" />
                                         </ActionIcon>
-                                    </Indicator>
+                                    </Indicator>}
                             </Flex>
                         }
                     />
