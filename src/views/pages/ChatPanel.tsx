@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useEffect, useRef } from 'react';
-import { ActionIcon, Alert, Anchor, Box, Button, Center, Container, Flex, Group, Radio, Stack, px } from '@mantine/core';
+import { ActionIcon, Alert, Anchor, Box, Button, Center, Chip, Container, Flex, Group, Radio, Stack, px } from '@mantine/core';
 import { ScrollArea } from '@mantine/core';
 import { useInterval, useResizeObserver, useTimeout, useViewportSize } from '@mantine/hooks';
 import messageUtil from '@/util/MessageUtil';
@@ -49,9 +49,15 @@ const chatPanel = observer(() => {
         }
     }, 1000);
 
-    const interval = useInterval(() => {
-        getSettings();
-    }, 3000);
+    const chipStyle = {
+        color: 'var(--vscode-checkbox-foreground)',
+        fontSize: 'var(--vscode-editor-font-size)',
+        backgroundColor: 'var(--vscode-checkbox-background)',
+        borderColor: 'var(--vscode-checkbox-border)',
+        '&[data-checked]': {
+            borderColor: 'var(--vscode-checkbox-selectBorder)',
+        }
+    };
 
     const onScrollPositionChange = ({ x, y }) => {
         const sh = scrollViewport.current?.scrollHeight || 0;
@@ -107,10 +113,8 @@ const chatPanel = observer(() => {
 
 
         timer.start();
-        interval.start();
         return () => {
             timer.clear();
-            interval.stop();
         };
     }, []);
 
@@ -121,18 +125,19 @@ const chatPanel = observer(() => {
     return (
         <Box
             ref={chatContainerRef}
+            miw={310}
             sx={{
                 height: '100%',
                 margin: 0,
                 padding: '10px 10px 5px 10px',
                 background: 'var(--vscode-sideBar-background)',
-                color: 'var(--vscode-editor-foreground)',
-                minWidth: 240
+                color: 'var(--vscode-editor-foreground)'
             }}>
+
             {!chat.isBottom && <ActionIcon
                 onClick={() => { scrollToBottom() }}
                 title='Bottom'
-                variant='transparent' sx={{ position: "absolute", bottom: 75, right: 20, zIndex: 999 }}>
+                variant='transparent' sx={{ position: "absolute", bottom: 80, right: 20, zIndex: 1 }}>
                 <IconCircleArrowDownFilled size="1.125rem" />
             </ActionIcon>}
             <ScrollArea
@@ -161,7 +166,7 @@ const chatPanel = observer(() => {
             </ScrollArea>
             <Stack
                 spacing={0}
-                sx={{ position: 'absolute', bottom: 10, width: 'calc(100% - 20px)' }}>
+                sx={{ position: 'absolute', bottom: 10, width: chatPanelWidth - 20 }}>
                 {chat.generating &&
                     <Center mb={5}>
                         <StopButton />
@@ -173,32 +178,23 @@ const chatPanel = observer(() => {
                     </Center>
                 }
                 <InputMessage chatPanelWidth={chatPanelWidth} />
-                <Flex
-                    gap="md"
-                    justify="flex-start"
-                    align="center"
-                    direction="row"
-                    wrap="wrap">
-
-                    <Radio.Group
-                        value={chat.chatModel}
-                        onChange={(value) => {
-                            chat.changeChatModel(value);
-                            messageUtil.sendMessage({
-                                command: 'updateSetting',
-                                key1: "DevChat",
-                                key2: "OpenAI.model",
-                                value: value
-                            });
-                        }}
-                        withAsterisk>
-                        <Group mt="xs">
-                            <Radio size="xs" value="gpt-4" label="gpt-4" />
-                            <Radio size="xs" value="gpt-3.5-turbo" label="gpt-3.5-turbo" />
-                            <Radio size="xs" value="gpt-3.5-turbo-16k" label="gpt-3.5-turbo-16k" />
-                        </Group>
-                    </Radio.Group>
-                </Flex>
+                <Chip.Group multiple={false}
+                    value={chat.chatModel}
+                    onChange={(value) => {
+                        chat.changeChatModel(value);
+                        messageUtil.sendMessage({
+                            command: 'updateSetting',
+                            key1: "DevChat",
+                            key2: "OpenAI.model",
+                            value: value
+                        });
+                    }} >
+                    <Group position="left" spacing={5} mt={5}>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-4">GPT-4</Chip>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-3.5-turbo">GPT-3.5</Chip>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-3.5-turbo-16k">GPT-3.5-16K</Chip>
+                    </Group>
+                </Chip.Group>
             </Stack>
         </Box>
     );
