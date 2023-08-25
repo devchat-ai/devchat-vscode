@@ -43,8 +43,12 @@ export async function appInstall(pkgName: string, pkgVersion: string, pythonVers
 	logger.channel()?.info('Install python packages ...')
 	let isInstalled = false;
 	// try 3 times
-	for (let i = 0; i < 3; i++) {
-		isInstalled = await installPackage(pythonCommand, pkgName + pkgVersion);
+	for (let i = 0; i < 4; i++) {
+		let otherSource: string | undefined = undefined;
+		if (i>1) {
+			otherSource = 'https://pypi.tuna.tsinghua.edu.cn/simple/';
+		}
+		isInstalled = await installPackage(pythonCommand, pkgName + pkgVersion, otherSource);
 		if (isInstalled) {
 			break;
 		}
