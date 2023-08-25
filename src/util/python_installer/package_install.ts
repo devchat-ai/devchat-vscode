@@ -10,13 +10,18 @@ import { logger } from '../logger';
 // pythonCommand -m install pkgName
 // if install success, return true
 // else return false
-export async function installPackage(pythonCommand: string, pkgName: string) : Promise<boolean> {
+export async function installPackage(pythonCommand: string, pkgName: string, otherSource: string | undefined) : Promise<boolean> {
     return new Promise((resolve, reject) => {
 		let errorOut = '';
 
         const cmd = pythonCommand;
-        const args = ['-m', 'pip', 'install', pkgName];
+        let args = ['-m', 'pip', 'install', pkgName];
+		if (otherSource) {
+			args.push("-i");
+			args.push(otherSource);
+		}
         const child = spawn(cmd, args);
+		logger.channel()?.info(`Run command: ${cmd} ${args.join(' ')}`);
 
         child.stdout.on('data', (data) => {
 			logger.channel()?.info(`${data}`);
