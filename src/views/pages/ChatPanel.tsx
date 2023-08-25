@@ -49,6 +49,16 @@ const chatPanel = observer(() => {
         }
     }, 1000);
 
+    const chipStyle = {
+        color: 'var(--vscode-checkbox-foreground)',
+        fontSize: 'var(--vscode-editor-font-size)',
+        backgroundColor: 'var(--vscode-checkbox-background)',
+        borderColor: 'var(--vscode-checkbox-border)',
+        '&[data-checked]': {
+            borderColor: 'var(--vscode-checkbox-selectBorder)',
+        }
+    };
+
     const onScrollPositionChange = ({ x, y }) => {
         const sh = scrollViewport.current?.scrollHeight || 0;
         const vh = scrollViewport.current?.clientHeight || 0;
@@ -180,9 +190,9 @@ const chatPanel = observer(() => {
                         });
                     }} >
                     <Group position="left" spacing={5} mt={5}>
-                        <Chip size="xs" value="gpt-4">GPT-4</Chip>
-                        <Chip size="xs" value="gpt-3.5-turbo">GPT-3.5</Chip>
-                        <Chip size="xs" value="gpt-3.5-turbo-16k">GPT-3.5-16K</Chip>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-4">GPT-4</Chip>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-3.5-turbo">GPT-3.5</Chip>
+                        <Chip size="xs" styles={{ label: chipStyle }} value="gpt-3.5-turbo-16k">GPT-3.5-16K</Chip>
                     </Group>
                 </Chip.Group>
             </Stack>
