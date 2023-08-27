@@ -88,15 +88,15 @@ Do you want to write some code or have a question about the project? Simply righ
     
 Don't forget to check out the "+" button on the left of the input to add more context. To see a list of workflows you can run in the context, just type "/". Happy prompting!
 
-To get started, here are the things that DevChat can do:
+To get started, here are some of the things that I can do for you:
 
 [/code(default): write code based on your prompt](#code)
 
-[/commit_message: write a commit message based on your code](#commit_message)
+[/commit_message: compose a commit message based on your code changes](#commit_message)
 
-[/release_note: write the release code based on your code](#release_note)
+[/release_note: draft a release note based on your latest commits](#release_note)
 
-${self.features['ask-code'] ? '[/ask-code: ask questions about your own codebase](#ask_code)' : ''}
+${self.features['ask-code'] ? '[/ask-code: ask me questions about your codebase](#ask_code)' : ''}
 
 <button value="settings">Settings</button>`;
 
