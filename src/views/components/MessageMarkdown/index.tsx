@@ -62,8 +62,6 @@ How do I print the value of a tensor object in TensorFlow?
 How do I force Kubernetes to re-pull an image in Kubernetes?
 How do I set focus on an input field after rendering in React?
 
-How to index your codebase?
-
 \`Please check DevChat.ask_code settings\` before enabling the feature, because once indexing has been started, changing the settings will not affect the process anymore, unless if you terminate it and re-index.
 
 To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette or click on the button to start indexing now.
@@ -84,7 +82,7 @@ To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette 
                         type: 'bot',
                         message: `***/code***
 
-Use this DevChat prompt to request code writing. Please input your specific requirements and supply the appropriate context for implementation. You can select the relevant code or files and right-click to "Add to DevChat". If you find the context is still insufficient, you can enhance my understanding of your code by providing class/function definitions of the selected code. To do this, click the "+" button for the selected code and choose "symbol definitions". Please note, it may take a few seconds for this information to appear in DevChat.
+Use this DevChat workflow to request code writing. Please input your specific requirements and supply the appropriate context for implementation. You can select the relevant code or files and right-click to "Add to DevChat". If you find the context is still insufficient, you can enhance my understanding of your code by providing class/function definitions of the selected code. To do this, click the "+" button for the selected code and choose "symbol definitions". Please note, it may take a few seconds for this information to appear in DevChat.
                     `
                     }),
                 ]);
@@ -99,7 +97,7 @@ Use this DevChat prompt to request code writing. Please input your specific requ
                         type: 'bot',
                         message: `***/commit_message***
     
-Use this DevChat prompt to request a commit message. Generally, you don’t need to type anything else, but please give me the output of \`git diff\`. Don't worry, you don't need to manually execute the command and copy & paste the output. Simply click the "+" button and select \`git diff —cached\` to include only the staged changes, or \`git diff HEAD\` to include all changes.
+Use this DevChat workflow to request a commit message. Generally, you don't need to type anything else, but please give me the output of \`git diff\`. Of course, you don't need to manually execute the command and copy & paste its output. Simply click the "+" button and select \`git diff —cached\` to include only the staged changes, or \`git diff HEAD\` to include all changes.
                         `
                     }),
                 ]);
@@ -114,7 +112,7 @@ Use this DevChat prompt to request a commit message. Generally, you don’t need
                         type: 'bot',
                         message: `***/release_note***
         
-Generate a professionally written and formatted release note in markdown with this prompt. I just need some basic information about the commits for the release. Add this to the context by clicking the "+" button and selecting \`git_log_releasenote\`. If the scope of commits differs from the default command, you can also select <custom command> and input a command line such as \`git log 579398b^..HEAD --pretty=format:"%h - %B"\` to include the commit 579398b (inclusive) up to the latest.
+Generate a professionally written and formatted release note in markdown with this workflow. I just need some basic information about the commits for the release. Add this to the context by clicking the "+" button and selecting \`git_log_releasenote\`. If the scope of commits differs from the default command, you can also select \`<custom command>\` and input a command line such as \`git log 579398b^..HEAD --pretty=format:"%h - %B"\` to include the commit 579398b (inclusive) up to the latest.
                             `
                     }),
                 ]);
