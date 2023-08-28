@@ -98,7 +98,7 @@ To get started, here are some of the things that I can do for you:
 
 ${self.features['ask-code'] ? '[/ask-code: ask me questions about your codebase](#ask_code)' : ''}
 
-<button value="settings">Settings</button>`;
+You can configure DevChat from [Settings](#settings).`;
 
             self.messages.push(
                 Message.create({

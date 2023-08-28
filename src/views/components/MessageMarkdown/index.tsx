@@ -117,6 +117,9 @@ Generate a professionally written and formatted release note in markdown with th
                     }),
                 ]);
                 break;
+            case "#settings":
+                messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat'] });
+                break;
         }
         chat.goScrollBottom();
     };
@@ -189,7 +192,8 @@ Generate a professionally written and formatted release note in markdown with th
                     "#commit_message",
                     "#release_note",
                     "#ask_code",
-                    "#extension"].filter((item) => item === href);
+                    "#extension",
+                    "#settings"].filter((item) => item === href);
                 return customAnchors.length > 0
                     ? <Anchor href={href} onClick={() => {
                         handleExplain(href);
