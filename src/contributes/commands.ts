@@ -271,11 +271,12 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 			}
 		}
 
+		logger.channel()?.show();
         if (!pythonVirtualEnv) {
-			progressBar.update("Install devchat-ask package ...", 0);
+			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCode);
         } else {
-			progressBar.update("Index source files ...", 0);
+			progressBar.update("Index source files. See OUTPUT for progress...", 0);
             await indexCode(pythonVirtualEnv, supportedFileTypes, progressBar);
         }
 
@@ -413,11 +414,12 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 			}
 		}
 
+		logger.channel()?.show();
         if (!pythonVirtualEnv) {
-            progressBar.update("Install devchat-ask package ...", 0);
+			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCodeSummary);
         } else {
-            progressBar.update("Index source files for summary...", 0);
+			progressBar.update("Index source files. See OUTPUT for progress...", 0);
             await indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar);
         }
 
