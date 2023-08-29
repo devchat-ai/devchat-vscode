@@ -7,7 +7,7 @@ import { logger } from '../util/logger';
 
 export const gitDiffContext: ChatContext = {
   name: 'git diff HEAD',
-  description: 'diff for all changes',
+  description: 'all changes since the last commit',
   handler: async () => {
     const tempDir = await createTempSubdirectory('devchat/context');
     const diffFile = path.join(tempDir, 'diff_all.txt');

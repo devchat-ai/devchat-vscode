@@ -173,7 +173,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 
 export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
-	description: 'Definitions of symbol',
+	description: 'find related definitions of classes, functions, etc. in selected code',
 	handler: async () => {
 		const selectedText = await getCurrentSelectText();
 		const symbolList = await getUndefinedSymbols(selectedText);

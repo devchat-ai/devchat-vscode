@@ -468,7 +468,7 @@ const InputMessage = observer((props: any) => {
                                     borderColor: 'var(--vscode-menu-border)',
                                     backgroundColor: 'var(--vscode-menu-background)'
                                 }}>
-                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Commands</Text>
+                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Workflows</Text>
                                 <ScrollArea.Autosize mah={240} type="always">
                                     {commandMenusNode}
                                 </ScrollArea.Autosize>

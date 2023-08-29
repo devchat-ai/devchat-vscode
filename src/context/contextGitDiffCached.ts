@@ -7,7 +7,7 @@ import { logger } from '../util/logger';
 
 export const gitDiffCachedContext: ChatContext = {
   name: 'git diff --cached',
-  description: 'diff for cached changes',
+  description: 'the staged changes since the last commit',
   handler: async () => {
     const tempDir = await createTempSubdirectory('devchat/context');
     const diffFile = path.join(tempDir, 'diff_cached.txt');

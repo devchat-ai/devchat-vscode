@@ -1,6 +1,6 @@
 {
-	"name": "git_log_releasenote",
-	"description": "git log for write release note",
+	"name": "git log for release note",
+	"description": "formatted commit history since the specified commit",
 	"edit": true,
 	"command": ["git log $(git describe --tags --abbrev=0)..HEAD --pretty=format:\"%h - %B\""]
 }
