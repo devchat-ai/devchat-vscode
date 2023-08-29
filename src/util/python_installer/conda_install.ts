@@ -21,7 +21,7 @@ const path = require('path');
 // find conda command by: with different os use diffenc command: which conda | where conda
 async function isCondaInstalled(): Promise<string> {
   // whether conda -V runs ok
-  const condaVersion = await runCommand('conda2 -V');
+  const condaVersion = await runCommand('conda -V');
   if (condaVersion) {
     // find conda command by: with different os use diffenc command: which conda | where conda
     const os = process.platform;
@@ -83,16 +83,24 @@ async function installCondaByInstallFile(installFileUrl: string) : Promise<strin
     // Set the installation directory for conda
     const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
     const pathToConda = `${userHome}/.devchat/conda`;
+	// if pathToConda has exist, remove it first
+	try {
+		if (fs.existsSync(pathToConda)) {
+			fs.rmSync(pathToConda, { recursive: true, force: true });
+		}
+	} catch (error) {
+		logger.channel()?.error(`Error while deleting ${pathToConda}:`, error);
+	}
     
     // Define the command to install conda based on the operating system
     let command = '';
     if (os === 'win32') {
         const winPathToConda = pathToConda.replace(/\//g, '\\');
-        command = `start /wait ${installFileUrl} /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=${winPathToConda}`;
+        command = `start /wait "${installFileUrl}" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S "/D=${winPathToConda}"`;
     } else if (os === 'linux') {
-        command = `bash ${installFileUrl} -b -p ${pathToConda}`;
+        command = `bash "${installFileUrl}" -b -p "${pathToConda}"`;
     } else if (os === 'darwin') {
-        command = `bash ${installFileUrl} -b -p ${pathToConda}`;
+        command = `bash "${installFileUrl}" -b -p "${pathToConda}"`;
     } else {
         throw new Error('Unsupported operating system');
     }
@@ -163,12 +171,12 @@ export async function installConda() : Promise<string> {
 	// try 3 times
 	for (let i = 0; i < 3; i++) {
 		installFileLocal = await downloadFile(downloadInstallFile);
-		if (installFileLocal) {
+		if (installFileLocal && installFileLocal !== '') {
 			break;
 		}
 		logger.channel()?.info(`download conda install file failed, try again ...`);
 	}
-	if (!installFileLocal) {
+	if (!installFileLocal || installFileLocal === '') {
 		logger.channel()?.error(`download conda install file failed`);
 		logger.channel()?.show();
 		return '';
