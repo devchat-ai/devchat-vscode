@@ -82,7 +82,7 @@ async function installCondaByInstallFile(installFileUrl: string) : Promise<strin
     
     // Set the installation directory for conda
     const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
-    const pathToConda = `${userHome}/.devchat/conda`;
+	const pathToConda = `${userHome}/.devchat/conda`;
 	// if pathToConda has exist, remove it first
 	try {
 		if (fs.existsSync(pathToConda)) {
@@ -96,7 +96,7 @@ async function installCondaByInstallFile(installFileUrl: string) : Promise<strin
     let command = '';
     if (os === 'win32') {
         const winPathToConda = pathToConda.replace(/\//g, '\\');
-        command = `start /wait "${installFileUrl}" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S "/D=${winPathToConda}"`;
+        command = `start /wait "" "${installFileUrl}" /InstallationType=JustMe /AddToPath=0 /RegisterPython=0 /S /D=${winPathToConda}`;
     } else if (os === 'linux') {
         command = `bash "${installFileUrl}" -b -p "${pathToConda}"`;
     } else if (os === 'darwin') {

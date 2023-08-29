@@ -1,0 +1,10 @@
+{
+  "c_compiler": "vs2019",
+  "cxx_compiler": "vs2019",
+  "CI": "azure",
+  "spdlog": "1.12",
+  "fmt": "10",
+  "target_platform": "win-64",
+  "channel_targets": "conda-forge main",
+  "zlib": "1.2"
+}
