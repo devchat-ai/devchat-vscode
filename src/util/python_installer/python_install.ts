@@ -81,3 +81,84 @@ export async function installPython(condaCommandPath: string, envName: string, p
     });
   });
 }
+
+function canCreateSubdirectory(dirPath: string): boolean {
+    try {
+        const tempSubdirPath = path.join(dirPath, 'tempSubdirTest');
+        fs.mkdirSync(tempSubdirPath);
+        fs.rmdirSync(tempSubdirPath);
+
+        return true;
+    } catch (err) {
+        return false;
+    }
+}
+
+
+export async function installPythonMicromamba(mambaCommandPath: string, envName: string, pythonVersion: string): Promise<string> {
+	// Set the installation directory for conda
+    let userHome = process.platform === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
+	if (os.platform() === 'win32' && /[^\x00-\xFF]/.test(userHome)) {
+		if (fs.existsSync('C:/Program Files') && canCreateSubdirectory('C:/Program Files')) {
+			userHome = 'C:/Program Files';
+		} else if (fs.existsSync('D:/Program Files') && canCreateSubdirectory('D:/Program Files')) {
+			userHome = 'D:/Program Files';
+		} else if (fs.existsSync('E:/Program Files') && canCreateSubdirectory('E:/Program Files')) {
+			userHome = 'E:/Program Files';
+		}
+	}
+    const pathToMamba = `${userHome}/.devchat/mamba`;
+
+	const envPath = path.resolve(pathToMamba, 'envs', envName);
+	let pythonPath;
+	let pythonPath2;
+	if (os.platform() === 'win32') {
+	  pythonPath = path.join(envPath, 'Scripts', 'python.exe');
+	  pythonPath2 = path.join(envPath, 'python.exe');
+	} else {
+	  pythonPath = path.join(envPath, 'bin', 'python');
+	}
+  
+	if (fs.existsSync(pythonPath)) {
+		return pythonPath;
+	} else if (pythonPath2 && fs.existsSync(pythonPath2)) {
+		return pythonPath2;
+	}
+  
+	return new Promise<string>((resolve, reject) => {
+	  const cmd = mambaCommandPath;
+	  const args = ['create', '-n', envName, '-c', 'conda-forge', '-r', pathToMamba, `python=${pythonVersion}`, '--yes'];
+	  // output command and args in line
+	  // args to "create -n xx -c conda-forge ..."
+	  logger.channel()?.info(`cmd: ${cmd} ${args.join(' ')}`);
+	  const child = spawn(cmd, args);
+  
+	  child.stdout.on('data', (data) => {
+		  logger.channel()?.info(`${data}`);
+	  });
+  
+	  child.stderr.on('data', (data) => {
+		console.error(`stderr: ${data}`);
+	  });
+  
+	  child.on('error', (error) => {
+		logger.channel()?.error(`Error installing python ${pythonVersion} in env ${envName}`);
+		logger.channel()?.show();
+		reject('');
+	  });
+  
+	  child.on('close', (code) => {
+		if (code !== 0) {
+		  reject(new Error(`Command exited with code ${code}`));
+		} else {
+		  if (fs.existsSync(pythonPath)) {
+			  resolve(pythonPath);
+		  } else if (pythonPath2 && fs.existsSync(pythonPath2)) {
+			  resolve(pythonPath2);
+		  } else {
+			  reject(new Error(`No Python found`));
+		  }
+		}
+	  });
+	});
+}

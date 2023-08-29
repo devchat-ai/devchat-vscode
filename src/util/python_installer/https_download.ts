@@ -36,11 +36,15 @@ export async function downloadFile(url: string): Promise<string> {
 
       file.on('finish', () => {
         file.close();
-        resolve(destination); // 修改为传递下载的文件路径
+		if (downloadedBytes !== totalBytes) {
+			resolve('');
+		} else {
+			resolve(destination);
+		}
       });
     }).on('error', (error) => {
       fs.unlink(destination, () => {
-        resolve(''); // 下载失败时返回空字符串
+        resolve('');
       });
     });
   });

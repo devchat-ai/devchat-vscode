@@ -1,0 +1,15 @@
+{
+  "arch": "ppc64le",
+  "build": "1",
+  "build_number": 1,
+  "depends": [
+    "libzlib >=1.2.13,<1.3.0a0"
+  ],
+  "license": "BSD-3-Clause AND MIT AND OpenSSL",
+  "license_family": "BSD",
+  "name": "micromamba",
+  "platform": "linux",
+  "subdir": "linux-ppc64le",
+  "timestamp": 1692952525761,
+  "version": "1.5.0"
+}

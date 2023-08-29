@@ -1,0 +1,132 @@
+{% set version = "1.5.0" %}
+{% set sha256 = "0323e3a380d2a4b2bf20ef2520d271681480a6885b1505c3787e3683cbe58b17" %}
+{% set build_num = 1 %}
+
+# A strategy for testing the feedstock locally in mamba CI
+{% if os.environ.get("CI", "") == "local" %}
+  {% set mamba_source_type = "path" %}
+  {% set mamba_source_val = "{}/source".format(os.environ.get("FEEDSTOCK_ROOT", "..")) %}
+  {% set mamba_hash_type = "" %}
+  {% set mamba_hash_val = "" %}
+{% else %}
+  {% set mamba_source_type = "url" %}
+  {% set mamba_source_val = "https://github.com/mamba-org/mamba/archive/refs/tags/micromamba-{}.tar.gz".format(version) %}
+  {% set mamba_hash_type = "sha256" %}
+  {% set mamba_hash_val = sha256 %}
+{% endif %}
+
+# Used for writing generic tests
+{% set bin_ext = "" %}      # [unix]
+{% set bin_ext = ".exe" %}  # [win]
+
+package:
+  name: micromamba
+  version: {{ version }}
+
+source:
+  - "{{ mamba_source_type }}": "{{ mamba_source_val }}"
+    "{{ mamba_hash_type }}": "{{ mamba_hash_val }}"
+    folder: mamba
+  # VCPKG comes with its own (short-lived) metadata which can be already outdated in the latest release
+  - url: https://github.com/microsoft/vcpkg/archive/8be970aaeaf19fd2663aaf5888478483f9742e55.tar.gz  # [win]
+    sha256: 1d1d3b4b3d1871211d3d7799babfb7443971ed9a51b9eb7018bb94dfdb387076  # [win]
+    folder: vcpkg  # [win]
+
+build:
+  number: {{ build_num }}
+  string: {{ build_num }}
+  ignore_run_exports_from:
+    - libcurl                     # [unix]
+    - libarchive-minimal-static   # [unix]
+    - reproc-cpp                  # [unix]
+    - openssl                     # [unix]
+    - spdlog
+    - fmt
+    - {{ compiler('c') }}         # [linux]
+    - {{ compiler('cxx') }}       # [linux]
+    - python                      # [win]
+
+requirements:
+  build:
+    - {{ compiler('c') }}
+    - {{ compiler('cxx') }}
+    - cmake           # [unix]
+    - ninja
+    - vcpkg-tool      # [win]
+    - python          # [win]
+    - curl >=7.87,<8  # [win]
+    - zlib            # [win]
+  host:
+    - cli11 >=2.2,<3
+    - cpp-expected
+    - nlohmann_json
+    - spdlog
+    - fmt
+    - yaml-cpp-static              # [unix]
+    - libcurl >=7.88.1,<8          # [unix]
+    - libcurl-static >=7.88.1,<8   # [unix]
+    - xz-static                    # [unix]
+    - libssh2-static               # [unix]
+    - libarchive-minimal-static    # [unix]
+    - krb5-static                  # [unix]
+    - libsolv-static               # [unix]
+    - openssl            {{ openssl }}  # [unix]
+    - libopenssl-static  {{ openssl }}  # [unix]
+    - zstd-static                  # [unix]
+    - zlib                         # [unix]
+    - libnghttp2-static            # [unix]
+    - lz4-c-static                 # [unix]
+    - reproc-static                # [unix]
+    - reproc-cpp                   # [unix]
+    - reproc-cpp-static            # [unix]
+    - winreg                       # [win]
+
+test:
+  commands:
+    - test -f "${PREFIX}/bin/micromamba"                    # [unix]
+    - if not exist %LIBRARY_BIN%\micromamba.exe (exit 1)  # [win]
+    - micromamba{{ bin_ext }} --help
+    - export MAMBA_ROOT_PREFIX="$(mktemp -d)"  # [unix]
+    - mkdir %TEMP%\mamba                       # [win]
+    - set "MAMBA_ROOT_PREFIX=%TEMP%\mamba"     # [win]
+    - micromamba{{ bin_ext }} create -n test --override-channels -c conda-forge --yes python=3.9
+    - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" --version'       # [unix]
+    - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe --version'          # [win]
+    - '"${MAMBA_ROOT_PREFIX}/envs/test/bin/python" -c "import os"'  # [unix]
+    - '%MAMBA_ROOT_PREFIX%\envs\test\python.exe -c "import os"'     # [win]
+
+about:
+  home: https://github.com/mamba-org/mamba
+  license_file:
+    - mamba/LICENSE
+    - CLI11_LICENSE.txt
+    - CURL_LICENSE.txt
+    - C_ARES_LICENSE.txt
+    - FMT_LICENSE.txt
+    - KRB5_LICENSE.txt
+    - LIBARCHIVE_LICENSE.txt
+    - LIBEV_LICENSE.txt
+    - LIBLZ4_LICENSE.txt
+    - LIBNGHTTP2_LICENSE.txt
+    - LIBOPENSSL_3_LICENSE.txt
+    - LIBOPENSSL_LICENSE.txt
+    - LIBSOLV_LICENSE.txt
+    - NLOHMANN_JSON_LICENSE.txt
+    - REPROC_LICENSE.txt
+    - SPDLOG_LICENSE.txt
+    - TL_EXPECTED_LICENSE.txt
+    - ZSTD_LICENSE.txt
+  license: BSD-3-Clause AND MIT AND OpenSSL
+  license_family: BSD
+  summary: Micromamba is a tiny version of mamba, the fast conda package installer.
+  dev_url: https://github.com/mamba-org/mamba
+
+extra:
+  recipe-maintainers:
+    - AntoinePrv
+    - pavelzw
+    - wolfv
+    - SylvainCorlay
+    - JohanMabille
+    - mariusvniekerk
+    - adriendelsalle

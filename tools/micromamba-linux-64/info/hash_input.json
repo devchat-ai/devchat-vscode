@@ -1,0 +1,14 @@
+{
+  "fmt": "10",
+  "c_compiler_version": "12",
+  "openssl": "3",
+  "spdlog": "1.12",
+  "cxx_compiler": "gxx",
+  "CI": "azure",
+  "libcurl": "8",
+  "zlib": "1.2",
+  "cxx_compiler_version": "12",
+  "channel_targets": "conda-forge main",
+  "target_platform": "linux-64",
+  "c_compiler": "gcc"
+}

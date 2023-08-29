@@ -1,0 +1,15 @@
+{
+  "CI": "azure",
+  "c_compiler": "clang",
+  "fmt": "10",
+  "c_compiler_version": "15",
+  "openssl": "3",
+  "libcurl": "8",
+  "target_platform": "osx-64",
+  "channel_targets": "conda-forge main",
+  "CONDA_BUILD_SYSROOT": "/Applications/Xcode_13.2.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX11.0.sdk",
+  "spdlog": "1.12",
+  "cxx_compiler_version": "15",
+  "zlib": "1.2",
+  "cxx_compiler": "clangxx"
+}
