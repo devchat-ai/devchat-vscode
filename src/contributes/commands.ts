@@ -251,6 +251,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 
         const progressBar = new ProgressBar();
 		progressBar.init();
+		logger.channel()?.show();
 
 		progressBar.update("Index source code files for ask codebase ...", 0);
 
@@ -275,7 +276,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 			}
 		}
 
-		logger.channel()?.show();
+		
         if (!pythonVirtualEnv) {
 			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCode);
@@ -394,6 +395,7 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 
 		const progressBar = new ProgressBar();
         progressBar.init();
+		logger.channel()?.show();
 
         progressBar.update("Index source code files for ask codebase summary...", 0);
 
@@ -418,7 +420,6 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 			}
 		}
 
-		logger.channel()?.show();
         if (!pythonVirtualEnv) {
 			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCodeSummary);

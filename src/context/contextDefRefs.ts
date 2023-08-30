@@ -63,13 +63,15 @@ export const defRefsContext: ChatContext = {
 		const document = activeEditor.document;
 
 		// get all references of selected symbol define
-		const selectedSymbol = await getSelectedSymbol();
-		if (!selectedSymbol) {
-			logger.channel()?.error(`Error: no matched symbol found for selected text!`);
+		const selection = activeEditor.selection;
+		if (selection.isEmpty) {
+			logger.channel()?.error(`Error: no selected text!`);
 			logger.channel()?.show();
 			return [];
 		}
-		logger.channel()?.info(`selectedSymbol: ${selectedSymbol.name} ${selectedSymbol.kind} ${selectedSymbol.range.start.line} ${selectedSymbol.range.end.line}`)
+		const symbolText = document.getText(selection);
+
+		logger.channel()?.info(`selected text: ${document.uri} ${symbolText} ${selection.start}`);
 
 		// 获取selectedSymbol的引用信息
 		let contextList: string[] = [];
@@ -78,7 +80,7 @@ export const defRefsContext: ChatContext = {
 			refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 				'vscode.executeReferenceProvider',
 				document.uri,
-				selectedSymbol.selectionRange.start
+				selection.start
 			);
 		} catch (error) {
 			logger.channel()?.error(`secretStorageGet error: ${error}`);
@@ -95,6 +97,8 @@ export const defRefsContext: ChatContext = {
 				const renageNew = new vscode.Range(startLine, 0, refLocation.range.end.line + 2, 10000);
 				contextList.push(await handleCodeSelected(refLocationFile, documentNew.getText(renageNew), startLine));
 			}
+		} else {
+			logger.channel()?.info(`no reference found!`);
 		}
 		return contextList;
 	}
