@@ -182,23 +182,6 @@ const InputMessage = observer((props: any) => {
                 </Flex>);
         });
 
-    const commandMenuIcon = (pattern: string) => {
-        if (pattern === 'commit_message') {
-            return (<IconBook size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
-        }
-        return (<IconShellCommand size={16}
-            color='var(--vscode-menu-foreground)'
-            style={{
-                marginTop: 8,
-                marginLeft: 12,
-            }} />);
-    };
-
     useEffect(() => {
         input.fetchContextMenus().then();
         input.fetchCommandMenus().then();
@@ -268,10 +251,11 @@ const InputMessage = observer((props: any) => {
                         input.closeMenu();
                     }}
                     aria-checked={index === currentMenuIndex}
-                    data-pattern={pattern}
-                >
-                    {commandMenuIcon(pattern)}
-                    <Stack spacing={0}>
+                    data-pattern={pattern}>
+                    <Stack spacing={0}
+                        sx={{
+                            paddingLeft: 10,
+                        }}>
                         <Text sx={{
                             fontSize: 'sm',
                             fontWeight: 'bolder',
