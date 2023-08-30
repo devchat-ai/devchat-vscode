@@ -185,6 +185,9 @@ const InputMessage = observer((props: any) => {
     useEffect(() => {
         input.fetchContextMenus().then();
         input.fetchCommandMenus().then();
+		messageUtil.registerHandler('regCommandList', (message: { result: object[]}) => {
+			input.updateCommands(message.result);
+		});
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);

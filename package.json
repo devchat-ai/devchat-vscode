@@ -296,6 +296,11 @@
 				"command": "DevChat.AskCodeIndexSummaryStop",
 				"title": "Stop AskCode Summary Index",
 				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.InstallCommands",
+				"title": "Install slash commands",
+				"category": "DevChat"
 			}
 		],
 		"menus": {

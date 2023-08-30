@@ -20,6 +20,9 @@ import { MessageHandler } from '../handler/messageHandler';
 import { FT } from '../util/feature_flags/feature_toggles';
 import { getPackageVersion } from '../util/python_installer/pip_package_version';
 
+import { exec } from 'child_process';
+import { sendCommandListByDevChatRun } from '../handler/regCommandList';
+
 let indexProcess: CommandRun | null = null;
 let summaryIndexProcess: CommandRun | null = null;
 
@@ -500,6 +503,49 @@ export function registerAskCodeSummaryIndexStopCommand(context: vscode.Extension
     context.subscriptions.push(disposable);
 }
 
+
+export function registerInstallCommandsCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.InstallCommands', async () => {
+        // step 1: find User Home Dir
+        const homeDir = process.env.HOME || process.env.USERPROFILE;
+		if (!homeDir) {
+			logger.channel()?.error(`Error: No valid home directory found.`);
+			logger.channel()?.show();
+			return;
+		}
+
+        // step 2: create ensure {User Home Dir}/.chat/workflows/ exists
+        const targetDir = path.join(homeDir, '.chat', 'workflows');
+        fs.mkdirSync(targetDir, { recursive: true });
+
+        const sysDir = path.join(targetDir, 'sys');
+        if (fs.existsSync(sysDir)) {
+            // step 3: if sys exists, then git pull
+			logger.channel()?.info(`Git pull from sys...`);
+            exec('git pull', { cwd: sysDir }, (error, stdout, stderr) => {
+                if (error) {
+                    logger.channel()?.error(`Error pulling git repo: ${error}`);
+                } else {
+                    logger.channel()?.info(`Git pull successful: ${stdout}`);
+					sendCommandListByDevChatRun();
+                }
+            });
+        } else {
+            // step 4: if sys not exists, then git clone
+			logger.channel()?.info(`Git clone to sys...`);
+            exec('git clone https://github.com/devchat-ai/workflows.git sys', { cwd: targetDir }, (error, stdout, stderr) => {
+                if (error) {
+                    logger.channel()?.error(`Error cloning git repo: ${error}`);
+                } else {
+                    logger.channel()?.info(`Git clone successful: ${stdout}`);
+					sendCommandListByDevChatRun();
+                }
+            });
+        }
+    });
+
+    context.subscriptions.push(disposable);
+}
 export function registerAddSummaryContextCommand(context: vscode.ExtensionContext) {
     const callback = async (uri: { fsPath: any; }) => {
         if (!FT("ask-code-summary")) {

@@ -21,9 +21,13 @@ export async function regCommandList(message: any, panel: vscode.WebviewPanel|vs
 	return;
 }
 
+let existPannel: vscode.WebviewPanel|vscode.WebviewView|undefined = undefined;
+
 regInMessage({command: 'regCommandList'});
 regOutMessage({command: 'regCommandList', result: [{name: '', pattern: '', description: ''}]});
 export async function regCommandListByDevChatRun(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	existPannel = panel;
+
 	const commandList = await CommandManager.getInstance().getCommandListByDevChatRun();
 	const commandCovertedList = commandList.map(command => {
 		if (command.args > 0) {
@@ -36,5 +40,11 @@ export async function regCommandListByDevChatRun(message: any, panel: vscode.Web
 
 	MessageHandler.sendMessage(panel, { command: 'regCommandList', result: commandCovertedList });
 	return;
+}
+
+export async function sendCommandListByDevChatRun() {
+	if (existPannel) {
+		regCommandListByDevChatRun({}, existPannel!);
+	}
 }
 
