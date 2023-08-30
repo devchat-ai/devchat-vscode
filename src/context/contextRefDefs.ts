@@ -11,8 +11,7 @@ import DevChat, { ChatOptions } from '../toolwrapper/devchat';
 import { number } from 'mobx-state-tree/dist/internal';
 
 
-async function getCurrentSelectText(): Promise<string> {
-	const activeEditor = vscode.window.activeTextEditor;
+async function getCurrentSelectText(activeEditor: vscode.TextEditor): Promise<string> {
 	if (!activeEditor) {
 		return "";
 	}
@@ -24,7 +23,7 @@ async function getCurrentSelectText(): Promise<string> {
 	return selectedText;
 }
 
-async function getUndefinedSymbols(content: string): Promise<string[]> {
+async function getUndefinedSymbols(content: string): Promise<string[] | undefined> {
 	// run devchat prompt command
 	const devChat = new DevChat();
 	const chatOptions: ChatOptions = {};
@@ -73,13 +72,13 @@ async function getUndefinedSymbols(content: string): Promise<string[]> {
 		try {
 			symbols = JSON.parse(responseText);
 		} catch (error) {
-			symbols = [];
+			return undefined;
 		}
 	} else {
 		try {
 			symbols = JSON.parse(responseText);
 		} catch (error) {
-			symbols = [];
+			return undefined;
 		}
 	}
 
@@ -120,8 +119,7 @@ function getMatchedSymbolPositions(selectText: string, symbol: string): object[]
 	return positions;
 }
 
-async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
-	const activeEditor = vscode.window.activeTextEditor;
+async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEditor): Promise<string[]> {
 	const document = activeEditor!.document;
 	const selection = activeEditor!.selection;
 	const selectedText = document.getText(selection);
@@ -132,6 +130,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 
 	// visit each symbol in symbolList, and get it's define
 	for (const symbol of symbolList) {
+		logger.channel()?.info(`handle symble: ${symbol} ...`);
 		// get symbol position in selectedText
 		// if selectedText is "abc2+abc", symbol is "abc", then symbolPosition is 5 not 0
 		// because abc2 is not a symbol
@@ -146,16 +145,19 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 			for (const symbolSplitItem of symbolSplit) {
 				const symbolPositionNew = symbol.indexOf(symbolSplitItem, curPosition) + symbolPosition;
 				curPosition = symbolPositionNew - symbolPosition + symbolSplitItem.length;
+				const newPos = selection.start.translate({lineDelta: pos.line, characterDelta: symbolPositionNew });
+				logger.channel()?.info(`handle sub symble: ${symbolSplitItem} at ${newPos.line}:${newPos.character}`);
 
 				// call vscode.executeDefinitionProvider
 				const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 					'vscode.executeDefinitionProvider',
 					document.uri,
-					selection.start.translate({lineDelta: pos.line, characterDelta: symbolPositionNew })
+					newPos
 				);
 
 				// visit each refLocation, and get it's define
 				for (const refLocation of refLocations) {
+					logger.channel()?.info(`def location: ${refLocation.uri.fsPath} ${refLocation.range.start.line}:${refLocation.range.start.character}-${refLocation.range.end.line}:${refLocation.range.end.character}`);
 					const refLocationString = refLocation.uri.fsPath + "-" + refLocation.range.start.line + ":" + refLocation.range.start.character + "-" + refLocation.range.end.line + ":" + refLocation.range.end.character;
 					if (hasVisitedSymbols.has(refLocationString)) {
 						continue;
@@ -187,6 +189,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 					}
 
 					if (targetSymbol !== undefined) {
+						logger.channel()?.info(`symbol define information: ${targetSymbol.name} at ${targetSymbol.location.uri.fsPath} ${targetSymbol.location.range.start.line}:${targetSymbol.location.range.start.character}-${targetSymbol.location.range.end.line}:${targetSymbol.location.range.end.character}`);
 						const defLocationString = targetSymbol.location.uri.fsPath + "-" + targetSymbol.location.range.start.line + ":" + targetSymbol.location.range.start.character + "-" + targetSymbol.location.range.end.line + ":" + targetSymbol.location.range.end.character;
 						if (hasPushedSymbols.has(defLocationString)) {
 							continue;
@@ -214,11 +217,20 @@ export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
 	description: 'Definitions of symbol',
 	handler: async () => {
+		const activeEditor = vscode.window.activeTextEditor;
 		logger.channel()?.show();
+		if (!activeEditor) {
+			logger.channel()?.error('No code selected!');
+			return [];
+		}
 		
-		const selectedText = await getCurrentSelectText();
+		const selectedText = await getCurrentSelectText(activeEditor);
 		const symbolList = await getUndefinedSymbols(selectedText);
-		const contextList = await getSymbolDefine(symbolList);
+		if (symbolList === undefined) {
+			logger.channel()?.error('Failed to get symbol list!');
+			return [];
+		}
+		const contextList = await getSymbolDefine(symbolList, activeEditor);
 
 		return contextList;
 	},
