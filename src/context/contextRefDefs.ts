@@ -29,12 +29,12 @@ async function getUndefinedSymbols(content: string): Promise<string[] | undefine
 	const chatOptions: ChatOptions = {};
 
 	const onData = (partialResponse) => { };
-	const newContent = content + `
-	Your task is to list the symbols(For example, variable names, function names, etc) in the current code snippet whose semantics you don't know. Only output the symbol list information, which should be in the form of a markdown code block. for example: 
+	const newContent = `
+	Your task is to list the symbols(For example, variable names, function names, etc) in the current code snippet(or maybe just a selected symbol) whose semantics you don't know. Only output the symbol list information, which should be in the form of a markdown code block. for example: 
 	\`\`\`json
     ["f1", "f2"]
     \`\`\`
-	During this process, you cannot invoke the GPT function.`;
+	During this process, you cannot invoke the GPT function. The code snippet is as follows: \n\`\`\`` + content + '```';  ;
 
 	const chatResponse = await devChat.chat(newContent, chatOptions, onData);
 	if (chatResponse && chatResponse.response) {
