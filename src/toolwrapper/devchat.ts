@@ -44,6 +44,11 @@ export interface LogEntry {
 	}>;
 }
 
+export interface CommandEntry {
+	name: string;
+	description: string;
+}
+
 // define TopicEntry interface
 /*
 [
@@ -348,6 +353,81 @@ class DevChat {
 			delete log.responses;
 		}
 		return logs;
+	}
+
+	// command devchat run --list
+	// output:
+	// [
+	// 	{
+	// 	"name": "code",
+	// 	"description": "Generate code with a general template embedded into the prompt."
+	// 	},
+	// 	{
+	// 	"name": "code.py",
+	// 	"description": "Generate code with a Python-specific template embedded into the prompt."
+	// 	},
+	// 	{
+	// 	"name": "commit_message",
+	// 	"description": "Generate a commit message for the given git diff."
+	// 	},
+	// 	{
+	// 	"name": "release_note",
+	// 	"description": "Generate a release note for the given commit log."
+	// 	}
+	// ]
+	async commands(): Promise<CommandEntry[]> {
+		const args = ["run", "--list"];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env
+			},
+		};
+
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error: ${stderr}`);
+			logger.channel()?.show();
+			return [];
+		}
+
+		try {
+			const commands = JSON.parse(stdout.trim());
+			return commands;
+		} catch (error) {
+			logger.channel()?.error(`Error parsing JSON: ${error}`);
+			logger.channel()?.show();
+			return [];
+		}
+	}
+
+	async commandPrompt(command: string): Promise<string> {
+		const args = ["run", command];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env
+			},
+		};
+
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error: ${stderr}`);
+			logger.channel()?.show();
+		}
+		return stdout;
 	}
 
 	async topics(): Promise<TopicEntry[]> {

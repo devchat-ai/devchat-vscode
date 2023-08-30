@@ -4,7 +4,7 @@ import { codeFileApply } from './codeFileApply';
 import { convertCommand } from './convertCommand';
 import { doCommit } from './doCommit';
 import { historyMessages } from './historyMessages';
-import { regCommandList } from './regCommandList';
+import { regCommandList, regCommandListByDevChatRun } from './regCommandList';
 import { regContextList } from './regContextList';
 import { sendMessage, stopDevChat, regeneration, deleteChatMessage, askCode } from './sendMessage';
 import { blockApply } from './showDiff';
@@ -41,7 +41,7 @@ messageHandler.registerHandler('doCommit', doCommit);
 messageHandler.registerHandler('historyMessages', historyMessages);
 // Register the command list
 // Response: { command: 'regCommandList', result: <command list> }
-messageHandler.registerHandler('regCommandList', regCommandList);
+messageHandler.registerHandler('regCommandList', regCommandListByDevChatRun);
 // Register the context list
 // Response: { command: 'regContextList', result: <context list> }
 messageHandler.registerHandler('regContextList', regContextList);

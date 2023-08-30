@@ -1,5 +1,9 @@
+import { createTempSubdirectory } from "../util/commonUtil";
+import DevChat from "../toolwrapper/devchat";
 import { FT } from "../util/feature_flags/feature_toggles";
 import CustomCommands from "./customCommand";
+import * as path from "path";
+import * as fs from 'fs';
 
 export interface Command {
 	name: string;
@@ -60,7 +64,33 @@ class CommandManager {
 		return newCommands;
 	}
 
-	async processText(text: string): Promise<string> {
+	async getCommandListByDevChatRun(includeHide: boolean = false): Promise<Command[]> {
+		// load commands from CustomCommands
+		let newCommands: Command[] = [...this.commands];
+
+		const devChat = new DevChat();
+		const commandList = await devChat.commands();
+		commandList.forEach(command => {
+			const commandObj: Command = {
+				name: command.name,
+				pattern: command.name,
+				description: command.description,
+				args: 0,
+				handler: async (commandName: string, userInput: string) => {
+					const tempDir = await createTempSubdirectory('devchat/command');
+    				const tempFile = path.join(tempDir, command.name);
+					const stdout = await devChat.commandPrompt(command.name);
+					fs.writeFileSync(tempFile, stdout);
+					return `[instruction|${tempFile}] `;
+				}
+			};
+			newCommands.push(commandObj);
+		});
+		
+		return newCommands;
+	}
+
+	async processTextBak(text: string): Promise<string> {
 		// 定义一个异步函数来处理单个命令
 		const processCommand = async (commandObj: Command, userInput: string) => {
 			// 转义特殊字符
@@ -98,8 +128,23 @@ class CommandManager {
 
 		// 处理所有命令
 		let result = text;
-		for (const commandObj of this.getCommandList(true)) {
+		for (const commandObj of await this.getCommandListByDevChatRun()) {
 			result = await processCommand(commandObj, result);
+		}
+
+		return result;
+	}
+
+	async processText(text: string): Promise<string> {
+		let result = text.trim();
+
+		for (const commandObj of await this.getCommandListByDevChatRun()) {
+			const commandObjNamePattern = "/" + commandObj.name + " ";
+			if (commandObj.name === result || result.indexOf(commandObjNamePattern) === 0) {
+				const newInstructFile = await commandObj.handler(commandObj.name, "");
+				result = newInstructFile + result;
+				break;
+			}
 		}
 
 		return result;
