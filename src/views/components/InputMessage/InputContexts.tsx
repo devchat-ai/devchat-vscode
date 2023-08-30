@@ -81,13 +81,15 @@ const InputContexts = observer(() => {
                             </ActionIcon>
                         </Box>
                         <Accordion.Panel>
-                            {
-                                content
-                                    ? <pre style={{ overflowWrap: 'normal', fontSize: 'var(--vscode-editor-font-size)', margin: 0 }}>{content}</pre>
-                                    : <Center>
-                                        <Text c='gray.3'>No content</Text>
-                                    </Center>
-                            }
+                            <ScrollArea type="auto">
+                                {
+                                    content
+                                        ? <pre style={{ overflowWrap: 'normal', fontSize: 'var(--vscode-editor-font-size)', margin: 0 }}>{content}</pre>
+                                        : <Center>
+                                            <Text c='gray.3'>No content</Text>
+                                        </Center>
+                                }
+                            </ScrollArea>
                         </Accordion.Panel>
                     </Accordion.Item>
                 );
