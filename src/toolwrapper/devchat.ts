@@ -430,6 +430,30 @@ class DevChat {
 		return stdout;
 	}
 
+	async updateSysCommand(): Promise<string> {
+		const args = ["run", "--update-sys"];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env
+			},
+		};
+
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error: ${stderr}`);
+			logger.channel()?.show();
+		}
+		logger.channel()?.info(`${stdout}`);
+		return stdout;
+	}
+
 	async topics(): Promise<TopicEntry[]> {
 		const args = ["topic", "-l"];
 		const devChat = this.getDevChatPath();
