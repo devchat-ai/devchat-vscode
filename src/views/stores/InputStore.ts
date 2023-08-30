@@ -21,20 +21,6 @@ const regContextMenus = async () => {
     });
 };
 
-
-const regCommandMenus = async () => {
-    return new Promise<Item[]>((resolve, reject) => {
-        try {
-            messageUtil.sendMessage({ command: 'regCommandList' });
-            messageUtil.registerHandler('regCommandList', (message: { result: Item[] }) => {
-                resolve(message.result);
-            });
-        } catch (e) {
-            reject(e);
-        }
-    });
-};
-
 export const ChatContext = types.model({
     file: types.maybe(types.string),
     path: types.maybe(types.string),
@@ -89,6 +75,11 @@ export const InputStore = types
         setCurrentMenuIndex(index: number) {
             self.currentMenuIndex = index;
         },
+        updateCommands(items) {
+            self.commandMenus.clear();
+			self.commandMenus.push(...items);
+			self.commandMenus.push({ name: 'help', description: 'View the DevChat documentation.', pattern: 'help' });
+        },
         fetchContextMenus: flow(function* () {
             try {
                 const items = yield regContextMenus();
@@ -97,15 +88,24 @@ export const InputStore = types
                 console.error("Failed to fetch context menus", error);
             }
         }),
+
         fetchCommandMenus: flow(function* () {
-            try {
-                const items = yield regCommandMenus();
-                self.commandMenus.push(...items);
-                self.commandMenus.push({ name: 'help', description: 'View the DevChat documentation.', pattern: 'help' });
-            } catch (error) {
-                console.error("Failed to fetch command menus", error);
-            }
-        })
+			const regCommandMenus = async () => {
+				return new Promise<Item[]>((resolve, reject) => {
+					try {
+						messageUtil.sendMessage({ command: 'regCommandList' });
+					} catch (e) {
+						reject(e);
+					}
+				});
+			};
+
+			try {
+				yield regCommandMenus();
+			} catch (error) {
+				console.error("Failed to fetch command menus", error);
+			}
+		})
     }));
 
 

@@ -20,6 +20,10 @@ import { MessageHandler } from '../handler/messageHandler';
 import { FT } from '../util/feature_flags/feature_toggles';
 import { getPackageVersion } from '../util/python_installer/pip_package_version';
 
+import { exec } from 'child_process';
+import { sendCommandListByDevChatRun } from '../handler/regCommandList';
+import DevChat from "../toolwrapper/devchat";
+
 let indexProcess: CommandRun | null = null;
 let summaryIndexProcess: CommandRun | null = null;
 
@@ -500,6 +504,17 @@ export function registerAskCodeSummaryIndexStopCommand(context: vscode.Extension
     context.subscriptions.push(disposable);
 }
 
+
+export function registerInstallCommandsCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.InstallCommands', async () => {
+        const devchat = new DevChat();
+		await devchat.updateSysCommand();
+
+		sendCommandListByDevChatRun();
+    });
+
+    context.subscriptions.push(disposable);
+}
 export function registerAddSummaryContextCommand(context: vscode.ExtensionContext) {
     const callback = async (uri: { fsPath: any; }) => {
         if (!FT("ask-code-summary")) {

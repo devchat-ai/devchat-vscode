@@ -15,7 +15,7 @@ export async function installPackage(pythonCommand: string, pkgName: string, oth
 		let errorOut = '';
 
         const cmd = pythonCommand;
-        let args = ['-m', 'pip', 'install', pkgName];
+        let args = ['-m', 'pip', 'install', pkgName, '--force-reinstall'];
 		if (otherSource) {
 			args.push("-i");
 			args.push(otherSource);

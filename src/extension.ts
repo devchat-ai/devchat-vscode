@@ -20,6 +20,7 @@ import {
     registerAskCodeSummaryIndexStartCommand,
     registerAskCodeSummaryIndexStopCommand,
 	registerAddSummaryContextCommand,
+	registerInstallCommandsCommand,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -51,6 +52,8 @@ function activate(context: vscode.ExtensionContext) {
     registerAskForCodeCommand(context);
     registerAskForFileCommand(context);
     registerStatusBarItemClickCommand(context);
+
+	registerInstallCommandsCommand(context);
 
     createStatusBarItem(context);
 	if (FT("ask-code")) {
