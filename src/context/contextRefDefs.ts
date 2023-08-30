@@ -214,6 +214,8 @@ export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
 	description: 'Definitions of symbol',
 	handler: async () => {
+		logger.channel()?.show();
+		
 		const selectedText = await getCurrentSelectText();
 		const symbolList = await getUndefinedSymbols(selectedText);
 		const contextList = await getSymbolDefine(symbolList);
