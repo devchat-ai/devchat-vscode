@@ -88,8 +88,7 @@ const chatPanel = observer(() => {
             timer.start();
         });
         messageUtil.registerHandler('receiveMessage', (message: { text: string; isError: boolean, hash }) => {
-            const messageItem = Message.create({ type: 'bot', message: message.text, hash: message.hash });
-            chat.stopGenerating(true, messageItem);
+            chat.stopGenerating(true, message.hash, message.text);
             if (message.isError) {
                 chat.happendError(message.text);
             }

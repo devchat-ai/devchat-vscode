@@ -170,20 +170,20 @@ You can configure DevChat from [Settings](#settings).`;
                     command: 'regeneration'
                 });
             },
-            stopGenerating: (hasDone: boolean, message: Instance<typeof Message> | Instance<typeof types.null>) => {
+            stopGenerating: (hasDone: boolean, hash: string = '', message: string = '') => {
                 self.generating = false;
                 self.responsed = false;
                 self.hasDone = hasDone;
+                const messagesLength = self.messages.length;
                 if (hasDone) {
-                    const { hash } = message ? message : { hash: '' };
-                    const messagesLength = self.messages.length;
-
                     if (messagesLength > 1) {
                         self.messages[messagesLength - 2].hash = hash;
                         self.messages[messagesLength - 1].hash = hash;
                     } else if (messagesLength > 0) {
                         self.messages[messagesLength - 1].hash = hash;
                     }
+                } else {
+                    self.messages[messagesLength - 1].message = message;
                 }
             },
             startResponsing: (message: string) => {
