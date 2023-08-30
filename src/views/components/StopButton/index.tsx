@@ -25,7 +25,7 @@ const StopButton = observer(() => {
                 }
             }}
             onClick={() => {
-                chat.stopGenerating(false, null);
+                chat.stopGenerating(false, '', chat.currentMessage);
                 messageUtil.sendMessage({
                     command: 'stopDevChat'
                 });
