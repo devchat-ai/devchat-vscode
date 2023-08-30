@@ -8,6 +8,7 @@ import { createTempSubdirectory, git_ls_tree, runCommandStringAndWriteOutput } f
 import { logger } from '../util/logger';
 import { handleCodeSelected } from './contextCodeSelected';
 import DevChat, { ChatOptions } from '../toolwrapper/devchat';
+import { number } from 'mobx-state-tree/dist/internal';
 
 
 async function getCurrentSelectText(): Promise<string> {
@@ -24,57 +25,99 @@ async function getCurrentSelectText(): Promise<string> {
 }
 
 async function getUndefinedSymbols(content: string): Promise<string[]> {
-    // run devchat prompt command
-    const devChat = new DevChat();
-    const chatOptions: ChatOptions = {};
+	// run devchat prompt command
+	const devChat = new DevChat();
+	const chatOptions: ChatOptions = {};
 
-    const onData = (partialResponse) => { };
-    const newContent = content + `\n只列出当前代码中缺少定义的符号列表，不需要其他处理。应答形式为markdown code block，例如：
-    \`\`\`json
+	const onData = (partialResponse) => { };
+	const newContent = content + `
+	Your task is to list the symbols(For example, variable names, function names, etc) in the current code snippet whose semantics you don't know. Only output the symbol list information, which should be in the form of a markdown code block. for example: 
+	\`\`\`json
     ["f1", "f2"]
     \`\`\`
-    不能调用GPT function.`;
+	During this process, you cannot invoke the GPT function.`;
 
-    const chatResponse = await devChat.chat(newContent, chatOptions, onData);
-    if (chatResponse && chatResponse.response) {
-        logger.channel()?.info(chatResponse.response);
-    }
+	const chatResponse = await devChat.chat(newContent, chatOptions, onData);
+	if (chatResponse && chatResponse.response) {
+		logger.channel()?.info(chatResponse.response);
+	}
 
-    if (!chatResponse.isError) {
-        await devChat.delete(chatResponse['prompt-hash']);
-    }
+	if (!chatResponse.isError) {
+		await devChat.delete(chatResponse['prompt-hash']);
+	}
 
-    // parse data in chatResponse.response
-    // data format as:
-    // ```json {data} ```
-    // or [data]
-    // or plain text
-    // so, parse data between ```json and ``` or directly parse the array, or return an empty array
-    if (!chatResponse || !chatResponse.response) {
-        return [];
-    }
+	// parse data in chatResponse.response
+	// data format as:
+	// ```json {data} ```
+	// or [data]
+	// or plain text
+	// so, parse data between ```json and ``` or directly parse the array, or return an empty array
+	if (!chatResponse || !chatResponse.response) {
+		return [];
+	}
 
-    let responseText = chatResponse.response.trim();
-    let symbols: string[];
+	let responseText = chatResponse.response.trim();
+	let symbols: string[];
 
-    if (responseText.startsWith("```") && responseText.endsWith("```")) {
+	const indexBlock = responseText.indexOf('```');
+	if (indexBlock !== -1) {
+		const indexJsonEnd = responseText.indexOf('```', indexBlock+3);
+		if (indexJsonEnd !== -1) {
+			responseText = responseText.substring(indexBlock, indexJsonEnd + 3);
+		}
+	}
+
+	if (responseText.startsWith("```") && responseText.endsWith("```")) {
 		const index = responseText.indexOf('[');
-        responseText = responseText.substring(index, responseText.length - 3);
-        try {
-            symbols = JSON.parse(responseText);
-        } catch (error) {
-            symbols = [];
-        }
-    } else {
-        try {
-            symbols = JSON.parse(responseText);
-        } catch (error) {
-            symbols = [];
-        }
-    }
+		responseText = responseText.substring(index, responseText.length - 3);
+		try {
+			symbols = JSON.parse(responseText);
+		} catch (error) {
+			symbols = [];
+		}
+	} else {
+		try {
+			symbols = JSON.parse(responseText);
+		} catch (error) {
+			symbols = [];
+		}
+	}
 
-    logger.channel()?.info(`getUndefinedSymbols: ${chatResponse.response}`);
-    return symbols;
+	logger.channel()?.info(`getUndefinedSymbols: ${chatResponse.response}`);
+	return symbols;
+}
+
+function matchSymbolInline(line: string, symbol: string): number[] {
+	const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+	// Create a RegExp with the escaped symbol and word boundaries
+	const regex = new RegExp(`\\b${escapedSymbol}\\b`, 'gu');
+
+	// Find the match in the selected text
+	const matches = [...line.matchAll(regex)];
+
+	// If the symbol is found
+	if (matches.length === 0) {
+		return [];
+	}
+
+	return matches.map((match) => match.index!);
+}
+
+function getMatchedSymbolPositions(selectText: string, symbol: string): object[] {
+	const lines = selectText.split('\n');
+	const positions: object[] = [];
+	for (let i = 0; i < lines.length; i++) {
+		const line = lines[i];
+		const matchedPositions = matchSymbolInline(line, symbol);
+		for (const pos of matchedPositions) {
+			positions.push({
+				line: i,
+				character: pos
+			});
+		}
+	}
+	return positions;
 }
 
 async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
@@ -85,28 +128,18 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 
 	let contextList: string[] = [await handleCodeSelected(activeEditor!.document.uri.fsPath, selectedText, selection.start.line)];
 	let hasVisitedSymbols: Set<string> = new Set();
+	let hasPushedSymbols: Set<string> = new Set();
 
 	// visit each symbol in symbolList, and get it's define
 	for (const symbol of symbolList) {
 		// get symbol position in selectedText
 		// if selectedText is "abc2+abc", symbol is "abc", then symbolPosition is 5 not 0
 		// because abc2 is not a symbol
-		const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		const positions: any[] = getMatchedSymbolPositions(selectedText, symbol);
 
-		// Create a RegExp with the escaped symbol and word boundaries
-		const regex = new RegExp(`\\b${escapedSymbol}\\b`, 'gu');
-
-		// Find the match in the selected text
-		const matches = [...selectedText.matchAll(regex)];
-
-		// If the symbol is found
-		if (matches.length === 0) {
-			continue;
-		}
-
-		for (const match of matches) {
-			const symbolPosition = match.index!;
-
+		for (const pos of positions) {
+			const symbolPosition = pos.character;
+			
 			// if symbol is like a.b.c, then split it to a, b, c
 			const symbolSplit = symbol.split(".");
 			let curPosition = 0;
@@ -118,7 +151,7 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 				const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
 					'vscode.executeDefinitionProvider',
 					document.uri,
-					selection.start.translate({ characterDelta: symbolPositionNew })
+					selection.start.translate({lineDelta: pos.line, characterDelta: symbolPositionNew })
 				);
 
 				// visit each refLocation, and get it's define
@@ -154,6 +187,12 @@ async function getSymbolDefine(symbolList: string[]): Promise<string[]> {
 					}
 
 					if (targetSymbol !== undefined) {
+						const defLocationString = targetSymbol.location.uri.fsPath + "-" + targetSymbol.location.range.start.line + ":" + targetSymbol.location.range.start.character + "-" + targetSymbol.location.range.end.line + ":" + targetSymbol.location.range.end.character;
+						if (hasPushedSymbols.has(defLocationString)) {
+							continue;
+						}
+						hasPushedSymbols.add(defLocationString);
+
 						const documentNew = await vscode.workspace.openTextDocument(refLocation.uri);
 
 						if (targetSymbol.kind === vscode.SymbolKind.Variable) {
