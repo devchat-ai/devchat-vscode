@@ -1,6 +1,6 @@
 import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Indicator, HoverCard, Drawer } from "@mantine/core";
 import { useDisclosure, useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
-import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip } from "@tabler/icons-react";
+import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip, IconChevronDown } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
@@ -293,6 +293,7 @@ const InputMessage = observer((props: any) => {
                     position="bottom"
                     title="DevChat Contexts"
                     overlayProps={{ opacity: 0.5, blur: 4 }}
+                    closeButtonProps={{ children: <IconChevronDown size="1rem" /> }}
                     styles={{
                         content: {
                             background: 'var(--vscode-sideBar-background)',
