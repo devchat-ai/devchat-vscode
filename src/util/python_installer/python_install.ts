@@ -107,7 +107,7 @@ export async function installPythonMicromamba(mambaCommandPath: string, envName:
 			userHome = 'E:/Program Files';
 		}
 	}
-    const pathToMamba = `${userHome}/.devchat/mamba`;
+    const pathToMamba = `${userHome}/.chat/mamba`;
 
 	const envPath = path.resolve(pathToMamba, 'envs', envName);
 	let pythonPath;
