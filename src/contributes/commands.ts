@@ -386,49 +386,56 @@ export function registerAskCodeIndexStopCommand(context: vscode.ExtensionContext
     context.subscriptions.push(disposable);
 }
 
+let summaryIndexTargetDir: string | undefined = undefined;
+
+export async function askcodeSummaryIndex(targetDir: string|undefined) {
+	if (!FT("ask-code-summary")) {
+		UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+		return;
+	}
+	summaryIndexTargetDir = targetDir;
+
+	const progressBar = new ProgressBar();
+	progressBar.init();
+	logger.channel()?.show();
+
+	progressBar.update("Index source code files for ask codebase summary...", 0);
+
+	const config = getConfig();
+	let pythonVirtualEnv: any = config.pythonVirtualEnv;
+	const supportedFileTypes = config.supportedFileTypes;
+
+	updateIndexingStatus("started");
+
+	if (pythonVirtualEnv) {
+		// check whether pythonVirtualEnv is stisfy the requirement version
+		const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
+		
+		let requireAskVersion = "0.0.8";
+		if (FT("ask-code-summary")) {
+			requireAskVersion = "0.0.10";
+		}
+
+		if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
+			logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
+			pythonVirtualEnv = undefined;
+		}
+	}
+
+	if (!pythonVirtualEnv) {
+		progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
+		await installAskCode(supportedFileTypes, progressBar, indexCodeSummary);
+	} else {
+		progressBar.update("Index source files. See OUTPUT for progress...", 0);
+		await indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar);
+	}
+
+	updateIndexingStatus("stopped");
+}
+
 export function registerAskCodeSummaryIndexStartCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.AskCodeSummaryIndexStart', async () => {
-        if (!FT("ask-code-summary")) {
-			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
-			return;
-		}
-
-		const progressBar = new ProgressBar();
-        progressBar.init();
-		logger.channel()?.show();
-
-        progressBar.update("Index source code files for ask codebase summary...", 0);
-
-        const config = getConfig();
-        let pythonVirtualEnv: any = config.pythonVirtualEnv;
-        const supportedFileTypes = config.supportedFileTypes;
-
-        updateIndexingStatus("started");
-
-		if (pythonVirtualEnv) {
-			// check whether pythonVirtualEnv is stisfy the requirement version
-			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
-			
-			let requireAskVersion = "0.0.8";
-			if (FT("ask-code-summary")) {
-				requireAskVersion = "0.0.10";
-			}
-
-			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
-				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
-				pythonVirtualEnv = undefined;
-			}
-		}
-
-        if (!pythonVirtualEnv) {
-			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
-            await installAskCode(supportedFileTypes, progressBar, indexCodeSummary);
-        } else {
-			progressBar.update("Index source files. See OUTPUT for progress...", 0);
-            await indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar);
-        }
-
-        updateIndexingStatus("stopped");
+        askcodeSummaryIndex("*");
     });
     context.subscriptions.push(disposable);
 }
@@ -454,7 +461,7 @@ async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBa
     const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
     
     const command = pythonVirtualEnv.trim();
-    const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "index", supportedFileTypes];
+    const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "index", supportedFileTypes, summaryIndexTargetDir];
     const options = { env: envs, cwd: workspaceDir };
 
     summaryIndexProcess = new CommandRun();
@@ -516,41 +523,41 @@ export function registerInstallCommandsCommand(context: vscode.ExtensionContext)
 
     context.subscriptions.push(disposable);
 }
+
+export async function addSummaryContextFun(fsPath: string ) {
+	if (!FT("ask-code-summary")) {
+		UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
+		return;
+	}
+
+	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+	if (!workspaceDir) {
+		return ;
+	}
+	// check whether workspaceDir/.chat/.summary.json文件存在
+	if (!fs.existsSync(path.join(workspaceDir, '.chat', '.summary.json'))) {
+		logger.channel()?.info(`You should index this workspace first.`);
+		logger.channel()?.show();
+		return;
+	}
+
+	const config = getConfig();
+	const pythonVirtualEnv: any = config.pythonVirtualEnv;
+	
+	const tempDir = await createTempSubdirectory('devchat/context');
+	const summaryFile = path.join(tempDir, 'summary.txt');
+
+	const summaryArgs = [pythonVirtualEnv, UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "desc", fsPath];
+	const result = await runCommandStringArrayAndWriteOutput(summaryArgs, summaryFile);
+	logger.channel()?.info(`  exit code:`, result.exitCode);
+
+	logger.channel()?.debug(`  stdout:`, result.stdout);
+	logger.channel()?.debug(`  stderr:`, result.stderr);
+	MessageHandler.sendMessage(ExtensionContextHolder.provider?.view()!, { command: 'appendContext', context: `[context|${summaryFile}]` });
+}
 export function registerAddSummaryContextCommand(context: vscode.ExtensionContext) {
     const callback = async (uri: { fsPath: any; }) => {
-        if (!FT("ask-code-summary")) {
-			UiUtilWrapper.showErrorMessage("This command is a beta version command and has not been released yet.");
-			return;
-		}
-		
-		if (!await ensureChatPanel(context)) {
-            return;
-        }
-
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		if (!workspaceDir) {
-			return ;
-		}
-		// check whether workspaceDir/.chat/.summary.json文件存在
-		if (!fs.existsSync(path.join(workspaceDir, '.chat', '.summary.json'))) {
-			logger.channel()?.info(`You should index this workspace first.`);
-			logger.channel()?.show();
-			return;
-		}
-
-		const config = getConfig();
-        const pythonVirtualEnv: any = config.pythonVirtualEnv;
-        
-		const tempDir = await createTempSubdirectory('devchat/context');
-        const summaryFile = path.join(tempDir, 'summary.txt');
-
-		const summaryArgs = [pythonVirtualEnv, UiUtilWrapper.extensionPath() + "/tools/askcode_summary_index.py", "desc", uri.fsPath];
-		const result = await runCommandStringArrayAndWriteOutput(summaryArgs, summaryFile);
-		logger.channel()?.info(`  exit code:`, result.exitCode);
-
-		logger.channel()?.debug(`  stdout:`, result.stdout);
-		logger.channel()?.debug(`  stderr:`, result.stderr);
-        MessageHandler.sendMessage(ExtensionContextHolder.provider?.view()!, { command: 'appendContext', context: `[context|${summaryFile}]` });
+        addSummaryContextFun(uri.fsPath);
     };
     context.subscriptions.push(vscode.commands.registerCommand('devchat.addSummaryContext', callback));
 }
