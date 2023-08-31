@@ -41,7 +41,7 @@ def is_file_modified(filePath: str, supportedFileTypes) -> bool:
             print("Not hidden file: ", filePath)
             return False
     
-    fileLastModified = g_file_last_modified_saved.get(relativePath, 0)
+    fileLastModified = g_file_last_modified_saved.get(relativePath, 0) 
     fileCurrentModified = os.path.getmtime(filePath)
 
     if fileLastModified != fileCurrentModified:
@@ -50,13 +50,18 @@ def is_file_modified(filePath: str, supportedFileTypes) -> bool:
     
     return False
 
-def custom_file_filter(file_path: str, supportedFileTypes) -> bool:
+def custom_file_filter(file_path: str, supportedFileTypes, target_dir: str) -> bool:
     needIndex = False
+    if file_path[0:1] == '/':
+        file_path = "." + file_path
     file_path = os.path.abspath(file_path)
+    
+    if target_dir != "*" and os.path.isfile(file_path) and not file_path.startswith(target_dir):
+        return False
     if file_path in g_file_need_index:
         return g_file_need_index[file_path]
     
-	# check size of true value in g_file_need_index > 100
+    # check size of true value in g_file_need_index > 100
     if sum(g_file_need_index.values()) > 100:
         return False
     
@@ -68,7 +73,7 @@ def custom_file_filter(file_path: str, supportedFileTypes) -> bool:
 
     return needIndex
 
-def index_directory(repo_dir: str, repo_cache_path: str, supportedFileTypes):
+def index_directory(repo_dir: str, repo_cache_path: str, supportedFileTypes, target_dir: str):
     """
     index files in repo_dir
     """
@@ -78,13 +83,14 @@ def index_directory(repo_dir: str, repo_cache_path: str, supportedFileTypes):
     sw = SummaryWrapper(repo_cache_path, FileSource(
         path=repo_dir,
         rel_root=repo_dir,
-        file_filter=lambda file_path: custom_file_filter(file_path, supportedFileTypes),
+        file_filter=lambda file_path: custom_file_filter(file_path, supportedFileTypes, target_dir),
     ))
     
     for progress_info in sw.reindex(True, []):
         print(progress_info)
     
     save_file_last_modified('.chat/.index_modified.json', g_file_last_modified_saved)
+    
 
 def desc(repo_dir: str, repo_cache_path: str, target_path: str):
     """
@@ -121,12 +127,13 @@ def main():
     repo_cache_path = os.path.join(repo_dir, '.chat', '.summary.json')
     
     if command == "index":
-        if len(sys.argv) < 3:
-            print("Usage: python askcode_summary_index.py index [supportedFileTypes]")
+        if len(sys.argv) < 4:
+            print("Usage: python askcode_summary_index.py index [supportedFileTypes] [target_dir]")
             sys.exit(1)
         
         supportedFileTypes = sys.argv[2].split(',')
-        index_directory(repo_dir, repo_cache_path, supportedFileTypes)
+        target_dir = sys.argv[3]
+        index_directory(repo_dir, repo_cache_path, supportedFileTypes, target_dir)
     
     elif command == "desc":
         if len(sys.argv) < 3:

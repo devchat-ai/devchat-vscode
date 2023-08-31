@@ -254,10 +254,6 @@
 				"title": "Add to DevChat"
 			},
 			{
-				"command": "devchat.addSummaryContext",
-				"title": "Add summary to DevChat"
-			},
-			{
 				"command": "devchat.askForCode",
 				"title": "Add to DevChat"
 			},
@@ -285,16 +281,6 @@
 			{
 				"command": "DevChat.AskCodeIndexStop",
 				"title": "Stop AskCode Index",
-				"category": "DevChat"
-			},
-			{
-				"command": "DevChat.AskCodeSummaryIndexStart",
-				"title": "Start AskCode Summary Index",
-				"category": "DevChat"
-			},
-			{
-				"command": "DevChat.AskCodeIndexSummaryStop",
-				"title": "Stop AskCode Summary Index",
 				"category": "DevChat"
 			},
 			{
@@ -365,10 +351,6 @@
 					"when": "false"
 				},
 				{
-					"command": "devchat.addSummaryContext",
-					"when": "false"
-				},
-				{
 					"command": "devchat.askForCode",
 					"when": "false"
 				},
@@ -398,11 +380,6 @@
 				{
 					"when": "!isChineseLocale && resourceLangId != 'git'",
 					"command": "devchat.addConext",
-					"group": "navigation"
-				},
-				{
-					"when": "!isChineseLocale && resourceLangId != 'git'",
-					"command": "devchat.addSummaryContext",
 					"group": "navigation"
 				}
 			],
