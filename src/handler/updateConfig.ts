@@ -13,7 +13,7 @@ export async function updateSetting(message: any, panel: vscode.WebviewPanel|vsc
 }
 
 regInMessage({command: 'getSetting', key1: "DevChat", key2: "OpenAI"});
-regOutMessage({command: 'getSetting', value: "GPT-4"});
+regOutMessage({command: 'getSetting', key1: "DevChat", key2: "OpenAI", value: "GPT-4"});
 export async function getSetting(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-    MessageHandler.sendMessage(panel, {"command": "getSetting", "value": UiUtilWrapper.getConfiguration(message.key1, message.key2)});
+    MessageHandler.sendMessage(panel, {"command": "getSetting", "key1": message.key1, "key2": message.key2, "value": UiUtilWrapper.getConfiguration(message.key1, message.key2)});
 }
