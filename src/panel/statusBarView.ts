@@ -8,9 +8,6 @@ import { ProgressBar } from '../util/progressBar';
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 	
-	// execute command: DevChat.InstallCommands
-	vscode.commands.executeCommand('DevChat.InstallCommands');
-
     // Set the status bar item properties
     statusBarItem.text = `$(warning)DevChat`;
     statusBarItem.tooltip = 'DevChat is checking ..., please wait';
@@ -56,6 +53,8 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			progressBar.update(`Checking devchat dependency environment: Success`, 0);
 			progressBar.end();
 	
+			// execute command: DevChat.InstallCommands
+			vscode.commands.executeCommand('DevChat.InstallCommands');
 			clearInterval(timer);
 		} catch (error) {
 			statusBarItem.text = `$(warning)DevChat`;
