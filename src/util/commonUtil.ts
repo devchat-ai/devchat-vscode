@@ -56,7 +56,21 @@ export class CommandRun {
 	public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
 		return new Promise((resolve, reject) => {
 			logger.channel()?.info(`Running command: ${command} ${args.join(' ')}`);
-			this.childProcess = spawn(command, args, options);
+			const argsNew: string[] = args.map((arg) => {
+				if (arg.trim()[0] === '$') {
+					// get rest string except '$'
+					const restStr = arg.trim().slice(1);
+					if (process.env[restStr]) {
+						return process.env[restStr]!;
+					} else {
+						return arg;
+					}
+				} else {
+					return arg;
+				}
+			});
+
+			this.childProcess = spawn(command, argsNew, options);
 
 			let stdout = '';
 			let stderr = '';
