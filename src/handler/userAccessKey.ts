@@ -8,7 +8,7 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { MessageHandler } from './messageHandler';
 import { ApiKeyManager } from '../util/apiKey';
 
-regInMessage({command: 'getUserAccessKey', key1: "DevChat", key2: "OpenAI"});
+regInMessage({command: 'getUserAccessKey'});
 regOutMessage({command: 'getUserAccessKey', accessKey: "DC.xxx", keyType: "DevChat", endPoint: "https://xxx"});
 export async function getUserAccessKey(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
