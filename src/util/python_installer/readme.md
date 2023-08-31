@@ -6,7 +6,7 @@ pyenv is also a python version manager, but it always download source of python,
 conda is a package manager, it can download binary of python, and install packages.
 
 # Where to install?
-Install conda to $USER_PROFILE/.devchat
+Install conda to $USER_PROFILE/.chat
 
-Python will install inside $USER_PROFILE/.devchat/conda.
+Python will install inside $USER_PROFILE/.chat/conda.
 
