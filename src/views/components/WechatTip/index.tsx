@@ -67,7 +67,7 @@ export default function WechatTip() {
         top: 5,
       }}
     >
-      <HoverCard width="240">
+      <HoverCard width="200">
         <HoverCard.Target>
           <ActionIcon
             color="blue"
