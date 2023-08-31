@@ -85,7 +85,7 @@
 				},
 				"DevChat.OpenAI.model": {
 					"type": "string",
-					"default": "gpt-4",
+					"default": "gpt-3.5-turbo",
 					"description": "Specify the model ID.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
