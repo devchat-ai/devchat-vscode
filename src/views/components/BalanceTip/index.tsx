@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import messageUtil from "@/util/MessageUtil";
-import { IconCoin } from "@tabler/icons-react";
+import { IconWallet } from "@tabler/icons-react";
 import { HoverCard, Text, ActionIcon, Group } from "@mantine/core";
 
 const currencyMap = {
@@ -81,7 +81,7 @@ export default function WechatTip() {
               },
             }}
           >
-            <IconCoin />
+            <IconWallet size="16" />
           </ActionIcon>
         </HoverCard.Target>
         <HoverCard.Dropdown>

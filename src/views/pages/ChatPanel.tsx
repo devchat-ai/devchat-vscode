@@ -27,7 +27,7 @@ import { Message } from "@/views/stores/ChatStore";
 
 import InputMessage from "@/views/components/InputMessage";
 import MessageList from "@/views/components/MessageList";
-import WechatTip from "@/views/components/WechatTip";
+import WechatTip from "@/views/components/BalanceTip";
 import {
   IconCircleArrowDownFilled,
   IconExternalLink,
