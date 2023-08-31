@@ -215,7 +215,7 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 
 export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
-	description: 'Definitions of symbol',
+	description: 'find related definitions of classes, functions, etc. in selected code',
 	handler: async () => {
 		const activeEditor = vscode.window.activeTextEditor;
 		logger.channel()?.show();
