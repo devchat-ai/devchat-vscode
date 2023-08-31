@@ -1,7 +1,0 @@
-{
-	"pattern": "code",
-	"description": "write code (default)",
-	"message": "",
-	"default": true,
-	"instructions": ["instruct.txt", "python.txt"]
-}
