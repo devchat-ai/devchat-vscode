@@ -42,6 +42,9 @@ export class RunVSCodeCommandAction implements Action {
     async handlerAction(args: {[key: string]: any}): Promise<CommandResult> {
         try {
             const commandArgs = args.args ? args.args.split(',') : [];
+			if (args.command === 'vscode.open' && commandArgs.length > 0) {
+				commandArgs[0] = vscode.Uri.file(commandArgs[0]);
+			}
             const result = await vscode.commands.executeCommand(args.command, ...commandArgs);
             return {exitCode: 0, stdout: JSON.stringify(result), stderr: ""};
         } catch (error) {

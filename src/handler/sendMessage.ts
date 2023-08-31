@@ -121,7 +121,19 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 //     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
 //     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
 export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, function_name: string|undefined = undefined): Promise<void> {
-    _lastMessage = [message, function_name];
+    if (function_name !== undefined && function_name !== "") {
+		const messageText = _lastMessage[0].text.trim();
+		if (messageText[0] === '/' && message.text[0] !== '/') {
+			const indexS = messageText.indexOf(' ');
+			let preCommand = messageText;
+			if (indexS !== -1) {
+				preCommand = messageText.substring(0, indexS);
+			}
+
+			message.text = preCommand + ' ' + message.text;
+		}
+	}
+	_lastMessage = [message, function_name];
 
     // Add a new field to store the names of temporary files
     let tempFiles: string[] = [];
