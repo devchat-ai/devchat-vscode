@@ -36,7 +36,7 @@ async function isCondaInstalled(): Promise<string> {
   // whether ~/.devchat/conda/bin/conda exists
   const os = process.platform;
   const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
-  const pathToConda = `${userHome}/.devchat/conda`;
+  const pathToConda = `${userHome}/.chat/conda`;
   const condaPath = os === 'win32' ? `${pathToConda}/Scripts/conda.exe` : `${pathToConda}/bin/conda`;
   logger.channel()?.info(`checking conda path: ${condaPath}`); 
   const isCondaPathExists = fs.existsSync(condaPath);
@@ -82,7 +82,7 @@ async function installCondaByInstallFile(installFileUrl: string) : Promise<strin
     
     // Set the installation directory for conda
     const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
-	const pathToConda = `${userHome}/.devchat/conda`;
+	const pathToConda = `${userHome}/.chat/conda`;
 	// if pathToConda has exist, remove it first
 	try {
 		if (fs.existsSync(pathToConda)) {
