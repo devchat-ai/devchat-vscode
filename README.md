@@ -57,7 +57,7 @@ Great output requires great input, to maximize the power of AI, DevChat assists 
 
 DevChat utilizes a directory to manage predefined prompt templates. You can easily add your own or modify existing ones using a text editor. Let's delve into the directory structure and its functionality.
 
-- **Location**: By default, the directory is named `workflows` and located in the `.chat` folder at the root of your project. If you're working on a project in VS Code, you can run `ls .chat/workflows` in a terminal to see what's inside.
+- **Location**: By default, the directory is named `workflows` and located in the `.chat` folder at your home directory. You can run `ls ~/.chat/workflows` in a terminal to see what's inside.
 
 - **Paths**: The `workflows` directory contains three subdirectories, `sys`, `org`, and `usr`. The `sys` (system) directory is a clone of https://github.com/devchat-ai/workflows, which contains the default templates. You can overwrite those system prompts. For instance, if you create `commit_message` in the `usr` directory and define your own `prompt.txt`, DevChat will use your version instead of the default one in `sys`.
 
