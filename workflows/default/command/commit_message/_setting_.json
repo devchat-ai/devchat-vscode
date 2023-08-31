@@ -1,7 +1,0 @@
-{
-	"pattern": "commit_message",
-	"description": "write a commit message",
-	"message": "write a commit message",
-	"default": false,
-	"instructions": ["instruct.txt"]
-}

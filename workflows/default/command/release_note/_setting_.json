@@ -1,7 +1,0 @@
-{
-	"pattern": "release_note",
-	"description": "write release note for release",
-	"message": "write release note for release",
-	"default": false,
-	"instructions": ["instruct.txt"]
-}
