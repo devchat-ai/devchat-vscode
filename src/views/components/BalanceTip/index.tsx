@@ -10,57 +10,86 @@ const currencyMap = {
 };
 
 function formatBalance(balance: number) {
-  return Math.round(balance * 100) / 100;
+  return Math.round(balance * 1000) / 1000;
 }
 
 function formatCurrency(balance: number, currency: string) {
   return `${currencyMap[currency] || currency}${balance}`;
 }
 
+const envMap = {
+  dev: {
+    requestUrl: "https://apptest.devchat.ai",
+    link: "https://test.devchat.ai",
+  },
+  prod: {
+    requestUrl: "https://app.devchat.ai",
+    link: "https://devchat.ai",
+  },
+};
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export default function WechatTip() {
   const [bindWechat, setBindWechat] = useState(false);
-  const [link, setLink] = useState("https://devchat.ai");
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState<null | number>(null);
   const [currency, setCurrency] = useState("USD");
+  const [accessKey, setAccessKey] = useState("");
+  const [env, setEnv] = useState("prod");
+  const [loading, setLoading] = useState(false);
 
   const getSettings = () => {
     messageUtil.sendMessage({
       command: "getUserAccessKey",
     });
   };
+
+  const getBalance = () => {
+    if (!envMap[env].requestUrl || !accessKey) {
+      return;
+    }
+    setLoading(true);
+    axios
+      .get(`${envMap[env].requestUrl}/api/v1/users/profile`, {
+        headers: { Authorization: `Bearer ${accessKey}` },
+      })
+      .then((res) => {
+        if (res?.data?.user?.wechat_nickname) {
+          setBindWechat(true);
+        }
+        if (res?.data?.organization?.balance) {
+          setBalance(formatBalance(res?.data?.organization?.balance));
+          setCurrency(res?.data?.organization?.currency);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    if (env && accessKey) {
+      getBalance();
+    }
+  }, [env, accessKey]);
+
   useEffect(() => {
     getSettings();
     messageUtil.registerHandler(
       "getUserAccessKey",
       (message: { endPoint: string; accessKey: string; keyType: string }) => {
         if (message.keyType === "DevChat" && message.accessKey) {
-          let url = "https://app.devchat.ai";
           if (message.endPoint.includes("api-test.devchat.ai")) {
-            url = "https://apptest.devchat.ai";
-            setLink("https://test.devchat.ai");
+            setEnv("dev");
           } else {
-            setLink("https://devchat.ai");
+            setEnv("prod");
           }
-          axios
-            .get(`${url}/api/v1/users/profile`, {
-              headers: { Authorization: `Bearer ${message.accessKey}` },
-            })
-            .then((res) => {
-              if (res?.data?.user?.wechat_nickname) {
-                setBindWechat(true);
-              }
-              if (res?.data?.organization?.balance) {
-                setBalance(formatBalance(res?.data?.organization?.balance));
-                setCurrency(res?.data?.organization?.currency);
-              }
-            });
+          setAccessKey(message.accessKey);
         }
       }
     );
   }, []);
 
-  if (!balance) {
+  if (balance === null || balance === undefined) {
     return null;
   }
 
@@ -73,28 +102,36 @@ export default function WechatTip() {
         top: 5,
       }}
     >
-      <HoverCard position="left" width="200" withArrow={true}>
+      <HoverCard
+        onOpen={getBalance}
+        position="left"
+        width="200"
+        withArrow={true}
+      >
         <HoverCard.Target>
-          <ActionIcon
-            color="blue"
-            radius="xl"
-            variant="filled"
-            sx={{
-              opacity: 0.5,
-              transition: "opacity 300ms ease",
-              "&:hover": {
-                opacity: 1,
-              },
-            }}
-          >
-            <IconWallet size="16" />
-          </ActionIcon>
+          <div onMouseEnter={getBalance}>
+            <ActionIcon
+              loading={loading}
+              color="blue"
+              radius="xl"
+              variant="filled"
+              sx={{
+                opacity: 0.5,
+                transition: "opacity 300ms ease",
+                "&:hover": {
+                  opacity: 1,
+                },
+              }}
+            >
+              <IconWallet size="16" />
+            </ActionIcon>
+          </div>
         </HoverCard.Target>
         <HoverCard.Dropdown>
           <Group style={{ width: "90%" }}>
             <Text size="sm">
               Your remaining credit is {formatCurrency(balance, currency)}. Sign
-              in to <a href={link}>devchat.ai </a>to{" "}
+              in to <a href={envMap[env].link}>devchat.ai </a>to{" "}
               {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
             </Text>
           </Group>
