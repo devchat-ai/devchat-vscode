@@ -164,7 +164,7 @@ const InputMessage = observer((props: any) => {
                         input.closeMenu();
                     }}>
                     {contextMenuIcon(name)}
-                    <Stack spacing={0}>
+                    <Stack spacing={0} w="calc(100% - 60px)">
                         <Text sx={{
                             fontSize: 'sm',
                             fontWeight: 'bolder',
