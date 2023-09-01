@@ -14,7 +14,7 @@ function formatBalance(balance: number) {
 }
 
 function formatCurrency(balance: number, currency: string) {
-  return `${currencyMap[currency] || currency} ${balance}`;
+  return `${currencyMap[currency] || currency}${balance}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -39,6 +39,8 @@ export default function WechatTip() {
           if (message.endPoint.includes("apptest.devchat.ai")) {
             url = "https://apptest.devchat.ai";
             setLink("https://test.devchat.ai");
+          } else {
+            setLink("https://devchat.ai");
           }
           axios
             .get(`${url}/api/v1/users/profile`, {
@@ -58,6 +60,10 @@ export default function WechatTip() {
     );
   }, []);
 
+  if (!balance) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -67,7 +73,7 @@ export default function WechatTip() {
         top: 5,
       }}
     >
-      <HoverCard width="200">
+      <HoverCard position="left" width="200" withArrow={true}>
         <HoverCard.Target>
           <ActionIcon
             color="blue"
