@@ -39,6 +39,8 @@ export default function WechatTip() {
           if (message.endPoint.includes("apptest.devchat.ai")) {
             url = "https://apptest.devchat.ai";
             setLink("https://test.devchat.ai");
+          } else {
+            setLink("https://devchat.ai");
           }
           axios
             .get(`${url}/api/v1/users/profile`, {
