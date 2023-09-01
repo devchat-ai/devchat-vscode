@@ -14,7 +14,7 @@ function formatBalance(balance: number) {
 }
 
 function formatCurrency(balance: number, currency: string) {
-  return `${currencyMap[currency] || currency} ${balance}`;
+  return `${currencyMap[currency] || currency}${balance}`;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -58,6 +58,10 @@ export default function WechatTip() {
     );
   }, []);
 
+  if (!balance) {
+    return null;
+  }
+
   return (
     <div
       style={{
@@ -67,7 +71,7 @@ export default function WechatTip() {
         top: 5,
       }}
     >
-      <HoverCard width="200">
+      <HoverCard position="left" width="200" withArrow={true}>
         <HoverCard.Target>
           <ActionIcon
             color="blue"
