@@ -181,7 +181,7 @@ const chatPanel = observer(() => {
       )}
       <ScrollArea
         sx={{
-          height: chat.generating ? height - px("9rem") : height - px("6rem"),
+          height: chat.generating ? height - px("9rem") : height - px("7rem"),
           padding: 0,
           margin: 0,
         }}
