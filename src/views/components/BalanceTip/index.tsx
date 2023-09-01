@@ -36,7 +36,7 @@ export default function WechatTip() {
       (message: { endPoint: string; accessKey: string; keyType: string }) => {
         if (message.keyType === "DevChat" && message.accessKey) {
           let url = "https://app.devchat.ai";
-          if (message.endPoint.includes("apptest.devchat.ai")) {
+          if (message.endPoint.includes("api-test.devchat.ai")) {
             url = "https://apptest.devchat.ai";
             setLink("https://test.devchat.ai");
           } else {
