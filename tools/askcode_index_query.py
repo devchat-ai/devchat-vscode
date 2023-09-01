@@ -79,7 +79,7 @@ def is_file_modified(filePath: str) -> bool:
     
     # 检查文件路径中是否包含'.xxx'形式的目录
     for part in relativePath.split(os.sep):
-        if part.startswith('.'):
+        if part.startswith('.') or part in ["node_modules", "__pycache__"]:
             return False
     
     # 获取文件上次分析时记录的最后修改时间

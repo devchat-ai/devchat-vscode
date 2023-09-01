@@ -41,24 +41,31 @@ const InputMessage = observer((props: any) => {
     };
 
     const handleSendClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        if (input.value) {
-            const text = input.value;
-            // Add the user's message to the chat UI
-            const chatContexts = contexts ? [...contexts].map((item) => ({ ...item })) : undefined;
-            const newMessage = Message.create({
-                type: 'user',
-                message: input.value,
-                contexts: chatContexts
-            });
-            chat.newMessage(newMessage);
-            // start generating
-            chat.startGenerating(text, chatContexts);
-            // Clear the input field
-            input.setValue('');
-            input.clearContexts();
-            setTimeout(() => {
-                chat.goScrollBottom();
-            }, 1000);
+        const inputValue = input.value;
+        if (inputValue) {
+            if (inputValue.trim() === '/help') {
+                chat.helpMessage();
+                input.setValue('');
+                event.preventDefault();
+            } else{
+                const text = inputValue;
+                // Add the user's message to the chat UI
+                const chatContexts = contexts ? [...contexts].map((item) => ({ ...item })) : undefined;
+                const newMessage = Message.create({
+                    type: 'user',
+                    message: inputValue,
+                    contexts: chatContexts
+                });
+                chat.newMessage(newMessage);
+                // start generating
+                chat.startGenerating(text, chatContexts);
+                // Clear the input field
+                input.setValue('');
+                input.clearContexts();
+                setTimeout(() => {
+                    chat.goScrollBottom();
+                }, 1000);
+            }
         }
     };
 
