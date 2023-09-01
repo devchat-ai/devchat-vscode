@@ -102,12 +102,7 @@ export default function WechatTip() {
         top: 5,
       }}
     >
-      <HoverCard
-        onOpen={getBalance}
-        position="left"
-        width="200"
-        withArrow={true}
-      >
+      <HoverCard position="left" width="200" withArrow={true}>
         <HoverCard.Target>
           <div onMouseEnter={getBalance}>
             <ActionIcon
