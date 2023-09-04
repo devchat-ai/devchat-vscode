@@ -12,15 +12,8 @@ import { installPython, installPythonMicromamba } from "./python_install";
 // step 2. create env with python 3.11.4
 // step 3. install devchat in the env
 
-export async function appInstall(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
-	// // install conda
-	// logger.channel()?.info('Install conda ...')
-	// const condaCommand = await installConda();
-	// if (!condaCommand) {
-	// 	logger.channel()?.error('Install conda failed');
-	// 	logger.channel()?.show();
-	// 	return '';
-	// }
+
+async function createEnvByMamba(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
 	logger.channel()?.info('Find micromamba ...');
 	const mambaCommand = getMicromambaUrl();
 	logger.channel()?.info('micromamba url: ' + mambaCommand);
@@ -32,7 +25,6 @@ export async function appInstall(pkgName: string, pkgVersion: string, pythonVers
 	for (let i = 0; i < 3; i++) {
 		try {
 			pythonCommand = await installPythonMicromamba(mambaCommand, pkgName, pythonVersion);
-			// pythonCommand = await installPython(condaCommand, pkgName, pythonVersion);
 			if (pythonCommand) {
 				break;
 			}
@@ -42,6 +34,50 @@ export async function appInstall(pkgName: string, pkgVersion: string, pythonVers
 		
 		logger.channel()?.info(`Create env failed, try again: ${i + 1}`);
 	}
+
+	return pythonCommand;
+}
+
+async function createEnvByConda(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
+	// install conda
+	logger.channel()?.info('Install conda ...')
+	const condaCommand = await installConda();
+	if (!condaCommand) {
+		logger.channel()?.error('Install conda failed');
+		logger.channel()?.show();
+		return '';
+	}
+
+	// create env with specify python
+	logger.channel()?.info('Create env ...');
+	let pythonCommand = '';
+	// try 3 times
+	for (let i = 0; i < 3; i++) {
+		try {
+			pythonCommand = await installPython(condaCommand, pkgName, pythonVersion);
+			if (pythonCommand) {
+				break;
+			}
+		} catch(error) {
+			logger.channel()?.info(`Exception: ${error}`);
+		}
+		
+		logger.channel()?.info(`Create env failed, try again: ${i + 1}`);
+	}
+
+	return pythonCommand;
+}
+
+export async function appInstall(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
+	logger.channel()?.info(`create env for python ...`);
+	logger.channel()?.info(`try to create env by mamba ...`);
+	let pythonCommand = await createEnvByMamba(pkgName, pkgVersion, pythonVersion);
+
+	if (!pythonCommand || pythonCommand === "") {
+		logger.channel()?.info(`create env by mamba failed, try to create env by conda ...`);
+		pythonCommand = await createEnvByConda(pkgName, pkgVersion, pythonVersion);
+	}
+	
 	if (!pythonCommand) {
 		logger.channel()?.error('Create env failed');
 		logger.channel()?.show();
