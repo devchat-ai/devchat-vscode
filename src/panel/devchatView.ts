@@ -32,7 +32,6 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
-			CustomCommands.getInstance().parseCommands(workflowsDir);
 			ChatContextManager.getInstance().loadCustomContexts(workflowsDir);
 			ActionManager.getInstance().loadCustomActions(workflowsDir);
 			
