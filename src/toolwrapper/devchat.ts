@@ -120,6 +120,11 @@ class DevChat {
 			args.push("-p", options.parent);
 		}
 
+		const llmModel = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.model');
+		if (llmModel) {
+			args.push("-m", llmModel);
+		}
+
 		return args;
 	}
 
