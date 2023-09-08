@@ -2,7 +2,13 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import messageUtil from "@/util/MessageUtil";
 import { IconWallet } from "@tabler/icons-react";
-import { HoverCard, Text, ActionIcon, Group } from "@mantine/core";
+import {
+  HoverCard,
+  Text,
+  ActionIcon,
+  Group,
+  LoadingOverlay,
+} from "@mantine/core";
 
 const currencyMap = {
   USD: "$",
@@ -94,44 +100,35 @@ export default function WechatTip() {
   }
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        zIndex: 2,
-        right: 5,
-        top: 5,
-      }}
+    <HoverCard
+      shadow="lg"
+      position="left"
+      width="200"
+      withArrow={true}
+      zIndex={999}
     >
-      <HoverCard position="left" width="200" withArrow={true}>
-        <HoverCard.Target>
-          <div onMouseEnter={getBalance}>
-            <ActionIcon
-              loading={loading}
-              color="blue"
-              radius="xl"
-              variant="filled"
-              sx={{
-                opacity: 0.5,
-                transition: "opacity 300ms ease",
-                "&:hover": {
-                  opacity: 1,
-                },
-              }}
-            >
-              <IconWallet size="16" />
-            </ActionIcon>
-          </div>
-        </HoverCard.Target>
-        <HoverCard.Dropdown>
-          <Group style={{ width: "90%" }}>
-            <Text size="sm">
-              Your remaining credit is {formatCurrency(balance, currency)}. Sign
-              in to <a href={envMap[env].link}>devchat.ai </a>to{" "}
-              {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
-            </Text>
-          </Group>
-        </HoverCard.Dropdown>
-      </HoverCard>
-    </div>
+      <HoverCard.Target>
+        <div onMouseEnter={getBalance}>
+          <ActionIcon size='sm'>
+            <IconWallet size="1.125rem" />
+          </ActionIcon>
+        </div>
+      </HoverCard.Target>
+      <HoverCard.Dropdown
+        sx={{
+          background: "var(--vscode-dropdown-background)",
+          borderColor: "var(--vscode-dropdown-border)",
+        }}
+      >
+        <Group style={{ width: "90%" }}>
+          <Text size="sm">
+            Your remaining credit is {formatCurrency(balance, currency)}. Sign
+            in to <a href={envMap[env].link}>devchat.ai </a>to{" "}
+            {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
+          </Text>
+          <LoadingOverlay visible={loading} />
+        </Group>
+      </HoverCard.Dropdown>
+    </HoverCard>
   );
 }
