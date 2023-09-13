@@ -19,6 +19,7 @@ import { doCommand } from './doCommand';
 import { getSetting, updateSetting } from './updateConfig';
 import { featureToggle, featureToggles } from './featureToggle';
 import { getUserAccessKey } from './userAccessKey';
+import { regModelList } from './regValidModelList';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -92,3 +93,5 @@ messageHandler.registerHandler('featureToggle', featureToggle);
 messageHandler.registerHandler('featureToggles', featureToggles);
 
 messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
+
+messageHandler.registerHandler('regModelList', regModelList);
