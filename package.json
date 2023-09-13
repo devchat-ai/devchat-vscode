@@ -79,37 +79,37 @@
 							"enum": [
 								"openai"
 							],
-							"description": "Specify which provider host this llm model"
+							"description": "[required*] Specify which provider host this llm model"
 						},
 						"api_key": {
 							"type": "string",
 							"default": "",
-							"description": "Specify access key for selected provider."
+							"description": "[required*] Specify access key for selected provider."
 						},
 						"api_base": {
 							"type": "string",
 							"default": "",
-							"description": "Specify the api base for selected provider. Leave it blank if you want to use default api base."
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
 							"default": 0.3,
-							"description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
 						},
 						"max_tokens": {
 							"type": "number",
 							"default": 1000,
-							"description": "The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
 						},
 						"frequency_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 						}
 					},
 					"required": [
@@ -129,37 +129,37 @@
 							"enum": [
 								"openai"
 							],
-							"description": "Specify which provider host this llm model"
+							"description": "[required*] Specify which provider host this llm model"
 						},
 						"api_key": {
 							"type": "string",
 							"default": "",
-							"description": "Specify access key for selected provider."
+							"description": "[required*] Specify access key for selected provider."
 						},
 						"api_base": {
 							"type": "string",
 							"default": "",
-							"description": "Specify the api base for selected provider. Leave it blank if you want to use default api base."
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
 							"default": 0.3,
-							"description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
 						},
 						"max_tokens": {
 							"type": "number",
 							"default": 1000,
-							"description": "The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
 						},
 						"frequency_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 						}
 					},
 					"required": [
@@ -179,37 +179,37 @@
 							"enum": [
 								"openai"
 							],
-							"description": "Specify which provider host this llm model"
+							"description": "[required*] Specify which provider host this llm model"
 						},
 						"api_key": {
 							"type": "string",
 							"default": "",
-							"description": "Specify access key for selected provider."
+							"description": "[required*] Specify access key for selected provider."
 						},
 						"api_base": {
 							"type": "string",
 							"default": "",
-							"description": "Specify the api base for selected provider. Leave it blank if you want to use default api base."
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
 							"default": 0.3,
-							"description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
 						},
 						"max_tokens": {
 							"type": "number",
 							"default": 1000,
-							"description": "The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
 						},
 						"frequency_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 						}
 					},
 					"additionalProperties": false,
@@ -225,37 +225,37 @@
 							"enum": [
 								"anthropic"
 							],
-							"description": "Specify which provider host this llm model"
+							"description": "[required*] which provider host this llm model"
 						},
 						"api_key": {
 							"type": "string",
 							"default": "",
-							"description": "Specify access key for selected provider."
+							"description": "[required*] Specify access key for selected provider."
 						},
 						"api_base": {
 							"type": "string",
 							"default": "",
-							"description": "Specify the api base for selected provider. Leave it blank if you want to use default api base."
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
 							"default": 0.3,
-							"description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
 						},
 						"max_tokens": {
 							"type": "number",
 							"default": 1000,
-							"description": "The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
 						},
 						"frequency_penalty": {
 							"type": "number",
 							"default": 0,
-							"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 						}
 					},
 					"additionalProperties": false,
@@ -345,39 +345,39 @@
 									},
 									{
 										"type": "string",
-										"description": "Specify llm model name."
+										"description": "[required*] Specify llm model name."
 									}
 								]
 							},
 							"api_key": {
 								"type": "string",
 								"default": "",
-								"description": "Specify access key for selected provider."
+								"description": "[required*] Specify access key for selected provider."
 							},
 							"api_base": {
 								"type": "string",
 								"default": "",
-								"description": "Specify the api base for selected provider. Leave it blank if you want to use default api base."
+								"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 							},
 							"temperature": {
 								"type": "number",
 								"default": 0.3,
-								"description": "What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+								"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
 							},
 							"max_tokens": {
 								"type": "number",
 								"default": 1000,
-								"description": "The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+								"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 							},
 							"presence_penalty": {
 								"type": "number",
 								"default": 0,
-								"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+								"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
 							},
 							"frequency_penalty": {
 								"type": "number",
 								"default": 0,
-								"description": "Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+								"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 							}
 						},
 						"additionalProperties": false
