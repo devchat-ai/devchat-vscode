@@ -7,13 +7,13 @@ import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import MessageContext from "@/views/components/MessageContext";
+import CurrentMessage from "@/views/components/CurrentMessage";
 
 
 const MessageList = observer((props: any) => {
     const { chat } = useMst();
-    const { chatPanelWidth } = props;
 
-    return (<>
+    return (<Stack spacing={0} sx={{margin:'0 10px 10px 10px'}}>
         {chat.messages.map((item, index: number) => {
             const { message: messageText, type: messageType, hash: messageHash, contexts } = item;
             // setMessage(messageText);
@@ -22,8 +22,7 @@ const MessageList = observer((props: any) => {
                 key={`message-${index}`}
                 sx={{
                     padding: 0,
-                    margin: 0,
-                    width: chatPanelWidth
+                    margin: 0
                 }}>
                 <MessageAvatar
                     key={`message-header-${index}`}
@@ -47,7 +46,8 @@ const MessageList = observer((props: any) => {
                 {index !== chat.messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
             </Stack >;
         })}
-    </>);
+        <CurrentMessage />
+    </Stack>);
 });
 
 export default MessageList;
