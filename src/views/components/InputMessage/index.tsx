@@ -385,7 +385,7 @@ const InputMessage = observer((props: any) => {
                         }}
                         placeholder="Ask DevChat a question or type ‘/’ for workflow"
                         styles={{
-                            rightSection: { alignItems: 'flex-end', marginBottom:'5px', marginRight: (contexts.length > 0 ? '30px' : '5px') },
+                            rightSection: { alignItems: 'flex-end', marginBottom:'6px', marginRight: (contexts.length > 0 ? '24px' : '10px') },
                             input: {
                                 fontSize: 'var(--vscode-editor-font-size)',
                                 backgroundColor: 'var(--vscode-input-background)',
@@ -398,6 +398,28 @@ const InputMessage = observer((props: any) => {
                         }}
                         rightSection={
                             <>
+                                {contexts.length > 0 &&
+                                    <Indicator label={contexts.length} size={12}>
+                                        <ActionIcon
+                                            size='md'
+                                            radius="md" 
+                                            variant="default"
+                                            disabled={generating}
+                                            onClick={openDrawer}
+                                            sx={{
+                                                pointerEvents: 'all',
+                                                '&:hover': {
+                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                                },
+                                                '&[data-disabled]': {
+                                                    borderColor: 'var(--vscode-input-border)',
+                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                                }
+                                            }}>
+                                            <IconPaperclip size="1rem" />
+                                        </ActionIcon>
+                                    </Indicator>
+                                }
                                 <ActionIcon
                                     size='md'
                                     radius="md" 
@@ -405,6 +427,7 @@ const InputMessage = observer((props: any) => {
                                     disabled={generating}
                                     onClick={handleSendClick}
                                     sx={{
+                                        marginLeft: '10px',
                                         pointerEvents: 'all',
                                         backgroundColor:'#ED6A45',
                                         border:'0',
@@ -421,28 +444,6 @@ const InputMessage = observer((props: any) => {
                                     }}>
                                     <IconSend size="1rem" />
                                 </ActionIcon>
-                                {contexts.length > 0 &&
-                                    <Indicator label={contexts.length} size={12}>
-                                        <ActionIcon
-                                            size='md'
-                                            radius="md" 
-                                            variant="default"
-                                            disabled={generating}
-                                            onClick={openDrawer}
-                                            sx={{
-                                                marginLeft: '3px',
-                                                pointerEvents: 'all',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                                },
-                                                '&[data-disabled]': {
-                                                    borderColor: 'var(--vscode-input-border)',
-                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                                }
-                                            }}>
-                                            <IconPaperclip size="1rem" />
-                                        </ActionIcon>
-                                    </Indicator>}
                             </>
                         }
                     />
