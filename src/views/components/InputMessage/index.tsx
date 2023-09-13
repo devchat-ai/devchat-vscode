@@ -1,6 +1,6 @@
-import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Indicator, HoverCard, Drawer } from "@mantine/core";
+import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Indicator, HoverCard, Drawer, Chip, Group, Button, UnstyledButton, Menu } from "@mantine/core";
 import { useDisclosure, useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
-import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip, IconChevronDown } from "@tabler/icons-react";
+import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip, IconChevronDown, IconDatabase, IconTextPlus, IconRobot } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
@@ -21,12 +21,6 @@ const InputMessage = observer((props: any) => {
     const theme = useMantineTheme();
     const [commandMenusNode, setCommandMenusNode] = useState<any>(null);
     const [inputRef, inputRect] = useResizeObserver();
-
-    const handlePlusClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        input.openMenu('contexts');
-        inputRef.current.focus();
-        event.stopPropagation();
-    };
 
     const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         const value = event.target.value;
@@ -115,86 +109,20 @@ const InputMessage = observer((props: any) => {
 
     const contextMenuIcon = (name: string) => {
         if (name === 'git diff --cached') {
-            return (<IconGitBranchChecked size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
+            return <IconGitBranchChecked size={14} color='var(--vscode-menu-foreground)'/>;
         }
         if (name === 'git diff HEAD') {
-            return (<IconGitBranch size={16}
-                color='var(--vscode-menu-foreground)'
-                style={{
-                    marginTop: 8,
-                    marginLeft: 12,
-                }} />);
+            return <IconGitBranch size={14} color='var(--vscode-menu-foreground)'/>;
         }
-        return (<IconShellCommand size={16}
-            color='var(--vscode-menu-foreground)'
-            style={{
-                marginTop: 8,
-                marginLeft: 12,
-            }} />);
+        return <IconShellCommand size={14} color='var(--vscode-menu-foreground)'/>;
     };
-
-    const contextMenusNode = [...contextMenus]
-        .sort((a, b) => {
-            if (a.name === '<custom command>') {
-                return 1; // Placing '<custom command>' at the end
-            } else if (b.name === '<custom command>') {
-                return -1; // Placing '<custom command>' at the front
-            } else {
-                return (a.name || "").localeCompare(b.name || ""); // Sorting alphabetically for other cases
-            }
-        })
-        .map(({ pattern, description, name }, index) => {
-            return (
-                <Flex
-                    key={`contexts-menus-${index}`}
-                    mih={40}
-                    gap="md"
-                    justify="flex-start"
-                    align="flex-start"
-                    direction="row"
-                    wrap="wrap"
-                    sx={{
-                        padding: '5px 0',
-                        '&:hover': {
-                            cursor: 'pointer',
-                            color: 'var(--vscode-commandCenter-activeForeground)',
-                            backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
-                        }
-                    }}
-                    onClick={() => {
-                        handleContextClick(name);
-                        input.closeMenu();
-                    }}>
-                    {contextMenuIcon(name)}
-                    <Stack spacing={0} w="calc(100% - 60px)">
-                        <Text sx={{
-                            fontSize: 'sm',
-                            fontWeight: 'bolder',
-                            color: 'var(--vscode-menu-foreground)'
-                        }}>
-                            {name}
-                        </Text>
-                        <Text sx={{
-                            fontSize: 'sm',
-                            color: theme.colors.gray[6],
-                        }}>
-                            {description}
-                        </Text>
-                    </Stack>
-                </Flex>);
-        });
 
     useEffect(() => {
         input.fetchContextMenus().then();
         input.fetchCommandMenus().then();
-		messageUtil.registerHandler('regCommandList', (message: { result: object[]}) => {
-			input.updateCommands(message.result);
-		});
+        messageUtil.registerHandler('regCommandList', (message: { result: object[]}) => {
+            input.updateCommands(message.result);
+        });
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);
@@ -294,8 +222,99 @@ const InputMessage = observer((props: any) => {
         }
     }, [contexts.length]);
 
+    const changeModel = (value) =>{
+        chat.changeChatModel(value);
+        messageUtil.sendMessage({
+            command: "updateSetting",
+            key1: "DevChat",
+            key2: "OpenAI.model",
+            value: value,
+        });
+    };
+
     return (
-        <>
+        <Stack 
+            spacing={0} 
+            sx={{
+                padding:'0 5px'
+            }}
+        >
+            <Group 
+                spacing={5} 
+                sx={{
+                    marginTop: 5
+                }}
+            >
+                <Menu 
+                    width={chatPanelWidth-10} 
+                    position='bottom-start' 
+                    shadow="sm" 
+                    withArrow
+                    styles={{
+                        item: {
+                            padding: 5
+                        }
+                    }}
+                >
+                    <Menu.Target>
+                        <ActionIcon 
+                            radius="xl" 
+                            variant="default"
+                            disabled={generating}
+                        >
+                            <IconTextPlus size="1rem" />
+                        </ActionIcon>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                        {[...contextMenus]
+                            .sort((a, b) => {
+                                if (a.name === '<custom command>') {
+                                    return 1; // Placing '<custom command>' at the end
+                                } else if (b.name === '<custom command>') {
+                                    return -1; // Placing '<custom command>' at the front
+                                } else {
+                                    return (a.name || "").localeCompare(b.name || ""); // Sorting alphabetically for other cases
+                                }
+                            })
+                            .map(({ pattern, description, name }, index) => {
+                                return (
+                                    <Menu.Item
+                                        key={`contexts-menus-${index}`}
+                                        icon={contextMenuIcon(name)}
+                                        onClick={() => {
+                                            handleContextClick(name);
+                                        }}>
+                                        {name}
+                                        <Text sx={{fontSize: '9pt',color: theme.colors.gray[6],}}>
+                                            {description}
+                                        </Text>
+                                    </Menu.Item>);
+                            })}
+                    </Menu.Dropdown>
+                </Menu>
+                <Menu 
+                    position="bottom-start" 
+                    withArrow 
+                    shadow="md"
+                >
+                    <Menu.Target>
+                        <Button 
+                            disabled={generating} 
+                            variant="default" 
+                            size="xs" 
+                            radius="xl" 
+                            leftIcon={<IconRobot size="1rem" />}
+                        >
+                            GPT-3.5
+                        </Button>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                        <Menu.Item onClick={() => changeModel("gpt-3.5-turbo")}>GPT-3.5</Menu.Item>
+                        <Menu.Item onClick={() => changeModel("gpt-3.5-turbo-16k")}>GPT-3.5-16K</Menu.Item>
+                        <Menu.Item onClick={() => changeModel("gpt-4")}>GPT-4</Menu.Item>
+                    </Menu.Dropdown>
+                </Menu>
+            </Group>
             {contexts && contexts.length > 0 &&
                 <Drawer
                     opened={drawerOpened}
@@ -318,19 +337,15 @@ const InputMessage = observer((props: any) => {
                 </Drawer >
             }
             <Popover
-                id='commandMenu'
                 position='top-start'
-                closeOnClickOutside={true}
                 shadow="sm"
-                width={chatPanelWidth}
+                width={chatPanelWidth-10} 
                 opened={menuOpend}
                 onChange={() => {
                     input.closeMenu();
                     inputRef.current.focus();
                 }}
-                onClose={() => input.closeMenu()}
-                onOpen={() => menuType !== '' ? input.openMenu(menuType) : input.closeMenu()}
-                returnFocus={true}>
+            >
                 <Popover.Target>
                     <Textarea
                         id='chat-textarea'
@@ -344,11 +359,14 @@ const InputMessage = observer((props: any) => {
                         maxRows={10}
                         radius="md"
                         size="xs"
-                        sx={{ pointerEvents: 'all' }}
-                        placeholder="Send a message."
+                        sx={{ 
+                            pointerEvents: 'all' ,
+                            marginTop: 5,
+                            marginBottom: 5
+                        }}
+                        placeholder="Ask DevChat a question or type ‘/’ for workflow"
                         styles={{
-                            icon: { alignItems: 'center', paddingLeft: '5px' },
-                            rightSection: { alignItems: 'center', paddingRight: '5px', marginRight: (contexts.length > 0 ? '18px' : '0') },
+                            rightSection: { alignItems: 'flex-end', marginBottom:'5px', marginRight: (contexts.length > 0 ? '30px' : '5px') },
                             input: {
                                 fontSize: 'var(--vscode-editor-font-size)',
                                 backgroundColor: 'var(--vscode-input-background)',
@@ -359,35 +377,23 @@ const InputMessage = observer((props: any) => {
                                 }
                             }
                         }}
-                        icon={
-                            <ActionIcon
-                                size='sm'
-                                disabled={generating}
-                                onClick={handlePlusClick}
-                                sx={{
-                                    pointerEvents: 'all',
-                                    '&:hover': {
-                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                    },
-                                    '&[data-disabled]': {
-                                        borderColor: 'var(--vscode-input-border)',
-                                        backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                    }
-                                }}
-                            >
-                                <IconSquareRoundedPlus size="1rem" />
-                            </ActionIcon>
-                        }
                         rightSection={
-                            <Flex>
+                            <>
                                 <ActionIcon
-                                    size='sm'
+                                    size='md'
+                                    radius="md" 
+                                    variant="default"
                                     disabled={generating}
                                     onClick={handleSendClick}
                                     sx={{
                                         pointerEvents: 'all',
+                                        backgroundColor:'#ED6A45',
+                                        border:'0',
+                                        color:'#FFFFFF',
                                         '&:hover': {
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
+                                            backgroundColor:'#ED6A45',
+                                            color:'#FFFFFF',
+                                            opacity:0.7
                                         },
                                         '&[data-disabled]': {
                                             borderColor: 'var(--vscode-input-border)',
@@ -399,10 +405,13 @@ const InputMessage = observer((props: any) => {
                                 {contexts.length > 0 &&
                                     <Indicator label={contexts.length} size={12}>
                                         <ActionIcon
-                                            size='sm'
+                                            size='md'
+                                            radius="md" 
+                                            variant="default"
                                             disabled={generating}
                                             onClick={openDrawer}
                                             sx={{
+                                                marginLeft: '3px',
                                                 pointerEvents: 'all',
                                                 '&:hover': {
                                                     backgroundColor: 'var(--vscode-toolbar-activeBackground)'
@@ -415,63 +424,24 @@ const InputMessage = observer((props: any) => {
                                             <IconPaperclip size="1rem" />
                                         </ActionIcon>
                                     </Indicator>}
-                            </Flex>
+                            </>
                         }
                     />
                 </Popover.Target>
-                {
-                    menuType === 'contexts'
-                        ? (<Popover.Dropdown
-                            sx={{
-                                padding: 0,
-                                color: 'var(--vscode-menu-foreground)',
-                                borderColor: 'var(--vscode-menu-border)',
-                                backgroundColor: 'var(--vscode-menu-background)'
-                            }}>
-                            <Flex
-                                gap="3px"
-                                justify="flex-start"
-                                align="center"
-                                direction="row"
-                                wrap="wrap"
-                                sx={{ overflow: 'hidden' }}>
-                                <IconMouseRightClick
-                                    size={14}
-                                    color={'var(--vscode-menu-foreground)'}
-                                    style={{ marginLeft: '12px' }} />
-                                <Text
-                                    c="dimmed"
-                                    ta="left"
-                                    fz='sm'
-                                    m='12px 5px'
-                                    truncate='end'
-                                    w={chatPanelWidth - 60}>
-                                    Tips: Select code or file & right click
-                                </Text>
-                            </Flex>
-                            <Divider />
-                            <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Contexts</Text>
-                            <ScrollArea.Autosize mah={240} type="always">
-                                {contextMenusNode}
-                            </ScrollArea.Autosize>
-                        </Popover.Dropdown>)
-                        : menuType === 'commands' && commandMenusNode.length > 0
-                            ? <Popover.Dropdown
-                                sx={{
-                                    padding: 0,
-                                    color: 'var(--vscode-menu-foreground)',
-                                    borderColor: 'var(--vscode-menu-border)',
-                                    backgroundColor: 'var(--vscode-menu-background)'
-                                }}>
-                                <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Workflows</Text>
-                                <ScrollArea.Autosize mah={240} type="always">
-                                    {commandMenusNode}
-                                </ScrollArea.Autosize>
-                            </Popover.Dropdown>
-                            : <></>
-                }
+                <Popover.Dropdown
+                    sx={{
+                        padding: 0,
+                        color: 'var(--vscode-menu-foreground)',
+                        borderColor: 'var(--vscode-menu-border)',
+                        backgroundColor: 'var(--vscode-menu-background)'
+                    }}>
+                    <Text sx={{ padding: '5px 5px 5px 10px' }}>DevChat Workflows</Text>
+                    <ScrollArea.Autosize mah={240} type="always">
+                        {commandMenusNode}
+                    </ScrollArea.Autosize>
+                </Popover.Dropdown>
             </Popover >
-        </>);
+        </Stack>);
 });
 
 export default InputMessage;
