@@ -4,29 +4,85 @@ import { UiUtilWrapper } from './uiUtil';
 
 export class ApiKeyManager {
 	static async getApiKey(llmType: string = "OpenAI"): Promise<string | undefined> {
-		let apiKey: string|undefined = undefined;
-		
-		if (llmType === "OpenAI") {
-			apiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
-		} 
-		if (!apiKey) {
-			apiKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+		const llmModel = this.llmModel();
+		if (!llmModel) {
+			return undefined;
 		}
-		
-		if (!apiKey) {
-			if (llmType === "OpenAI") {
-				apiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
+
+		return llmModel.api_key;
+	}
+
+	static llmModel() {
+		const llmModel = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
+		if (!llmModel) {
+			return undefined;
+		}
+
+		const modelProperties = (modelPropertyName: string, modelName: string) => {
+			const modelConfig = UiUtilWrapper.getConfiguration("devchat", modelPropertyName);
+			if (!modelConfig) {
+			return undefined;
 			}
-			if (!apiKey) {
-				apiKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
+
+			let modelProperties: any = {};
+			for (const key of Object.keys(modelConfig || {})) {
+				const property = modelConfig![key];
+				modelProperties[key] = property;
+			}
+
+			if (!modelConfig["provider"] || !modelConfig["api_key"]) {
+				return undefined;
+			}
+			modelProperties['model'] = modelName;
+
+			return modelProperties;
+		};
+
+		if (llmModel === "gpt-3.5-turbo") {
+			return modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
+		}
+		if (llmModel === "gpt-3.5-turbo-16k") {
+			return modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
+		}
+		if (llmModel === "gpt-4") {
+			return modelProperties('Model.gpt-4', "gpt-4");
+		}
+		if (llmModel === "claude-2") {
+			return modelProperties('Model.claude-2', "claude-2");
+		}
+
+		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
+		if (!customModelConfig) {
+			return undefined;
+		}
+
+		const customModels = customModelConfig as Array<any>;
+		for (const model of customModels) {
+			if (!model.model) {
+				continue;
+			}
+			if (model.model === llmModel) {
+				let modelProperties: any = {};
+				for (const key of Object.keys(model || {})) {
+					const property = model![key];
+					modelProperties[key] = property;
+				}
+
+				if (!model["api_key"]) {
+					return undefined;
+				}
+
+				const modelProvider = model["model"].split('/')[0];
+				const modelName = model["model"].split('/').slice(1).join('/');
+
+				modelProperties["provider"] = modelProvider;
+				modelProperties["model"] = modelName;
+
+				return modelProperties;
 			}
 		}
-		if (!apiKey) {
-			if (llmType === "OpenAI") {
-				apiKey = process.env.OPENAI_API_KEY;
-			}
-		}
-		return apiKey;
+
+		return undefined;
 	}
 
 	static getKeyType(apiKey: string): string | undefined {

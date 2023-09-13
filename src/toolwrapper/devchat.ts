@@ -120,9 +120,9 @@ class DevChat {
 			args.push("-p", options.parent);
 		}
 
-		const llmModel = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.model');
-		if (llmModel) {
-			args.push("-m", llmModel);
+		const llmModelData = ApiKeyManager.llmModel();
+		if (llmModelData && llmModelData.model) {
+			args.push("-m", llmModelData.model);
 		}
 
 		return args;
@@ -200,6 +200,18 @@ class DevChat {
 	}
 
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
+		const llmModelData = ApiKeyManager.llmModel();
+		if (!llmModelData) {
+			return {
+				"prompt-hash": "",
+				user: "",
+				date: "",
+				response: `Error: no valid llm model is selected!`,
+				finish_reason: "",
+				isError: true,
+			};
+		}
+
 		const args = await this.buildArgs(options);
 		args.push("--");
 		args.push(content);
@@ -211,15 +223,13 @@ class DevChat {
 			logger.channel()?.show();
 		}
 
-
-		// 如果配置了devchat的TOKEN，那么就需要使用默认的代理
-		let openAiApiBaseObject = this.apiEndpoint(openaiApiKey);
-
-		const openaiModel = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.model');
 		const openaiTemperature = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.temperature');
 		const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
 		const llmModel = UiUtilWrapper.getConfiguration('DevChat', 'llmModel');
 		const tokensPerPrompt = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.tokensPerPrompt');
+
+		const openAiApiBaseObject = llmModelData.api_base? { OPENAI_API_BASE: llmModelData.api_base } : {};
+		const activeLlmModelKey = llmModelData.api_key;
 
 		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
 		if (!devChat) {
@@ -227,7 +237,6 @@ class DevChat {
 		}
 
 		const devchatConfig = {
-			model: openaiModel,
 			provider: llmModel,
 			"tokens-per-prompt": tokensPerPrompt,
 			OpenAI: {
@@ -257,7 +266,7 @@ class DevChat {
 				env: {
 					PYTHONUTF8:1,
 					...process.env,
-					OPENAI_API_KEY: openaiApiKey,
+					OPENAI_API_KEY: activeLlmModelKey,
 					...openAiApiBaseObject
 				},
 			};

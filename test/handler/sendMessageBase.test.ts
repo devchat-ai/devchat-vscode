@@ -130,7 +130,6 @@ describe('sendMessageBase', () => {
 			workspaceFoldersFirstPathStub.returns('./');
 
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns(process.env.TEST_DEVCHAT_KEY);
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
 			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
@@ -157,7 +156,6 @@ describe('sendMessageBase', () => {
 			workspaceFoldersFirstPathStub.returns('./');
 
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns('sk-KvH7ZCtHmFDCBTqH0jUv');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns('0');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
 			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
@@ -186,7 +184,6 @@ describe('sendMessageBase', () => {
 			workspaceFoldersFirstPathStub.returns('./');
 
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns(process.env.TEST_DEVCHAT_KEY);
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.model').returns('gpt-4');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
 			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');

@@ -50,8 +50,8 @@ const chatPanel = observer(() => {
   const getSettings = () => {
     messageUtil.sendMessage({
       command: "getSetting",
-      key1: "DevChat",
-      key2: "OpenAI.model",
+      key1: "devchat",
+      key2: "defaultModel",
     });
   };
 
@@ -237,8 +237,8 @@ const chatPanel = observer(() => {
             chat.changeChatModel(value);
             messageUtil.sendMessage({
               command: "updateSetting",
-              key1: "DevChat",
-              key2: "OpenAI.model",
+              key1: "devchat",
+              key2: "defaultModel",
               value: value,
             });
           }}
