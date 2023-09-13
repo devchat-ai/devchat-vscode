@@ -271,6 +271,17 @@ const InputMessage = observer((props: any) => {
         }
     };
 
+    const buttonStyles = {
+        root: {
+            color: 'var(--vscode-menu-foreground)',
+            backgroundColor: 'var(---vscode-menu-background)',
+            '&:hover':{
+                color:'var(---vscode-menu-activeForeground)',
+                backgroundColor: 'var(---vscode-menu-activeBackground)'
+            }
+        }
+    };
+
     return (
         <Stack 
             spacing={0} 
@@ -341,6 +352,7 @@ const InputMessage = observer((props: any) => {
                             size="xs" 
                             radius="xl" 
                             leftIcon={<IconRobot size="1rem" />}
+                            styles={buttonStyles}
                         >
                             {getModelShowName(chat.chatModel)}
                         </Button>
