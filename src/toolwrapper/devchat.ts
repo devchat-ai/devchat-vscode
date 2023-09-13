@@ -232,16 +232,16 @@ class DevChat {
 				obj[key] = llmModelData[key];
 				return obj;
 			}, {});
-		let devchatConfig = {
-			"id": llmModelData.model,
+		let devchatConfig = {};
+		devchatConfig[llmModelData.model] = {
 			"provider": llmModelData.provider,
-			"parameters": {
-				"stream": openaiStream,
-				...reduceModelData
-			}
+			"stream": openaiStream,
+			...reduceModelData
 		};
 
-		let devchatModels = {"models": [devchatConfig]};
+		let devchatModels = {
+			"default_model": llmModelData.model,
+			"models": devchatConfig};
 		
 		// write to config file
 		const os = process.platform;
