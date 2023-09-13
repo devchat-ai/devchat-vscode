@@ -6,14 +6,11 @@ import { ApiKeyManager } from '../util/apiKey';
 import { UiUtilWrapper } from '../util/uiUtil';
 
 
-
-regInMessage({command: 'regModelList'});
-regOutMessage({command: 'regModelList', result: [{name: ''}]});
-export async function regModelList(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+export async function getValidModels(): Promise<string[]> {
 	const modelProperties = async (modelPropertyName: string, modelName: string) => {
 		const modelConfig = UiUtilWrapper.getConfiguration("devchat", modelPropertyName);
 		if (!modelConfig) {
-		return undefined;
+			return undefined;
 		}
 
 		let modelProperties: any = {};
@@ -43,25 +40,24 @@ export async function regModelList(message: any, panel: vscode.WebviewPanel|vsco
 	let modelList : string[] = [];
 	const openaiModel = await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
 	if (openaiModel) {
-		modelList.push(openaiModel.modal);
+		modelList.push(openaiModel.model);
 	}
 	const openaiModel2 = await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
 	if (openaiModel2) {
-		modelList.push(openaiModel2.modal);
+		modelList.push(openaiModel2.model);
 	}
 	const openaiModel3 = await modelProperties('Model.gpt-4', "gpt-4");
 	if (openaiModel3) {
-		modelList.push(openaiModel3.modal);
+		modelList.push(openaiModel3.model);
 	}
 	const claudeModel = await modelProperties('Model.claude-2', "claude-2");
 	if (claudeModel) {
-		modelList.push(claudeModel.modal);
+		modelList.push(claudeModel.model);
 	}
 
 	const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
 	if (!customModelConfig) {
-		MessageHandler.sendMessage(panel, { command: 'regModelList', result: modelList });
-		return;
+		return modelList;
 	}
 
 	const customModels = customModelConfig as Array<any>;
@@ -86,6 +82,14 @@ export async function regModelList(message: any, panel: vscode.WebviewPanel|vsco
 
 		modelList.push(model["model"]);
 	}
+
+	return modelList;
+}
+
+regInMessage({command: 'regModelList'});
+regOutMessage({command: 'regModelList', result: [{name: ''}]});
+export async function regModelList(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	const modelList = await getValidModels();
 	
 	MessageHandler.sendMessage(panel, { command: 'regModelList', result: modelList });
 	return;

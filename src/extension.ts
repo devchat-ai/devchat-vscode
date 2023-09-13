@@ -20,6 +20,7 @@ import {
     registerAskCodeSummaryIndexStopCommand,
 	registerAddSummaryContextCommand,
 	registerInstallCommandsCommand,
+	registerUpdateChatModelsCommand,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -52,6 +53,7 @@ function activate(context: vscode.ExtensionContext) {
     registerStatusBarItemClickCommand(context);
 
 	registerInstallCommandsCommand(context);
+	registerUpdateChatModelsCommand(context);
 
     createStatusBarItem(context);
 	if (FT("ask-code")) {

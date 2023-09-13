@@ -21,7 +21,7 @@ import { FT } from '../util/feature_flags/feature_toggles';
 import { getPackageVersion } from '../util/python_installer/pip_package_version';
 
 import { exec } from 'child_process';
-import { sendCommandListByDevChatRun } from '../handler/regCommandList';
+import { sendCommandListByDevChatRun, updateChatModels } from '../handler/regCommandList';
 import DevChat from "../toolwrapper/devchat";
 
 let indexProcess: CommandRun | null = null;
@@ -534,6 +534,14 @@ export function registerInstallCommandsCommand(context: vscode.ExtensionContext)
 		await devchat.updateSysCommand();
 
 		sendCommandListByDevChatRun();
+    });
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerUpdateChatModelsCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.UpdataChatModels', async () => {
+        updateChatModels();
     });
 
     context.subscriptions.push(disposable);
