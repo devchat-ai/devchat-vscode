@@ -13,7 +13,7 @@ import { Message } from "@/views/stores/ChatStore";
 const InputMessage = observer((props: any) => {
     const { chatPanelWidth } = props;
     const { input, chat } = useMst();
-    const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus } = input;
+    const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus,modelMenus } = input;
     const { generating } = chat;
 
     const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
@@ -120,6 +120,7 @@ const InputMessage = observer((props: any) => {
     useEffect(() => {
         input.fetchContextMenus().then();
         input.fetchCommandMenus().then();
+        input.fetchModelMenus().then();
         messageUtil.registerHandler('regCommandList', (message: { result: object[]}) => {
             input.updateCommands(message.result);
         });
@@ -158,6 +159,22 @@ const InputMessage = observer((props: any) => {
         });
         inputRef.current.focus();
     }, []);
+
+    const getModelShowName = (modelName:string)=>{
+        const nameMap = {
+            "gpt-3.5-turbo": "GPT-3.5",
+            "gpt-3.5-turbo-16k": "GPT-3.5-16K",
+            "gpt-4": "GPT-4",
+            "claude-2": "CLAUDE-2"
+        };
+        if (modelName in nameMap){
+            return nameMap[modelName];
+        } else if(modelName.lastIndexOf('/') > -1){
+            return modelName.substring(modelName.lastIndexOf('/')+1).toLocaleUpperCase();
+        } else {
+            return modelName.toUpperCase();
+        }
+    };
 
     useEffect(() => {
         let filtered;
@@ -226,8 +243,8 @@ const InputMessage = observer((props: any) => {
         chat.changeChatModel(value);
         messageUtil.sendMessage({
             command: "updateSetting",
-            key1: "DevChat",
-            key2: "OpenAI.model",
+            key1: "devchat",
+            key2: "defaultModel",
             value: value,
         });
     };
@@ -305,13 +322,15 @@ const InputMessage = observer((props: any) => {
                             radius="xl" 
                             leftIcon={<IconRobot size="1rem" />}
                         >
-                            GPT-3.5
+                            {getModelShowName(chat.chatModel)}
                         </Button>
                     </Menu.Target>
                     <Menu.Dropdown>
-                        <Menu.Item onClick={() => changeModel("gpt-3.5-turbo")}>GPT-3.5</Menu.Item>
-                        <Menu.Item onClick={() => changeModel("gpt-3.5-turbo-16k")}>GPT-3.5-16K</Menu.Item>
-                        <Menu.Item onClick={() => changeModel("gpt-4")}>GPT-4</Menu.Item>
+                        {modelMenus.map((modelName) => { 
+                            return <Menu.Item onClick={() => changeModel(modelName)}>
+                                {getModelShowName(modelName)}
+                            </Menu.Item>;
+                         })}
                     </Menu.Dropdown>
                 </Menu>
             </Group>

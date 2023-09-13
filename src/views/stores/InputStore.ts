@@ -20,6 +20,18 @@ const regContextMenus = async () => {
         }
     });
 };
+const regModelMenus = async () => {
+    return new Promise<String[]>((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'regModelList' });
+            messageUtil.registerHandler('regModelList', (message: {result: String[]} ) => {
+                resolve(message.result);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
 
 export const ChatContext = types.model({
     file: types.maybe(types.string),
@@ -44,6 +56,7 @@ export const InputStore = types
         currentMenuIndex: 0,
         commandMenus: types.array(MenuItem),
         contextMenus: types.array(MenuItem),
+        modelMenus: types.array(types.string)
     }).
     actions(self => ({
         setValue(value: string) {
@@ -88,7 +101,14 @@ export const InputStore = types
                 console.error("Failed to fetch context menus", error);
             }
         }),
-
+        fetchModelMenus: flow(function* () {
+            try {
+                const models = yield regModelMenus();
+                self.modelMenus.push(...models);
+            } catch (error) {
+                console.error("Failed to fetch context menus", error);
+            }
+        }),
         fetchCommandMenus: flow(function* () {
 			const regCommandMenus = async () => {
 				return new Promise<Item[]>((resolve, reject) => {
@@ -105,7 +125,7 @@ export const InputStore = types
 			} catch (error) {
 				console.error("Failed to fetch command menus", error);
 			}
-		})
+		}),
     }));
 
 
