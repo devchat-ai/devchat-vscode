@@ -1,12 +1,19 @@
 import React from "react";
-import { Header, Avatar, Flex, Text, ActionIcon } from "@mantine/core";
+import { Header, Avatar, Flex, Text, ActionIcon, createStyles } from "@mantine/core";
 import BalanceTip from "@/views/components/BalanceTip";
 import { IconSettings } from "@tabler/icons-react";
 // @ts-ignore
 import SvgAvatarDevChat from "../MessageAvatar/avatar_devchat.svg";
 import messageUtil from "@/util/MessageUtil";
 
+const useStyles = createStyles((theme) => ({
+  logoName:{
+      color: 'var(--vscode-foreground)'
+  }
+}));
+
 export default function Head() {
+  const {classes} = useStyles();
   const openSetting = () => {
     messageUtil.sendMessage({
       command: "doCommand",
@@ -31,7 +38,7 @@ export default function Head() {
           }}
         >
           <Avatar color="indigo" size={25} radius="xl" src={SvgAvatarDevChat} />
-          <Text weight="bold">DevChat</Text>
+          <Text weight="bold" className={classes.logoName}>DevChat</Text>
         </Flex>
         <Flex align="center" gap="xs" sx={{paddingRight:10}}>
           <div>
