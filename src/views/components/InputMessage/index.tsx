@@ -15,6 +15,11 @@ const useStyles = createStyles((theme) => ({
         color: 'var(--vscode-dropdown-foreground)',
         borderColor:'var(--vscode-dropdown-border)',
         backgroundColor: 'var(--vscode-dropdown-background)',
+        '&:hover':{
+            color: 'var(--vscode-dropdown-foreground)',
+            borderColor:'var(--vscode-dropdown-border)',
+            backgroundColor: 'var(--vscode-dropdown-background)'
+        },
         '&[data-disabled]': {
             borderColor: "transparent",
             backgroundColor: "#e9ecef",
