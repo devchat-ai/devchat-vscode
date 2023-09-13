@@ -84,7 +84,7 @@ export async function regModelList(message: any, panel: vscode.WebviewPanel|vsco
 			}
 		}
 
-		modelList.push(modelName);
+		modelList.push(model["model"]);
 	}
 	
 	MessageHandler.sendMessage(panel, { command: 'regModelList', result: modelList });
