@@ -41,11 +41,11 @@ async function configUpdateTo_0912() {
 	let modelConfigNew = {};
 	if (openaiKey) {
 		modelConfigNew["api_key"] = openaiKey;
+		modelConfigNew["provider"] = "openai";
 	} else if (devchatKey) {
 		modelConfigNew["api_key"] = devchatKey;
+		modelConfigNew["provider"] = "openai";
 	}
-
-	modelConfigNew["provider"] = "openai";
 
 	if (endpointKey) {
 		modelConfigNew["api_base"] = endpointKey;
@@ -57,9 +57,13 @@ async function configUpdateTo_0912() {
 	//if (!modelConfig1 && !modelConfig2 && !modelConfig3 && Object.keys(modelConfigNew).length > 0) {
 	if (Object.keys(modelConfig1).length === 0 &&
 		Object.keys(modelConfig2).length === 0 && 
-		Object.keys(modelConfig3).length === 0 &&
-		Object.keys(modelConfigNew).length > 0) {
+		Object.keys(modelConfig3).length === 0) {
 		// config default gpt models
+		if (Object.keys(modelConfigNew).length === 0) {
+			modelConfigNew["api_key"] = "DC.<your devchat key>";
+			modelConfigNew["provider"] = "openai";
+		}
+
 		try {
 			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5", modelConfigNew, vscode.ConfigurationTarget.Global);
 			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5-16k", modelConfigNew, vscode.ConfigurationTarget.Global);
