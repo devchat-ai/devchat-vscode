@@ -76,6 +76,7 @@ describe('sendMessageBase', () => {
 				text: 'Hello, world!'
 			};
 			const chatResponse: ChatResponse = {
+				"finish_reason": "",
 				response: 'Hello, user!',
 				isError: false,
 				user: 'user',
@@ -92,6 +93,7 @@ describe('sendMessageBase', () => {
 		it('should handle response text correctly when isError is false', async () => {
 			const partialDataText = 'Partial data';
 			const chatResponse: ChatResponse = {
+				"finish_reason": "",
 				response: 'Hello, user!',
 				isError: false,
 				user: 'user',
@@ -106,6 +108,7 @@ describe('sendMessageBase', () => {
 		it('should handle response text correctly when isError is true', async () => {
 			const partialDataText = 'Partial data';
 			const chatResponse: ChatResponse = {
+				"finish_reason": "",
 				response: 'Error occurred!',
 				isError: true,
 				user: 'user',
@@ -132,9 +135,7 @@ describe('sendMessageBase', () => {
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns(process.env.TEST_DEVCHAT_KEY);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
-			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.tokensPerPrompt').returns(9000);
-
+			
 			const result = await sendMessageBase(message, handlePartialData);
 			expect(result).to.be.an('object');
 			expect(result!.command).to.equal('receiveMessage');
@@ -158,9 +159,7 @@ describe('sendMessageBase', () => {
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns('sk-KvH7ZCtHmFDCBTqH0jUv');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns('0');
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
-			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.tokensPerPrompt').returns('9000');
-
+			
 			const result = await sendMessageBase(message, handlePartialData);
 			expect(result).to.be.an('object');
 			expect(result!.command).to.equal('receiveMessage');
@@ -186,9 +185,7 @@ describe('sendMessageBase', () => {
 			getConfigurationStub.withArgs('DevChat', 'Access_Key_DevChat').returns(process.env.TEST_DEVCHAT_KEY);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.temperature').returns(0);
 			getConfigurationStub.withArgs('DevChat', 'OpenAI.stream').returns('true');
-			getConfigurationStub.withArgs('DevChat', 'llmModel').returns('OpenAI');
-			getConfigurationStub.withArgs('DevChat', 'OpenAI.tokensPerPrompt').returns(9000);
-
+			
 
 			// Start sendMessageBase in a separate Promise
 			const sendMessagePromise = sendMessageBase(message, handlePartialData);

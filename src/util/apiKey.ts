@@ -22,17 +22,17 @@ export class ApiKeyManager {
 		return providerNameMap[provider];
 	}
 	static async getApiKey(llmType: string = "OpenAI"): Promise<string | undefined> {
-		const llmModel = await this.llmModel();
-		if (!llmModel) {
+		const llmModelT = await this.llmModel();
+		if (!llmModelT) {
 			return undefined;
 		}
 
-		return llmModel.api_key;
+		return llmModelT.api_key;
 	}
 
 	static async llmModel() {
-		const llmModel = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
-		if (!llmModel) {
+		const llmModelT = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
+		if (!llmModelT) {
 			return undefined;
 		}
 
@@ -62,20 +62,24 @@ export class ApiKeyManager {
 				modelProperties["api_key"] = apiKey;
 			}
 
+			if (!modelConfig["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
+				modelProperties["api_base"] = "https://api.devchat.ai/v1";
+			}
+
 			modelProperties['model'] = modelName;
 			return modelProperties;
 		};
 
-		if (llmModel === "gpt-3.5-turbo") {
+		if (llmModelT === "gpt-3.5-turbo") {
 			return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
 		}
-		if (llmModel === "gpt-3.5-turbo-16k") {
+		if (llmModelT === "gpt-3.5-turbo-16k") {
 			return await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
 		}
-		if (llmModel === "gpt-4") {
+		if (llmModelT === "gpt-4") {
 			return await modelProperties('Model.gpt-4', "gpt-4");
 		}
-		if (llmModel === "claude-2") {
+		if (llmModelT === "claude-2") {
 			return await modelProperties('Model.claude-2', "claude-2");
 		}
 
@@ -89,7 +93,7 @@ export class ApiKeyManager {
 			if (!model.model) {
 				continue;
 			}
-			if (model.model === llmModel) {
+			if (model.model === llmModelT) {
 				let modelProperties: any = {};
 				for (const key of Object.keys(model || {})) {
 					const property = model![key];
@@ -109,6 +113,10 @@ export class ApiKeyManager {
 						return undefined;
 					}
 					modelProperties["api_key"] = apiKey;
+				}
+
+				if (!model["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
+					modelProperties["api_base"] = "https://api.devchat.ai/v1";
 				}
 
 				modelProperties["provider"] = modelProvider;
@@ -136,16 +144,5 @@ export class ApiKeyManager {
 	}
 	static async loadApiKeySecret(llmType: string = "Unknow"): Promise<string | undefined> {
 		return await UiUtilWrapper.secretStorageGet(`Access_KEY_${llmType}`);
-	}
-
-	static getEndPoint(apiKey: string | undefined): string | undefined {
-		let endPoint = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
-		if (!endPoint) {
-			endPoint = process.env.OPENAI_API_BASE;
-		}
-		if (!endPoint && apiKey?.startsWith("DC.")) {
-			endPoint = "https://api.devchat.ai/v1";
-		}
-		return endPoint;
 	}
 }

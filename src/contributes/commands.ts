@@ -313,7 +313,16 @@ async function installAskCode(supportedFileTypes, progressBar: any, callback: Fu
 async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};
 
-    let openaiApiKey = await ApiKeyManager.getApiKey();
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (!llmModelData) {
+		logger.channel()?.error('No valid llm model is selected!');
+        logger.channel()?.show();
+
+		progressBar.endWithError("No valid llm model is selected!");
+        return;
+	}
+
+    let openaiApiKey = llmModelData.api_key;
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
@@ -323,7 +332,7 @@ async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any)
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }
@@ -440,17 +449,26 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};
 
-    let openaiApiKey = await ApiKeyManager.getApiKey();
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (!llmModelData) {
+		logger.channel()?.error('No valid llm model is selected!');
+        logger.channel()?.show();
+
+		progressBar.endWithError("No valid llm model is selected!");
+        return;
+	}
+
+    let openaiApiKey = llmModelData.api_key;
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
 
-        progressBar.endWithError("The OpenAI key is invalid!");
+		progressBar.endWithError("The OpenAI key is invalid!");
         return;
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }

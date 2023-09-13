@@ -9,7 +9,7 @@ import ExtensionContextHolder from '../util/extensionContext';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
 import { exitCode } from 'process';
-
+import * as yaml from 'yaml';
 
 
 const envPath = path.join(__dirname, '..', '.env');
@@ -192,13 +192,6 @@ class DevChat {
 		};
 	}
 
-	apiEndpoint(apiKey: string | undefined): any {
-		const openAiApiBase = ApiKeyManager.getEndPoint(apiKey);
-
-		const openAiApiBaseObject = openAiApiBase ? { OPENAI_API_BASE: openAiApiBase } : {};
-		return openAiApiBaseObject;
-	}
-
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
 		const llmModelData = await ApiKeyManager.llmModel();
 		if (!llmModelData) {
@@ -223,11 +216,8 @@ class DevChat {
 			logger.channel()?.show();
 		}
 
-		const openaiTemperature = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.temperature');
 		const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
-		const llmModel = UiUtilWrapper.getConfiguration('DevChat', 'llmModel');
-		const tokensPerPrompt = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.tokensPerPrompt');
-
+		
 		const openAiApiBaseObject = llmModelData.api_base? { OPENAI_API_BASE: llmModelData.api_base } : {};
 		const activeLlmModelKey = llmModelData.api_key;
 
@@ -236,20 +226,31 @@ class DevChat {
 			devChat = 'devchat';
 		}
 
-		const devchatConfig = {
-			provider: llmModel,
-			"tokens-per-prompt": tokensPerPrompt,
-			OpenAI: {
-				temperature: openaiTemperature,
-				stream: openaiStream,
+		const reduceModelData = Object.keys(llmModelData)
+			.filter(key => key !== 'api_key' && key !== 'provider' && key !== 'model' && key !== 'api_base')
+			.reduce((obj, key) => {
+				obj[key] = llmModelData[key];
+				return obj;
+			}, {});
+		let devchatConfig = {
+			"id": llmModelData.model,
+			"provider": llmModelData.provider,
+			"parameters": {
+				"stream": openaiStream,
+				...reduceModelData
 			}
 		};
+
+		let devchatModels = {"models": [devchatConfig]};
 		
 		// write to config file
-		const configPath = path.join(workspaceDir!, '.chat', 'config.json');
+		const os = process.platform;
+  		const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
+  
+		const configPath = path.join(userHome!, '.chat', 'config.yml');
 		// write devchatConfig to configPath
-		const configJson = JSON.stringify(devchatConfig, null, 2);
-		fs.writeFileSync(configPath, configJson);
+		const yamlString = yaml.stringify(devchatModels);
+		fs.writeFileSync(configPath, yamlString);
 
 		try {
 

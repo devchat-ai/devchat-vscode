@@ -1,14 +1,10 @@
-import * as path from 'path';
-
-import * as vscode from 'vscode'
+import * as vscode from 'vscode';
 
 import { ChatContext } from './contextManager';
-import { createTempSubdirectory, git_ls_tree, runCommandStringAndWriteOutput } from '../util/commonUtil';
 
 import { logger } from '../util/logger';
 import { handleCodeSelected } from './contextCodeSelected';
 import DevChat, { ChatOptions } from '../toolwrapper/devchat';
-import { number } from 'mobx-state-tree/dist/internal';
 
 
 async function getCurrentSelectText(activeEditor: vscode.TextEditor): Promise<string> {
@@ -183,7 +179,7 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 						for (const child of symbol.children) {
 							visitFun(child);
 						}
-					}
+					};
 					for (const symbol of symbolsT) {
 						visitFun(symbol);
 					}

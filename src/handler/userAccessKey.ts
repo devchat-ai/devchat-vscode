@@ -12,22 +12,20 @@ regInMessage({command: 'getUserAccessKey'});
 regOutMessage({command: 'getUserAccessKey', accessKey: "DC.xxx", keyType: "DevChat", endPoint: "https://xxx"});
 export async function getUserAccessKey(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		let openaiApiKey = await ApiKeyManager.getApiKey();
-		if (!openaiApiKey) {
+		const llmModelData = await ApiKeyManager.llmModel();
+		if (!llmModelData || llmModelData.api_key) {
 			MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": "", "keyType": "", "endPoint": ""});
 			return;
 		}
 
-		let keyType = ApiKeyManager.getKeyType(openaiApiKey!);
-		if (keyType === "DC") {
+		let keyType: string = "others";
+		if (llmModelData.api_key?.startsWith("DC.")) {
 			keyType = "DevChat";
-		} else if (keyType === "sk") {
-			keyType = "OpenAI";
 		}
 
-		let openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+		let openAiApiBase = llmModelData.api_base;
 		if (!openAiApiBase) {
 			openAiApiBase = "";
 		}
-		MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": openaiApiKey, "keyType": keyType, "endPoint": openAiApiBase});
+		MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": llmModelData.api_key, "keyType": keyType, "endPoint": openAiApiBase});
 }

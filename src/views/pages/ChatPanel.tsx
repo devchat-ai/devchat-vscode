@@ -257,6 +257,9 @@ const chatPanel = observer(() => {
             <Chip size="xs" styles={{ label: chipStyle }} value="gpt-4">
               GPT-4
             </Chip>
+			<Chip size="xs" styles={{ label: chipStyle }} value="claude-2">
+			  Claude-2
+            </Chip>
           </Group>
         </Chip.Group>
       </Stack>

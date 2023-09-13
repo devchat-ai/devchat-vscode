@@ -57,7 +57,14 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 
     let envs = {};
 
-    let openaiApiKey = await ApiKeyManager.getApiKey();
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (!llmModelData) {
+		logger.channel()?.error('No valid llm model is selected!');
+        logger.channel()?.show();
+        return;
+	}
+
+    let openaiApiKey = llmModelData.api_key;
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
@@ -65,7 +72,7 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }
