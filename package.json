@@ -416,7 +416,7 @@
 					"type": "boolean",
 					"default": false,
 					"order": 11,
-					"description": "Enable/Disable function calling for GPT."
+					"description": "Enable function calling for GPT."
 				},
 				"DevChat.DevChatPath": {
 					"type": "string",
