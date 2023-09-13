@@ -273,13 +273,21 @@ const InputMessage = observer((props: any) => {
 
     const buttonStyles = {
         root: {
-            color: 'var(--vscode-menu-foreground)',
-            backgroundColor: 'var(---vscode-menu-background)',
+            color: 'var(--vscode-dropdown-foreground)',
+            borderColor:'var(--vscode-dropdown-border)',
+            backgroundColor: 'var(--vscode-dropdown-background)',
             '&:hover':{
-                color:'var(---vscode-menu-activeForeground)',
-                backgroundColor: 'var(---vscode-menu-activeBackground)'
+                color: 'var(--vscode-dropdown-foreground)',
+                borderColor:'var(--vscode-dropdown-border)',
+                backgroundColor: 'var(--vscode-dropdown-background)'
             }
         }
+    };
+
+    const actionStyles={
+        color: 'var(--vscode-dropdown-foreground)',
+        borderColor:'var(--vscode-dropdown-border)',
+        backgroundColor: 'var(--vscode-dropdown-background)'
     };
 
     return (
@@ -307,6 +315,7 @@ const InputMessage = observer((props: any) => {
                             radius="xl" 
                             variant="default"
                             disabled={generating}
+                            style={actionStyles}
                         >
                             <IconTextPlus size="1rem" />
                         </ActionIcon>
@@ -438,11 +447,9 @@ const InputMessage = observer((props: any) => {
                                             variant="default"
                                             disabled={generating}
                                             onClick={openDrawer}
+                                            style={actionStyles}
                                             sx={{
                                                 pointerEvents: 'all',
-                                                '&:hover': {
-                                                    backgroundColor: 'var(--vscode-toolbar-activeBackground)'
-                                                },
                                                 '&[data-disabled]': {
                                                     borderColor: 'var(--vscode-input-border)',
                                                     backgroundColor: 'var(--vscode-toolbar-activeBackground)'
