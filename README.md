@@ -24,20 +24,14 @@
 
 DevChat is an open-source platform that empowers developers to leverage AI for code generation and documentation. We aim to go beyond simple code auto-completion and limited operations on code snippets. DevChat offers a highly *practical* and *effective* way for developers to interact and collaborate with large language models (LLMs).
 
-## Our Insights
+## Why DevChat?
 
-While there are many AI coding tools available, we created DevChat based on our insights gained from generating tens of thousands of lines of code. If you agree with our perspectives outlined below, DevChat could be the perfect choice for you.
+While there are many AI coding tools available, we developed DevChat for our own use, drawing on our practical insights from generating tens of thousands of lines of code. DevChat makes the following distinctive design choices:
 
-- **The value of prompt "engineering" is often overstated**. While a well-crafted prompt template is helpful, it doesn't justify spending days or weeks of study. Instead, dedicate an hour or two to create a few effective templates and share them with your team.
-- The art of writing prompts is a skill honed through practice. It's not about templates or engineering, but about **refining individual prompts for specific tasks on a case-by-case basis**.
-- **The bottleneck in harnessing AI's capabilities lies in how to embed the right context in a prompt**. This isn't merely about the token limit of an AI model's input. Even with an infinite number of tokens, existing AI models would struggle to yield satisfactory results without a proper separation of concerns.
-- **Use AI only when it truly adds value**. Our misconception about AI's capabilities in reality is even a greater issue than hallucination of LLMs. What we need is a tool that boosts productivity, not merely an experiment.
-
-## Our Features
-
-In alignment with our insights, DevChat incorporates the following design choices:
-- **Precise control over the context embedded in a prompt**. This isn't a feature to be overlooked in the quest for greater intelligence or autonomy. Precise control over context is crucial for effective AI use. In our view, most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than LLMs can effectively manage.
+- **Precise control over the context embedded in a prompt**. This shouldn't be overlooked in the quest for greater intelligence or autonomy. Precise control over context is the key to effective AI use. We believe that most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than LLMs can effectively manage.
 - **A simple, extensible prompt directory**. This enables developers or teams to easily integrate their own predefined prompt templates into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need a complex framework to make AI work for you. All it takes is a standard editor operating on your filesystem.
+
+## Feature Overview
 
 ### Context Building
 
