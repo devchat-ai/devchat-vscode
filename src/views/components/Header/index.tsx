@@ -18,8 +18,7 @@ export default function Head() {
       height={40}
       style={{
         backgroundColor: "var(--vscode-sideBar-background)",
-        // borderBottom: "1px solid var(--vscode-disabledForeground)",
-        boxShadow: "0 0px 3px var(--vscode-widget-shadow)",
+        borderBottom: '1px solid #ced4da',
       }}
     >
       <Flex justify="space-between" align="center" sx={{ padding: "0 10px" }}>
