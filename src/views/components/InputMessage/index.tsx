@@ -1,8 +1,8 @@
-import { useMantineTheme, Flex, Stack, Accordion, Box, ActionIcon, ScrollArea, Center, Popover, Textarea, Text, Divider, Indicator, HoverCard, Drawer, Chip, Group, Button, UnstyledButton, Menu } from "@mantine/core";
-import { useDisclosure, useListState, useResizeObserver, useTimeout } from "@mantine/hooks";
-import { IconGitBranch, IconBook, IconX, IconSquareRoundedPlus, IconSend, IconPaperclip, IconChevronDown, IconDatabase, IconTextPlus, IconRobot } from "@tabler/icons-react";
+import { useMantineTheme, Flex, Stack, ActionIcon, ScrollArea, Popover, Textarea, Text, Indicator, Drawer, Group, Button, Menu,createStyles } from "@mantine/core";
+import { useDisclosure, useResizeObserver } from "@mantine/hooks";
+import { IconGitBranch, IconSend, IconPaperclip, IconChevronDown, IconTextPlus, IconRobot } from "@tabler/icons-react";
 import React, { useState, useEffect } from "react";
-import { IconGitBranchChecked, IconShellCommand, IconMouseRightClick } from "@/views/components/ChatIcons";
+import { IconGitBranchChecked, IconShellCommand } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
 import InputContexts from './InputContexts';
 import { observer } from "mobx-react-lite";
@@ -10,7 +10,24 @@ import { useMst } from "@/views/stores/RootStore";
 import { ChatContext } from "@/views/stores/InputStore";
 import { Message } from "@/views/stores/ChatStore";
 
+const useStyles = createStyles((theme) => ({
+    actionIcon:{
+        color: 'var(--vscode-dropdown-foreground)',
+        borderColor:'var(--vscode-dropdown-border)',
+        backgroundColor: 'var(--vscode-dropdown-background)',
+        '&[data-disabled]': {
+            borderColor: "transparent",
+            backgroundColor: "#e9ecef",
+            color: "#adb5bd",
+            cursor: "not-allowed",
+            backgroundImage: "none",
+            pointervents: "none",
+        }
+    }
+  }));
+
 const InputMessage = observer((props: any) => {
+    const {classes} = useStyles();
     const { chatPanelWidth } = props;
     const { input, chat } = useMst();
     const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus,modelMenus } = input;
@@ -284,12 +301,6 @@ const InputMessage = observer((props: any) => {
         }
     };
 
-    const actionStyles={
-        color: 'var(--vscode-dropdown-foreground)',
-        borderColor:'var(--vscode-dropdown-border)',
-        backgroundColor: 'var(--vscode-dropdown-background)'
-    };
-
     return (
         <Stack 
             spacing={0} 
@@ -315,7 +326,7 @@ const InputMessage = observer((props: any) => {
                             radius="xl" 
                             variant="default"
                             disabled={generating}
-                            style={actionStyles}
+                            className={classes.actionIcon}
                         >
                             <IconTextPlus size="1rem" />
                         </ActionIcon>
@@ -447,7 +458,7 @@ const InputMessage = observer((props: any) => {
                                             variant="default"
                                             disabled={generating}
                                             onClick={openDrawer}
-                                            style={actionStyles}
+                                            className={classes.actionIcon}
                                             sx={{
                                                 pointerEvents: 'all',
                                                 '&[data-disabled]': {
@@ -465,6 +476,7 @@ const InputMessage = observer((props: any) => {
                                     variant="default"
                                     disabled={generating}
                                     onClick={handleSendClick}
+                                    className={classes.actionIcon}
                                     sx={{
                                         marginLeft: '10px',
                                         pointerEvents: 'all',
@@ -475,10 +487,6 @@ const InputMessage = observer((props: any) => {
                                             backgroundColor:'#ED6A45',
                                             color:'#FFFFFF',
                                             opacity:0.7
-                                        },
-                                        '&[data-disabled]': {
-                                            borderColor: 'var(--vscode-input-border)',
-                                            backgroundColor: 'var(--vscode-toolbar-activeBackground)'
                                         }
                                     }}>
                                     <IconSend size="1rem" />
