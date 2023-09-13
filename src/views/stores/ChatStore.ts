@@ -75,7 +75,7 @@ export const ChatStore = types.model('Chat', {
     isBottom: true,
     isTop: false,
     scrollBottom: 0,
-    chatModel: 'gpt-4',
+    chatModel: 'GPT-3.5',
     rechargeSite: 'https://devchat.ai/pricing/',
     features: types.optional(types.frozen(), {})
 })

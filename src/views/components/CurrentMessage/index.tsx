@@ -1,7 +1,7 @@
 
 import React, { useEffect } from "react";
 import { keyframes } from "@emotion/react";
-import { Container, Text } from "@mantine/core";
+import { Box, Container, Text } from "@mantine/core";
 import MessageBody from "@/views/components/MessageBody";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
@@ -43,7 +43,7 @@ const getBlocks = (message) => {
     blocks.push(unmatchedText);
 
     return blocks;
-}
+};
 
 const CurrentMessage = observer((props: any) => {
     const { width } = props;
@@ -78,10 +78,9 @@ const CurrentMessage = observer((props: any) => {
     }, [hasDone]);
 
     return generating
-        ? <Container
+        ? <Box
             sx={{
-                margin: 0,
-                padding: 0,
+                marginBottom: 50,
                 width: width,
                 pre: {
                     whiteSpace: 'break-spaces'
@@ -89,7 +88,7 @@ const CurrentMessage = observer((props: any) => {
             }}>
             <MessageBody messageText={renderBlocks.join('\n\n')} messageType="bot" />
             <MessageBlink />
-        </Container>
+        </Box>
         : <></>;
 });
 

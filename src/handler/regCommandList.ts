@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import CommandManager from '../command/commandManager';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
+import { getValidModels } from './regValidModelList';
 
 
 regInMessage({command: 'regCommandList'});
@@ -46,5 +47,10 @@ export async function sendCommandListByDevChatRun() {
 	if (existPannel) {
 		regCommandListByDevChatRun({}, existPannel!);
 	}
+}
+
+export async function updateChatModels() {
+	const modelList = await getValidModels();
+	MessageHandler.sendMessage(existPannel!, { command: 'regModelList', result: modelList });
 }
 

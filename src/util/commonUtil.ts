@@ -12,12 +12,12 @@ import { ApiKeyManager } from './apiKey';
 
 async function createOpenAiKeyEnv() {
 	let envs = {...process.env};
-	let openaiApiKey = await ApiKeyManager.getApiKey();
-    if (openaiApiKey) {
-        envs['OPENAI_API_KEY'] = openaiApiKey;
-    }
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (llmModelData && llmModelData.api_key) {
+		envs['OPENAI_API_KEY'] = llmModelData.api_key;
+	}
     
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }
@@ -228,11 +228,11 @@ export function runCommandStringAndWriteOutputSync(command: string, outputFile: 
 			return JSON.stringify(data);
 		};
 		fs.writeFileSync(outputFile, onOutputFile(command, output));
-		return { exitCode: 0, stdout: output, stderr: '' }
+		return { exitCode: 0, stdout: output, stderr: '' };
 	} catch (error) {
 		logger.channel()?.error(`Error occurred: ${error}`);
 		logger.channel()?.show();
-		return { exitCode: 1, stdout: '', stderr: String(error) }
+		return { exitCode: 1, stdout: '', stderr: String(error) };
 	}
 }
 

@@ -21,7 +21,7 @@ import { FT } from '../util/feature_flags/feature_toggles';
 import { getPackageVersion } from '../util/python_installer/pip_package_version';
 
 import { exec } from 'child_process';
-import { sendCommandListByDevChatRun } from '../handler/regCommandList';
+import { sendCommandListByDevChatRun, updateChatModels } from '../handler/regCommandList';
 import DevChat from "../toolwrapper/devchat";
 
 let indexProcess: CommandRun | null = null;
@@ -82,42 +82,39 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForFile_chinese', callback));
 }
 
-export function registerOpenAiApiKeySettingCommand(context: vscode.ExtensionContext) {
-	const secretStorage: vscode.SecretStorage = context.secrets;
+function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('DevChat.Api_Key_OpenAI', async () => {
+		vscode.commands.registerCommand(`DevChat.AccessKey.${provider}`, async () => {
 			const passwordInput: string = await vscode.window.showInputBox({
 				password: true,
-				title: "Input OpenAi Api Key",
-				placeHolder: "Set OpenAI Api Key.(Leave blank if clearing stored key.)"
+				title: `Input ${provider} Access Key`,
+				placeHolder: `Set ${provider} Access Key.(Leave blank if clearing stored key.)`
 			}) ?? '';
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your api key is invalid!");
 				return ;
 			}
-			ApiKeyManager.writeApiKeySecret(passwordInput, "OpenAI");
+			await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
 		})
 	);
 }
 
-export function registerDevChatApiKeySettingCommand(context: vscode.ExtensionContext) {
-	const secretStorage: vscode.SecretStorage = context.secrets;
-	context.subscriptions.push(
-		vscode.commands.registerCommand('DevChat.Access_Key_DevChat', async () => {
-			const passwordInput: string = await vscode.window.showInputBox({
-				password: true,
-				title: "Input DevChat Access Key",
-				placeHolder: "Set DevChat Access Key.(Leave blank if clearing stored key.)"
-			}) ?? '';
-
-			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
-				UiUtilWrapper.showErrorMessage("Your access key is invalid!");
-				return ;
-			}
-			ApiKeyManager.writeApiKeySecret(passwordInput, "DevChat");
-		})
-	);
+export function registerAccessKeySettingCommand(context: vscode.ExtensionContext) {
+	regAccessKeyCommand(context,  "OpenAI");
+	regAccessKeyCommand(context,  "Cohere");
+	regAccessKeyCommand(context,  "Anthropic");
+	regAccessKeyCommand(context,  "Replicate");
+	regAccessKeyCommand(context,  "HuggingFace");
+	regAccessKeyCommand(context,  "TogetherAI");
+	regAccessKeyCommand(context,  "OpenRouter");
+	regAccessKeyCommand(context,  "VertexAI");
+	regAccessKeyCommand(context,  "AI21");
+	regAccessKeyCommand(context,  "BaseTen");
+	regAccessKeyCommand(context,  "Azure");
+	regAccessKeyCommand(context,  "SageMaker");
+	regAccessKeyCommand(context,  "Bedrock");
+	regAccessKeyCommand(context,  "DevChat");
 }
 
 export function registerStatusBarItemClickCommand(context: vscode.ExtensionContext) {
@@ -142,7 +139,7 @@ const topicDeleteCallback = async (item: TopicTreeItem) => {
 		TopicManager.getInstance().deleteTopic(item.id);
 	}
 };
-;
+
 
 export function regTopicDeleteCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
@@ -316,7 +313,16 @@ async function installAskCode(supportedFileTypes, progressBar: any, callback: Fu
 async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};
 
-    let openaiApiKey = await ApiKeyManager.getApiKey();
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (!llmModelData) {
+		logger.channel()?.error('No valid llm model is selected!');
+        logger.channel()?.show();
+
+		progressBar.endWithError("No valid llm model is selected!");
+        return;
+	}
+
+    let openaiApiKey = llmModelData.api_key;
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
@@ -326,7 +332,7 @@ async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any)
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }
@@ -443,17 +449,26 @@ export function registerAskCodeSummaryIndexStartCommand(context: vscode.Extensio
 async function indexCodeSummary(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
     let envs = {};
 
-    let openaiApiKey = await ApiKeyManager.getApiKey();
+	const llmModelData = await ApiKeyManager.llmModel();
+	if (!llmModelData) {
+		logger.channel()?.error('No valid llm model is selected!');
+        logger.channel()?.show();
+
+		progressBar.endWithError("No valid llm model is selected!");
+        return;
+	}
+
+    let openaiApiKey = llmModelData.api_key;
     if (!openaiApiKey) {
         logger.channel()?.error('The OpenAI key is invalid!');
         logger.channel()?.show();
 
-        progressBar.endWithError("The OpenAI key is invalid!");
+		progressBar.endWithError("The OpenAI key is invalid!");
         return;
     }
     envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    const openAiApiBase = ApiKeyManager.getEndPoint(openaiApiKey);
+    const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
     }
@@ -519,6 +534,14 @@ export function registerInstallCommandsCommand(context: vscode.ExtensionContext)
 		await devchat.updateSysCommand();
 
 		sendCommandListByDevChatRun();
+    });
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerUpdateChatModelsCommand(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand('DevChat.UpdataChatModels', async () => {
+        updateChatModels();
     });
 
     context.subscriptions.push(disposable);

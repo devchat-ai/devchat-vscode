@@ -39,30 +39,6 @@ describe('ApiKeyManager', () => {
     });
   });
 
-  describe('getEndPoint', () => {
-    it('should return the configuration endpoint', () => {
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns('https://config-endpoint.com');
-
-      const endPoint = ApiKeyManager.getEndPoint('sk-key');
-      expect(endPoint).to.equal('https://config-endpoint.com');
-    });
-
-    it('should return the environment variable endpoint', () => {
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns(undefined);
-      process.env.OPENAI_API_BASE = 'https://env-endpoint.com';
-
-      const endPoint = ApiKeyManager.getEndPoint('sk-key');
-      expect(endPoint).to.equal('https://env-endpoint.com');
-    });
-
-    it('should return the default endpoint for DC keys', () => {
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns(undefined);
-
-      const endPoint = ApiKeyManager.getEndPoint('DC.key');
-      expect(endPoint).to.equal('https://api.devchat.ai/v1');
-    });
-  });
-
   describe('getKeyType', () => {
     it('should return "sk" for sk keys', () => {
       const keyType = ApiKeyManager.getKeyType('sk-key');
