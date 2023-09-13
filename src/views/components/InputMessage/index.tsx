@@ -249,6 +249,28 @@ const InputMessage = observer((props: any) => {
         });
     };
 
+    const menuStyles = {
+        arrow:{
+            borderColor: 'var(--vscode-menu-border)',
+        },
+        dropdown:{
+            borderColor: 'var(--vscode-menu-border)',
+            backgroundColor: 'var(--vscode-menu-background)'
+        },
+        itemLabel:{
+            color: 'var(--vscode-menu-foreground)'
+        },
+        item: {
+            padding: 5,
+            backgroundColor: 'var(--vscode-menu-background)',
+            '&:hover,&[data-hovered=true]': {
+                color: 'var(--vscode-commandCenter-activeForeground)',
+                borderColor: 'var(--vscode-commandCenter-border)',
+                backgroundColor: 'var(--vscode-commandCenter-activeBackground)'
+            }
+        }
+    };
+
     return (
         <Stack 
             spacing={0} 
@@ -267,11 +289,7 @@ const InputMessage = observer((props: any) => {
                     position='bottom-start' 
                     shadow="sm" 
                     withArrow
-                    styles={{
-                        item: {
-                            padding: 5
-                        }
-                    }}
+                    styles={menuStyles}
                 >
                     <Menu.Target>
                         <ActionIcon 
@@ -300,7 +318,8 @@ const InputMessage = observer((props: any) => {
                                         icon={contextMenuIcon(name)}
                                         onClick={() => {
                                             handleContextClick(name);
-                                        }}>
+                                        }}
+                                    >
                                         {name}
                                         <Text sx={{fontSize: '9pt',color: theme.colors.gray[6],}}>
                                             {description}
@@ -313,6 +332,7 @@ const InputMessage = observer((props: any) => {
                     position="bottom-start" 
                     withArrow 
                     shadow="md"
+                    styles={menuStyles}
                 >
                     <Menu.Target>
                         <Button 
