@@ -178,15 +178,7 @@ export async function historyMessagesBase(): Promise<LoadHistoryMessages | undef
 }
 
 export async function onApiKeyBase(apiKey: string): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }> {
-	if (!isValidApiKey(apiKey)) {
-		return { command: 'receiveMessage', text: 'Your API key is invalid. We support OpenAI and DevChat keys. Please reset the key.', hash: '', user: 'system', date: '', isError: false };
-	}
-
-	isApiSet = true;
-	ApiKeyManager.writeApiKeySecret(apiKey);
-
-	const welcomeMessageText = welcomeMessage().response;
 	return {
-		command: 'receiveMessage', text: `Your OPENAI_API_KEY is set. Enjoy DevChat!\n${welcomeMessageText}`, hash: '', user: 'system', date: '', isError: false
+		command: 'receiveMessage', text: `You need config access key for specified llmodel in setting view.`, hash: '', user: 'system', date: '', isError: false
 	};
 }

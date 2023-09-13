@@ -42,7 +42,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			if (apiKeyStatus !== 'has valid access key') {
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${apiKeyStatus}`;
-				statusBarItem.command = 'DevChat.Access_Key_DevChat';
+				statusBarItem.command = 'DevChat.AccessKey.DevChat';
 				progressBar.update(`Checking devchat dependency environment: ${apiKeyStatus}.`, 0);
 				return;
 			}

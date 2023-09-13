@@ -365,17 +365,6 @@
 					"description": "The max number of tokens of a prompt.",
 					"when": "DevChat.llmModel == 'OpenAI'"
 				},
-				"DevChat.Access_Key_DevChat": {
-					"type": "string",
-					"default": "",
-					"description": "DevChat's secret key for accessing multiple LLM models"
-				},
-				"DevChat.Api_Key_OpenAI": {
-					"type": "string",
-					"default": "",
-					"description": "OpenAI's secret key for accessing LLM models. (Leave blank if using DevChat's key.)",
-					"when": "DevChat.llmModel == 'OpenAI'"
-				},
 				"DevChat.API_ENDPOINT": {
 					"type": "string",
 					"default": "",
@@ -489,13 +478,73 @@
 				"title": "Create Entry"
 			},
 			{
-				"command": "DevChat.Api_Key_OpenAI",
-				"title": "Input OpenAI Api Key",
+				"command": "DevChat.AccessKey.OpenAI",
+				"title": "Input Access Key for OpenAI",
 				"category": "DevChat"
 			},
 			{
-				"command": "DevChat.Access_Key_DevChat",
-				"title": "Input DevChat Access Key",
+				"command": "DevChat.AccessKey.Cohere",
+				"title": "Input Access Key for Cohere",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.Anthropic",
+				"title": "Input Access Key for Anthropic",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.Replicate",
+				"title": "Input Access Key for Replicate",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.HuggingFace",
+				"title": "Input Access Key for HuggingFace",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.TogetherAI",
+				"title": "Input Access Key for TogetherAI",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.OpenRouter",
+				"title": "Input Access Key for OpenRouter",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.VertexAI",
+				"title": "Input Access Key for VertexAI",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.AI21",
+				"title": "Input Access Key for AI21",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.BaseTen",
+				"title": "Input Access Key for BaseTen",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.Azure",
+				"title": "Input Access Key for Azure",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.SageMaker",
+				"title": "Input Access Key for SageMaker",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.Bedrock",
+				"title": "Input Access Key for Bedrock",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.DevChat",
+				"title": "Input Access Key for DevChat",
 				"category": "DevChat"
 			},
 			{

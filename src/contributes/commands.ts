@@ -82,42 +82,39 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.askForFile_chinese', callback));
 }
 
-export function registerOpenAiApiKeySettingCommand(context: vscode.ExtensionContext) {
-	const secretStorage: vscode.SecretStorage = context.secrets;
+function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string) {
 	context.subscriptions.push(
-		vscode.commands.registerCommand('DevChat.Api_Key_OpenAI', async () => {
+		vscode.commands.registerCommand(`DevChat.AccessKey.${provider}`, async () => {
 			const passwordInput: string = await vscode.window.showInputBox({
 				password: true,
-				title: "Input OpenAi Api Key",
-				placeHolder: "Set OpenAI Api Key.(Leave blank if clearing stored key.)"
+				title: `Input ${provider} Access Key`,
+				placeHolder: `Set ${provider} Access Key.(Leave blank if clearing stored key.)`
 			}) ?? '';
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your api key is invalid!");
 				return ;
 			}
-			ApiKeyManager.writeApiKeySecret(passwordInput, "OpenAI");
+			await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
 		})
 	);
 }
 
-export function registerDevChatApiKeySettingCommand(context: vscode.ExtensionContext) {
-	const secretStorage: vscode.SecretStorage = context.secrets;
-	context.subscriptions.push(
-		vscode.commands.registerCommand('DevChat.Access_Key_DevChat', async () => {
-			const passwordInput: string = await vscode.window.showInputBox({
-				password: true,
-				title: "Input DevChat Access Key",
-				placeHolder: "Set DevChat Access Key.(Leave blank if clearing stored key.)"
-			}) ?? '';
-
-			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
-				UiUtilWrapper.showErrorMessage("Your access key is invalid!");
-				return ;
-			}
-			ApiKeyManager.writeApiKeySecret(passwordInput, "DevChat");
-		})
-	);
+export function registerAccessKeySettingCommand(context: vscode.ExtensionContext) {
+	regAccessKeyCommand(context,  "OpenAI");
+	regAccessKeyCommand(context,  "Cohere");
+	regAccessKeyCommand(context,  "Anthropic");
+	regAccessKeyCommand(context,  "Replicate");
+	regAccessKeyCommand(context,  "HuggingFace");
+	regAccessKeyCommand(context,  "TogetherAI");
+	regAccessKeyCommand(context,  "OpenRouter");
+	regAccessKeyCommand(context,  "VertexAI");
+	regAccessKeyCommand(context,  "AI21");
+	regAccessKeyCommand(context,  "BaseTen");
+	regAccessKeyCommand(context,  "Azure");
+	regAccessKeyCommand(context,  "SageMaker");
+	regAccessKeyCommand(context,  "Bedrock");
+	regAccessKeyCommand(context,  "DevChat");
 }
 
 export function registerStatusBarItemClickCommand(context: vscode.ExtensionContext) {
@@ -142,7 +139,7 @@ const topicDeleteCallback = async (item: TopicTreeItem) => {
 		TopicManager.getInstance().deleteTopic(item.id);
 	}
 };
-;
+
 
 export function regTopicDeleteCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(

@@ -3,8 +3,26 @@
 import { UiUtilWrapper } from './uiUtil';
 
 export class ApiKeyManager {
+	static toProviderKey(provider: string) : string | undefined {
+		let providerNameMap = {
+			"openai": "OpenAI",
+			"cohere": "Cohere",
+			"anthropic": "Anthropic",
+			"replicate": "Replicate",
+			"huggingface": "HuggingFace",
+			"together_ai": "TogetherAI",
+			"openrouter": "OpenRouter",
+			"vertex_ai": "VertexAI",
+			"ai21": "AI21",
+			"baseten": "Baseten",
+			"azure": "Azure",
+			"sagemaker": "SageMaker",
+			"bedrock": "Bedrock"
+		};
+		return providerNameMap[provider];
+	}
 	static async getApiKey(llmType: string = "OpenAI"): Promise<string | undefined> {
-		const llmModel = this.llmModel();
+		const llmModel = await this.llmModel();
 		if (!llmModel) {
 			return undefined;
 		}
@@ -12,13 +30,13 @@ export class ApiKeyManager {
 		return llmModel.api_key;
 	}
 
-	static llmModel() {
+	static async llmModel() {
 		const llmModel = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
 		if (!llmModel) {
 			return undefined;
 		}
 
-		const modelProperties = (modelPropertyName: string, modelName: string) => {
+		const modelProperties = async (modelPropertyName: string, modelName: string) => {
 			const modelConfig = UiUtilWrapper.getConfiguration("devchat", modelPropertyName);
 			if (!modelConfig) {
 			return undefined;
@@ -29,26 +47,36 @@ export class ApiKeyManager {
 				const property = modelConfig![key];
 				modelProperties[key] = property;
 			}
-
-			if (!modelConfig["provider"] || !modelConfig["api_key"]) {
+			if (!modelConfig["provider"]) {
 				return undefined;
 			}
-			modelProperties['model'] = modelName;
+			if (!modelConfig["api_key"]) {
+				const providerName = this.toProviderKey(modelConfig["provider"]);
+				if (!providerName) {
+					return undefined;
+				}
+				const apiKey = await this.loadApiKeySecret(providerName);
+				if (!apiKey) {
+					return undefined;
+				}
+				modelProperties["api_key"] = apiKey;
+			}
 
+			modelProperties['model'] = modelName;
 			return modelProperties;
 		};
 
 		if (llmModel === "gpt-3.5-turbo") {
-			return modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
+			return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
 		}
 		if (llmModel === "gpt-3.5-turbo-16k") {
-			return modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
+			return await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
 		}
 		if (llmModel === "gpt-4") {
-			return modelProperties('Model.gpt-4', "gpt-4");
+			return await modelProperties('Model.gpt-4', "gpt-4");
 		}
 		if (llmModel === "claude-2") {
-			return modelProperties('Model.claude-2', "claude-2");
+			return await modelProperties('Model.claude-2', "claude-2");
 		}
 
 		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
@@ -68,12 +96,20 @@ export class ApiKeyManager {
 					modelProperties[key] = property;
 				}
 
-				if (!model["api_key"]) {
-					return undefined;
-				}
-
 				const modelProvider = model["model"].split('/')[0];
 				const modelName = model["model"].split('/').slice(1).join('/');
+
+				if (!model["api_key"]) {
+					const providerName = this.toProviderKey(modelProvider);
+					if (!providerName) {
+						return undefined;
+					}
+					const apiKey = await this.loadApiKeySecret(providerName);
+					if (!apiKey) {
+						return undefined;
+					}
+					modelProperties["api_key"] = apiKey;
+				}
 
 				modelProperties["provider"] = modelProvider;
 				modelProperties["model"] = modelName;
@@ -96,17 +132,10 @@ export class ApiKeyManager {
 	}
 
 	static async writeApiKeySecret(apiKey: string, llmType: string = "Unknow"): Promise<void> {
-		if (apiKey.startsWith("sk-")) {
-			await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", apiKey);
-		} else if (apiKey.startsWith("DC.")) {
-			await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
-		} else {
-			if (llmType === "OpenAI") {
-				await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", apiKey);
-			} else if (llmType === "DevChat") {
-				await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", apiKey);
-			}
-		}
+		await UiUtilWrapper.storeSecret(`Access_KEY_${llmType}`, apiKey);
+	}
+	static async loadApiKeySecret(llmType: string = "Unknow"): Promise<string | undefined> {
+		return await UiUtilWrapper.secretStorageGet(`Access_KEY_${llmType}`);
 	}
 
 	static getEndPoint(apiKey: string | undefined): string | undefined {

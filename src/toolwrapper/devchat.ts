@@ -120,7 +120,7 @@ class DevChat {
 			args.push("-p", options.parent);
 		}
 
-		const llmModelData = ApiKeyManager.llmModel();
+		const llmModelData = await ApiKeyManager.llmModel();
 		if (llmModelData && llmModelData.model) {
 			args.push("-m", llmModelData.model);
 		}
@@ -200,7 +200,7 @@ class DevChat {
 	}
 
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
-		const llmModelData = ApiKeyManager.llmModel();
+		const llmModelData = await ApiKeyManager.llmModel();
 		if (!llmModelData) {
 			return {
 				"prompt-hash": "",
