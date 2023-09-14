@@ -72,6 +72,11 @@ async function configUpdateTo_0912() {
 			return;
 		}
 	}
+
+	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
+	if (!defaultModel) {
+		vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo");
+	}
 }
 
 
