@@ -29,7 +29,7 @@ const chatPanel = observer(() => {
 
     const [chatContainerRef, chatContainerRect] = useResizeObserver();
     const scrollViewport = useRef<HTMLDivElement>(null);
-    const { height, width } = useViewportSize();
+    const { height } = useViewportSize();
     const { ref:inputAreatRef, height:inputAreaHeight } = useElementSize();
 
 
@@ -137,6 +137,10 @@ const chatPanel = observer(() => {
         scrollToBottom();
     }, [chat.scrollBottom]);
 
+    useEffect(() => {
+        chat.updateChatPanelWidth(chatPanelWidth);
+    },[chatPanelWidth]);
+
     return (
         <Stack
             ref={chatContainerRef}
@@ -156,14 +160,20 @@ const chatPanel = observer(() => {
                 onScrollPositionChange={onScrollPositionChange}
                 viewportRef={scrollViewport}
             >
-                <MessageList chatPanelWidth={chatPanelWidth} />
+                <MessageList />
                 {chat.errorMessage && (
                     <Box sx={{
+                        width: chatPanelWidth - 20,
                         margin:'0 10px 40px 10px'                      
                     }}>
                         <Alert
                             styles={{
-                                message: { fontSize: "var(--vscode-editor-font-size)" },
+                                message: { 
+                                    width: chatPanelWidth - 50,
+                                    whiteSpace: 'break-spaces',
+                                    overflowWrap: 'break-word',
+                                    fontSize: "var(--vscode-editor-font-size)" 
+                                },
                             }}
                             color="gray"
                             variant="filled"
@@ -191,7 +201,7 @@ const chatPanel = observer(() => {
                         }}
                         title="Bottom"
                         variant="transparent"
-                        sx={{ position: "absolute", bottom: 5, right: 16, zIndex: 1 }}
+                        sx={{ position: "absolute", bottom: 5, right: 16, zIndex: 2 }}
                     > 
                         <IconCircleArrowDownFilled size="1.125rem" />
                     </ActionIcon>
@@ -218,7 +228,7 @@ const chatPanel = observer(() => {
                     borderTop:'1px solid #ced4da',
                 }}
             >
-                <InputMessage chatPanelWidth={chatPanelWidth} />
+                <InputMessage />
             </Box>
         </Stack>
     );

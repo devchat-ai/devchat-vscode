@@ -76,6 +76,7 @@ export const ChatStore = types.model('Chat', {
     isTop: false,
     scrollBottom: 0,
     chatModel: 'GPT-3.5',
+    chatPanelWidth: 300,
     rechargeSite: 'https://devchat.ai/pricing/',
     features: types.optional(types.frozen(), {})
 })
@@ -114,6 +115,9 @@ You can configure DevChat from [Settings](#settings).`;
 
         return {
             helpMessage,
+            updateChatPanelWidth: (width: number) => {
+                self.chatPanelWidth = width;
+            },
             changeChatModel: (chatModel: string) => {
                 self.chatModel = chatModel;
             },

@@ -33,7 +33,6 @@ const useStyles = createStyles((theme) => ({
 
 const InputMessage = observer((props: any) => {
     const {classes} = useStyles();
-    const { chatPanelWidth } = props;
     const { input, chat } = useMst();
     const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus,modelMenus } = input;
     const { generating } = chat;
@@ -320,7 +319,7 @@ const InputMessage = observer((props: any) => {
                 }}
             >
                 <Menu 
-                    width={chatPanelWidth-10} 
+                    width={chat.chatPanelWidth-10} 
                     position='bottom-start' 
                     shadow="sm" 
                     withArrow
@@ -415,7 +414,7 @@ const InputMessage = observer((props: any) => {
             <Popover
                 position='top-start'
                 shadow="sm"
-                width={chatPanelWidth-10} 
+                width={chat.chatPanelWidth-10} 
                 opened={menuOpend}
                 onChange={() => {
                     input.closeMenu();
