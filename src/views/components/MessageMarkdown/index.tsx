@@ -10,12 +10,13 @@ import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
 
-interface IProps {
-    messageText: string
+interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
+    children: string,
+    className: string
 }
 
-const MessageMarkdown = observer((props: IProps) => {
-    const { messageText } = props;
+const MessageMarkdown = observer((props: MessageMarkdownProps) => {
+    const { children } = props;
     const { chat } = useMst();
 
     const LanguageCorner = (props: any) => {
@@ -133,6 +134,7 @@ Generate a professionally written and formatted release note in markdown with th
     };
 
     return <ReactMarkdown
+        {...props}
         rehypePlugins={[rehypeRaw]}
         components={{
             code({ node, inline, className, children, ...props }) {
@@ -204,8 +206,9 @@ Generate a professionally written and formatted release note in markdown with th
                         {children}
                     </a>;
             }
-        }}>
-        {messageText}
+        }
+    }>
+        {children}
     </ReactMarkdown >;
 });
 
