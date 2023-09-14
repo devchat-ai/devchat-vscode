@@ -163,11 +163,17 @@ const chatPanel = observer(() => {
                 <MessageList />
                 {chat.errorMessage && (
                     <Box sx={{
+                        width: chatPanelWidth - 20,
                         margin:'0 10px 40px 10px'                      
                     }}>
                         <Alert
                             styles={{
-                                message: { fontSize: "var(--vscode-editor-font-size)" },
+                                message: { 
+                                    width: chatPanelWidth - 50,
+                                    whiteSpace: 'break-spaces',
+                                    overflowWrap: 'break-word',
+                                    fontSize: "var(--vscode-editor-font-size)" 
+                                },
                             }}
                             color="gray"
                             variant="filled"

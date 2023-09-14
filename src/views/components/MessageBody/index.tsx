@@ -29,6 +29,7 @@ const MessageBody = observer((props: IProps) => {
                 sx={{
                     margin: 0,
                     padding: 0,
+                    width: chat.chatPanelWidth - 20,
                     pre: {
                         whiteSpace: 'pre-wrap',
                         wordBreak: 'break-word',
