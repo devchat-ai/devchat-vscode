@@ -34,6 +34,11 @@ import { UiUtilVscode } from './util/uiUtil_vscode';
 import { FT } from './util/feature_flags/feature_toggles';
 
 async function configUpdateTo_0912() {
+	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
+	if (!defaultModel) {
+		vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
+	}
+
 	const devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
 	const openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
 	const endpointKey = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
