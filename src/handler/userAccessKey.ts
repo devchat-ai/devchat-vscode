@@ -13,7 +13,7 @@ regOutMessage({command: 'getUserAccessKey', accessKey: "DC.xxx", keyType: "DevCh
 export async function getUserAccessKey(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		const llmModelData = await ApiKeyManager.llmModel();
-		if (!llmModelData || llmModelData.api_key) {
+		if (!llmModelData || !llmModelData.api_key) {
 			MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": "", "keyType": "", "endPoint": ""});
 			return;
 		}
