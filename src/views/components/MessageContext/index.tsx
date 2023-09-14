@@ -2,13 +2,16 @@
 
 import { IInputStore } from "@/views/stores/InputStore";
 import { Accordion, Box, Center, Text } from "@mantine/core";
+import { observer } from "mobx-react-lite";
+import { useMst } from "@/views/stores/RootStore";
 import React from "react";
 
 interface IProps {
     contexts?: IInputStore['contexts'];
 }
 
-const MessageContext = ({ contexts }: IProps) => {
+const MessageContext = observer(({ contexts }: IProps) => {
+    const { chat } = useMst();
     return (<>
         {
             contexts &&
@@ -63,7 +66,7 @@ const MessageContext = ({ contexts }: IProps) => {
                             <Accordion.Item key={`item-${index}`} value={`item-value-${index}`} mah='200'>
                                 <Box sx={{ display: 'flex', alignItems: 'center' }}>
                                     <Accordion.Control >
-                                        <Text truncate='end'>{command ? command : path}</Text>
+                                        <Text truncate='end' w={chat.chatPanelWidth-100}>{command ? command : path}</Text>
                                     </Accordion.Control>
                                 </Box>
                                 <Accordion.Panel>
@@ -83,6 +86,6 @@ const MessageContext = ({ contexts }: IProps) => {
             </Accordion>
         }
     </>);
-};
+});
 
 export default MessageContext;
