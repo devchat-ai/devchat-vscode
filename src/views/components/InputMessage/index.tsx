@@ -324,6 +324,7 @@ const InputMessage = observer((props: any) => {
                     shadow="sm" 
                     withArrow
                     styles={menuStyles}
+                    disabled={contextMenus.length === 0}
                 >
                     <Menu.Target>
                         <ActionIcon 
@@ -368,6 +369,7 @@ const InputMessage = observer((props: any) => {
                     withArrow 
                     shadow="md"
                     styles={menuStyles}
+                    disabled={modelMenus.length === 0}
                 >
                     <Menu.Target>
                         <Button 
