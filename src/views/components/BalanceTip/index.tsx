@@ -118,6 +118,7 @@ export default function WechatTip() {
         sx={{
           background: "var(--vscode-dropdown-background)",
           borderColor: "var(--vscode-dropdown-border)",
+          color: 'var(--vscode-foreground)'
         }}
       >
         <Group style={{ width: "90%" }}>
