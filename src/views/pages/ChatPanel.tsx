@@ -222,7 +222,7 @@ const chatPanel = observer(() => {
                 sx={{
                     position:"absolute",
                     bottom:0,
-                    width:chatPanelWidth,
+                    width:chatPanelWidth>300||chatPanelWidth===0?"100%":chatPanelWidth,
                     background: "var(--vscode-sideBar-background)",
                     boxShadow: "0 0 10px 0 var(--vscode-widget-shadow)",
                     borderTop:'1px solid #ced4da',
