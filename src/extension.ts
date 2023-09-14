@@ -39,10 +39,20 @@ async function configUpdateTo_0912() {
 		vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
 	}
 
-	const devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
-	const openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
+	let devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
+	let openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
 	const endpointKey = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
-	
+
+	devchatKey = undefined;
+	openaiKey = undefined;
+	if (!devchatKey && !openaiKey) {
+		openaiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
+		devchatKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+	}
+	if (!devchatKey && !openaiKey) {
+		openaiKey = process.env.OPENAI_API_KEY;
+	}
+
 	let modelConfigNew = {};
 	if (openaiKey) {
 		modelConfigNew["api_key"] = openaiKey;
