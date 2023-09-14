@@ -5,6 +5,8 @@
 
 # DevChat Visual Studio Code Extension
 
+**The pragmatic AI coding assistant that keeps humans in the loop. No overblown intelligence. Built for extensibility.**
+
 </div>
 <br>
 <div align="left">
@@ -28,7 +30,7 @@ DevChat is an open-source platform that empowers developers to leverage AI for c
 
 While there are many AI coding tools available, we developed DevChat for our own use, drawing on our practical insights from generating tens of thousands of lines of code. DevChat makes the following distinctive design choices:
 
-- **Precise control over the context embedded in a prompt**. This shouldn't be overlooked in the quest for greater intelligence or autonomy. Precise control over context is the key to effective AI use. We believe that most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than LLMs can effectively manage.
+- **Precise control over the context embedded in a prompt**. Precise control over context is the key to effective AI use. We believe that most other tools tend to over-guess what a user needs to put into the context of a prompt. This typically introduces more noise than LLMs can effectively manage.
 - **A simple, extensible prompt directory**. This enables developers or teams to easily integrate their own predefined prompt templates into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need a complex framework to make AI work for you. All it takes is a standard editor operating on your filesystem.
 
 ## Feature Overview
@@ -37,7 +39,7 @@ While there are many AI coding tools available, we developed DevChat for our own
 
 Great output requires great input, to maximize the power of AI, DevChat assists you seamlessly to **provide the right context** to the AI.
 
-- The most fundamental operation involves selecting code (either files or snippets) and adding it to DevChat. For instance, you can add a function along with an existing test case to the prompt context, and ask DevChat to generate several test cases for the function. The test case serves as a useful reference for DevChat, enabling it to understand how to write a valid test case in your environment, thus eliminating the need for you to specify every requirement or setup in your prompt.
+- For instance, to generate test cases for a function, you can add to the prompt context the function along with an existing test case. The test case serves as a useful reference for DevChat, enabling it to understand how to write a valid test case in your environment, thus eliminating the need for you to specify every requirement or setup in your prompt.
 
   ![Add to context](https://github.com/devchat-ai/devchat-vscode/assets/592493/9b19c798-d06f-4373-8f8a-6a950c3a8ba5)
 
