@@ -35,9 +35,7 @@ import { FT } from './util/feature_flags/feature_toggles';
 
 async function configUpdateTo_0912() {
 	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
-	if (!defaultModel) {
-		vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
-	}
+	
 
 	let devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
 	let openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
@@ -79,12 +77,35 @@ async function configUpdateTo_0912() {
 			modelConfigNew["provider"] = "openai";
 		}
 
+		if (!defaultModel) {
+			vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
+		}
+
 		try {
 			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5", modelConfigNew, vscode.ConfigurationTarget.Global);
 			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5-16k", modelConfigNew, vscode.ConfigurationTarget.Global);
 			vscode.workspace.getConfiguration("devchat").update("Model.gpt-4", modelConfigNew, vscode.ConfigurationTarget.Global);
 		} catch(error) {
 			return;
+		}
+	}
+
+	const modelConfig4: any = UiUtilWrapper.getConfiguration("devchat", "Model.claude-2");
+	if (Object.keys(modelConfig4).length === 0) {
+		modelConfigNew = {};
+		if (devchatKey) {
+			modelConfigNew["api_key"] = devchatKey;
+		} else if (openaiKey) {
+			modelConfigNew["api_key"] = openaiKey;
+		}
+
+		if (modelConfigNew["api_key"].startsWith("DC.")) {
+			if (!defaultModel) {
+				vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2", vscode.ConfigurationTarget.Global);
+			}
+
+			modelConfigNew["provider"] = "anthropic";
+			vscode.workspace.getConfiguration("devchat").update("Model.claude-2", modelConfigNew, vscode.ConfigurationTarget.Global);
 		}
 	}
 }
