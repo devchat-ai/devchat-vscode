@@ -5,9 +5,13 @@
 
 # DevChat Visual Studio Code Extension
 
-**The pragmatic AI coding assistant that keeps humans in the loop.**
+**An effective, down-to-earth AI coding assistant that blends AI power and manual control.**
 
-**No overblown AI. No complex prompt engineering. Built for extensibility.**
+🛠️ No excessive automation, just right AI where it works.
+
+☕ Simple to use, without complicated prompt engineering.
+
+🍻 Designed for extensibility.
 
 </div>
 <br>
