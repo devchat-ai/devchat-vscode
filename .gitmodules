@@ -1,0 +1,3 @@
+[submodule "src/language-bridge"]
+	path = src/language-bridge
+	url = git@github.com:merico-dev/language-bridge-vsc.git
