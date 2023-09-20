@@ -406,12 +406,12 @@
 			},
 			{
 				"command": "DevChat.AccessKey.OpenAI",
-				"title": "OpenAI API Key",
+				"title": "Input OpenAI API Key",
 				"category": "DevChat"
 			},
 			{
 				"command": "DevChat.AccessKey.Anthropic",
-				"title": "Anthropic API Key",
+				"title": "Input Anthropic API Key",
 				"category": "DevChat"
 			},
 			{
