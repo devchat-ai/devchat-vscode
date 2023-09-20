@@ -122,7 +122,7 @@ def index(repo_path: str):
 
 import json
 
-def query(question: str, doc_context: str):
+def query(question: str, doc_context: str, lsp_brige_port: int):
     try:
         client = get_client(mode=STORAGE_FILE)
         q = Q.reuse(
@@ -135,6 +135,7 @@ def query(question: str, doc_context: str):
 
         ans, docs = chain.run(question)
 
+        print(f"LSP brige port: {lsp_brige_port}")
         print(f"\n# Question: \n{question}")
         print(f"\n# Answer: \n{ans}")
         print(f"\n# Relevant Documents: \n")
@@ -173,13 +174,14 @@ def main():
             index(repo_path)
         
         elif command == "query":
-            if len(sys.argv) < 4:
-                print("Usage: python index_and_query.py query [question] [doc_context]")
+            if len(sys.argv) < 5:
+                print("Usage: python index_and_query.py query [question] [doc_context] [port]")
                 sys.exit(1)
             
             question = sys.argv[2]
             doc_context = sys.argv[3]
-            query(question, doc_context)
+            port = sys.argv[4]
+            query(question, doc_context, port)
         
         else:
             print("Invalid command. Available commands: index, query")
