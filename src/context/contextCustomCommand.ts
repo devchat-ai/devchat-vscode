@@ -6,8 +6,8 @@ import { UiUtilWrapper } from '../util/uiUtil';
 
 
 export const customCommandContext: ChatContext = {
-    name: '<custom command>',
-    description: 'execute your input command and retrieve output',
+    name: '<Custom Local Command>',
+    description: 'Click this and enter your desired command to run. The return will be added to the context.',
     handler: async () => {
         // popup a dialog to ask for the command line to run
         const customCommand = await UiUtilWrapper.showInputBox({
