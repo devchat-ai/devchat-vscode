@@ -87,12 +87,12 @@ function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string)
 		vscode.commands.registerCommand(`DevChat.AccessKey.${provider}`, async () => {
 			const passwordInput: string = await vscode.window.showInputBox({
 				password: true,
-				title: `Input ${provider} Access Key`,
-				placeHolder: `Set ${provider} Access Key.(Leave blank if clearing stored key.)`
+				title: `Set ${provider} Access Key`,
+				placeHolder: `Input ${provider} Access Key and press enter. (Leave blank and press enter to clear the stored key.)`
 			}) ?? '';
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
-				UiUtilWrapper.showErrorMessage("Your api key is invalid!");
+				UiUtilWrapper.showErrorMessage("Your key is invalid!");
 				return ;
 			}
 			await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
