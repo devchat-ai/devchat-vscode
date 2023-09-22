@@ -37,7 +37,7 @@ function apiKeyMissedMessage(): LogEntry {
 		parent: '',
 		user: 'system',
 		date: '',
-		request: 'Is OPENAI_API_KEY ready?',
+		request: 'Is OPENAI_API_KEY (or DevChat Access Key) ready?',
 		response: `
 OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI or DevChat key, and I'll ensure DevChat is all set for you.
 	
