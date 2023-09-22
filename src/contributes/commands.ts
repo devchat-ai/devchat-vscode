@@ -96,6 +96,9 @@ function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string)
 				return ;
 			}
 			await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
+
+			// run command
+			vscode.commands.executeCommand("devchat-topicview.addTopic");
 		})
 	);
 }
