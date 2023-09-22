@@ -26,9 +26,12 @@ export async function getValidModels(): Promise<string[]> {
 			if (!providerName) {
 				return undefined;
 			}
-			const apiKey = await ApiKeyManager.loadApiKeySecret(providerName);
+			let apiKey = await ApiKeyManager.loadApiKeySecret(providerName);
 			if (!apiKey) {
-				return undefined;
+				apiKey = await ApiKeyManager.loadApiKeySecret("DevChat");
+				if (!apiKey) {
+					return undefined;
+				}
 			}
 			modelProperties["api_key"] = apiKey;
 		}
