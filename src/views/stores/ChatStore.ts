@@ -91,7 +91,7 @@ Don't forget to check out the "+" button on the left of the input to add more co
 
 To get started, here are some of the things that I can do for you:
 
-[/code(default): write code based on your prompt](#code)
+[/code: write code based on your prompt](#code)
 
 [/commit_message: compose a commit message based on your code changes](#commit_message)
 
