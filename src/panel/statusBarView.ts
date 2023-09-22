@@ -18,10 +18,10 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     progressBar.init();
 
     // add a timer to update the status bar item
-	progressBar.update("Checking devchat dependency environment", 0);
+	progressBar.update("Checking dependencies", 0);
 	const timer = setInterval(async () => {
 		try {
-			progressBar.update("Checking devchat dependency environment", 0);
+			progressBar.update("Checking dependencies", 0);
 
 			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
 			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
@@ -35,7 +35,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 				}
 				
 				// set statusBarItem warning color
-				progressBar.update(`Checking devchat dependency environment: ${devchatStatus}`, 0);
+				progressBar.update(`Checking dependencies: ${devchatStatus}`, 0);
 				return;
 			}
 
@@ -43,14 +43,14 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${apiKeyStatus}`;
 				statusBarItem.command = 'devchat-view.focus';
-				progressBar.update(`Checking devchat dependency environment: ${apiKeyStatus}.`, 0);
+				progressBar.update(`Checking dependencies: ${apiKeyStatus}.`, 0);
 				return;
 			}
 
 			statusBarItem.text = `$(pass)DevChat`;
 			statusBarItem.tooltip = `ready to chat`;
 			statusBarItem.command = 'devcaht.onStatusBarClick';
-			progressBar.update(`Checking devchat dependency environment: Success`, 0);
+			progressBar.update(`Checking dependencies: Success`, 0);
 			progressBar.end();
 	
 			// execute command: DevChat.InstallCommands
@@ -60,7 +60,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `Error: ${error}`;
 			statusBarItem.command = undefined;
-			progressBar.endWithError(`Checking devchat dependency environment: Fail with exception.`);
+			progressBar.endWithError(`Checking dependencies: Fail with exception.`);
 		}
 	}, 3000);
 
