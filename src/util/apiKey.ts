@@ -55,10 +55,14 @@ export class ApiKeyManager {
 				if (!providerName) {
 					return undefined;
 				}
-				const apiKey = await this.loadApiKeySecret(providerName);
+				let apiKey = await this.loadApiKeySecret(providerName);
 				if (!apiKey) {
-					return undefined;
+					apiKey = await this.loadApiKeySecret("DevChat");
+					if (!apiKey) {
+						return undefined;
+					}
 				}
+
 				modelProperties["api_key"] = apiKey;
 			}
 

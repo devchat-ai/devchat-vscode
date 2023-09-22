@@ -73,7 +73,6 @@ async function configUpdateTo_0912() {
 		Object.keys(modelConfig3).length === 0) {
 		// config default gpt models
 		if (Object.keys(modelConfigNew).length === 0) {
-			modelConfigNew["api_key"] = "DC.<your devchat key>";
 			modelConfigNew["provider"] = "openai";
 		}
 
