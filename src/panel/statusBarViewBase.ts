@@ -82,13 +82,13 @@ export async function dependencyCheck(): Promise<[string, string]> {
 
 	// define subfunction to check api key
 	const getApiKeyStatus = async (): Promise<string> => {
-		if (apiKeyStatus === '' || apiKeyStatus === 'Please set the API key') {
+		if (apiKeyStatus === '' || apiKeyStatus === 'Click "DevChat" status icon to set key') {
 			const accessKey = await ApiKeyManager.getApiKey();
 			if (accessKey) {
 				apiKeyStatus = 'has valid access key';
 				return apiKeyStatus;
 			} else {
-				apiKeyStatus = 'Please set the API key';
+				apiKeyStatus = 'Click "DevChat" status icon to set key';
 				return apiKeyStatus;
 			}
 		} else {
