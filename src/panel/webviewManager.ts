@@ -30,11 +30,7 @@ export default class WebviewManager {
 	}
 
 	private _getHtmlContent(): string {
-		let mainHtml = 'welcome.html';
-		// if open a folder, then load index.html
-		if (vscode.workspace.workspaceFolders) {
-			mainHtml = 'index.html';
-		}
+		let mainHtml = 'index.html';
 
 		// const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', 'assets', 'chatPanel.html');
 		const htmlPath = vscode.Uri.joinPath(this._extensionUri, 'dist', mainHtml);
