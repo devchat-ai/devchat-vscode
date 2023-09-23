@@ -85,11 +85,14 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(`DevChat.AccessKey.${provider}`, async () => {
-			const passwordInput: string = await vscode.window.showInputBox({
+			const passwordInput: string | undefined = await vscode.window.showInputBox({
 				password: true,
 				title: `Set ${provider} Key`,
 				placeHolder: `Input your ${provider} key. (Leave blank to clear the stored key.)`
-			}) ?? '';
+			}) ?? undefined;
+			if (passwordInput === undefined) {
+				return;
+			}
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your key is invalid!");
