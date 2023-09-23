@@ -85,6 +85,7 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
 function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand(`DevChat.AccessKey.${provider}`, async () => {
+			vscode.commands.executeCommand("devchat-view.focus");
 			const passwordInput: string | undefined = await vscode.window.showInputBox({
 				password: true,
 				title: `Set ${provider} Key`,
