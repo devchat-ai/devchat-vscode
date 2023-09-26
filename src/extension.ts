@@ -33,9 +33,27 @@ import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
 import { FT } from './util/feature_flags/feature_toggles';
 
-async function configUpdateTo_0912() {
+async function isProviderHasSetted() {
+	const providerProperty = "Provider.devchat";
+	const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+	if (providerConfig &&providerConfig["access_key"]) {
+		return true;
+	}
+
+	const providerPropertyOpenAI = "Provider.openai";
+	const providerConfigOpenAI = UiUtilWrapper.getConfiguration("devchat", providerPropertyOpenAI);
+	if (providerConfigOpenAI &&providerConfigOpenAI["access_key"]) {
+		return true;
+	}
+
+	return false;
+}
+
+async function configUpdateTo_0924() {
+	if (await isProviderHasSetted()) {
+		return ;
+	}
 	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
-	
 
 	let devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
 	let openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
@@ -52,71 +70,111 @@ async function configUpdateTo_0912() {
 	}
 
 	let modelConfigNew = {};
+	let providerConfigNew = {};
 	if (openaiKey) {
-		modelConfigNew["api_key"] = openaiKey;
-		modelConfigNew["provider"] = "openai";
-	} else if (devchatKey) {
-		modelConfigNew["api_key"] = devchatKey;
-		modelConfigNew["provider"] = "openai";
+		providerConfigNew["access_key"] = openaiKey;
+		if (endpointKey) {
+			providerConfigNew["api_base"] = endpointKey;
+		}
+
+		await vscode.workspace.getConfiguration("devchat").update("Provider.openai", providerConfigNew, vscode.ConfigurationTarget.Global);
 	}
 
-	if (endpointKey) {
-		modelConfigNew["api_base"] = endpointKey;
+	if (devchatKey) {
+		providerConfigNew["access_key"] = devchatKey;
+		if (endpointKey) {
+			providerConfigNew["api_base"] = endpointKey;
+		}
+
+		await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
 	}
 
-	const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", "Model.gpt-3-5");
-	const modelConfig2: any = UiUtilWrapper.getConfiguration("devchat", "Model.gpt-3-5-16k");
-	const modelConfig3: any = UiUtilWrapper.getConfiguration("devchat", "Model.gpt-4");
-	//if (!modelConfig1 && !modelConfig2 && !modelConfig3 && Object.keys(modelConfigNew).length > 0) {
-	if (Object.keys(modelConfig1).length === 0 &&
-		Object.keys(modelConfig2).length === 0 && 
-		Object.keys(modelConfig3).length === 0) {
-		// config default gpt models
-		if (Object.keys(modelConfigNew).length === 0) {
-			modelConfigNew["provider"] = "openai";
-		}
+	const support_models = [
+		"Model.gpt-3-5",
+		"Model.gpt-3-5-16k",
+		"Model.gpt-4",
+		"Model.claude-2",
+		"Model.xinghuo-2",
+		"Model.chatglm_pro",
+		"Model.ERNIE-Bot",
+		"Model.llama-2-13b-chat"
+	];
 
-		if (!defaultModel) {
-			vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
-		}
-
-		try {
-			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5", modelConfigNew, vscode.ConfigurationTarget.Global);
-			vscode.workspace.getConfiguration("devchat").update("Model.gpt-3-5-16k", modelConfigNew, vscode.ConfigurationTarget.Global);
-			vscode.workspace.getConfiguration("devchat").update("Model.gpt-4", modelConfigNew, vscode.ConfigurationTarget.Global);
-		} catch(error) {
-			return;
-		}
-	}
-
-	const modelConfig4: any = UiUtilWrapper.getConfiguration("devchat", "Model.claude-2");
-	if (Object.keys(modelConfig4).length === 0) {
-		modelConfigNew = {};
-		if (devchatKey) {
-			modelConfigNew["api_key"] = devchatKey;
-		} else if (openaiKey) {
-			modelConfigNew["api_key"] = openaiKey;
-		}
-
-		if (modelConfigNew["api_key"].startsWith("DC.")) {
-			if (!defaultModel) {
-				vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2", vscode.ConfigurationTarget.Global);
+	for (const model of support_models) {
+		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (Object.keys(modelConfig1).length === 0) {
+			modelConfigNew = {"provider": "devchat"};
+			if (openaiKey && model.startsWith("Model.gpt-")) {
+				modelConfigNew = {"provider": "openai"};
 			}
 
-			modelConfigNew["provider"] = "anthropic";
-			vscode.workspace.getConfiguration("devchat").update("Model.claude-2", modelConfigNew, vscode.ConfigurationTarget.Global);
+			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+		}
+	}
+
+	if (!defaultModel) {
+		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2", vscode.ConfigurationTarget.Global);
+	}
+}
+
+
+async function configUpdate0912To_0924() {
+	if (await isProviderHasSetted()) {
+		return ;
+	}
+	
+	const old_models = [
+		"Model.gpt-3-5",
+		"Model.gpt-3-5-16k",
+		"Model.gpt-4",
+		"Model.claude-2"
+	];
+
+	for (const model of old_models) {
+		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (Object.keys(modelConfig).length !== 0) {
+			let modelProperties: any = {};
+			for (const key of Object.keys(modelConfig || {})) {
+				const property = modelConfig![key];
+				modelProperties[key] = property;
+			}
+
+			if (modelConfig["api_key"]) {
+				let providerConfigNew = {}
+				providerConfigNew["access_key"] = modelConfig["api_key"];
+				if (modelConfig["api_base"]) {
+					providerConfigNew["api_base"] = modelConfig["api_base"];
+				}
+
+				if (modelConfig["api_key"].startsWith("DC.")) {
+					modelProperties["provider"] = "devchat";
+					await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
+				} else {
+					modelProperties["provider"] = "openai";
+					await vscode.workspace.getConfiguration("devchat").update("Provider.openai", providerConfigNew, vscode.ConfigurationTarget.Global);
+				}
+				
+				delete modelProperties["api_key"];
+				delete modelProperties["api_base"];
+				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+			} else {
+				delete modelProperties["api_base"];
+				modelProperties["provider"] = "devchat";
+				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+			}
 		}
 	}
 }
 
 
-function activate(context: vscode.ExtensionContext) {
+async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
     logger.init(LoggerChannelVscode.getInstance());
     UiUtilWrapper.init(new UiUtilVscode());
 
-	configUpdateTo_0912();
+	await configUpdateTo_0924();
+	await configUpdate0912To_0924();
 
     regLanguageContext();
 

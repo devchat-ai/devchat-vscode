@@ -39,7 +39,7 @@ export class ApiKeyManager {
 		const modelProperties = async (modelPropertyName: string, modelName: string) => {
 			const modelConfig = UiUtilWrapper.getConfiguration("devchat", modelPropertyName);
 			if (!modelConfig) {
-			return undefined;
+				return undefined;
 			}
 
 			let modelProperties: any = {};
@@ -50,7 +50,18 @@ export class ApiKeyManager {
 			if (!modelConfig["provider"]) {
 				return undefined;
 			}
-			if (!modelConfig["api_key"]) {
+			const providerProperty = "Provider." + modelConfig["provider"];
+			const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+			if (providerConfig) {
+				if (providerConfig["access_key"]) {
+					modelProperties["api_key"] = providerConfig["access_key"];
+				}
+				if (providerConfig["api_base"]) {
+					modelProperties["api_base"] = providerConfig["api_base"];
+				}
+			}
+
+			if (!modelProperties["api_key"]) {
 				const providerName = this.toProviderKey(modelConfig["provider"]);
 				if (!providerName) {
 					return undefined;
@@ -66,7 +77,7 @@ export class ApiKeyManager {
 				modelProperties["api_key"] = apiKey;
 			}
 
-			if (!modelConfig["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
+			if (!modelProperties["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
 				modelProperties["api_base"] = "https://api.devchat.ai/v1";
 			}
 
@@ -85,6 +96,18 @@ export class ApiKeyManager {
 		}
 		if (llmModelT === "claude-2") {
 			return await modelProperties('Model.claude-2', "claude-2");
+		}
+		if (llmModelT === "xinghuo-2") {
+			return await modelProperties('Model.xinghuo-2', "xinghuo-2");
+		}
+		if (llmModelT === "chatglm_pro") {
+			return await modelProperties('Model.chatglm_pro', "chatglm_pro");
+		}
+		if (llmModelT === "ERNIE-Bot") {
+			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot");
+		}
+		if (llmModelT === "llama-2-13b-chat") {
+			return await modelProperties('Model.llama-2-13b-chat', "llama-2-13b-chat");
 		}
 
 		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
