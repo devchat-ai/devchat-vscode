@@ -21,7 +21,18 @@ export async function getValidModels(): Promise<string[]> {
 		if (!modelConfig["provider"]) {
 			return undefined;
 		}
-		if (!modelConfig["api_key"]) {
+		const providerProperty = "Provider." + modelConfig["provider"];
+		const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+		if (providerConfig) {
+			if (providerConfig["access_key"]) {
+				modelProperties["api_key"] = providerConfig["access_key"];
+			}
+			if (providerConfig["api_base"]) {
+				modelProperties["api_base"] = providerConfig["api_base"];
+			}
+		}
+		
+		if (!modelProperties["api_key"]) {
 			const providerName = ApiKeyManager.toProviderKey(modelConfig["provider"]);
 			if (!providerName) {
 				return undefined;
@@ -57,7 +68,23 @@ export async function getValidModels(): Promise<string[]> {
 	if (claudeModel) {
 		modelList.push(claudeModel.model);
 	}
-
+	const xinghuoModel = await modelProperties('Model.xinghuo-2', "xinghuo-2");
+	if (xinghuoModel) {
+		modelList.push(xinghuoModel.model);
+	}
+	const glmModel = await modelProperties('Model.chatglm_pro', "chatglm_pro");
+	if (glmModel) {
+		modelList.push(glmModel.model);
+	}
+	const erniebotModel = await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot");
+	if (erniebotModel) {
+		modelList.push(erniebotModel.model);
+	}
+	const llama2Model = await modelProperties('Model.llama-2-13b-chat', "llama-2-13b-chat");
+	if (llama2Model) {
+		modelList.push(llama2Model.model);
+	}
+	
 	const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
 	if (!customModelConfig) {
 		return modelList;

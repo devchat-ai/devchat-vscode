@@ -70,18 +70,10 @@
 		"configuration": {
 			"title": "DevChat",
 			"properties": {
-				"devchat.Model.gpt-3-5": {
+				"devchat.Provider.devchat": {
 					"type": "object",
 					"properties": {
-						"provider": {
-							"type": "string",
-							"default": "openai",
-							"enum": [
-								"openai"
-							],
-							"description": "[required*] Specify which provider host this llm model"
-						},
-						"api_key": {
+						"access_key": {
 							"type": "string",
 							"default": "",
 							"description": "[required*] Specify access key for selected provider."
@@ -90,6 +82,68 @@
 							"type": "string",
 							"default": "",
 							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
+						}
+					},
+					"required": [
+						"access_key"
+					],
+					"additionalProperties": false,
+					"order": -1,
+					"markdownDescription": "Specify the properties for devchat provider."
+				},
+				"devchat.Provider.openai": {
+					"type": "object",
+					"properties": {
+						"access_key": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify access key for selected provider."
+						},
+						"api_base": {
+							"type": "string",
+							"default": "",
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
+						}
+					},
+					"required": [
+						"access_key"
+					],
+					"additionalProperties": false,
+					"order": -1,
+					"markdownDescription": "Specify the properties for openai provider."
+				},
+				"devchat.Provider.anthropic": {
+					"type": "object",
+					"properties": {
+						"access_key": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify access key for selected provider."
+						},
+						"api_base": {
+							"type": "string",
+							"default": "",
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
+						}
+					},
+					"required": [
+						"access_key"
+					],
+					"additionalProperties": false,
+					"order": -1,
+					"markdownDescription": "Specify the properties for anthropic provider."
+				},
+				"devchat.Model.gpt-3-5": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
 						},
 						"temperature": {
 							"type": "number",
@@ -125,21 +179,12 @@
 					"properties": {
 						"provider": {
 							"type": "string",
-							"default": "openai",
+							"default": "devchat",
 							"enum": [
+								"devchat",
 								"openai"
 							],
 							"description": "[required*] Specify which provider host this llm model"
-						},
-						"api_key": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify access key for selected provider."
-						},
-						"api_base": {
-							"type": "string",
-							"default": "",
-							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
@@ -175,21 +220,12 @@
 					"properties": {
 						"provider": {
 							"type": "string",
-							"default": "openai",
+							"default": "devchat",
 							"enum": [
+								"devchat",
 								"openai"
 							],
 							"description": "[required*] Specify which provider host this llm model"
-						},
-						"api_key": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify access key for selected provider."
-						},
-						"api_base": {
-							"type": "string",
-							"default": "",
-							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
@@ -221,21 +257,12 @@
 					"properties": {
 						"provider": {
 							"type": "string",
-							"default": "anthropic",
+							"default": "devchat",
 							"enum": [
+								"devchat",
 								"anthropic"
 							],
 							"description": "[required*] which provider host this llm model"
-						},
-						"api_key": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify access key for selected provider."
-						},
-						"api_base": {
-							"type": "string",
-							"default": "",
-							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
 						},
 						"temperature": {
 							"type": "number",
@@ -246,21 +273,105 @@
 							"type": "number",
 							"default": 1000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-						},
-						"presence_penalty": {
-							"type": "number",
-							"default": 0,
-							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-						},
-						"frequency_penalty": {
-							"type": "number",
-							"default": 0,
-							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
 						}
 					},
 					"additionalProperties": false,
 					"order": 3,
 					"markdownDescription": "properties for claude-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.xinghuo-2": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for xinghuo-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.chatglm_pro": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for chatglm_pro model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.ERNIE-Bot": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for ERNIE-Bot model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.llama-2-13b-chat": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"api_secret": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify secret key for selected provider."
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for llama-2-13b-chat model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
 				},
 				"devchat.defaultModel": {
 					"oneOf": [
@@ -271,7 +382,11 @@
 								"gpt-3.5-turbo",
 								"gpt-3.5-turbo-16k",
 								"gpt-4",
-								"claude-2"
+								"claude-2",
+								"xinghuo-2",
+								"chatglm_pro",
+								"ERNIE-Bot",
+								"llama-2-13b-chat"
 							]
 						},
 						{
