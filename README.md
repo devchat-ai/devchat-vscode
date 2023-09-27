@@ -84,7 +84,7 @@ You can incorporate a template in your prompt by typing a "command" with the cor
 
 ## Quick Start
 
-  - Install Python 3.8 or later and ensure it's added to your system path. Verify the installation by opening the terminal and running `python --version`.
+  - Install Python 3.8 or later and ensure it's added to your system path. Verify the installation by opening the terminal and running `python --version` or `python3 --version`.
   - Install Git and ensure it is added to your system path. Verify the installation by opening the terminal and running `git --version`.
   - Install [Visual Studio Code](https://code.visualstudio.com/download).
   - Open the Extensions view (⇧⌘X), search for DevChat, and install the extension:
