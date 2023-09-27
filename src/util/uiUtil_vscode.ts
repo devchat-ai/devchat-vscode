@@ -122,4 +122,9 @@ export class UiUtilVscode implements UiUtil {
 	public showErrorMessage(message: string): void {
 		vscode.window.showErrorMessage(message);
 	}
+
+	public async getLSPBrigePort(): Promise<number | undefined> {
+		const port = await vscode.commands.executeCommand('LangBrige.getAddress') as number | undefined;;
+		return port;
+	}
 }

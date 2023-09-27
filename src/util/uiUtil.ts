@@ -17,6 +17,7 @@ export interface UiUtil {
 	// current selected text
 	selectText(): string | undefined;
 	showErrorMessage(message: string): void;
+	getLSPBrigePort(): Promise<number | undefined>;
 }
 
 
@@ -71,6 +72,10 @@ export class UiUtilWrapper {
 
 	public static showErrorMessage(message: string): void {
 		this._uiUtil?.showErrorMessage(message);
+	}
+
+	public static async getLSPBrigePort(): Promise<number | undefined> {
+		return await this._uiUtil?.getLSPBrigePort();
 	}
 }
 

@@ -38,6 +38,8 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
     _lastMessage = [message];
 	_lastMessage[0]['askCode'] = true;
 
+	const port = await UiUtilWrapper.getLSPBrigePort();
+
     let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
     if (!pythonVirtualEnv) {
 		try {
@@ -80,34 +82,24 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
     const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
     
     try {
-        // create temp directory and file
-        const tempDir = await createTempSubdirectory('devchat/context');
-        const tempFile = path.join(tempDir, "doc_context.txt");
-
-        // If tempFile already exists, delete it
-        if (fs.existsSync(tempFile)) {
-            fs.unlinkSync(tempFile);
-        }
-
+		let outputResult = "";
         const commandRun = new CommandRun();
         const command = pythonVirtualEnv.trim();
-        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, tempFile];
+        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, `${port}`];
         const result = await commandRun.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
-            logger.channel()?.info(data);
+            outputResult += data;
+			MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: outputResult, hash:"", user:"", isError: false });
+			logger.channel()?.info(data);
         }, (data) => {
             logger.channel()?.error(data);
         }, undefined, undefined);
 
-        // Check if tempFile has been written to
-        if (!fs.existsSync(tempFile) || fs.readFileSync(tempFile, 'utf8') === '') {
-            logger.channel()?.error(`Did not get relevant context from AskCode.`);
-            logger.channel()?.show();
-			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
-            return;
-        }
-
-        // Send message
-        await sendMessage({command: "sendMessage", contextInfo: [{file: tempFile, context: ""}], text: message.text, parent_hash: message.hash}, panel);
+		if (result.exitCode === 0) {
+			MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: result.stdout, hash:"", user:"", isError: false });
+			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout, hash:"", user:"", date:0, isError: false });
+		} else {
+			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout + result.stderr, hash: "", user: "", date: 0, isError: true });
+		}
     } catch (error) {
         if (error instanceof Error) {
             logger.channel()?.error(`error: ${error.message}`);
