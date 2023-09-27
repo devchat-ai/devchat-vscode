@@ -5,7 +5,7 @@
 
 # DevChat Visual Studio Code Extension
 
-**The AI Coding Assistant Made Effective by Manual Control**
+**The AI Coding Assistant Made Effective with Human in the Loop**
 
 🛠️ No excessive automation, just right AI where it works.
 
