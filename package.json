@@ -8,6 +8,9 @@
 	"engines": {
 		"vscode": "^1.75.0"
 	},
+	"extensionDependencies": [
+        "merico.lang-bridge-vsc"
+    ],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/devchat-ai/devchat-vscode.git"

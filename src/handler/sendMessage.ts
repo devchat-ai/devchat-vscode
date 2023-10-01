@@ -38,6 +38,8 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
     _lastMessage = [message];
 	_lastMessage[0]['askCode'] = true;
 
+	const port = await UiUtilWrapper.getLSPBrigePort();
+
     let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
     if (!pythonVirtualEnv) {
 		try {
@@ -91,7 +93,7 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 
         const commandRun = new CommandRun();
         const command = pythonVirtualEnv.trim();
-        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, tempFile];
+        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, tempFile, port];
         const result = await commandRun.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
             logger.channel()?.info(data);
         }, (data) => {
