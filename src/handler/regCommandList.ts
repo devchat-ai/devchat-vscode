@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import CommandManager from '../command/commandManager';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { getValidModels } from './regValidModelList';
+import { ApiKeyManager } from '../util/apiKey';
 
 
 regInMessage({command: 'regCommandList'});
@@ -50,7 +50,7 @@ export async function sendCommandListByDevChatRun() {
 }
 
 export async function updateChatModels() {
-	const modelList = await getValidModels();
+	const modelList = await ApiKeyManager.getValidModels();
 	MessageHandler.sendMessage(existPannel!, { command: 'regModelList', result: modelList });
 }
 

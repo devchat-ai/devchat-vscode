@@ -112,27 +112,6 @@
 					"order": -1,
 					"markdownDescription": "Specify the properties for openai provider."
 				},
-				"devchat.Provider.anthropic": {
-					"type": "object",
-					"properties": {
-						"access_key": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify access key for selected provider."
-						},
-						"api_base": {
-							"type": "string",
-							"default": "",
-							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
-						}
-					},
-					"required": [
-						"access_key"
-					],
-					"additionalProperties": false,
-					"order": -1,
-					"markdownDescription": "Specify the properties for anthropic provider."
-				},
 				"devchat.Model.gpt-3-5": {
 					"type": "object",
 					"properties": {
@@ -259,8 +238,7 @@
 							"type": "string",
 							"default": "devchat",
 							"enum": [
-								"devchat",
-								"anthropic"
+								"devchat"
 							],
 							"description": "[required*] which provider host this llm model"
 						},
@@ -522,11 +500,6 @@
 			{
 				"command": "DevChat.AccessKey.OpenAI",
 				"title": "Input OpenAI API Key",
-				"category": "DevChat"
-			},
-			{
-				"command": "DevChat.AccessKey.Anthropic",
-				"title": "Input Anthropic API Key",
 				"category": "DevChat"
 			},
 			{
