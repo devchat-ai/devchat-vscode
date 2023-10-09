@@ -10,3 +10,4 @@ node_modules
 .chat/prompts.graphml
 .chat/prompts.db
 
+.vscode/settings.json
