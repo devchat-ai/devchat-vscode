@@ -99,7 +99,9 @@ async function configUpdateTo_0924() {
 		"Model.xinghuo-2",
 		"Model.chatglm_pro",
 		"Model.ERNIE-Bot",
-		"Model.llama-2-13b-chat"
+		"Model.llama-2-13b-chat",
+		"Model.CodeLlama-34b-Instruct",
+		"Model.starchat-alpha"
 	];
 
 	for (const model of support_models) {

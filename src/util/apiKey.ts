@@ -226,6 +226,12 @@ export class ApiKeyManager {
 		if (llmModelT === "llama-2-13b-chat") {
 			return await modelProperties('Model.llama-2-13b-chat', "llama-2-13b-chat");
 		}
+		if (llmModelT === "CodeLlama-34b-Instruct") {
+			return await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
+		}
+		if (llmModelT === "starchat-alpha") {
+			return await modelProperties('Model.starchat-alpha', "starchat-alpha");
+		}
 
 		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
 		if (!customModelConfig) {
