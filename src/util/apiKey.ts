@@ -6,6 +6,7 @@ export class ApiKeyManager {
 	static toProviderKey(provider: string) : string | undefined {
 		let providerNameMap = {
 			"openai": "OpenAI",
+			"devchat": "DevChat",
 			"cohere": "Cohere",
 			"anthropic": "Anthropic",
 			"replicate": "Replicate",

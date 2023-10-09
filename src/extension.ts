@@ -64,6 +64,8 @@ async function configUpdateTo_0924() {
 	if (!devchatKey && !openaiKey) {
 		openaiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
 		devchatKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+		await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", "");
+		await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", "");
 	}
 	if (!devchatKey && !openaiKey) {
 		openaiKey = process.env.OPENAI_API_KEY;
