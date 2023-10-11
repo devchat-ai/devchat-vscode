@@ -75,7 +75,7 @@ const MessageList = observer((props: any) => {
                                 <Text fw={500}>Additional Cost Required</Text>
                             </Group>
                         </Card.Section>
-                        <Text className={classes.cardDescription}>Will you pay approximately $1.2 - $ 2.2 for this task?</Text>
+                        <Text className={classes.cardDescription}>Will you pay approximately $0.1 - $0.5 for this task?</Text>
                         <Group position="right" >
                             <Button size="xs" color="#ED6A45" className={classes.button} onClick={()=> chat.sendLastUserMessage() }>Yes</Button>
                             <Button size="xs" color="#ED6A45" className={classes.button} onClick={()=> chat.cancelDevchatAsk()}>No</Button>
