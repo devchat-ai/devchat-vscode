@@ -188,7 +188,7 @@ You can configure DevChat from [Settings](#settings).`;
             const lastBotMessage = self.messages[self.messages.length - 1];
             if (lastBotMessage && lastBotMessage.type === 'bot') {
                 lastBotMessage.confirm = false;
-                lastBotMessage.message = 'No problem, let me know if you have any other questions or if there\'s anything else I can help you with.';
+                lastBotMessage.message = 'You\'ve cancelled the question. Please let me know if you have any other questions or if there\'s anything else I can assist with.';
             }
         };
 
