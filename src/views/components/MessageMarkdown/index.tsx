@@ -5,6 +5,7 @@ import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
+import Step from "./Step";
 import LanguageCorner from "./LanguageCorner";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
@@ -133,6 +134,11 @@ Generate a professionally written and formatted release note in markdown with th
                 if (lanugage === 'markdown' || lanugage === 'text') {
                     wrapLongLines = true;
                 }
+
+                if (lanugage === 'step') {
+                    return <Step language={lanugage}>{value}</Step>;
+                }
+
                 return !inline && lanugage ? (
                     <div style={{ position: 'relative' }}>
                         <LanguageCorner language={lanugage} />
