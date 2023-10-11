@@ -1,12 +1,14 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { keyframes } from "@emotion/react";
 import { Box, Container, Text } from "@mantine/core";
 import MessageBody from "@/views/components/MessageBody";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
-
+import {fromMarkdown} from 'mdast-util-from-markdown';
+import {toMarkdown} from 'mdast-util-to-markdown';
+import {Root} from 'mdast';
 
 const MessageBlink = observer(() => {
     const { chat } = useMst();
@@ -49,13 +51,12 @@ const CurrentMessage = observer((props: any) => {
     const { width } = props;
     const { chat } = useMst();
     const { messages, currentMessage, generating, responsed, hasDone } = chat;
-
     // split blocks
-    const messageBlocks = getBlocks(currentMessage);
-    const lastMessageBlocks = getBlocks(messages[messages.length - 1]?.message);
-    const fixedCount = lastMessageBlocks.length;
-    const receivedCount = messageBlocks.length;
-    const renderBlocks = messageBlocks.splice(-1);
+    const messageBlocks = fromMarkdown(currentMessage);
+    const lastMessageBlocks = fromMarkdown(messages[messages.length - 1]?.message);
+    const fixedCount = lastMessageBlocks.children.length;
+    const receivedCount = messageBlocks.children.length;
+    const renderBlocks = messageBlocks.children.splice(-1);
 
     useEffect(() => {
         if (generating) {
@@ -67,7 +68,10 @@ const CurrentMessage = observer((props: any) => {
 
     useEffect(() => {
         if (generating && (receivedCount - fixedCount >= 1 || !responsed)) {
-            chat.updateLastMessage(currentMessage);
+            chat.updateLastMessage(toMarkdown({
+                    type: 'root',
+                    children: messageBlocks.children
+                }));
         }
     }, [currentMessage, responsed, generating]);
 
@@ -86,7 +90,7 @@ const CurrentMessage = observer((props: any) => {
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <MessageBody messageText={renderBlocks.join('\n\n')} messageType="bot" />
+            <MessageBody messageText={renderBlocks.length>0?toMarkdown(renderBlocks[0]):''} messageType="bot" />
             <MessageBlink />
         </Box>
         : <></>;
