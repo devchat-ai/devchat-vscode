@@ -58,14 +58,6 @@ const CurrentMessage = observer((props: any) => {
     const renderBlocks = messageBlocks.children.splice(-1);
 
     useEffect(() => {
-        if (generating) {
-            // new a bot message
-            const messageItem = Message.create({ type: 'bot', message: currentMessage });
-            chat.newMessage(messageItem);
-        }
-    }, [generating]);
-
-    useEffect(() => {
         if (generating && (receivedCount - fixedCount >= 1 || !responsed)) {
             chat.updateLastMessage(toMarkdown({
                     type: 'root',

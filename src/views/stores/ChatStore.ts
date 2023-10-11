@@ -83,6 +83,34 @@ export const ChatStore = types.model('Chat', {
 })
     .actions(self => {
 
+        const goScrollBottom = () => {
+            self.scrollBottom++;
+        };
+
+        const lastNonEmptyHash = () => {
+            let lastNonEmptyHash;
+            for (let i = self.messages.length - 1; i >= 0; i--) {
+                if (self.messages[i].hash) {
+                    lastNonEmptyHash = self.messages[i].hash;
+                    break;
+                }
+            }
+            return lastNonEmptyHash === 'message' ? null : lastNonEmptyHash;
+        };
+
+        // Process and send the message to the extension
+        const contextInfo = chatContexts => chatContexts.map((item, index: number) => {
+            const { file, path, content, command } = item;
+            return {
+                file,
+                context: {
+                    path: path,
+                    command: command,
+                    content: content,
+                }
+            };
+        });
+
         const helpMessage = (originalMessage = false) => {
 
             let helps = `
@@ -112,12 +140,15 @@ You can configure DevChat from [Settings](#settings).`;
                     type: 'bot',
                     message: helps
                 }));
+            // goto bottom
+            goScrollBottom();
         };
 
-        const devchatAsk = (userMessage) => {
+        const devchatAsk = (userMessage, chatContexts) => {
             self.messages.push(
                 Message.create({
                     type: 'user',
+                    contexts: chatContexts,
                     message: userMessage
                 }));
             self.messages.push(
@@ -126,11 +157,66 @@ You can configure DevChat from [Settings](#settings).`;
                     message: '',
                     confirm: true
                 }));
+            // goto bottom
+            goScrollBottom();
         };
+
+        const startGenerating = (text: string, chatContexts) => {
+            self.generating = true;
+            self.responsed = false;
+            self.hasDone = false;
+            self.errorMessage = '';
+            self.currentMessage = '';
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: text,
+                contextInfo: contextInfo(chatContexts),
+                parent_hash: lastNonEmptyHash()
+            });
+        };
+
+        const sendLastUserMessage = () => {
+            const lastUserMessage = self.messages[self.messages.length - 2];
+            const lastBotMessage = self.messages[self.messages.length - 1];
+            if (lastUserMessage && lastUserMessage.type === 'user') {
+                lastBotMessage.confirm = false;
+                startGenerating(lastUserMessage.message, lastUserMessage.contexts);
+            }
+        };
+
+        const cancelDevchatAsk = () => {
+            const lastBotMessage = self.messages[self.messages.length - 1];
+            if (lastBotMessage && lastBotMessage.type === 'bot') {
+                lastBotMessage.confirm = false;
+                lastBotMessage.message = 'No problem, let me know if you have any other questions or if there\'s anything else I can help you with.';
+            }
+        };
+
+        const commonMessage = (text: string, chatContexts) => {
+            self.messages.push({
+                type: 'user',
+                message: text,
+                contexts: chatContexts
+            });
+            self.messages.push({ 
+                type: 'bot', 
+                message: '' 
+            });
+            // start generating
+            startGenerating(text, chatContexts);
+            // goto bottom
+            goScrollBottom();
+        };
+
 
         return {
             helpMessage,
             devchatAsk,
+            sendLastUserMessage,
+            cancelDevchatAsk,
+            goScrollBottom,
+            startGenerating,
+            commonMessage,
             updateChatPanelWidth: (width: number) => {
                 self.chatPanelWidth = width;
             },
@@ -139,38 +225,6 @@ You can configure DevChat from [Settings](#settings).`;
             },
             updateFeatures: (features: any) => {
                 self.features = features;
-            },
-            startGenerating: (text: string, chatContexts) => {
-                self.generating = true;
-                self.responsed = false;
-                self.hasDone = false;
-                self.errorMessage = '';
-                self.currentMessage = '';
-                let lastNonEmptyHash;
-                for (let i = self.messages.length - 1; i >= 0; i--) {
-                    if (self.messages[i].hash) {
-                        lastNonEmptyHash = self.messages[i].hash;
-                        break;
-                    }
-                }
-                // Process and send the message to the extension
-                const contextInfo = chatContexts.map((item, index: number) => {
-                    const { file, path, content, command } = item;
-                    return {
-                        file,
-                        context: {
-                            path: path,
-                            command: command,
-                            content: content,
-                        }
-                    };
-                });
-                messageUtil.sendMessage({
-                    command: 'sendMessage',
-                    text: text,
-                    contextInfo: contextInfo,
-                    parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
-                });
             },
             startSystemMessage: () => {
                 self.generating = true;
@@ -244,9 +298,6 @@ You can configure DevChat from [Settings](#settings).`;
             onMessagesMiddle: () => {
                 self.isTop = false;
                 self.isBottom = false;
-            },
-            goScrollBottom: () => {
-                self.scrollBottom++;
             },
             fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
                 const { pageIndex, entries } = yield fetchHistoryMessages(params);

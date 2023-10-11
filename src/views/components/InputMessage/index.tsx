@@ -60,27 +60,19 @@ const InputMessage = observer((props: any) => {
         if (inputValue) {
             if (inputValue.trim() === '/help') {
                 chat.helpMessage();
-                input.setValue('');
-                event.preventDefault();
-            } else{
+            } else {
                 const text = inputValue;
-                // Add the user's message to the chat UI
                 const chatContexts = contexts ? [...contexts].map((item) => ({ ...item })) : undefined;
-                const newMessage = Message.create({
-                    type: 'user',
-                    message: inputValue,
-                    contexts: chatContexts
-                });
-                chat.newMessage(newMessage);
-                // start generating
-                chat.startGenerating(text, chatContexts);
-                // Clear the input field
-                input.setValue('');
-                input.clearContexts();
-                setTimeout(() => {
-                    chat.goScrollBottom();
-                }, 1000);
+                if (inputValue.trim().startsWith('/ask-code')) {
+                    chat.devchatAsk(text, chatContexts);
+                } else{
+                    chat.commonMessage(text, chatContexts);
+                }
             }
+            // Clear the input field
+            input.setValue('');
+            input.clearContexts();
+            event.preventDefault();
         }
     };
 
