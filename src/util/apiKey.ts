@@ -105,9 +105,13 @@ export class ApiKeyManager {
 		if (erniebotModel) {
 			modelList.push(erniebotModel.model);
 		}
-		const llama2Model = await modelProperties('Model.llama-2-13b-chat', "llama-2-13b-chat");
-		if (llama2Model) {
-			modelList.push(llama2Model.model);
+		const llamaCode2Model = await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
+		if (llamaCode2Model) {
+			modelList.push(llamaCode2Model.model);
+		}
+		const llama70BModel = await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
+		if (llama70BModel) {
+			modelList.push(llama70BModel.model);
 		}
 		
 		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
@@ -223,10 +227,13 @@ export class ApiKeyManager {
 		if (llmModelT === "ERNIE-Bot") {
 			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot");
 		}
-		if (llmModelT === "llama-2-13b-chat") {
-			return await modelProperties('Model.llama-2-13b-chat', "llama-2-13b-chat");
+		if (llmModelT === "CodeLlama-34b-Instruct") {
+			return await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
 		}
-
+		if (llmModelT === "llama-2-70b-chat") {
+			return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
+		}
+		
 		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
 		if (!customModelConfig) {
 			return undefined;
