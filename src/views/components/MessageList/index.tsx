@@ -70,7 +70,7 @@ const MessageList = observer((props: any) => {
                             whiteSpace: 'break-spaces'
                         },
                     }}>
-                    { messageType === 'bot' && <Card shadow="sm" padding="xs" radius="md" withBorder className={classes.card}>
+                    { messageType === 'bot' && confirm && <Card shadow="sm" padding="xs" radius="md" withBorder className={classes.card}>
                         <Card.Section withBorder inheritPadding py="xs">
                             <Group position="left">
                                 <IconInfoSquareRounded size={20} />
