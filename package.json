@@ -8,6 +8,9 @@
 	"engines": {
 		"vscode": "^1.75.0"
 	},
+	"extensionDependencies": [
+		"merico.lang-bridge-vsc"
+	],
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/devchat-ai/devchat-vscode.git"
@@ -412,7 +415,6 @@
 					"order": 7,
 					"markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://devchat.ai/pricing)"
 				},
-				
 				"DevChat.OpenAI.stream": {
 					"type": "boolean",
 					"default": true,
@@ -794,6 +796,9 @@
 		"axios": "^1.3.6",
 		"dotenv": "^16.0.3",
 		"js-yaml": "^4.1.0",
+		"mdast": "^3.0.0",
+		"mdast-util-from-markdown": "^2.0.0",
+		"mdast-util-to-markdown": "^2.1.0",
 		"mobx": "^6.10.0",
 		"mobx-react": "^9.0.0",
 		"mobx-state-tree": "^5.1.8",
@@ -807,6 +812,8 @@
 		"rehype-raw": "^6.1.1",
 		"shell-escape": "^0.2.0",
 		"string-argv": "^0.3.2",
+		"unified": "^11.0.3",
+		"unist-util-visit": "^5.0.0",
 		"uuid": "^9.0.0",
 		"yaml": "^2.3.2"
 	}

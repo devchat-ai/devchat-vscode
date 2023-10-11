@@ -1,41 +1,39 @@
-import { Button, Anchor } from "@mantine/core";
-import React from "react";
+import { Button, Anchor, Stack, Group, Box } from "@mantine/core";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
+import Step from "./Step";
+import LanguageCorner from "./LanguageCorner";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
+import {fromMarkdown} from 'mdast-util-from-markdown';
+import {visit} from 'unist-util-visit';
 
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
-    className: string
+    className: string,
+    temp?: boolean
 }
 
+type Step = {
+    index: number,
+    content: string;
+    endsWithTripleBacktick: boolean;
+};
+
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
-    const { children } = props;
+    const { children,temp=false } = props;
     const { chat } = useMst();
-
-    const LanguageCorner = (props: any) => {
-        const { language } = props;
-
-        return (<div style={{ position: 'absolute', top: 0, left: 0 }}>
-            {language && (
-                <div style={{
-                    backgroundColor: '#333',
-                    color: '#fff',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '0.2rem',
-                    fontSize: '0.8rem',
-                }}>
-                    {language}
-                </div>
-            )}
-        </div>);
-    };
+    const [steps, setSteps] = useState<Step[]>([]);
+    const tree = fromMarkdown(children);
+    const codes = tree.children.filter(node => node.type === 'code');    
+    const lastNode = tree.children[tree.children.length-1];
+    let index = 1;
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -48,27 +46,9 @@ const MessageMarkdown = observer((props: MessageMarkdownProps) => {
                     }),
                     Message.create({
                         type: 'bot',
-                        message: `***/ask_code***
-
-If you would like to ask questions related to your own codebase, you can enable and use the /ask_code feature of DevChat.
-
-While /ask_code is being enabled, DevChat will need to index your codebase before you can use this feature. Indexing usually takes a while, depending on the size of your codebase, your computing power and the network. Once it’s done, you can ask questions about your codebase by typing the “/ask_code” command, followed by your question.
-
-Example questions:
-(Here we only show example questions from a few popular open-source projects’ codebases.)
-
-How do I access POST form fields in Express?
-How do I pass command line arguments to a Node.js program?
-How do I print the value of a tensor object in TensorFlow?
-How do I force Kubernetes to re-pull an image in Kubernetes?
-How do I set focus on an input field after rendering in React?
-
-\`Please check DevChat.ask_code settings\` before enabling the feature, because once indexing has been started, changing the settings will not affect the process anymore, unless if you terminate it and re-index.
-
-To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette or click on the button to start indexing now.
-              
-<button value="settings">Settings</button>
-<button value="start_indexing">Start Indexing</button>
+                        message: `***/ask-code***
+                        
+Your AI agent, navigates through your codebase to answer questions using GPT-4, analyzing up to 10 source files for approximately $0.4 USD per question. We're evolving — soon, we'll implement the more affordable LLama2-70b model.
                         `
                     }),
                 ]);
@@ -135,9 +115,20 @@ Generate a professionally written and formatted release note in markdown with th
 
     return <ReactMarkdown
         {...props}
+        remarkPlugins={[()=> (tree) =>{
+            visit(tree, function (node) {
+                if (node.type === 'code' && (node.lang ==='step' || node.lang ==='Step')) {
+                    node.data = {
+                        hProperties:{
+                            index: index++
+                        }
+                    };
+                }
+            });
+        }]}
         rehypePlugins={[rehypeRaw]}
         components={{
-            code({ node, inline, className, children, ...props }) {
+            code({ node, inline, className, children, index,  ...props }) {
 
                 const match = /language-(\w+)/.exec(className || '');
                 const value = String(children).replace(/\n$/, '');
@@ -150,6 +141,12 @@ Generate a professionally written and formatted release note in markdown with th
                 if (lanugage === 'markdown' || lanugage === 'text') {
                     wrapLongLines = true;
                 }
+
+                if (lanugage === 'step' || lanugage === 'Step') {
+                    let done = Number(index) < codes.length? true : lastNode.type !== 'code';
+                    return <Step language={lanugage} done={temp?done:true}>{value}</Step>;
+                }
+
                 return !inline && lanugage ? (
                     <div style={{ position: 'relative' }}>
                         <LanguageCorner language={lanugage} />

@@ -26,7 +26,7 @@ class CommandManager {
 				CommandManager.instance.registerCommand({
 					name: 'ask-code',
 					pattern: 'ask-code',
-					description: 'ask code',
+					description: 'Ask anything about your codebase and get answers from our AI agent',
 					args: 0,
 					handler: async (commandName: string, userInput: string) => {
 						return '';

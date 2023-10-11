@@ -284,9 +284,6 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
         if (!pythonVirtualEnv) {
 			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCode);
-        } else {
-			progressBar.update("Index source files. See OUTPUT for progress...", 0);
-            await indexCode(pythonVirtualEnv, supportedFileTypes, progressBar);
         }
 
 		updateIndexingStatus("stopped");
@@ -310,7 +307,7 @@ async function installAskCode(supportedFileTypes, progressBar: any, callback: Fu
         return;
     }
 
-    UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
+    await UiUtilWrapper.updateConfiguration("DevChat", "PythonVirtualEnv", pythonEnvPath.trim());
     logger.channel()?.info(`Installation finished.`);
     
     // Execute the callback function after the installation is finished
@@ -318,68 +315,6 @@ async function installAskCode(supportedFileTypes, progressBar: any, callback: Fu
 }
 
 async function indexCode(pythonVirtualEnv, supportedFileTypes, progressBar: any) {
-    let envs = {};
-
-	const llmModelData = await ApiKeyManager.llmModel();
-	if (!llmModelData) {
-		logger.channel()?.error('No valid llm model is selected!');
-        logger.channel()?.show();
-
-		progressBar.endWithError("No valid llm model is selected!");
-        return;
-	}
-
-    let openaiApiKey = llmModelData.api_key;
-    if (!openaiApiKey) {
-        logger.channel()?.error('The OpenAI key is invalid!');
-        logger.channel()?.show();
-
-		progressBar.endWithError("The OpenAI key is invalid!");
-        return;
-    }
-    envs['OPENAI_API_KEY'] = openaiApiKey;
-
-    const openAiApiBase = llmModelData.api_base;
-    if (openAiApiBase) {
-        envs['OPENAI_API_BASE'] = openAiApiBase;
-    }
-
-    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-    
-    const command = pythonVirtualEnv.trim();
-    const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "index", ".", supportedFileTypes];
-    const options = { env: envs, cwd: workspaceDir };
-
-    indexProcess = new CommandRun();
-    const result = await indexProcess.spawnAsync(command, args, options, (data) => {
-        if (data.includes('Skip file:')) {
-			return;
-		}
-		logger.channel()?.info(`${data}`);
-    }, (data) => {
-		if (data.includes('Skip file:')) {
-			return;
-		}
-        logger.channel()?.info(`${data}`);
-    }, undefined, undefined);
-
-    if (result.exitCode !== 0) {
-		if (result.exitCode === null) {
-			logger.channel()?.info(`Indexing stopped!`);
-			progressBar.endWithError(`Indexing stopped!`);
-		} else {
-			logger.channel()?.error(`Indexing failed: ${result.stderr}`);
-			logger.channel()?.show();
-			progressBar.endWithError(`Indexing failed: ${result.stderr}`);
-		}
-
-        return;
-    }
-
-	updateLastModifyTime();
-    logger.channel()?.info(`index finished.`);
-
-	progressBar.update("Indexing finished.");
 	progressBar.end();
 }
 

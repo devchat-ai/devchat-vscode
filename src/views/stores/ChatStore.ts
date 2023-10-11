@@ -61,6 +61,7 @@ export const Message = types.model({
     type: types.enumeration(['user', 'bot', 'system']),
     message: types.string,
     contexts: types.maybe(types.array(ChatContext)),
+    confirm: types.maybe(types.boolean)
 });
 
 export const ChatStore = types.model('Chat', {
@@ -82,6 +83,34 @@ export const ChatStore = types.model('Chat', {
 })
     .actions(self => {
 
+        const goScrollBottom = () => {
+            self.scrollBottom++;
+        };
+
+        const lastNonEmptyHash = () => {
+            let lastNonEmptyHash;
+            for (let i = self.messages.length - 1; i >= 0; i--) {
+                if (self.messages[i].hash) {
+                    lastNonEmptyHash = self.messages[i].hash;
+                    break;
+                }
+            }
+            return lastNonEmptyHash === 'message' ? null : lastNonEmptyHash;
+        };
+
+        // Process and send the message to the extension
+        const contextInfo = chatContexts => chatContexts.map((item, index: number) => {
+            const { file, path, content, command } = item;
+            return {
+                file,
+                context: {
+                    path: path,
+                    command: command,
+                    content: content,
+                }
+            };
+        });
+
         const helpMessage = (originalMessage = false) => {
 
             let helps = `
@@ -97,7 +126,7 @@ To get started, here are some of the things that I can do for you:
 
 [/release_note: draft a release note based on your latest commits](#release_note)
 
-${self.features['ask-code'] ? '[/ask-code: ask me questions about your codebase](#ask_code)' : ''}
+${self.features['ask-code'] ? '[/ask-code: ask anything about your codebase and get answers from our AI agent](#ask_code)' : ''}
 
 You can configure DevChat from [Settings](#settings).`;
 
@@ -111,10 +140,83 @@ You can configure DevChat from [Settings](#settings).`;
                     type: 'bot',
                     message: helps
                 }));
+            // goto bottom
+            goScrollBottom();
         };
+
+        const devchatAsk = (userMessage, chatContexts) => {
+            self.messages.push(
+                Message.create({
+                    type: 'user',
+                    contexts: chatContexts,
+                    message: userMessage
+                }));
+            self.messages.push(
+                Message.create({
+                    type: 'bot',
+                    message: '',
+                    confirm: true
+                }));
+            // goto bottom
+            goScrollBottom();
+        };
+
+        const startGenerating = (text: string, chatContexts) => {
+            self.generating = true;
+            self.responsed = false;
+            self.hasDone = false;
+            self.errorMessage = '';
+            self.currentMessage = '';
+            messageUtil.sendMessage({
+                command: 'sendMessage',
+                text: text,
+                contextInfo: contextInfo(chatContexts),
+                parent_hash: lastNonEmptyHash()
+            });
+        };
+
+        const sendLastUserMessage = () => {
+            const lastUserMessage = self.messages[self.messages.length - 2];
+            const lastBotMessage = self.messages[self.messages.length - 1];
+            if (lastUserMessage && lastUserMessage.type === 'user') {
+                lastBotMessage.confirm = false;
+                startGenerating(lastUserMessage.message, lastUserMessage.contexts);
+            }
+        };
+
+        const cancelDevchatAsk = () => {
+            const lastBotMessage = self.messages[self.messages.length - 1];
+            if (lastBotMessage && lastBotMessage.type === 'bot') {
+                lastBotMessage.confirm = false;
+                lastBotMessage.message = 'You\'ve cancelled the question. Please let me know if you have any other questions or if there\'s anything else I can assist with.';
+            }
+        };
+
+        const commonMessage = (text: string, chatContexts) => {
+            self.messages.push({
+                type: 'user',
+                message: text,
+                contexts: chatContexts
+            });
+            self.messages.push({ 
+                type: 'bot', 
+                message: '' 
+            });
+            // start generating
+            startGenerating(text, chatContexts);
+            // goto bottom
+            goScrollBottom();
+        };
+
 
         return {
             helpMessage,
+            devchatAsk,
+            sendLastUserMessage,
+            cancelDevchatAsk,
+            goScrollBottom,
+            startGenerating,
+            commonMessage,
             updateChatPanelWidth: (width: number) => {
                 self.chatPanelWidth = width;
             },
@@ -123,38 +225,6 @@ You can configure DevChat from [Settings](#settings).`;
             },
             updateFeatures: (features: any) => {
                 self.features = features;
-            },
-            startGenerating: (text: string, chatContexts) => {
-                self.generating = true;
-                self.responsed = false;
-                self.hasDone = false;
-                self.errorMessage = '';
-                self.currentMessage = '';
-                let lastNonEmptyHash;
-                for (let i = self.messages.length - 1; i >= 0; i--) {
-                    if (self.messages[i].hash) {
-                        lastNonEmptyHash = self.messages[i].hash;
-                        break;
-                    }
-                }
-                // Process and send the message to the extension
-                const contextInfo = chatContexts.map((item, index: number) => {
-                    const { file, path, content, command } = item;
-                    return {
-                        file,
-                        context: {
-                            path: path,
-                            command: command,
-                            content: content,
-                        }
-                    };
-                });
-                messageUtil.sendMessage({
-                    command: 'sendMessage',
-                    text: text,
-                    contextInfo: contextInfo,
-                    parent_hash: lastNonEmptyHash === 'message' ? null : lastNonEmptyHash
-                });
             },
             startSystemMessage: () => {
                 self.generating = true;
@@ -228,9 +298,6 @@ You can configure DevChat from [Settings](#settings).`;
             onMessagesMiddle: () => {
                 self.isTop = false;
                 self.isBottom = false;
-            },
-            goScrollBottom: () => {
-                self.scrollBottom++;
             },
             fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
                 const { pageIndex, entries } = yield fetchHistoryMessages(params);

@@ -1,12 +1,13 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { keyframes } from "@emotion/react";
 import { Box, Container, Text } from "@mantine/core";
 import MessageBody from "@/views/components/MessageBody";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
-
+import {fromMarkdown} from 'mdast-util-from-markdown';
+import {toMarkdown} from 'mdast-util-to-markdown';
 
 const MessageBlink = observer(() => {
     const { chat } = useMst();
@@ -18,7 +19,7 @@ const MessageBlink = observer(() => {
     return <Text sx={{
         animation: `${blink} 0.5s infinite;`,
         width: 5,
-        marginTop: chat.responsed ? 0 : '1em',
+        marginTop: '1em',
         backgroundColor: 'black',
         display: 'block'
     }}>|</Text>;
@@ -49,25 +50,19 @@ const CurrentMessage = observer((props: any) => {
     const { width } = props;
     const { chat } = useMst();
     const { messages, currentMessage, generating, responsed, hasDone } = chat;
-
     // split blocks
-    const messageBlocks = getBlocks(currentMessage);
-    const lastMessageBlocks = getBlocks(messages[messages.length - 1]?.message);
-    const fixedCount = lastMessageBlocks.length;
-    const receivedCount = messageBlocks.length;
-    const renderBlocks = messageBlocks.splice(-1);
-
-    useEffect(() => {
-        if (generating) {
-            // new a bot message
-            const messageItem = Message.create({ type: 'bot', message: currentMessage });
-            chat.newMessage(messageItem);
-        }
-    }, [generating]);
+    const messageBlocks = fromMarkdown(currentMessage);
+    const lastMessageBlocks = fromMarkdown(messages[messages.length - 1]?.message);
+    const fixedCount = lastMessageBlocks.children.length;
+    const receivedCount = messageBlocks.children.length;
+    const renderBlocks = messageBlocks.children.splice(-1);
 
     useEffect(() => {
         if (generating && (receivedCount - fixedCount >= 1 || !responsed)) {
-            chat.updateLastMessage(currentMessage);
+            chat.updateLastMessage(toMarkdown({
+                    type: 'root',
+                    children: messageBlocks.children
+                }));
         }
     }, [currentMessage, responsed, generating]);
 
@@ -80,13 +75,18 @@ const CurrentMessage = observer((props: any) => {
     return generating
         ? <Box
             sx={{
+                padding: 0,
+                marginTop: -5,
                 marginBottom: 50,
                 width: width,
                 pre: {
+                    margin: 0,
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <MessageBody messageText={renderBlocks.join('\n\n')} messageType="bot" />
+            <MessageBody messageType="bot" temp={true} >
+                {renderBlocks.length>0?toMarkdown(renderBlocks[0]):''}
+            </MessageBody>
             <MessageBlink />
         </Box>
         : <></>;

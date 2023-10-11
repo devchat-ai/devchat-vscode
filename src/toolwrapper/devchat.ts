@@ -301,6 +301,64 @@ class DevChat {
 		}
 	}
 
+	async logInsert(request: string, response: string, parent: string | undefined) {
+		let log_data = {
+			"model": "gpt-4",
+			"messages": [
+				{
+					"role": "user",
+					"content": request
+				},
+				{
+					"role": "assistant",
+					"content": response
+				}
+			],
+			"timestamp": Math.floor(Date.now()/1000),
+			"request_tokens": 1,
+			"response_tokens": 1
+		};
+		if (parent) {
+			log_data["parent"] = parent;
+		}
+
+		
+		const args = ["log", "--insert", JSON.stringify(log_data)];
+		const devChat = this.getDevChatPath();
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		const openaiApiKey = process.env.OPENAI_API_KEY;
+
+		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
+		const spawnOptions = {
+			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+			cwd: workspaceDir,
+			env: {
+				...process.env,
+				OPENAI_API_KEY: openaiApiKey,
+			},
+		};
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+
+		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
+		if (stderr) {
+			logger.channel()?.error(`Error: ${stderr}`);
+			logger.channel()?.show();
+			return false;
+		}
+		if (stdout.indexOf('Failed to insert log') >= 0) {
+			logger.channel()?.error(`Failed to insert log: ${log_data}`);
+			logger.channel()?.show();
+			return false;
+		}
+
+		if (code !== 0) {
+			logger.channel()?.error(`Exit code: ${code}`);
+			logger.channel()?.show();
+			return false;
+		}
+		return true;
+	}
+
 	async delete(hash: string): Promise<boolean> {
 		const args = ["log", "--delete", hash];
 		const devChat = this.getDevChatPath();

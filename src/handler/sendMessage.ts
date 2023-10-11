@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { stopDevChatBase, sendMessageBase, deleteChatMessageBase } from './sendMessageBase';
+import { stopDevChatBase, sendMessageBase, deleteChatMessageBase, insertDevChatLog, handleTopic } from './sendMessageBase';
 import { UiUtilWrapper } from '../util/uiUtil';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -14,6 +14,9 @@ import { promisify } from 'util';
 import { CommandRun, createTempSubdirectory } from '../util/commonUtil';
 
 const exec = promisify(execCb);
+
+let askcode_stop = true;
+let askcode_runner : CommandRun | null = null;
 
 let _lastMessage: any = undefined;
 
@@ -35,88 +38,112 @@ export function deleteTempFiles(fileName: string): void {
 regInMessage({command: 'askCode', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
 export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-    _lastMessage = [message];
-	_lastMessage[0]['askCode'] = true;
+    try {
+		askcode_stop = false;
+		askcode_runner = null;
 
-    let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
-    if (!pythonVirtualEnv) {
-		try {
-			await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
-		} catch (error) {
-			logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
+		_lastMessage = [message];
+		_lastMessage[0]['askCode'] = true;
+
+		const port = await UiUtilWrapper.getLSPBrigePort();
+
+		let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		if (!pythonVirtualEnv) {
+			try {
+				await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
+			} catch (error) {
+				logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
+				logger.channel()?.show();
+				return;
+			}
+
+			pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+			if (!pythonVirtualEnv) {
+				MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
+				return ;
+			}
+		}
+
+		let envs = {};
+
+		const llmModelData = await ApiKeyManager.llmModel();
+		if (!llmModelData) {
+			logger.channel()?.error('No valid llm model is selected!');
 			logger.channel()?.show();
 			return;
 		}
 
-		pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
-		if (!pythonVirtualEnv) {
-	        MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
-    	    return ;
+		let openaiApiKey = llmModelData.api_key;
+		if (!openaiApiKey) {
+			logger.channel()?.error('The OpenAI key is invalid!');
+			logger.channel()?.show();
+			return;
 		}
-    }
+		envs['OPENAI_API_KEY'] = openaiApiKey;
 
-    let envs = {};
+		const openAiApiBase = llmModelData.api_base;
+		if (openAiApiBase) {
+			envs['OPENAI_API_BASE'] = openAiApiBase;
+		}
 
-	const llmModelData = await ApiKeyManager.llmModel();
-	if (!llmModelData) {
-		logger.channel()?.error('No valid llm model is selected!');
-        logger.channel()?.show();
-        return;
-	}
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		if (askcode_stop) {
+			return;
+		}
+		
+		try {
+			let outputResult = "";
+			askcode_runner = new CommandRun();
+			const command = pythonVirtualEnv.trim();
+			const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, `${port}`];
+			const result = await askcode_runner.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
+				outputResult += data;
+				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: outputResult, hash:"", user:"", isError: false });
+				logger.channel()?.info(data);
+			}, (data) => {
+				logger.channel()?.error(data);
+			}, undefined, undefined);
 
-    let openaiApiKey = llmModelData.api_key;
-    if (!openaiApiKey) {
-        logger.channel()?.error('The OpenAI key is invalid!');
-        logger.channel()?.show();
-        return;
-    }
-    envs['OPENAI_API_KEY'] = openaiApiKey;
+			if (result.exitCode === 0) {
+				// save askcode result to devchat
+				const stepIndex = result.stdout.lastIndexOf("```Step");
+				const stepEndIndex = result.stdout.lastIndexOf("```");
+				let resultOut = result.stdout;
+				if (stepIndex > 0 && stepEndIndex > 0) {
+					resultOut = result.stdout.substring(stepEndIndex+3, result.stdout.length);
+				}
+				let logHash = await insertDevChatLog(message, "/ask-code " + message.text, resultOut);
+				if (!logHash) {
+					logHash = "";
+					logger.channel()?.error(`Failed to insert devchat log.`);
+					logger.channel()?.show();
+				}
 
-    const openAiApiBase = llmModelData.api_base;
-    if (openAiApiBase) {
-        envs['OPENAI_API_BASE'] = openAiApiBase;
-    }
+				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: result.stdout, hash:logHash, user:"", isError: false });
+				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout, hash:logHash, user:"", date:0, isError: false });
 
-    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-    
-    try {
-        // create temp directory and file
-        const tempDir = await createTempSubdirectory('devchat/context');
-        const tempFile = path.join(tempDir, "doc_context.txt");
-
-        // If tempFile already exists, delete it
-        if (fs.existsSync(tempFile)) {
-            fs.unlinkSync(tempFile);
-        }
-
-        const commandRun = new CommandRun();
-        const command = pythonVirtualEnv.trim();
-        const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, tempFile];
-        const result = await commandRun.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
-            logger.channel()?.info(data);
-        }, (data) => {
-            logger.channel()?.error(data);
-        }, undefined, undefined);
-
-        // Check if tempFile has been written to
-        if (!fs.existsSync(tempFile) || fs.readFileSync(tempFile, 'utf8') === '') {
-            logger.channel()?.error(`Did not get relevant context from AskCode.`);
-            logger.channel()?.show();
+				const dateStr = Math.floor(Date.now()/1000).toString();
+				await handleTopic(
+					message.parent_hash,
+					{"text": "/ask-code " + message.text}, 
+					{ response: result.stdout, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
+			} else {
+				logger.channel()?.info(`${result.stdout}`);
+				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
+			}
+		} catch (error) {
+			if (error instanceof Error) {
+				logger.channel()?.error(`error: ${error.message}`);
+			} else {
+				logger.channel()?.error(`An unknown error occurred: ${error}`);
+			}
+			logger.channel()?.show();
 			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
-            return;
-        }
-
-        // Send message
-        await sendMessage({command: "sendMessage", contextInfo: [{file: tempFile, context: ""}], text: message.text, parent_hash: message.hash}, panel);
-    } catch (error) {
-        if (error instanceof Error) {
-            logger.channel()?.error(`error: ${error.message}`);
-        } else {
-            logger.channel()?.error(`An unknown error occurred: ${error}`);
-        }
-        logger.channel()?.show();
-		MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
-    }
+		}
+	} finally {
+		askcode_stop = true;
+		askcode_runner = null;
+	}
 }
 
 
@@ -199,6 +226,15 @@ export async function regeneration(message: any, panel: vscode.WebviewPanel|vsco
 regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	stopDevChatBase(message);
+
+	if (askcode_stop === false) {
+		askcode_stop = true;
+		if (askcode_runner) {
+			askcode_runner.stop();
+			askcode_runner = null;
+		}
+		await vscode.commands.executeCommand('DevChat.AskCodeIndexStop');
+	}
 }
 
 regInMessage({command: 'deleteChatMessage', hash: 'xxx'});
