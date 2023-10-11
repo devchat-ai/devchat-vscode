@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { stopDevChatBase, sendMessageBase, deleteChatMessageBase, insertDevChatLog } from './sendMessageBase';
+import { stopDevChatBase, sendMessageBase, deleteChatMessageBase, insertDevChatLog, handleTopic } from './sendMessageBase';
 import { UiUtilWrapper } from '../util/uiUtil';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -121,8 +121,15 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 
 				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: result.stdout, hash:logHash, user:"", isError: false });
 				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout, hash:logHash, user:"", date:0, isError: false });
+
+				const dateStr = Math.floor(Date.now()/1000).toString();
+				await handleTopic(
+					message.parent_hash,
+					{"text": "/ask-code " + message.text}, 
+					{ response: result.stdout, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
 			} else {
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout + result.stderr, hash: "", user: "", date: 0, isError: true });
+				logger.channel()?.info(`${result.stdout}`);
+				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
 			}
 		} catch (error) {
 			if (error instanceof Error) {
