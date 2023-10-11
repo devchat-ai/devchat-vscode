@@ -178,6 +178,11 @@ export async function stopDevChatBase(message: any): Promise<void> {
 	devChat.stop();
 }
 
+export async function insertDevChatLog(message: any, request: string, response: string): Promise<void> {
+	logger.channel()?.info(`Inserting devchat log`);
+	await devChat.logInsert(request, response, message.parent_hash);
+}
+
 // delete a chat message
 // each message is identified by hash
 export async function deleteChatMessageBase(message:{'hash': string}): Promise<boolean> {

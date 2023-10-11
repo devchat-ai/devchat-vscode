@@ -2,7 +2,7 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { stopDevChatBase, sendMessageBase, deleteChatMessageBase } from './sendMessageBase';
+import { stopDevChatBase, sendMessageBase, deleteChatMessageBase, insertDevChatLog } from './sendMessageBase';
 import { UiUtilWrapper } from '../util/uiUtil';
 import * as fs from 'fs';
 import * as os from 'os';
@@ -107,6 +107,14 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 			if (result.exitCode === 0) {
 				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: result.stdout, hash:"", user:"", isError: false });
 				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout, hash:"", user:"", date:0, isError: false });
+
+				// save askcode result to devchat
+				const step_index = result.stdout.lastIndexOf("```Step");
+				const step_end_index = result.stdout.lastIndexOf("```");
+				if (step_index > 0 && step_end_index > 0) {
+					const result_out = result.stdout.substring(step_end_index+3, result.stdout.length);
+					await insertDevChatLog(message, "/ask-code " + message.text, result_out)
+				}
 			} else {
 				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout + result.stderr, hash: "", user: "", date: 0, isError: true });
 			}
