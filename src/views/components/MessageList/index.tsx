@@ -68,7 +68,7 @@ const MessageList = observer((props: any) => {
                             whiteSpace: 'break-spaces'
                         },
                     }}>
-                    { messageType === 'bot' &&<Card shadow="sm" padding="xs" radius="md" withBorder className={classes.card}>
+                    { messageType === 'bot' && confirm && <Card shadow="sm" padding="xs" radius="md" withBorder className={classes.card}>
                         <Card.Section withBorder inheritPadding py="xs">
                             <Group position="left">
                                 <IconInfoSquareRounded size={20} />
@@ -77,8 +77,8 @@ const MessageList = observer((props: any) => {
                         </Card.Section>
                         <Text className={classes.cardDescription}>Will you pay approximately $1.2 - $ 2.2 for this task?</Text>
                         <Group position="right" >
-                            <Button size="xs" color="#ED6A45" className={classes.button}>Yes</Button>
-                            <Button size="xs" color="#ED6A45" className={classes.button}>No</Button>
+                            <Button size="xs" color="#ED6A45" className={classes.button} onClick={()=> chat.sendLastUserMessage() }>Yes</Button>
+                            <Button size="xs" color="#ED6A45" className={classes.button} onClick={()=> chat.cancelDevchatAsk()}>No</Button>
                         </Group>
                     </Card>}
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
