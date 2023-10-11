@@ -30,8 +30,7 @@ const Step = observer((props:StepProps) => {
     100% { transform: rotate(360deg); }
   `;
 
-  return <>
-      {lines.length > 1 &&<Accordion 
+  return <Accordion 
           variant="contained"
           chevronPosition="right"
           sx={{
@@ -101,8 +100,7 @@ const Step = observer((props:StepProps) => {
                 </SyntaxHighlighter>
               </Accordion.Panel>
           </Accordion.Item>
-      </Accordion>}
-    </>;
+      </Accordion>;
   });
 
   export default Step;
