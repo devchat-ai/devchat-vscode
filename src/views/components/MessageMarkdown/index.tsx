@@ -141,7 +141,10 @@ Generate a professionally written and formatted release note in markdown with th
 
                 const match = /language-(\w+)/.exec(className || '');
                 const value = String(children).replace(/\n$/, '');
-                const lanugage = match && match[1];
+                let lanugage = match && match[1];
+				if (!lanugage) {
+					lanugage = "unknow";
+				}
 
                 let wrapLongLines = false;
                 if (lanugage === 'markdown' || lanugage === 'text') {
