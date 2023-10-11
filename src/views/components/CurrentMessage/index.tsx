@@ -8,7 +8,6 @@ import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import {fromMarkdown} from 'mdast-util-from-markdown';
 import {toMarkdown} from 'mdast-util-to-markdown';
-import {Root} from 'mdast';
 
 const MessageBlink = observer(() => {
     const { chat } = useMst();
@@ -20,7 +19,7 @@ const MessageBlink = observer(() => {
     return <Text sx={{
         animation: `${blink} 0.5s infinite;`,
         width: 5,
-        marginTop: chat.responsed ? 0 : '1em',
+        marginTop: '1em',
         backgroundColor: 'black',
         display: 'block'
     }}>|</Text>;
@@ -84,13 +83,18 @@ const CurrentMessage = observer((props: any) => {
     return generating
         ? <Box
             sx={{
+                padding: 0,
+                marginTop: -5,
                 marginBottom: 50,
                 width: width,
                 pre: {
+                    margin: 0,
                     whiteSpace: 'break-spaces'
                 },
             }}>
-            <MessageBody messageText={renderBlocks.length>0?toMarkdown(renderBlocks[0]):''} messageType="bot" />
+            <MessageBody messageType="bot" temp={true} >
+                {renderBlocks.length>0?toMarkdown(renderBlocks[0]):''}
+            </MessageBody>
             <MessageBlink />
         </Box>
         : <></>;

@@ -41,7 +41,9 @@ const MessageList = observer((props: any) => {
                         },
                     }}>
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
-                    <MessageBody key={`message-codeblock-${index}`} messageType={messageType} messageText={messageText} />
+                    <MessageBody key={`message-codeblock-${index}`} messageType={messageType} >
+                        {messageText}
+                    </MessageBody>
                 </Box >
                 {index !== chat.messages.length - 1 && <Divider my={3} key={`message-divider-${index}`} />}
             </Stack >;

@@ -5,8 +5,9 @@ import MessageMarkdown from "@/views/components/MessageMarkdown";
 import { useMst } from "@/views/stores/RootStore";
 
 interface IProps {
-    messageText: string,
-    messageType: string
+    messageType: string,
+    children: string,
+    temp?: boolean
 }
 
 
@@ -17,14 +18,16 @@ const useStyles = createStyles((theme, options:any) => ({
 }));
 
 const MessageBody = observer((props: IProps) => {
-    const { messageText, messageType } = props;
+    const { children, messageType, temp=false } = props;
     const { chat } = useMst();
     const {classes} = useStyles({
         chatPanelWidth:chat.chatPanelWidth
     });
     return (
         messageType === 'bot'
-            ? <MessageMarkdown className={classes.bodyWidth}>{messageText}</MessageMarkdown>
+            ? <MessageMarkdown className={classes.bodyWidth} temp={temp}>
+                {children}
+            </MessageMarkdown>
             : <Container
                 sx={{
                     margin: 0,
@@ -35,7 +38,7 @@ const MessageBody = observer((props: IProps) => {
                         wordBreak: 'break-word',
                     },
                 }}>
-                <pre>{messageText}</pre>
+                <pre>{children}</pre>
             </Container>
     );
 });

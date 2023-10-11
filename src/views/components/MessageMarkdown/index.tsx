@@ -11,11 +11,13 @@ import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
+import {fromMarkdown} from 'mdast-util-from-markdown';
 import {visit} from 'unist-util-visit';
 
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
-    className: string
+    className: string,
+    temp?: boolean
 }
 
 type Step = {
@@ -25,22 +27,13 @@ type Step = {
 };
 
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
-    const { children } = props;
+    const { children,temp=false } = props;
     const { chat } = useMst();
     const [steps, setSteps] = useState<Step[]>([]);
-    let index = 0;
-
-    useEffect(() => {
-        const analyzedSteps = children.split(/```step/i).slice(1).map((step,index) => {
-            const pices = step.split("```");
-            return {
-                index:index,
-                content:pices[0],
-                endsWithTripleBacktick: pices.length>1 
-            };
-        });
-        setSteps(analyzedSteps);
-    }, [children]);
+    const tree = fromMarkdown(children);
+    const codes = tree.children.filter(node => node.type === 'code');    
+    const lastNode = tree.children[tree.children.length-1];
+    let index = 1;
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -145,7 +138,7 @@ Generate a professionally written and formatted release note in markdown with th
                 if (node.type === 'code' && (node.lang ==='step' || node.lang ==='Step')) {
                     node.data = {
                         hProperties:{
-                            index:index++
+                            index: index++
                         }
                     };
                 }
@@ -153,7 +146,7 @@ Generate a professionally written and formatted release note in markdown with th
         }]}
         rehypePlugins={[rehypeRaw]}
         components={{
-            code({ node, inline, className, children, index=-1, ...props }) {
+            code({ node, inline, className, children, index,  ...props }) {
 
                 const match = /language-(\w+)/.exec(className || '');
                 const value = String(children).replace(/\n$/, '');
@@ -168,8 +161,8 @@ Generate a professionally written and formatted release note in markdown with th
                 }
 
                 if (lanugage === 'step' || lanugage === 'Step') {
-                    const stepInfo = index>=0?steps[index]:{endsWithTripleBacktick:false};
-                    return <Step language={lanugage} done={stepInfo?.endsWithTripleBacktick}>{value}</Step>;
+                    let done = Number(index) < codes.length? true : lastNode.type !== 'code';
+                    return <Step language={lanugage} done={temp?done:true}>{value}</Step>;
                 }
 
                 return !inline && lanugage ? (
