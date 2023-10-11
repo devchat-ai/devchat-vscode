@@ -61,6 +61,7 @@ export const Message = types.model({
     type: types.enumeration(['user', 'bot', 'system']),
     message: types.string,
     contexts: types.maybe(types.array(ChatContext)),
+    confirm: types.maybe(types.boolean)
 });
 
 export const ChatStore = types.model('Chat', {
@@ -113,8 +114,23 @@ You can configure DevChat from [Settings](#settings).`;
                 }));
         };
 
+        const devchatAsk = (userMessage) => {
+            self.messages.push(
+                Message.create({
+                    type: 'user',
+                    message: userMessage
+                }));
+            self.messages.push(
+                Message.create({
+                    type: 'bot',
+                    message: '',
+                    confirm: true
+                }));
+        };
+
         return {
             helpMessage,
+            devchatAsk,
             updateChatPanelWidth: (width: number) => {
                 self.chatPanelWidth = width;
             },
