@@ -11,19 +11,19 @@ import { keyframes,css } from "@emotion/react";
 
 interface StepProps {
     language: string;
-    closed:boolean;
     children: string;
 }
 
 const Step:  React.FC<StepProps> = observer((props) => {
   const { chat } = useMst();
-  const {language,closed,children} = props;
+  const {language,children} = props;
   const [opened, { toggle }] = useDisclosure(false);
 
   // extract first line with # as button label
   const lines = children.split('\n');
   const title = lines.length>0&&lines[0].indexOf('#')>=0?lines[0].split('#')[1]:'';
-
+  const done = lines[lines.length-1].trim()==='# Done';
+  const contents = lines.slice(1,lines.length-1);
 
   const spin = keyframes`
     0% { transform: rotate(0deg); }
@@ -85,7 +85,7 @@ const Step:  React.FC<StepProps> = observer((props) => {
         >
           <Accordion.Item value={title} mah='200'>
               <Accordion.Control icon={
-                  closed
+                  done
                   ?<IconCheck size="1.125rem"/>
                   :<Loader size="xs" color="#ED6A45" speed={1} />
                 }
