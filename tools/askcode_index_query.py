@@ -10,7 +10,7 @@ def query(question, lsp_brige_port):
     smart_qa = SmartQA(root_path)
 
     # Use SmartQA to get the answer
-    answer = smart_qa.run(question=question, verbose=True, bridge_url=f'http://localhost:{lsp_brige_port}')
+    answer = smart_qa.run(question=question, verbose=False, dfs_depth=3, dfs_max_visit=10, bridge_url=f'http://localhost:{lsp_brige_port}' )
 
     # Print the answer
     print(answer[0])
