@@ -46,27 +46,9 @@ const MessageMarkdown = observer((props: MessageMarkdownProps) => {
                     }),
                     Message.create({
                         type: 'bot',
-                        message: `***/ask_code***
-
-If you would like to ask questions related to your own codebase, you can enable and use the /ask_code feature of DevChat.
-
-While /ask_code is being enabled, DevChat will need to index your codebase before you can use this feature. Indexing usually takes a while, depending on the size of your codebase, your computing power and the network. Once it’s done, you can ask questions about your codebase by typing the “/ask_code” command, followed by your question.
-
-Example questions:
-(Here we only show example questions from a few popular open-source projects’ codebases.)
-
-How do I access POST form fields in Express?
-How do I pass command line arguments to a Node.js program?
-How do I print the value of a tensor object in TensorFlow?
-How do I force Kubernetes to re-pull an image in Kubernetes?
-How do I set focus on an input field after rendering in React?
-
-\`Please check DevChat.ask_code settings\` before enabling the feature, because once indexing has been started, changing the settings will not affect the process anymore, unless if you terminate it and re-index.
-
-To enable, you can enter \`DevChat:Start AskCode Index\` in the Command Palette or click on the button to start indexing now.
-              
-<button value="settings">Settings</button>
-<button value="start_indexing">Start Indexing</button>
+                        message: `***/ask-code***
+                        
+Your AI agent, navigates through your codebase to answer questions using GPT-4, analyzing up to 10 source files for approximately $0.4 USD per question. We're evolving — soon, we'll implement the more affordable LLama2-70b model.
                         `
                     }),
                 ]);

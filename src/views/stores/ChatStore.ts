@@ -126,7 +126,7 @@ To get started, here are some of the things that I can do for you:
 
 [/release_note: draft a release note based on your latest commits](#release_note)
 
-${self.features['ask-code'] ? '[/ask-code: ask me questions about your codebase](#ask_code)' : ''}
+${self.features['ask-code'] ? '[/ask-code: ask anything about your codebase and get answers from our AI agent](#ask_code)' : ''}
 
 You can configure DevChat from [Settings](#settings).`;
 
