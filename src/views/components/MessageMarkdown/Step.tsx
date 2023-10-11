@@ -12,17 +12,17 @@ import { keyframes,css } from "@emotion/react";
 interface StepProps {
     language: string;
     children: string;
+    done:boolean;
 }
 
-const Step:  React.FC<StepProps> = observer((props) => {
+const Step = observer((props:StepProps) => {
   const { chat } = useMst();
-  const {language,children} = props;
+  const {language,children,done} = props;
   const [opened, { toggle }] = useDisclosure(false);
 
   // extract first line with # as button label
   const lines = children.split('\n');
   const title = lines.length>0&&lines[0].indexOf('#')>=0?lines[0].split('#')[1]:'';
-  const done = lines[lines.length-1].trim()==='# Done';
   const contents = lines.slice(1,lines.length-1);
 
   const spin = keyframes`

@@ -412,7 +412,6 @@
 					"order": 7,
 					"markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://devchat.ai/pricing)"
 				},
-				
 				"DevChat.OpenAI.stream": {
 					"type": "boolean",
 					"default": true,
@@ -807,6 +806,8 @@
 		"rehype-raw": "^6.1.1",
 		"shell-escape": "^0.2.0",
 		"string-argv": "^0.3.2",
+		"unified": "^11.0.3",
+		"unist-util-visit": "^5.0.0",
 		"uuid": "^9.0.0",
 		"yaml": "^2.3.2"
 	}

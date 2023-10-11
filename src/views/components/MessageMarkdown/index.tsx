@@ -1,5 +1,5 @@
 import { Button, Anchor, Stack, Group, Box } from "@mantine/core";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
@@ -11,15 +11,36 @@ import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
+import {visit} from 'unist-util-visit';
 
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
     className: string
 }
 
+type Step = {
+    index: number,
+    content: string;
+    endsWithTripleBacktick: boolean;
+};
+
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
     const { children } = props;
     const { chat } = useMst();
+    const [steps, setSteps] = useState<Step[]>([]);
+    let index = 0;
+
+    useEffect(() => {
+        const analyzedSteps = children.split(/```step/i).slice(1).map((step,index) => {
+            const pices = step.split("```");
+            return {
+                index:index,
+                content:pices[0],
+                endsWithTripleBacktick: pices.length>1 
+            };
+        });
+        setSteps(analyzedSteps);
+    }, [children]);
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -119,9 +140,20 @@ Generate a professionally written and formatted release note in markdown with th
 
     return <ReactMarkdown
         {...props}
+        remarkPlugins={[()=> (tree) =>{
+            visit(tree, function (node) {
+                if (node.type === 'code' && (node.lang ==='step' || node.lang ==='Step')) {
+                    node.data = {
+                        hProperties:{
+                            index:index++
+                        }
+                    };
+                }
+            });
+        }]}
         rehypePlugins={[rehypeRaw]}
         components={{
-            code({ node, inline, className, children, ...props }) {
+            code({ node, inline, className, children, index=-1, ...props }) {
 
                 const match = /language-(\w+)/.exec(className || '');
                 const value = String(children).replace(/\n$/, '');
@@ -135,8 +167,9 @@ Generate a professionally written and formatted release note in markdown with th
                     wrapLongLines = true;
                 }
 
-                if (lanugage === 'step') {
-                    return <Step language={lanugage}>{value}</Step>;
+                if (lanugage === 'step' || lanugage === 'Step') {
+                    const stepInfo = index>=0?steps[index]:{endsWithTripleBacktick:false};
+                    return <Step language={lanugage} done={stepInfo?.endsWithTripleBacktick}>{value}</Step>;
                 }
 
                 return !inline && lanugage ? (
