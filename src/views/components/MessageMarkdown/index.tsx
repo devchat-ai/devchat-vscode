@@ -1,10 +1,11 @@
-import { Button, Anchor } from "@mantine/core";
+import { Button, Anchor, Stack, Group, Box } from "@mantine/core";
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { okaidia } from "react-syntax-highlighter/dist/esm/styles/prism";
 import CodeButtons from "./CodeButtons";
+import LanguageCorner from "./LanguageCorner";
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { Message } from "@/views/stores/ChatStore";
@@ -18,24 +19,6 @@ interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
     const { children } = props;
     const { chat } = useMst();
-
-    const LanguageCorner = (props: any) => {
-        const { language } = props;
-
-        return (<div style={{ position: 'absolute', top: 0, left: 0 }}>
-            {language && (
-                <div style={{
-                    backgroundColor: '#333',
-                    color: '#fff',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '0.2rem',
-                    fontSize: '0.8rem',
-                }}>
-                    {language}
-                </div>
-            )}
-        </div>);
-    };
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
