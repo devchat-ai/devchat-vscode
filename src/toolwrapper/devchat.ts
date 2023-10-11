@@ -314,7 +314,7 @@ class DevChat {
 					"content": response
 				}
 			],
-			"timestamp": Date.now(),
+			"timestamp": Math.floor(Date.now()/1000),
 			"request_tokens": 1,
 			"response_tokens": 1
 		};
