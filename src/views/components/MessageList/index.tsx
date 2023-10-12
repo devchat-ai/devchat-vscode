@@ -78,7 +78,7 @@ const MessageList = observer((props: any) => {
                             </Group>
                         </Card.Section>
                         <Text className={classes.cardDescription}>
-                            DevChat will make GPT-4 API calls to analyze up to ten source files, costing approximately $0.4 USD per question. 
+                            DevChat will make GPT-4 API calls to analyze up to ten source files, costing <strong>approximately $0.4 USD per question</strong>. 
                             <br/>
                             <br/>
                             Would you like to proceed?
