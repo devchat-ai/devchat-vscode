@@ -28,7 +28,7 @@ import { regDevChatView, regTopicView } from './contributes/views';
 import ExtensionContextHolder from './util/extensionContext';
 import { logger } from './util/logger';
 import { LoggerChannelVscode } from './util/logger_vscode';
-import { createStatusBarItem, createAskCodeStatusBarItem } from './panel/statusBarView';
+import { createStatusBarItem } from './panel/statusBarView';
 import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
 import { FT } from './util/feature_flags/feature_toggles';
@@ -195,9 +195,6 @@ async function activate(context: vscode.ExtensionContext) {
 	registerUpdateChatModelsCommand(context);
 
     createStatusBarItem(context);
-	if (FT("ask-code")) {
-		createAskCodeStatusBarItem(context);
-	}
 
     regTopicDeleteCommand(context);
     regAddTopicCommand(context);

@@ -71,31 +71,3 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
     return statusBarItem;
 }
 
-export function createAskCodeStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
-	const askCodeBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
-
-	askCodeBarItem.text = `AskCode`;
-	askCodeBarItem.tooltip = `Wait for check status for /ask-code`;
-	askCodeBarItem.command = undefined;
-
-	setInterval(async () => {
-		if (isIndexingStopped()) {
-			if (isNeedIndexingCode()) {
-				askCodeBarItem.tooltip = `Click to index code for /ask-code`;
-				askCodeBarItem.command = 'DevChat.AskCodeIndexStart';
-			} else {
-				askCodeBarItem.tooltip = `No need to index code for /ask-code`;
-				askCodeBarItem.command = undefined;
-			}
-			
-		} else {
-			askCodeBarItem.tooltip = `Click to stop indexing code for /ask-code`;
-			askCodeBarItem.command = 'DevChat.AskCodeIndexStop';
-		}
-	}, 10000);
-
-	askCodeBarItem.show();
-	context.subscriptions.push(askCodeBarItem);
-
-	return askCodeBarItem;
-}
