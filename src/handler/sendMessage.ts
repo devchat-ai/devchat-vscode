@@ -55,7 +55,7 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 			return;
 		}
 
-		const pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		const pythonVirtualEnv: string  | undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
 		if (!pythonVirtualEnv) {
 			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
 			return ;
