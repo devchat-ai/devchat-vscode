@@ -222,8 +222,6 @@ You can configure DevChat from [Settings](#settings).`;
             startGenerating,
             commonMessage,
             devchatAsk : flow(function* (userMessage, chatContexts) {
-                self.disabled = true;
-                self.errorMessage = '';
                 self.messages.push({
                         type: 'user',
                         contexts: chatContexts,
@@ -231,6 +229,8 @@ You can configure DevChat from [Settings](#settings).`;
                     });
                 const isInstalled = yield isDevChatInstalled();
                 if (isInstalled){
+                    self.disabled = true;
+                    self.errorMessage = '';
                     self.messages.push({
                             type: 'bot',
                             message: '',
