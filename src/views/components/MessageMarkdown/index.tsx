@@ -107,7 +107,7 @@ Generate a professionally written and formatted release note in markdown with th
     const handleButton = (value: string | number | readonly string[] | undefined) => {
         switch (value) {
             case "settings": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat'] }); break;
-            case "start_indexing": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
+            case "start_askcode": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
             case "setting_openai_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.OpenAI'] }); break;
             case "setting_devchat_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.DevChat'] }); break;
         }
@@ -169,17 +169,19 @@ Generate a professionally written and formatted release note in markdown with th
             button({ node, className, children, value, ...props }) {
                 return (
                     <Button
-                        size='xs'
+                        size="compact-xs" 
                         sx={{
-                            backgroundColor: 'var(--vscode-button-background)',
-                        }}
-                        styles={{
-                            icon: {
-                                color: 'var(--vscode-button-foreground)'
+                            backgroundColor:"#ED6A45",
+                            fontFamily: 'var(--vscode-editor-font-familyy)',
+                            fontSize: 'var(--vscode-editor-font-size)',
+                            color:"#fff",
+                            "&:hover":{
+                                backgroundColor:"#ED6A45",
+                                opacity: 0.8,
                             },
-                            label: {
-                                color: 'var(--vscode-button-foreground)',
-                                fontSize: 'var(--vscode-editor-font-size)',
+                            "&:focus":{
+                                backgroundColor:"#ED6A45",
+                                opacity: 0.8,
                             }
                         }}
                         onClick={() => {

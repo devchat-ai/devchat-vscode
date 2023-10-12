@@ -40,6 +40,24 @@ export const fetchHistoryMessages = async (params) => {
     });
 };
 
+interface DevChatInstalledMessage {
+    command: string;
+    result: boolean;
+}
+
+export const isDevChatInstalled = async () => {
+    return new Promise<boolean>((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'isDevChatInstalled'});
+            messageUtil.registerHandler('isDevChatInstalled', (message:DevChatInstalledMessage) => {
+                resolve(message.result);
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
 export const deleteMessage = async (messageHash: string) => {
     return new Promise<{ hash: string }>((resolve, reject) => {
         try {
@@ -144,23 +162,6 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom();
         };
 
-        const devchatAsk = (userMessage, chatContexts) => {
-            self.messages.push(
-                Message.create({
-                    type: 'user',
-                    contexts: chatContexts,
-                    message: userMessage
-                }));
-            self.messages.push(
-                Message.create({
-                    type: 'bot',
-                    message: '',
-                    confirm: true
-                }));
-            // goto bottom
-            goScrollBottom();
-        };
-
         const startGenerating = (text: string, chatContexts) => {
             self.generating = true;
             self.responsed = false;
@@ -211,12 +212,39 @@ You can configure DevChat from [Settings](#settings).`;
 
         return {
             helpMessage,
-            devchatAsk,
             sendLastUserMessage,
             cancelDevchatAsk,
             goScrollBottom,
             startGenerating,
             commonMessage,
+            devchatAsk : flow(function* (userMessage, chatContexts) {
+                self.messages.push({
+                        type: 'user',
+                        contexts: chatContexts,
+                        message: userMessage
+                    });
+                const isInstalled = yield isDevChatInstalled();
+                if (isInstalled){
+                    self.messages.push({
+                            type: 'bot',
+                            message: '',
+                            confirm: true
+                        });
+                } else {
+                    self.messages.push({
+                            type: 'bot',
+                            message: `The ask-code workflow hasn't been installed. 
+
+Please click the button below to install the necessary components. 
+
+The process might take a few minutes, depending on your network connection. In the meantime, feel free to chat with me about other topics.
+
+<button value="start_askcode">Install Now</button>`
+                        });
+                }
+                // goto bottom
+                goScrollBottom();
+            }),
             updateChatPanelWidth: (width: number) => {
                 self.chatPanelWidth = width;
             },
