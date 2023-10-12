@@ -253,12 +253,6 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 			return;
 		}
 
-        const progressBar = new ProgressBar();
-		progressBar.init();
-		logger.channel()?.show();
-
-		progressBar.update("Index source code files for ask codebase ...", 0);
-
 		const config = getConfig();
         let pythonVirtualEnv: any = config.pythonVirtualEnv;
         const supportedFileTypes = config.supportedFileTypes;
@@ -269,7 +263,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 			// check whether pythonVirtualEnv is stisfy the requirement version
 			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
 			
-			let requireAskVersion = "0.0.8";
+			let requireAskVersion = "0.0.13";
 			if (FT("ask-code-summary")) {
 				requireAskVersion = "0.0.10";
 			}
@@ -282,6 +276,12 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 
 		
         if (!pythonVirtualEnv) {
+			const progressBar = new ProgressBar();
+			progressBar.init();
+			logger.channel()?.show();
+
+			progressBar.update("Check devchat-ask package ...", 0);
+
 			progressBar.update("Installing devchat-ask. See OUTPUT for progress...", 0);
             await installAskCode(supportedFileTypes, progressBar, indexCode);
         }
@@ -359,7 +359,7 @@ export async function askcodeSummaryIndex(targetDir: string|undefined) {
 		// check whether pythonVirtualEnv is stisfy the requirement version
 		const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
 		
-		let requireAskVersion = "0.0.8";
+		let requireAskVersion = "0.0.13";
 		if (FT("ask-code-summary")) {
 			requireAskVersion = "0.0.10";
 		}
