@@ -47,21 +47,18 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 
 		const port = await UiUtilWrapper.getLSPBrigePort();
 
-		let pythonVirtualEnv: string|undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
-		if (!pythonVirtualEnv) {
-			try {
-				await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
-			} catch (error) {
-				logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
-				logger.channel()?.show();
-				return;
-			}
+		try {
+			await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
+		} catch (error) {
+			logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
+			logger.channel()?.show();
+			return;
+		}
 
-			pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
-			if (!pythonVirtualEnv) {
-				MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
-				return ;
-			}
+		const pythonVirtualEnv = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		if (!pythonVirtualEnv) {
+			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
+			return ;
 		}
 
 		let envs = {};
