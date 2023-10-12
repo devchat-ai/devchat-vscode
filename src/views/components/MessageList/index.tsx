@@ -74,11 +74,11 @@ const MessageList = observer((props: any) => {
                         <Card.Section withBorder inheritPadding py="xs">
                             <Group position="left">
                                 <IconInfoSquareRounded size={20} />
-                                <Text fw={500}>Explore with /ask-code!</Text>
+                                <Text fw={500}>GPT-4 Usage Required</Text>
                             </Group>
                         </Card.Section>
                         <Text className={classes.cardDescription}>
-                            /ask-code, your AI agent, navigates through your codebase to answer questions using GPT-4, analyzing up to 10 source files for approximately $0.4 USD per question. We're evolving — soon, we'll implement the more affordable LLama2-70b model. 
+                            DevChat will make GPT-4 API calls to analyze up to ten source files, costing approximately $0.4 USD per question. 
                             <br/>
                             <br/>
                             Would you like to proceed?
