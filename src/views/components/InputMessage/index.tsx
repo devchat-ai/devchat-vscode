@@ -322,7 +322,7 @@ const InputMessage = observer((props: any) => {
                         <ActionIcon 
                             radius="xl" 
                             variant="default"
-                            disabled={generating}
+                            disabled={generating || chat.disabled}
                             className={classes.actionIcon}
                         >
                             <IconTextPlus size="1rem" />
@@ -365,7 +365,7 @@ const InputMessage = observer((props: any) => {
                 >
                     <Menu.Target>
                         <Button 
-                            disabled={generating} 
+                            disabled={generating || chat.disabled} 
                             variant="default" 
                             size="xs" 
                             radius="xl" 
@@ -418,7 +418,7 @@ const InputMessage = observer((props: any) => {
                 <Popover.Target>
                     <Textarea
                         id='chat-textarea'
-                        disabled={generating}
+                        disabled={generating || chat.disabled}
                         value={input.value}
                         ref={inputRef}
                         onKeyDown={handleKeyDown}
@@ -454,7 +454,7 @@ const InputMessage = observer((props: any) => {
                                             size='md'
                                             radius="md" 
                                             variant="default"
-                                            disabled={generating}
+                                            disabled={generating || chat.disabled}
                                             onClick={openDrawer}
                                             className={classes.actionIcon}
                                             sx={{
@@ -472,7 +472,7 @@ const InputMessage = observer((props: any) => {
                                     size='md'
                                     radius="md" 
                                     variant="default"
-                                    disabled={generating}
+                                    disabled={generating || chat.disabled}
                                     onClick={handleSendClick}
                                     className={classes.actionIcon}
                                     sx={{

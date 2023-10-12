@@ -47,14 +47,6 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 
 		const port = await UiUtilWrapper.getLSPBrigePort();
 
-		try {
-			await vscode.commands.executeCommand('DevChat.AskCodeIndexStart');
-		} catch (error) {
-			logger.channel()?.error(`Failed to execute command ${message.content[0]}: ${error}`);
-			logger.channel()?.show();
-			return;
-		}
-
 		const pythonVirtualEnv: string  | undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
 		if (!pythonVirtualEnv) {
 			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
@@ -126,7 +118,9 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 					{ response: result.stdout, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
 			} else {
 				logger.channel()?.info(`${result.stdout}`);
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
+				if (askcode_stop == false) {
+					MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
+				}
 			}
 		} catch (error) {
 			if (error instanceof Error) {

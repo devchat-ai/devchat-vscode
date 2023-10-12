@@ -2,6 +2,7 @@ import { types, flow, Instance } from "mobx-state-tree";
 import messageUtil from '@/util/MessageUtil';
 import { ChatContext } from '@/views/stores/InputStore';
 import { features } from "process";
+import { Slice } from "@tiptap/pm/model";
 
 interface Context {
     content: string;
@@ -33,6 +34,24 @@ export const fetchHistoryMessages = async (params) => {
                     pageIndex: pageIndex,
                     entries: message.entries
                 });
+            });
+        } catch (e) {
+            reject(e);
+        }
+    });
+};
+
+interface DevChatInstalledMessage {
+    command: string;
+    result: boolean;
+}
+
+export const isDevChatInstalled = async () => {
+    return new Promise<boolean>((resolve, reject) => {
+        try {
+            messageUtil.sendMessage({ command: 'isDevChatInstalled'});
+            messageUtil.registerHandler('isDevChatInstalled', (message:DevChatInstalledMessage) => {
+                resolve(message.result);
             });
         } catch (e) {
             reject(e);
@@ -78,6 +97,7 @@ export const ChatStore = types.model('Chat', {
     scrollBottom: 0,
     chatModel: 'GPT-3.5',
     chatPanelWidth: 300,
+    disabled: false,
     rechargeSite: 'https://devchat.ai/pricing/',
     features: types.optional(types.frozen(), {})
 })
@@ -144,23 +164,6 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom();
         };
 
-        const devchatAsk = (userMessage, chatContexts) => {
-            self.messages.push(
-                Message.create({
-                    type: 'user',
-                    contexts: chatContexts,
-                    message: userMessage
-                }));
-            self.messages.push(
-                Message.create({
-                    type: 'bot',
-                    message: '',
-                    confirm: true
-                }));
-            // goto bottom
-            goScrollBottom();
-        };
-
         const startGenerating = (text: string, chatContexts) => {
             self.generating = true;
             self.responsed = false;
@@ -182,6 +185,7 @@ You can configure DevChat from [Settings](#settings).`;
                 lastBotMessage.confirm = false;
                 startGenerating(lastUserMessage.message, lastUserMessage.contexts);
             }
+            self.disabled = false;
         };
 
         const cancelDevchatAsk = () => {
@@ -190,6 +194,7 @@ You can configure DevChat from [Settings](#settings).`;
                 lastBotMessage.confirm = false;
                 lastBotMessage.message = 'You\'ve cancelled the question. Please let me know if you have any other questions or if there\'s anything else I can assist with.';
             }
+            self.disabled = false;
         };
 
         const commonMessage = (text: string, chatContexts) => {
@@ -211,12 +216,41 @@ You can configure DevChat from [Settings](#settings).`;
 
         return {
             helpMessage,
-            devchatAsk,
             sendLastUserMessage,
             cancelDevchatAsk,
             goScrollBottom,
             startGenerating,
             commonMessage,
+            devchatAsk : flow(function* (userMessage, chatContexts) {
+                self.messages.push({
+                        type: 'user',
+                        contexts: chatContexts,
+                        message: userMessage
+                    });
+                const isInstalled = yield isDevChatInstalled();
+                if (isInstalled){
+                    self.disabled = true;
+                    self.errorMessage = '';
+                    self.messages.push({
+                            type: 'bot',
+                            message: '',
+                            confirm: true
+                        });
+                } else {
+                    self.messages.push({
+                            type: 'bot',
+                            message: `The ask-code workflow hasn't been installed. 
+
+Please click the button below to install the necessary components. 
+
+The process might take a few minutes, depending on your network connection. In the meantime, feel free to chat with me about other topics.
+
+<button value="start_askcode">Install Now</button>`
+                        });
+                }
+                // goto bottom
+                goScrollBottom();
+            }),
             updateChatPanelWidth: (width: number) => {
                 self.chatPanelWidth = width;
             },

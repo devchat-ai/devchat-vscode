@@ -42,13 +42,20 @@ const MessageMarkdown = observer((props: MessageMarkdownProps) => {
                 chat.addMessages([
                     Message.create({
                         type: 'user',
-                        message: 'Explain /ask_code'
+                        message: 'Explain /ask-code'
                     }),
                     Message.create({
                         type: 'bot',
                         message: `***/ask-code***
                         
-Your AI agent, navigates through your codebase to answer questions using GPT-4, analyzing up to 10 source files for approximately $0.4 USD per question. We're evolving — soon, we'll implement the more affordable LLama2-70b model.
+Ask anything about your codebase and get answers from our AI agent.
+
+DevChat intelligently navigates your codebase using GPT-4. It automatically selects and analyzes up to ten most relevant source files to answer your question, all at an approximate cost of $0.4 USD. Stay tuned — we're soon integrating the more cost-efficient LLama 2 - 70B model.
+
+Sample questions:
+- Why does the lead time for changes sometimes show as null?
+- How is store.findAllAccounts implemented?
+- The recursive retriever currently drops any TextNodes and only queries the IndexNodes. It's a bug. How can we fix it?
                         `
                     }),
                 ]);
@@ -107,7 +114,7 @@ Generate a professionally written and formatted release note in markdown with th
     const handleButton = (value: string | number | readonly string[] | undefined) => {
         switch (value) {
             case "settings": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat'] }); break;
-            case "start_indexing": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
+            case "start_askcode": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
             case "setting_openai_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.OpenAI'] }); break;
             case "setting_devchat_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.DevChat'] }); break;
         }
@@ -169,17 +176,19 @@ Generate a professionally written and formatted release note in markdown with th
             button({ node, className, children, value, ...props }) {
                 return (
                     <Button
-                        size='xs'
+                        size="compact-xs" 
                         sx={{
-                            backgroundColor: 'var(--vscode-button-background)',
-                        }}
-                        styles={{
-                            icon: {
-                                color: 'var(--vscode-button-foreground)'
+                            backgroundColor:"#ED6A45",
+                            fontFamily: 'var(--vscode-editor-font-familyy)',
+                            fontSize: 'var(--vscode-editor-font-size)',
+                            color:"#fff",
+                            "&:hover":{
+                                backgroundColor:"#ED6A45",
+                                opacity: 0.8,
                             },
-                            label: {
-                                color: 'var(--vscode-button-foreground)',
-                                fontSize: 'var(--vscode-editor-font-size)',
+                            "&:focus":{
+                                backgroundColor:"#ED6A45",
+                                opacity: 0.8,
                             }
                         }}
                         onClick={() => {
