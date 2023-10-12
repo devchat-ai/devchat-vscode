@@ -2,6 +2,7 @@ import { types, flow, Instance } from "mobx-state-tree";
 import messageUtil from '@/util/MessageUtil';
 import { ChatContext } from '@/views/stores/InputStore';
 import { features } from "process";
+import { Slice } from "@tiptap/pm/model";
 
 interface Context {
     content: string;
@@ -96,6 +97,7 @@ export const ChatStore = types.model('Chat', {
     scrollBottom: 0,
     chatModel: 'GPT-3.5',
     chatPanelWidth: 300,
+    disabled: false,
     rechargeSite: 'https://devchat.ai/pricing/',
     features: types.optional(types.frozen(), {})
 })
@@ -183,6 +185,7 @@ You can configure DevChat from [Settings](#settings).`;
                 lastBotMessage.confirm = false;
                 startGenerating(lastUserMessage.message, lastUserMessage.contexts);
             }
+            self.disabled = false;
         };
 
         const cancelDevchatAsk = () => {
@@ -191,6 +194,7 @@ You can configure DevChat from [Settings](#settings).`;
                 lastBotMessage.confirm = false;
                 lastBotMessage.message = 'You\'ve cancelled the question. Please let me know if you have any other questions or if there\'s anything else I can assist with.';
             }
+            self.disabled = false;
         };
 
         const commonMessage = (text: string, chatContexts) => {
@@ -218,6 +222,8 @@ You can configure DevChat from [Settings](#settings).`;
             startGenerating,
             commonMessage,
             devchatAsk : flow(function* (userMessage, chatContexts) {
+                self.disabled = true;
+                self.errorMessage = '';
                 self.messages.push({
                         type: 'user',
                         contexts: chatContexts,
