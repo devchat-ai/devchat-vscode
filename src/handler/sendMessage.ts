@@ -118,7 +118,9 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 					{ response: result.stdout, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
 			} else {
 				logger.channel()?.info(`${result.stdout}`);
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
+				if (askcode_stop == false) {
+					MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
+				}
 			}
 		} catch (error) {
 			if (error instanceof Error) {
