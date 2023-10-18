@@ -88,6 +88,14 @@ export async function dependencyCheck(): Promise<[string, string]> {
 				apiKeyStatus = 'has valid access key';
 				return apiKeyStatus;
 			} else {
+				// test whether valid model exists
+				const modelList = await ApiKeyManager.getValidModels();
+				if (modelList && modelList.length > 0) {
+					// update default llm model
+					await UiUtilWrapper.updateConfiguration('devchat', 'defaultModel', modelList[0]);
+					apiKeyStatus = 'has valid access key';
+					return apiKeyStatus;
+				}
 				apiKeyStatus = 'Click "DevChat" status icon to set key';
 				return apiKeyStatus;
 			}
