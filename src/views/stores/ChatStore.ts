@@ -273,7 +273,6 @@ The process might take a few minutes, depending on your network connection. In t
                 self.hasDone = false;
                 self.errorMessage = '';
                 self.currentMessage = '';
-                self.messages.pop();
                 messageUtil.sendMessage({
                     command: 'regeneration'
                 });
