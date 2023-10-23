@@ -413,7 +413,7 @@
 						}
 					],
 					"order": 7,
-					"markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://devchat.ai/pricing)"
+					"markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://web.devchat.ai/pricing)"
 				},
 				"DevChat.OpenAI.stream": {
 					"type": "boolean",

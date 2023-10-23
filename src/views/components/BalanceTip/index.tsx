@@ -124,7 +124,7 @@ export default function WechatTip() {
         <Group style={{ width: "90%" }}>
           <Text size="sm">
             Your remaining credit is {formatCurrency(balance, currency)}. Sign
-            in to <a href={envMap[env].link}>devchat.ai </a>to{" "}
+            in to <a href={envMap[env].link}>web.devchat.ai </a>to{" "}
             {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
           </Text>
           <LoadingOverlay visible={loading} />
