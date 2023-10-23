@@ -98,7 +98,7 @@ export const ChatStore = types.model('Chat', {
     chatModel: 'GPT-3.5',
     chatPanelWidth: 300,
     disabled: false,
-    rechargeSite: 'https://devchat.ai/pricing/',
+    rechargeSite: 'https://web.devchat.ai/pricing/',
     features: types.optional(types.frozen(), {})
 })
     .actions(self => {
