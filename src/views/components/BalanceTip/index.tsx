@@ -26,11 +26,11 @@ function formatCurrency(balance: number, currency: string) {
 const envMap = {
   dev: {
     requestUrl: "https://apptest.devchat.ai",
-    link: "https://test.devchat.ai",
+    link: "https://webtest.devchat.ai",
   },
   prod: {
     requestUrl: "https://app.devchat.ai",
-    link: "https://devchat.ai",
+    link: "https://web.devchat.ai",
   },
 };
 
@@ -109,7 +109,7 @@ export default function WechatTip() {
     >
       <HoverCard.Target>
         <div onMouseEnter={getBalance}>
-          <ActionIcon size='sm'>
+          <ActionIcon size="sm">
             <IconWallet size="1.125rem" />
           </ActionIcon>
         </div>
@@ -118,7 +118,7 @@ export default function WechatTip() {
         sx={{
           background: "var(--vscode-dropdown-background)",
           borderColor: "var(--vscode-dropdown-border)",
-          color: 'var(--vscode-foreground)'
+          color: "var(--vscode-foreground)",
         }}
       >
         <Group style={{ width: "90%" }}>
