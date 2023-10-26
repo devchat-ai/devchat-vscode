@@ -46,30 +46,17 @@ export class ApiKeyManager {
 			if (!modelConfig["provider"]) {
 				return undefined;
 			}
-			const providerProperty = "Provider." + modelConfig["provider"];
-			const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
-			if (providerConfig) {
-				if (providerConfig["access_key"]) {
-					modelProperties["api_key"] = providerConfig["access_key"];
-				}
-				if (providerConfig["api_base"]) {
-					modelProperties["api_base"] = providerConfig["api_base"];
-				}
-			}
-			
-			if (!modelProperties["api_key"]) {
-				const providerName = ApiKeyManager.toProviderKey(modelConfig["provider"]);
-				if (!providerName) {
+
+			const apiKey = await this.getProviderApiKey(modelConfig["provider"]);
+			if (apiKey) {
+				modelProperties["api_key"] = apiKey;
+			} else {
+				const apiKeyDevChat = await this.getProviderApiKey("devchat");
+				if (apiKeyDevChat) {
+					modelProperties["api_key"] = apiKeyDevChat;
+				} else {
 					return undefined;
 				}
-				let apiKey = await ApiKeyManager.loadApiKeySecret(providerName);
-				if (!apiKey) {
-					apiKey = await ApiKeyManager.loadApiKeySecret("DevChat");
-					if (!apiKey) {
-						return undefined;
-					}
-				}
-				modelProperties["api_key"] = apiKey;
 			}
 	
 			modelProperties['model'] = modelName;
@@ -113,34 +100,6 @@ export class ApiKeyManager {
 		if (llama70BModel) {
 			modelList.push(llama70BModel.model);
 		}
-		
-		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
-		if (!customModelConfig) {
-			return modelList;
-		}
-	
-		const customModels = customModelConfig as Array<any>;
-		for (const model of customModels) {
-			if (!model.model) {
-				continue;
-			}
-	
-			const modelProvider = model["model"].split('/')[0];
-			const modelName = model["model"].split('/').slice(1).join('/');
-	
-			if (!model["api_key"]) {
-				const providerName = ApiKeyManager.toProviderKey(modelProvider);
-				if (!providerName) {
-					continue;
-				}
-				const apiKey = await ApiKeyManager.loadApiKeySecret(providerName);
-				if (!apiKey) {
-					continue;
-				}
-			}
-	
-			modelList.push(model["model"]);
-		}
 	
 		return modelList;
 	}
@@ -171,31 +130,22 @@ export class ApiKeyManager {
 			if (!modelConfig["provider"]) {
 				return undefined;
 			}
-			const providerProperty = "Provider." + modelConfig["provider"];
-			const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
-			if (providerConfig) {
-				if (providerConfig["access_key"]) {
-					modelProperties["api_key"] = providerConfig["access_key"];
-				}
-				if (providerConfig["api_base"]) {
-					modelProperties["api_base"] = providerConfig["api_base"];
-				}
-			}
 
-			if (!modelProperties["api_key"]) {
-				const providerName = this.toProviderKey(modelConfig["provider"]);
-				if (!providerName) {
+			const apiKey = await this.getProviderApiKey(modelConfig["provider"]);
+			const apiBase = await this.getProviderApiBase(modelConfig["provider"]);
+			
+			if (apiKey) {
+				modelProperties["api_key"] = apiKey;
+			} else {
+				const apiKeyDevChat = await this.getProviderApiKey("devchat");
+				if (apiKeyDevChat) {
+					modelProperties["api_key"] = apiKeyDevChat;
+				} else {
 					return undefined;
 				}
-				let apiKey = await this.loadApiKeySecret(providerName);
-				if (!apiKey) {
-					apiKey = await this.loadApiKeySecret("DevChat");
-					if (!apiKey) {
-						return undefined;
-					}
-				}
-
-				modelProperties["api_key"] = apiKey;
+			}
+			if (apiBase) {
+				modelProperties["api_base"] = apiBase;
 			}
 
 			if (!modelProperties["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
@@ -234,49 +184,6 @@ export class ApiKeyManager {
 			return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
 		}
 		
-		const customModelConfig: any = UiUtilWrapper.getConfiguration('devchat', 'customModel');
-		if (!customModelConfig) {
-			return undefined;
-		}
-
-		const customModels = customModelConfig as Array<any>;
-		for (const model of customModels) {
-			if (!model.model) {
-				continue;
-			}
-			if (model.model === llmModelT) {
-				let modelProperties: any = {};
-				for (const key of Object.keys(model || {})) {
-					const property = model![key];
-					modelProperties[key] = property;
-				}
-
-				const modelProvider = model["model"].split('/')[0];
-				const modelName = model["model"].split('/').slice(1).join('/');
-
-				if (!model["api_key"]) {
-					const providerName = this.toProviderKey(modelProvider);
-					if (!providerName) {
-						return undefined;
-					}
-					const apiKey = await this.loadApiKeySecret(providerName);
-					if (!apiKey) {
-						return undefined;
-					}
-					modelProperties["api_key"] = apiKey;
-				}
-
-				if (!model["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
-					modelProperties["api_base"] = "https://api.devchat.ai/v1";
-				}
-
-				modelProperties["provider"] = modelProvider;
-				modelProperties["model"] = modelName;
-
-				return modelProperties;
-			}
-		}
-
 		return undefined;
 	}
 
@@ -295,5 +202,37 @@ export class ApiKeyManager {
 	}
 	static async loadApiKeySecret(llmType: string = "Unknow"): Promise<string | undefined> {
 		return await UiUtilWrapper.secretStorageGet(`Access_KEY_${llmType}`);
+	}
+
+	// get some provider's api key
+	static async getProviderApiKey(provider: string): Promise<string | undefined> {
+		// read key from configration first
+		const providerProperty = `Provider.${provider}`;
+		const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+		if (providerConfig) {
+			if (providerConfig["access_key"]) {
+				return providerConfig["access_key"];
+			}
+		}
+
+		const providerName = this.toProviderKey(provider);
+		if (!providerName) {
+			return undefined;
+		}
+		return await this.loadApiKeySecret(providerName);
+	}
+
+	// get some provider's api base
+	static async getProviderApiBase(provider: string): Promise<string | undefined> {
+		// read key from configration first
+		const providerProperty = `Provider.${provider}`;
+		const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+		if (providerConfig) {
+			if (providerConfig["api_base"]) {
+				return providerConfig["api_base"];
+			}
+		}
+
+		return undefined;
 	}
 }
