@@ -101,8 +101,18 @@ function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string)
 			}
 			await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
 
-			// run command
-			vscode.commands.executeCommand("devchat-topicview.addTopic");
+			// update default model
+			const accessKey = await ApiKeyManager.getApiKey();
+			if (!accessKey) {
+				const modelList = await ApiKeyManager.getValidModels();
+				if (modelList && modelList.length > 0) {
+					// update default llm model
+					await UiUtilWrapper.updateConfiguration('devchat', 'defaultModel', modelList[0]);
+				}
+			}
+
+			// reload webview
+			ExtensionContextHolder.provider?.reloadWebview();
 		})
 	);
 }

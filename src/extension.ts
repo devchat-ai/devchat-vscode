@@ -32,21 +32,36 @@ import { createStatusBarItem } from './panel/statusBarView';
 import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
 import { FT } from './util/feature_flags/feature_toggles';
+import { ApiKeyManager } from './util/apiKey';
 
 async function isProviderHasSetted() {
-	const providerProperty = "Provider.devchat";
-	const providerConfig = UiUtilWrapper.getConfiguration("devchat", providerProperty);
-	if (providerConfig &&providerConfig["access_key"]) {
-		return true;
-	}
+	try {
+		const providerProperty = "Provider.devchat";
+		const providerConfig: any = UiUtilWrapper.getConfiguration("devchat", providerProperty);
+		if (Object.keys(providerConfig).length > 0) {
+			return true;
+		}
 
-	const providerPropertyOpenAI = "Provider.openai";
-	const providerConfigOpenAI = UiUtilWrapper.getConfiguration("devchat", providerPropertyOpenAI);
-	if (providerConfigOpenAI &&providerConfigOpenAI["access_key"]) {
-		return true;
-	}
+		const providerPropertyOpenAI = "Provider.openai";
+		const providerConfigOpenAI: any = UiUtilWrapper.getConfiguration("devchat", providerPropertyOpenAI);
+		if (Object.keys(providerConfigOpenAI).length > 0) {
+			return true;
+		}
 
-	return false;
+		const apiOpenaiKey = await ApiKeyManager.getProviderApiKey("openai");
+		if (apiOpenaiKey) {
+			return true;
+		}
+		const devchatKey = await ApiKeyManager.getProviderApiKey("devchat");
+		if (devchatKey) {
+			return true;
+		}
+
+		return false;
+	} catch (error) {
+		return false;
+	}
+	
 }
 
 async function configUpdateTo_0924() {
@@ -107,7 +122,7 @@ async function configUpdateTo_0924() {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
 		if (Object.keys(modelConfig1).length === 0) {
 			modelConfigNew = {"provider": "devchat"};
-			if (openaiKey && model.startsWith("Model.gpt-")) {
+			if (model.startsWith("Model.gpt-")) {
 				modelConfigNew = {"provider": "openai"};
 			}
 
@@ -161,9 +176,11 @@ async function configUpdate0912To_0924() {
 				delete modelProperties["api_base"];
 				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
 			} else {
-				delete modelProperties["api_base"];
-				modelProperties["provider"] = "devchat";
-				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				if (!modelProperties["provider"]) {
+					delete modelProperties["api_base"];
+					modelProperties["provider"] = "devchat";
+					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				}
 			}
 		}
 	}

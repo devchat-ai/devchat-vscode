@@ -272,16 +272,29 @@ class DevChat {
 				},
 			};
 
+			// activeLlmModelKey is an api key, I will output it to the log
+			// so, replace mid-sub string with *
+			// for example: sk-1234567890 -> sk-1*****7890, keep first 4 char and last 4 char visible
+			const newActiveLlmModelKey = activeLlmModelKey.replace(/^(.{4})(.*)(.{4})$/, (_, first, middle, last) => first + middle.replace(/./g, '*') + last);
+			const keyInfo = {
+				OPENAI_API_KEY: newActiveLlmModelKey ,
+					...openAiApiBaseObject
+			};
+
 			logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(openAiApiBaseObject)}`);
+			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(keyInfo)}`);
 			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
+				let newStderr = stderr;
+				if (stderr.indexOf('Failed to verify access key') > 0) {
+					newStderr += `\nPlease check your key data: ${JSON.stringify(keyInfo)}`;
+				}
 				return {
 					"prompt-hash": "",
 					user: "",
 					date: "",
-					response: stderr,
+					response: newStderr,
 					finish_reason: "",
 					isError: true,
 				};
