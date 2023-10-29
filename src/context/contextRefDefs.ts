@@ -115,6 +115,14 @@ function getMatchedSymbolPositions(selectText: string, symbol: string): object[]
 	return positions;
 }
 
+function isLocationInstance(loc: vscode.Location | vscode.LocationLink): boolean {
+	try {
+		return (loc as vscode.Location).uri !== undefined;
+	} catch (error) {
+		return false;
+	}
+}
+
 async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEditor): Promise<string[]> {
 	const document = activeEditor!.document;
 	const selection = activeEditor!.selection;
@@ -144,63 +152,86 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 				const newPos = selection.start.translate({lineDelta: pos.line, characterDelta: symbolPositionNew });
 				logger.channel()?.info(`handle sub symble: ${symbolSplitItem} at ${newPos.line}:${newPos.character}`);
 
-				// call vscode.executeDefinitionProvider
-				const refLocations = await vscode.commands.executeCommand<vscode.Location[]>(
-					'vscode.executeDefinitionProvider',
-					document.uri,
-					newPos
-				);
-
-				// visit each refLocation, and get it's define
-				for (const refLocation of refLocations) {
-					logger.channel()?.info(`def location: ${refLocation.uri.fsPath} ${refLocation.range.start.line}:${refLocation.range.start.character}-${refLocation.range.end.line}:${refLocation.range.end.character}`);
-					const refLocationString = refLocation.uri.fsPath + "-" + refLocation.range.start.line + ":" + refLocation.range.start.character + "-" + refLocation.range.end.line + ":" + refLocation.range.end.character;
-					if (hasVisitedSymbols.has(refLocationString)) {
-						continue;
-					}
-					hasVisitedSymbols.add(refLocationString);
-
-					// get defines in refLocation file
-					const symbolsT: vscode.DocumentSymbol[] = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
-						'vscode.executeDocumentSymbolProvider',
-						refLocation.uri
+				try{
+					// call vscode.executeDefinitionProvider
+					const refLocations = await vscode.commands.executeCommand<vscode.Location[] | vscode.LocationLink[]>(
+						'vscode.executeDefinitionProvider',
+						document.uri,
+						newPos
 					);
-
-					let targetSymbol: any = undefined;
-					const visitFun = (symbol: vscode.DocumentSymbol) => {
-						if (refLocation.range.start.isAfterOrEqual(symbol.range.start) && refLocation.range.end.isBeforeOrEqual(symbol.range.end)) {
-							targetSymbol = symbol;
-						}
-
-						if (refLocation.range.start.isAfter(symbol.range.end) || refLocation.range.end.isBefore(symbol.range.start)) {
-							return;
-						}
-
-						for (const child of symbol.children) {
-							visitFun(child);
-						}
-					};
-					for (const symbol of symbolsT) {
-						visitFun(symbol);
+					if (!refLocations) {
+						logger.channel()?.info(`no def location for ${symbolSplitItem} at ${newPos.line}:${newPos.character}`);
 					}
 
-					if (targetSymbol !== undefined) {
-						logger.channel()?.info(`symbol define information: ${targetSymbol.name} at ${targetSymbol.location.uri.fsPath} ${targetSymbol.location.range.start.line}:${targetSymbol.location.range.start.character}-${targetSymbol.location.range.end.line}:${targetSymbol.location.range.end.character}`);
-						const defLocationString = targetSymbol.location.uri.fsPath + "-" + targetSymbol.location.range.start.line + ":" + targetSymbol.location.range.start.character + "-" + targetSymbol.location.range.end.line + ":" + targetSymbol.location.range.end.character;
-						if (hasPushedSymbols.has(defLocationString)) {
+					// visit each refLocation, and get it's define
+					for (const refLocation of refLocations) {
+						let targetUri: vscode.Uri | undefined = undefined;
+						let targetRange: vscode.Range | undefined = undefined;
+						
+						if (isLocationInstance(refLocation)) {
+							const locLocation = refLocation as vscode.Location;
+							targetUri = locLocation.uri;
+							targetRange = locLocation.range;
+						} else {
+							const locLocationLink = refLocation as vscode.LocationLink;
+							targetUri = locLocationLink.targetUri;
+							targetRange = locLocationLink.targetRange;
+						}
+						if (!targetUri ||!targetRange) {
 							continue;
 						}
-						hasPushedSymbols.add(defLocationString);
 
-						const documentNew = await vscode.workspace.openTextDocument(refLocation.uri);
+						logger.channel()?.info(`def location: ${targetUri.fsPath} ${targetRange.start.line}:${targetRange.start.character}-${targetRange.end.line}:${targetRange.end.character}`);
+						const refLocationString = targetUri.fsPath + "-" + targetRange.start.line + ":" + targetRange.start.character + "-" + targetRange.end.line + ":" + targetRange.end.character;
+						if (hasVisitedSymbols.has(refLocationString)) {
+							continue;
+						}
+						hasVisitedSymbols.add(refLocationString);
 
-						if (targetSymbol.kind === vscode.SymbolKind.Variable) {
-							const renageNew = new vscode.Range(targetSymbol.range.start.line, 0, targetSymbol.range.end.line, 10000);
-							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
-						} else {
-							contextList.push(await handleCodeSelected(refLocation.uri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
+						// get defines in refLocation file
+						const symbolsT: vscode.DocumentSymbol[] = await vscode.commands.executeCommand<vscode.DocumentSymbol[]>(
+							'vscode.executeDocumentSymbolProvider',
+							targetUri
+						);
+
+						let targetSymbol: any = undefined;
+						const visitFun = (symbol: vscode.DocumentSymbol) => {
+							if (targetRange!.start.isAfterOrEqual(symbol.range.start) && targetRange!.end.isBeforeOrEqual(symbol.range.end)) {
+								targetSymbol = symbol;
+							}
+
+							if (targetRange!.start.isAfter(symbol.range.end) || targetRange!.end.isBefore(symbol.range.start)) {
+								return;
+							}
+
+							for (const child of symbol.children) {
+								visitFun(child);
+							}
+						};
+						for (const symbol of symbolsT) {
+							visitFun(symbol);
+						}
+
+						if (targetSymbol !== undefined) {
+							logger.channel()?.info(`symbol define information: ${targetSymbol.name} at ${targetSymbol.location.uri.fsPath} ${targetSymbol.location.range.start.line}:${targetSymbol.location.range.start.character}-${targetSymbol.location.range.end.line}:${targetSymbol.location.range.end.character}`);
+							const defLocationString = targetSymbol.location.uri.fsPath + "-" + targetSymbol.location.range.start.line + ":" + targetSymbol.location.range.start.character + "-" + targetSymbol.location.range.end.line + ":" + targetSymbol.location.range.end.character;
+							if (hasPushedSymbols.has(defLocationString)) {
+								continue;
+							}
+							hasPushedSymbols.add(defLocationString);
+
+							const documentNew = await vscode.workspace.openTextDocument(targetUri);
+
+							if (targetSymbol.kind === vscode.SymbolKind.Variable) {
+								const renageNew = new vscode.Range(targetSymbol.range.start.line, 0, targetSymbol.range.end.line, 10000);
+								contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
+							} else {
+								contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
+							}
 						}
 					}
+				} catch (error) {
+					logger.channel()?.error(`getSymbolDefine error: ${error}`);
 				}
 			}
 		}
