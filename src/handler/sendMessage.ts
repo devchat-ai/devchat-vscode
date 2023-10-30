@@ -53,7 +53,10 @@ export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.We
 			return ;
 		}
 
-		let envs = {};
+		let envs = {
+			PYTHONUTF8:1,
+			...process.env,
+		};
 
 		const llmModelData = await ApiKeyManager.llmModel();
 		if (!llmModelData) {
