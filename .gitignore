@@ -11,6 +11,5 @@ node_modules
 .chat/prompts.db
 
 .vscode/settings.json
-tools/
 
 
