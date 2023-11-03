@@ -146,6 +146,11 @@ export class ApiKeyManager {
 			}
 			if (apiBase) {
 				modelProperties["api_base"] = apiBase;
+			} else if (!apiKey) {
+				const devchatApiBase = await this.getProviderApiBase("devchat");
+				if (devchatApiBase) {
+					modelProperties["api_base"] = devchatApiBase;
+				}
 			}
 
 			if (!modelProperties["api_base"] && modelProperties["api_key"]?.startsWith("DC.")) {
