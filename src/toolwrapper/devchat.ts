@@ -107,10 +107,11 @@ class DevChat {
 			}
 		}
 
-		const isEnableFunctionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
-		if (options.functions && isEnableFunctionCalling) {
-			args.push("-f", options.functions);
-		}
+		// TODO: fix openai function calling
+		// const isEnableFunctionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
+		// if (options.functions && isEnableFunctionCalling) {
+		// 	args.push("-f", options.functions);
+		// }
 
 		if (options.function_name) {
 			args.push("-n", options.function_name);
