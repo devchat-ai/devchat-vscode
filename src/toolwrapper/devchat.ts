@@ -266,6 +266,7 @@ class DevChat {
 				cwd: workspaceDir,
 				env: {
 					PYTHONUTF8:1,
+					PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
 					...process.env,
 					OPENAI_API_KEY: activeLlmModelKey,
 					...openAiApiBaseObject
@@ -280,10 +281,11 @@ class DevChat {
 				OPENAI_API_KEY: newActiveLlmModelKey ,
 					...openAiApiBaseObject
 			};
+			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
 
 			logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
 			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(keyInfo)}`);
-			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
+			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 
 			if (stderr) {
 				let newStderr = stderr;
@@ -346,11 +348,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				...process.env,
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -383,11 +388,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				...process.env,
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -420,11 +428,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				...process.env,
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -471,11 +482,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
-				...process.env
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				...process.env,
 			},
 		};
 
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
 			logger.channel()?.error(`Error: ${stderr}`);
@@ -503,11 +517,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
-				...process.env
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				...process.env,
 			},
 		};
 
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
 			logger.channel()?.error(`Error: ${stderr}`);
@@ -526,11 +543,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
-				...process.env
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				...process.env,
 			},
 		};
 
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
 			logger.channel()?.error(`Error: ${stderr}`);
@@ -550,10 +570,14 @@ class DevChat {
 			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
 			cwd: workspaceDir,
 			env: {
-				...process.env
+				PYTHONUTF8:1,
+				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				...process.env,
 			},
 		};
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(devChat, args, spawnOptions, undefined, undefined, undefined, undefined);
+
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {

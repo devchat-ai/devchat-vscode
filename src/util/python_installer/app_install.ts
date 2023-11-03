@@ -13,7 +13,7 @@ import { installPython, installPythonMicromamba } from "./python_install";
 // step 3. install devchat in the env
 
 
-async function createEnvByMamba(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
+export async function createEnvByMamba(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
 	logger.channel()?.info('Find micromamba ...');
 	const mambaCommand = getMicromambaUrl();
 	logger.channel()?.info('micromamba url: ' + mambaCommand);
@@ -38,7 +38,7 @@ async function createEnvByMamba(pkgName: string, pkgVersion: string, pythonVersi
 	return pythonCommand;
 }
 
-async function createEnvByConda(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
+export async function createEnvByConda(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
 	// install conda
 	logger.channel()?.info('Install conda ...')
 	const condaCommand = await installConda();
