@@ -55,6 +55,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			progressBar.end();
 	
 			// execute command: DevChat.InstallCommands
+			vscode.commands.executeCommand('DevChat.InstallCommands');
 			ExtensionContextHolder.provider?.reloadWebview();
 			clearInterval(timer);
 		} catch (error) {

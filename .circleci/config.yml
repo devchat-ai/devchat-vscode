@@ -8,6 +8,8 @@ jobs:
     executor: node-executor
     steps:
       - checkout
+      - run: git submodule sync
+      - run: git submodule update --init
       - run: npm install
       - run: npm run build
       - persist_to_workspace:

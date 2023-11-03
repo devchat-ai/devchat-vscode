@@ -43,22 +43,14 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	// define subfunction to check devchat dependency
 	const getDevChatStatus = async (): Promise<string> => {
 		if (devchatStatus === '') {
-			const bOk = checkDevChatDependency(false);
-			if (bOk) {
-				devchatStatus = 'has statisfied the dependency';
-				return devchatStatus;
-			} 
-
 			devchatStatus = 'installing devchat';
 			const devchatCommandEnv = await installDevchat();
 			if (devchatCommandEnv) {
-				logger.channel()?.info(`devchatCommandEnv: ${devchatCommandEnv}`);
-				await UiUtilWrapper.updateConfiguration('DevChat', 'DevChatPath', devchatCommandEnv);
-
+				logger.channel()?.info(`Python: ${devchatCommandEnv}`);
 				devchatStatus = 'DevChat has been installed';
 				return devchatStatus;
 			} else {
-				logger.channel()?.info(`devchatCommandEnv: undefined`);
+				logger.channel()?.info(`Python: undefined`);
 
 				devchatStatus = 'An error occurred during the installation of DevChat';
 				return devchatStatus;
