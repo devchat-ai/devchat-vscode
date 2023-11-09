@@ -1,12 +1,12 @@
-
-// @ts-ignore
-const vscodeApi = window.acquireVsCodeApi();
+// const vscodeApi = window.acquireVsCodeApi();
+const vscodeApi = {
+  postMessage: (message: any) => {},
+};
 
 class MessageUtil {
-
   private static instance: MessageUtil;
 
-  handlers: { [x: string]: any; };
+  handlers: { [x: string]: any };
   messageListener: any;
 
   constructor() {
@@ -14,13 +14,13 @@ class MessageUtil {
     this.messageListener = null;
 
     if (!this.messageListener) {
-      this.messageListener = (event: { data: any; }) => {
+      this.messageListener = (event: { data: any }) => {
         const message = event.data;
         this.handleMessage(message);
       };
-      window.addEventListener('message', this.messageListener);
+      window.addEventListener("message", this.messageListener);
     } else {
-      console.log('Message listener has already been bound.');
+      console.log("Message listener has already been bound.");
     }
   }
 
@@ -49,17 +49,22 @@ class MessageUtil {
   }
 
   // Handle a received message
-  handleMessage(message: { command: string | number; }) {
+  handleMessage(message: { command: string | number }) {
     const handlers = this.handlers[message.command];
     if (handlers) {
-      handlers.forEach((handler: (arg0: { command: string | number; }) => any) => handler(message));
+      handlers.forEach((handler: (arg0: { command: string | number }) => any) =>
+        handler(message)
+      );
     }
   }
 
   // Send a message to the VSCode API
   sendMessage(message: any) {
-    // console.log(`${JSON.stringify(message)}`);
-    vscodeApi.postMessage(message);
+    if (process.env.platform === "idea") {
+      window.callJAVA();
+    } else {
+      window.acquireVsCodeApi().postMessage(message);
+    }
   }
 }
 
