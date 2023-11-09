@@ -6,19 +6,7 @@ export class ApiKeyManager {
 	static toProviderKey(provider: string) : string | undefined {
 		let providerNameMap = {
 			"openai": "OpenAI",
-			"devchat": "DevChat",
-			"cohere": "Cohere",
-			"anthropic": "Anthropic",
-			"replicate": "Replicate",
-			"huggingface": "HuggingFace",
-			"together_ai": "TogetherAI",
-			"openrouter": "OpenRouter",
-			"vertex_ai": "VertexAI",
-			"ai21": "AI21",
-			"baseten": "Baseten",
-			"azure": "Azure",
-			"sagemaker": "SageMaker",
-			"bedrock": "Bedrock"
+			"devchat": "DevChat"
 		};
 		return providerNameMap[provider];
 	}
@@ -144,6 +132,7 @@ export class ApiKeyManager {
 					return undefined;
 				}
 			}
+
 			if (apiBase) {
 				modelProperties["api_base"] = apiBase;
 			} else if (!apiKey) {

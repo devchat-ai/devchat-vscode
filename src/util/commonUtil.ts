@@ -106,6 +106,7 @@ export class CommandRun {
 					logger.channel()?.show();
 				}
 
+				this.childProcess = null;
 				if (code === 0) {
 					resolve({ exitCode: code, stdout, stderr });
 				} else {
@@ -115,6 +116,7 @@ export class CommandRun {
 
 			// Add error event listener to handle command not found exception
 			this.childProcess.on('error', (error: any) => {
+				this.childProcess = null;
 				let errorMessage = error.message;
 				if (error.code === 'ENOENT') {
 					errorMessage = `Command not found: ${command}`;
@@ -128,6 +130,12 @@ export class CommandRun {
 			});
 		});
 	};
+
+	public write(input: string) {
+		if (this.childProcess) {
+			this.childProcess.stdin.write(input);
+		}
+	}
 
 	public stop() {
 		if (this.childProcess) {
@@ -236,7 +244,7 @@ export function runCommandStringAndWriteOutputSync(command: string, outputFile: 
 	}
 }
 
-export function git_ls_tree(withAbsolutePath: boolean = false): string[] {
+export function gitLsTree(withAbsolutePath: boolean = false): string[] {
     // Run the git ls-tree command
 	const workspacePath = UiUtilWrapper.workspaceFoldersFirstPath() || '.';
     const result = childProcess.execSync('git ls-tree -r --name-only HEAD', {

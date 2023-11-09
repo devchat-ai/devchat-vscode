@@ -36,6 +36,9 @@ export class MessageHandler {
 				if (messageObject && messageObject.user && messageObject.user === 'merico-devchat') {
 					message = messageObject;
 					isNeedSendResponse = true;
+					if (messageObject.hasResponse) {
+						isNeedSendResponse = false;
+					}
 				}
 			} catch (e) {
 			}
@@ -55,10 +58,13 @@ export class MessageHandler {
 			}
 			// if "/ask-code" in message.text, then call devchat-ask to get result
 			if (FT("ask-code")) {
-				if (message.text.indexOf('/ask-code') !== -1) {
+				if (message.text.trim() === "/ask-code" || message.text.trim().indexOf('/ask-code ') === 0) {
 					message.command = 'askCode';
 					message.text = message.text.replace('/ask-code', '');
 				}
+			}
+			if (message.text.trim() === "/commit" || message.text.trim().indexOf('/commit ') === 0) {
+				message.command = 'commit';
 			}
 		}
 

@@ -33,6 +33,15 @@ class CommandManager {
 					}
 				});
 			}
+			CommandManager.instance.registerCommand({
+				name: 'commit',
+				pattern: 'commit',
+				description: 'Commit your code changes by GIT',
+				args: 0,
+				handler: async (commandName: string, userInput: string) => {
+					return '';
+				}
+			});
 		}
 
 		return CommandManager.instance;
