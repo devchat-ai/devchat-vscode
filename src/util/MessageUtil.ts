@@ -1,7 +1,4 @@
-// const vscodeApi = window.acquireVsCodeApi();
-const vscodeApi = {
-  postMessage: (message: any) => {},
-};
+import IdeaBridge from "./ideaBridge";
 
 class MessageUtil {
   private static instance: MessageUtil;
@@ -33,10 +30,14 @@ class MessageUtil {
 
   // Register a message handler for a specific message type
   registerHandler(messageType: string, handler: any) {
-    if (!this.handlers[messageType]) {
-      this.handlers[messageType] = [];
+    if (process.env.platform === "idea") {
+      IdeaBridge.registerHandler(messageType, handler);
+    } else {
+      if (!this.handlers[messageType]) {
+        this.handlers[messageType] = [];
+      }
+      this.handlers[messageType].push(handler);
     }
-    this.handlers[messageType].push(handler);
   }
 
   // Unregister a message handler for a specific message type
@@ -60,8 +61,9 @@ class MessageUtil {
 
   // Send a message to the VSCode API
   sendMessage(message: any) {
+    console.log("util sendMessage message: ", message);
     if (process.env.platform === "idea") {
-      window.callJAVA();
+      IdeaBridge.sendMessage(message);
     } else {
       window.acquireVsCodeApi().postMessage(message);
     }

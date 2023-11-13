@@ -97,7 +97,7 @@ const webviewConfig = {
     new CleanWebpackPlugin(),
     new webpack.ProgressPlugin(),
     new webpack.DefinePlugin({
-      "process.env.platform": "idea",
+      "process.env.platform": JSON.stringify("idea"),
     }),
   ],
 };
