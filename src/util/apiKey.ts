@@ -76,6 +76,10 @@ export class ApiKeyManager {
 		if (openaiModel3) {
 			modelList.push(openaiModel3.model);
 		}
+		const openaiModel4 = await modelProperties('Model.gpt-4-turbo', "gpt-4-1106-preview");
+		if (openaiModel4) {
+			modelList.push(openaiModel4.model);
+		}
 		const claudeModel = await modelProperties('Model.claude-2', "claude-2");
 		if (claudeModel) {
 			modelList.push(claudeModel.model);
@@ -169,6 +173,9 @@ export class ApiKeyManager {
 		}
 		if (llmModelT === "gpt-4") {
 			return await modelProperties('Model.gpt-4', "gpt-4");
+		}
+		if (llmModelT === "gpt-4-1106-preview") {
+			return await modelProperties('Model.gpt-4-turbo', "gpt-4-1106-preview");
 		}
 		if (llmModelT === "claude-2") {
 			return await modelProperties('Model.claude-2', "claude-2");

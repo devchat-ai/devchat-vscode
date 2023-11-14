@@ -110,6 +110,7 @@ async function configUpdateTo_0924() {
 		"Model.gpt-3-5",
 		"Model.gpt-3-5-16k",
 		"Model.gpt-4",
+		"Model.gpt-4-turbo",
 		"Model.claude-2",
 		"Model.xinghuo-2",
 		"Model.chatglm_pro",
