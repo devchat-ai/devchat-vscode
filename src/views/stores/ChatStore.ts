@@ -228,14 +228,20 @@ You can configure DevChat from [Settings](#settings).`;
                         message: userMessage
                     });
                 const isInstalled = yield isDevChatInstalled();
+				
                 if (isInstalled){
-                    self.disabled = true;
-                    self.errorMessage = '';
-                    self.messages.push({
-                            type: 'bot',
-                            message: '',
-                            confirm: true
-                        });
+                    // self.disabled = true;
+                    // self.errorMessage = '';
+                    // self.messages.push({
+                    //         type: 'bot',
+                    //         message: '',
+                    //         confirm: true
+                    //     });
+					self.messages.push({ 
+						type: 'bot', 
+						message: '' 
+					});
+					startGenerating(userMessage, chatContexts);
                 } else {
                     self.messages.push({
                             type: 'bot',

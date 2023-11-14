@@ -13,7 +13,7 @@ import { logger } from "../logger";
  export async function installAskCode(): Promise<string> {
 	 try {
 		 logger.channel()?.info(`start installing AskCode with python=3.11.4 ...`);
-		 let devchatAskVersion = '>=0.1.3';
+		 let devchatAskVersion = '>=0.1.7';
 		 const pythonCommand = await appInstall("devchat-ask", devchatAskVersion, '3.11.4');
 		 if (!pythonCommand) {
 			 logger.channel()?.error(`failed to install devchat-ask with python=3.11.4`);

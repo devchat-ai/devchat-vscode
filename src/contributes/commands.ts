@@ -273,7 +273,7 @@ export function registerAskCodeIndexStartCommand(context: vscode.ExtensionContex
 			// check whether pythonVirtualEnv is stisfy the requirement version
 			const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
 			
-			let requireAskVersion = "0.1.3";
+			let requireAskVersion = "0.1.7";
 
 			if (!devchatAskVersion || devchatAskVersion < requireAskVersion) {
 				logger.channel()?.info(`The version of devchat-ask is ${devchatAskVersion}`);
