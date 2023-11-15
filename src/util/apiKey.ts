@@ -68,6 +68,10 @@ export class ApiKeyManager {
 		if (openaiModel) {
 			modelList.push(openaiModel.model);
 		}
+		const openaiModel1 = await modelProperties('Model.gpt-3-5-1106', "gpt-3.5-turbo-1106");
+		if (openaiModel1) {
+			modelList.push(openaiModel1.model);
+		}
 		const openaiModel2 = await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
 		if (openaiModel2) {
 			modelList.push(openaiModel2.model);
@@ -75,6 +79,10 @@ export class ApiKeyManager {
 		const openaiModel3 = await modelProperties('Model.gpt-4', "gpt-4");
 		if (openaiModel3) {
 			modelList.push(openaiModel3.model);
+		}
+		const openaiModel4 = await modelProperties('Model.gpt-4-turbo', "gpt-4-1106-preview");
+		if (openaiModel4) {
+			modelList.push(openaiModel4.model);
 		}
 		const claudeModel = await modelProperties('Model.claude-2', "claude-2");
 		if (claudeModel) {
@@ -164,11 +172,17 @@ export class ApiKeyManager {
 		if (llmModelT === "gpt-3.5-turbo") {
 			return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
 		}
+		if (llmModelT === "gpt-3.5-turbo-1106") {
+			return await modelProperties('Model.gpt-3-5-1106', "gpt-3.5-turbo-1106");
+		}
 		if (llmModelT === "gpt-3.5-turbo-16k") {
 			return await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
 		}
 		if (llmModelT === "gpt-4") {
 			return await modelProperties('Model.gpt-4', "gpt-4");
+		}
+		if (llmModelT === "gpt-4-1106-preview") {
+			return await modelProperties('Model.gpt-4-turbo', "gpt-4-1106-preview");
 		}
 		if (llmModelT === "claude-2") {
 			return await modelProperties('Model.claude-2', "claude-2");

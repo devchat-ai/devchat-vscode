@@ -176,8 +176,10 @@ const InputMessage = observer((props: any) => {
     const getModelShowName = (modelName:string)=>{
         const nameMap = {
             "gpt-3.5-turbo": "GPT-3.5",
+			"gpt-3.5-turbo-1106": "GPT-3.5-1106",
             "gpt-3.5-turbo-16k": "GPT-3.5-16K",
             "gpt-4": "GPT-4",
+			"gpt-4-1106-preview": "GPT-4-turbo",
             "claude-2": "CLAUDE-2"
         };
         if (modelName in nameMap){

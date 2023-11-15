@@ -10,7 +10,7 @@ export async function isDevChatInstalledImpl() {
 	if (pythonVirtualEnv) {
 		// check whether pythonVirtualEnv is stisfy the requirement version
 		const devchatAskVersion = getPackageVersion(pythonVirtualEnv, "devchat-ask");
-		if (!devchatAskVersion || devchatAskVersion < "0.1.3") {
+		if (!devchatAskVersion || devchatAskVersion < "0.1.7") {
 			pythonVirtualEnv = undefined;
 		}
 	}

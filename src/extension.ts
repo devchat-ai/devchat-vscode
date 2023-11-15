@@ -64,6 +64,26 @@ async function isProviderHasSetted() {
 	
 }
 
+async function  configUpdateTo_1115() {
+	const support_models = [
+		"Model.gpt-3-5-1106",
+		"Model.gpt-4-turbo",
+	];
+
+	for (const model of support_models) {
+		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (Object.keys(modelConfig1).length === 0) {
+			let modelConfigNew = {};
+			modelConfigNew = {"provider": "devchat"};
+			if (model.startsWith("Model.gpt-")) {
+				modelConfigNew = {"provider": "openai"};
+			}
+
+			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+		}
+	}
+}
+
 async function configUpdateTo_0924() {
 	if (await isProviderHasSetted()) {
 		return ;
@@ -108,8 +128,10 @@ async function configUpdateTo_0924() {
 
 	const support_models = [
 		"Model.gpt-3-5",
+		"Model.gpt-3-5-1106",
 		"Model.gpt-3-5-16k",
 		"Model.gpt-4",
+		"Model.gpt-4-turbo",
 		"Model.claude-2",
 		"Model.xinghuo-2",
 		"Model.chatglm_pro",
@@ -195,6 +217,7 @@ async function activate(context: vscode.ExtensionContext) {
 
 	await configUpdateTo_0924();
 	await configUpdate0912To_0924();
+	await configUpdateTo_1115();
 
     regLanguageContext();
 
