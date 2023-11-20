@@ -12,7 +12,6 @@ const JStoIdea = {
       },
     };
 
-    console.log("ready to call java params: ", params);
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getModel: () => {
@@ -23,7 +22,6 @@ const JStoIdea = {
       },
     };
 
-    console.log("getModel ready to call java: ", params);
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getContextList: () => {
@@ -33,7 +31,7 @@ const JStoIdea = {
         callback: "IdeaToJSMessage",
       },
     };
-    console.log("getContextList ready to call java: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getCommandList: () => {
@@ -43,7 +41,7 @@ const JStoIdea = {
         callback: "IdeaToJSMessage",
       },
     };
-    console.log("getCommandList ready to call java: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   insertCode: (code) => {
@@ -56,10 +54,9 @@ const JStoIdea = {
         content: code,
       },
     };
-    console.log("insertCode ready to call java: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
-
   replaceFileContent: (code) => {
     const params = {
       action: "replaceFileContent/request",
@@ -70,10 +67,9 @@ const JStoIdea = {
         content: code,
       },
     };
-    console.log("replaceFileContent ready to call java: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
-
   viewDiff: (code) => {
     const params = {
       action: "viewDiff/request",
@@ -84,8 +80,37 @@ const JStoIdea = {
         content: code,
       },
     };
-    console.log("viewDiff ready to call java: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  getUserAccessKey: () => {
+    const params = {
+      action: "getKey/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+    };
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  etcCommand: (command: any) => {
+    /**
+     * 有四种命令
+     * 1. workbench.action.openSettings
+     * 2. AskCodeIndexStart
+     * 3. AccessKey.OpenAI
+     * 4. AccessKey.DevChat
+     */
+    const content = Array.isArray(command.content) ? command.content[0] : "";
+    switch (content) {
+      case content.includes("workbench.action.openSettings"):
+        // 打开设置
+        break;
+      case content.includes("AccessKey.DevChat"):
+        // 设置key
+        break;
+      default:
+        break;
+    }
   },
 };
 
@@ -97,7 +122,6 @@ class IdeaBridge {
     this.handle = {};
     // 注册全局的回调函数，用于接收来自IDEA的消息
     window.IdeaToJSMessage = (res: any) => {
-      console.log("IdeaToJSMessage message: ", res);
       switch (res.action) {
         case "sendMessage/response":
           this.resviceMessage(res);
@@ -111,10 +135,22 @@ class IdeaBridge {
         case "listCommands/response":
           this.resviceCommandList(res);
           break;
+        case "getKey/response":
+          this.resviceAccessKey(res.payload.key);
+          break;
         default:
           break;
       }
     };
+  }
+
+  resviceAccessKey(res: string = "") {
+    const params = {
+      endPoint: "",
+      accessKey: res,
+      keyType: res.startsWith("DC") ? "DevChat" : "OpenAi",
+    };
+    this.handle.getUserAccessKey(params);
   }
 
   resviceCommandList(res) {
@@ -130,18 +166,17 @@ class IdeaBridge {
 
   resviceContextList(res) {
     // 接受到的上下文列表
-    console.log("resviceContextList res: ", res);
+
     const result = res.payload.contexts.map((item) => ({
       name: item.command,
       pattern: item.command,
       description: item.description,
     }));
-    console.log("resviceContextList result: ", result);
+
     this.handle.regContextList({ result });
   }
 
   resviceModelList(response: any) {
-    console.log("resviceModelList response: ", response);
     // 接受到模型列表
     this.handle["regModelList"]({
       result: response.payload.models,
@@ -202,6 +237,13 @@ class IdeaBridge {
         break;
       case "code_file_apply":
         JStoIdea.replaceFileContent(message.content);
+        break;
+      case "getUserAccessKey":
+        JStoIdea.getUserAccessKey();
+        break;
+
+      case "doCommand":
+        JStoIdea.etcCommand(message);
         break;
       default:
         break;
