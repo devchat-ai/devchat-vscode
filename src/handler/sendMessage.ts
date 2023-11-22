@@ -11,14 +11,17 @@ import { ApiKeyManager } from '../util/apiKey';
 import { logger } from '../util/logger';
 import { exec as execCb } from 'child_process';
 import { promisify } from 'util';
-import { CommandRun, createTempSubdirectory } from '../util/commonUtil';
+import { CommandResult, CommandRun, createTempSubdirectory } from '../util/commonUtil';
+import { WorkflowRunner } from './workflowExecutor';
+import DevChat from '../toolwrapper/devchat';
 
 const exec = promisify(execCb);
 
-let askcode_stop = true;
-let askcode_runner : CommandRun | null = null;
+let askcodeRunner : CommandRun | null = null;
+let commandRunner : WorkflowRunner | null = null;
 
 let _lastMessage: any = undefined;
+
 
 export function createTempFile(content: string): string {
     // Generate a unique file name
@@ -35,121 +38,19 @@ export function deleteTempFiles(fileName: string): void {
     fs.unlinkSync(fileName);
 }
 
-regInMessage({command: 'askCode', text: '', parent_hash: undefined});
-regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
-export async function askCode(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-    try {
-		askcode_stop = false;
-		askcode_runner = null;
-
-		_lastMessage = [message];
-		_lastMessage[0]['askCode'] = true;
-
-		const port = await UiUtilWrapper.getLSPBrigePort();
-
-		const pythonVirtualEnv: string  | undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
-		if (!pythonVirtualEnv) {
-			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
-			return ;
-		}
-
-		let envs = {
-			PYTHONUTF8:1,
-			...process.env,
-		};
-
-		const llmModelData = await ApiKeyManager.llmModel();
-		if (!llmModelData) {
-			logger.channel()?.error('No valid llm model is selected!');
-			logger.channel()?.show();
-			return;
-		}
-
-		let openaiApiKey = llmModelData.api_key;
-		if (!openaiApiKey) {
-			logger.channel()?.error('The OpenAI key is invalid!');
-			logger.channel()?.show();
-			return;
-		}
-		envs['OPENAI_API_KEY'] = openaiApiKey;
-
-		const openAiApiBase = llmModelData.api_base;
-		if (openAiApiBase) {
-			envs['OPENAI_API_BASE'] = openAiApiBase;
-		}
-
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		if (askcode_stop) {
-			return;
-		}
-		
-		try {
-			let outputResult = "";
-			askcode_runner = new CommandRun();
-			const command = pythonVirtualEnv.trim();
-			const args = [UiUtilWrapper.extensionPath() + "/tools/askcode_index_query.py", "query", message.text, `${port}`];
-			const result = await askcode_runner.spawnAsync(command, args, { env: envs, cwd: workspaceDir }, (data) => {
-				outputResult += data;
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: outputResult, hash:"", user:"", isError: false });
-				logger.channel()?.info(data);
-			}, (data) => {
-				logger.channel()?.error(data);
-			}, undefined, undefined);
-
-			if (result.exitCode === 0) {
-				// save askcode result to devchat
-				const stepIndex = result.stdout.lastIndexOf("```Step");
-				const stepEndIndex = result.stdout.lastIndexOf("```");
-				let resultOut = result.stdout;
-				if (stepIndex > 0 && stepEndIndex > 0) {
-					resultOut = result.stdout.substring(stepEndIndex+3, result.stdout.length);
-				}
-				let logHash = await insertDevChatLog(message, "/ask-code " + message.text, resultOut);
-				if (!logHash) {
-					logHash = "";
-					logger.channel()?.error(`Failed to insert devchat log.`);
-					logger.channel()?.show();
-				}
-
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: result.stdout, hash:logHash, user:"", isError: false });
-				MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stdout, hash:logHash, user:"", date:0, isError: false });
-
-				const dateStr = Math.floor(Date.now()/1000).toString();
-				await handleTopic(
-					message.parent_hash,
-					{"text": "/ask-code " + message.text}, 
-					{ response: result.stdout, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
-			} else {
-				logger.channel()?.info(`${result.stdout}`);
-				if (askcode_stop == false) {
-					MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: result.stderr, hash: "", user: "", date: 0, isError: true });
-				}
-			}
-		} catch (error) {
-			if (error instanceof Error) {
-				logger.channel()?.error(`error: ${error.message}`);
-			} else {
-				logger.channel()?.error(`An unknown error occurred: ${error}`);
-			}
-			logger.channel()?.show();
-			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: "Did not get relevant context from AskCode.", hash: "", user: "", date: 0, isError: true });
-		}
-	} finally {
-		askcode_stop = true;
-		askcode_runner = null;
-	}
+regInMessage({command: 'userInput', text: '{"field": "value", "field2": "value2"}'});;
+export async function userInput(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	commandRunner?.input(message.text);
 }
 
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
 regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
 regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
-// message: { command: 'sendMessage', text: 'xxx', hash: 'xxx'}
-// return message: 
-//     { command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'}
-//     { command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'}
-export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, function_name: string|undefined = undefined): Promise<void> {
-    if (function_name !== undefined && function_name !== "") {
+export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, functionName: string|undefined = undefined): Promise<void> {
+	// check whether the message is a command
+	if (functionName !== undefined && functionName !== "") {
 		const messageText = _lastMessage[0].text.trim();
 		if (messageText[0] === '/' && message.text[0] !== '/') {
 			const indexS = messageText.indexOf(' ');
@@ -161,7 +62,39 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 			message.text = preCommand + ' ' + message.text;
 		}
 	}
-	_lastMessage = [message, function_name];
+	_lastMessage = [message, functionName];
+
+	const messageText = message.text.trim();
+	if (messageText[0] === '/') {
+		// split messageText by ' ' or '\n' or '\t'
+		const messageTextArr = messageText.split(/ |\n|\t/);
+		// get command name from messageTextArr
+		const commandName = messageTextArr[0].substring(1);
+		// test whether the command is a execute command
+		const devChat = new DevChat();
+		const stdout = await devChat.commandPrompt(commandName);
+		// try parse stdout by json
+		let stdoutJson: any = null;
+		try {
+			stdoutJson = JSON.parse(stdout);
+		} catch (error) {
+			// do nothing
+		}
+
+		if (stdoutJson) {
+			// run command
+			try {
+				commandRunner = null;
+		
+				commandRunner = new WorkflowRunner();
+				await commandRunner.run(commandName, stdoutJson, message, panel);
+			} finally {
+				commandRunner = null;
+			}
+			
+			return ;
+		}
+	}
 
     // Add a new field to store the names of temporary files
     let tempFiles: string[] = [];
@@ -192,7 +125,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
 
     const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
         MessageHandler.sendMessage(panel, data, false);
-    }, function_name);
+    }, functionName);
     if (responseMessage) {
         MessageHandler.sendMessage(panel, responseMessage);
     }
@@ -209,11 +142,7 @@ regInMessage({command: 'regeneration'});
 export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// call sendMessage to send last message again
 	if (_lastMessage) {
-		if (_lastMessage[0]['askCode']) {
-			await askCode(_lastMessage[0], panel);
-		} else {
-			await sendMessage(_lastMessage[0], panel, _lastMessage[1]);
-		}
+		await sendMessage(_lastMessage[0], panel, _lastMessage[1]);
 	}
 }
 
@@ -221,13 +150,9 @@ regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	stopDevChatBase(message);
 
-	if (askcode_stop === false) {
-		askcode_stop = true;
-		if (askcode_runner) {
-			askcode_runner.stop();
-			askcode_runner = null;
-		}
-		await vscode.commands.executeCommand('DevChat.AskCodeIndexStop');
+	if (commandRunner) {
+		commandRunner.stop();
+		commandRunner = null;
 	}
 }
 

@@ -6,7 +6,7 @@ import { doCommit } from './doCommit';
 import { historyMessages } from './historyMessages';
 import { regCommandList, regCommandListByDevChatRun } from './regCommandList';
 import { regContextList } from './regContextList';
-import { sendMessage, stopDevChat, regeneration, deleteChatMessage, askCode } from './sendMessage';
+import { sendMessage, stopDevChat, regeneration, deleteChatMessage, userInput } from './sendMessage';
 import { blockApply } from './showDiff';
 import { showDiff } from './showDiff';
 import { addConext } from './addContext';
@@ -83,7 +83,6 @@ messageHandler.registerHandler('applyAction', applyAction);
 // Response: { command: 'deletedChatMessage', result: <message id> }
 messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);
 
-messageHandler.registerHandler('askCode', askCode);
 // Execute vscode command
 // Response: none
 messageHandler.registerHandler('doCommand', doCommand);
@@ -97,3 +96,5 @@ messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
 
 messageHandler.registerHandler('regModelList', regModelList);
 messageHandler.registerHandler('isDevChatInstalled', isDevChatInstalled);
+
+messageHandler.registerHandler('userInput', userInput);
