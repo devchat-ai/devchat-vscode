@@ -1,6 +1,9 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
+import * as yaml from 'yaml';
+import * as vscode from 'vscode';
 import * as childProcess from 'child_process';
 
 import { parseArgsStringToArgv } from 'string-argv';
@@ -9,6 +12,56 @@ import { logger } from './logger';
 import { spawn, exec } from 'child_process';
 import { UiUtilWrapper } from './uiUtil';
 import { ApiKeyManager } from './apiKey';
+
+
+export async function saveModelSettings(): Promise<void> {
+	// support models
+	const supportModels = {
+		"Model.gpt-3-5": "gpt-3.5-turbo",
+		"Model.gpt-3-5-1106": "gpt-3.5-turbo-1106",
+		"Model.gpt-3-5-16k": "gpt-3.5-turbo-16k",
+		"Model.gpt-4": "gpt-4",
+		"Model.gpt-4-turbo": "gpt-4-1106-preview",
+		"Model.claude-2": "claude-2",
+		"Model.xinghuo-2": "xinghuo-2",
+		"Model.chatglm_pro": "chatglm_pro",
+		"Model.ERNIE-Bot": "ERNIE-Bot",
+		"Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
+		"Model.llama-2-70b-chat": "llama-2-70b-chat"
+	};
+
+	// is enable stream
+	const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
+
+	let devchatConfig = {};
+	for (const model of Object.keys(supportModels)) {
+		const modelConfig = UiUtilWrapper.getConfiguration('devchat', model);
+		if (modelConfig) {
+			devchatConfig[supportModels[model]] = {
+				"stream": openaiStream
+			};
+			for (const key of Object.keys(modelConfig || {})) {
+				const property = modelConfig![key];
+				devchatConfig[supportModels[model]][key] = property;
+			}
+		}
+	}
+
+	let devchatModels = {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		"default_model": "gpt-3.5-turbo-16k",
+		"models": devchatConfig
+	};
+		
+	// write to config file
+	const os = process.platform;
+	const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
+
+	const configPath = path.join(userHome!, '.chat', 'config.yml');
+	// write devchatConfig to configPath
+	const yamlString = yaml.stringify(devchatModels);
+	fs.writeFileSync(configPath, yamlString);
+}
 
 async function createOpenAiKeyEnv() {
 	let envs = {...process.env};
@@ -106,6 +159,7 @@ export class CommandRun {
 					logger.channel()?.show();
 				}
 
+				this.childProcess = null;
 				if (code === 0) {
 					resolve({ exitCode: code, stdout, stderr });
 				} else {
@@ -115,6 +169,7 @@ export class CommandRun {
 
 			// Add error event listener to handle command not found exception
 			this.childProcess.on('error', (error: any) => {
+				this.childProcess = null;
 				let errorMessage = error.message;
 				if (error.code === 'ENOENT') {
 					errorMessage = `Command not found: ${command}`;
@@ -128,6 +183,12 @@ export class CommandRun {
 			});
 		});
 	};
+
+	public write(input: string) {
+		if (this.childProcess) {
+			this.childProcess.stdin.write(input);
+		}
+	}
 
 	public stop() {
 		if (this.childProcess) {
@@ -236,7 +297,7 @@ export function runCommandStringAndWriteOutputSync(command: string, outputFile: 
 	}
 }
 
-export function git_ls_tree(withAbsolutePath: boolean = false): string[] {
+export function gitLsTree(withAbsolutePath: boolean = false): string[] {
     // Run the git ls-tree command
 	const workspacePath = UiUtilWrapper.workspaceFoldersFirstPath() || '.';
     const result = childProcess.execSync('git ls-tree -r --name-only HEAD', {
