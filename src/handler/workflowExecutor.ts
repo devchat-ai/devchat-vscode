@@ -241,15 +241,15 @@ export class WorkflowRunner {
 			...(aipBase ? { 'OPENAI_API_BASE': aipBase } : {})
 		};
 
-		const requireInput = Object.keys(commandDefines.parameters).filter(key => commandDefines.parameters[key].required === true).length > 0;
+		const requireInput = commandDefines.input === "required";
 		if (requireInput && message.text.replace("/" + workflow, "").trim() === "") {
 			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: `The workflow ${workflow} need input!`, hash: "", user: "", date: 0, isError: true });
 			return ;
 		}
 
-		const workflowCommand = commandDefines.steps[0].command.replace(
-			'{command_python}', `${pythonVirtualEnv}`).replace(
-			'{input}', `${message.text.replace("/" + workflow, "").trim()}`);
+		const workflowCommand = commandDefines.steps[0].run.replace(
+			'$command_python', `${pythonVirtualEnv}`).replace(
+			'$input', `${message.text.replace("/" + workflow, "").trim()}`);
 		
 		const [commandResult, commandAnswer] = await this._runCommand(workflowCommand, workflowEnvs);
 
@@ -268,7 +268,7 @@ export class WorkflowRunner {
 			const dateStr = Math.floor(Date.now()/1000).toString();
 			await handleTopic(
 				message.parent_hash,
-				{"text": "/ask-code " + message.text}, 
+				{"text": message.text}, 
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				{ response: resultOut, "prompt-hash": logHash, user: "", "date": dateStr, finish_reason: "", isError: false });
 		} else if (commandResult) {
