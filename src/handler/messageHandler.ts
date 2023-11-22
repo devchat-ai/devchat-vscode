@@ -36,6 +36,9 @@ export class MessageHandler {
 				if (messageObject && messageObject.user && messageObject.user === 'merico-devchat') {
 					message = messageObject;
 					isNeedSendResponse = true;
+					if (messageObject.hasResponse) {
+						isNeedSendResponse = false;
+					}
 				}
 			} catch (e) {
 			}
@@ -52,13 +55,6 @@ export class MessageHandler {
 			// if "/autox" in message.text, then flag global variable autox to true
 			if (message.text.indexOf('/autox') !== -1) {
 				autox = true;
-			}
-			// if "/ask-code" in message.text, then call devchat-ask to get result
-			if (FT("ask-code")) {
-				if (message.text.indexOf('/ask-code') !== -1) {
-					message.command = 'askCode';
-					message.text = message.text.replace('/ask-code', '');
-				}
 			}
 		}
 
