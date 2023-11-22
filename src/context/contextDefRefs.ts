@@ -1,9 +1,8 @@
 import * as path from 'path';
 
-import * as vscode from 'vscode'
+import * as vscode from 'vscode';
 
 import { ChatContext } from './contextManager';
-import { createTempSubdirectory, git_ls_tree, runCommandStringAndWriteOutput } from '../util/commonUtil';
 
 import { logger } from '../util/logger';
 import { handleCodeSelected } from './contextCodeSelected';
