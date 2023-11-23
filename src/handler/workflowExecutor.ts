@@ -124,6 +124,14 @@ export class WorkflowRunner {
 			if (isStart) {
 				contentStr = outputWitchCache.substring(startPos+9, endPos);
 				curPos = endPos+7;
+
+				try {
+					const contentObj = JSON.parse(contentStr);
+					if (contentObj && contentObj.result) {
+						contentStr = contentObj.result;
+					}
+				} catch (error) {
+				}
 			} else {
 				contentStr = outputWitchCache.substring(startPos2, endPos+3);
 				curPos = endPos+3;
@@ -133,6 +141,17 @@ export class WorkflowRunner {
 		}
 
 		return outputResult;
+	}
+
+	private _parseLastCommandOutput(outputStr: string): string {
+		const startPos = outputStr.lastIndexOf('<<Start>>');
+		const endPos = outputStr.lastIndexOf('<<End>>');
+
+		if (startPos === -1 || endPos === -1 || endPos < startPos) {
+			return '';
+		}
+
+		return outputStr.substring(startPos+9, endPos);
 	}
 
 	private async _runCommand(commandWithArgs: string, commandEnvs: any): Promise<[CommandResult | undefined, string]> {
@@ -254,7 +273,16 @@ export class WorkflowRunner {
 		const [commandResult, commandAnswer] = await this._runCommand(workflowCommand, workflowEnvs);
 
 		if (commandResult && commandResult.exitCode === 0) {
-			const resultOut = commandAnswer === "" ? "success" : commandAnswer;
+			const lastOutput = this._parseLastCommandOutput(commandResult.stdout);
+			let resultOut = commandAnswer === "" ? "success" : commandAnswer;
+
+			try {
+				const lastOutputObj = JSON.parse(lastOutput);
+				if (lastOutputObj && lastOutputObj.result) {
+					resultOut = lastOutputObj.result;
+				}
+			} catch (error) {}
+			
 			let logHash = await insertDevChatLog(message, message.text, resultOut);
 			if (!logHash) {
 				logHash = "";
