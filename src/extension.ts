@@ -14,13 +14,9 @@ import {
     regApplyDiffResultCommand,
     registerStatusBarItemClickCommand,
     regPythonPathCommand,
-    registerAskCodeIndexStartCommand,
-    registerAskCodeIndexStopCommand,
-    registerAskCodeSummaryIndexStartCommand,
-    registerAskCodeSummaryIndexStopCommand,
-	registerAddSummaryContextCommand,
 	registerInstallCommandsCommand,
 	registerUpdateChatModelsCommand,
+	registerInstallCommandsPython
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -233,6 +229,7 @@ async function activate(context: vscode.ExtensionContext) {
 
 	registerInstallCommandsCommand(context);
 	registerUpdateChatModelsCommand(context);
+	registerInstallCommandsPython(context);
 
     createStatusBarItem(context);
 
@@ -244,12 +241,5 @@ async function activate(context: vscode.ExtensionContext) {
     regApplyDiffResultCommand(context);
 
     regPythonPathCommand(context);
-
-	registerAskCodeIndexStartCommand(context);
-	registerAskCodeIndexStopCommand(context);
-    
-	registerAskCodeSummaryIndexStartCommand(context);
-	registerAskCodeSummaryIndexStopCommand(context);
-	registerAddSummaryContextCommand(context);
 }
 exports.activate = activate;

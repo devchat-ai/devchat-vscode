@@ -114,7 +114,6 @@ Generate a professionally written and formatted release note in markdown with th
     const handleButton = (value: string | number | readonly string[] | undefined) => {
         switch (value) {
             case "settings": messageUtil.sendMessage({ command: 'doCommand', content: ['workbench.action.openSettings', 'DevChat'] }); break;
-            case "start_askcode": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AskCodeIndexStart'] }); break;
             case "setting_openai_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.OpenAI'] }); break;
             case "setting_devchat_key": messageUtil.sendMessage({ command: 'doCommand', content: ['DevChat.AccessKey.DevChat'] }); break;
         }

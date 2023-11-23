@@ -42,14 +42,14 @@ function getDefaultPythonCommand(): string | undefined {
 
 export function getValidPythonCommand(): string | undefined {
 	try {
-		const pythonCommand = UiUtilWrapper.getConfiguration('DevChat', 'PythonPath');
+		const pythonCommand = UiUtilWrapper.getConfiguration('DevChat', 'PythonForChat');
 		if (pythonCommand) {
 			return pythonCommand;
 		}
 
 		const defaultPythonCommand = getDefaultPythonCommand();
 		if (defaultPythonCommand) {
-			UiUtilWrapper.updateConfiguration('DevChat', 'PythonPath', defaultPythonCommand);
+			UiUtilWrapper.updateConfiguration('DevChat', 'PythonForChat', defaultPythonCommand);
 		}
 
 		return defaultPythonCommand;

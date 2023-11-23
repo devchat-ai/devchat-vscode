@@ -83,10 +83,10 @@ export class CustomActions {
 									const tempDir = await createTempSubdirectory('devchat/action');
 									const tempFile = path.join(tempDir, 'apply.json');
 
-									if (UiUtilWrapper.getConfiguration('DevChat', 'PythonVirtualEnv')) {
-										args['PythonVirtualEnv'] = UiUtilWrapper.getConfiguration('DevChat', 'PythonVirtualEnv')!;
+									if (UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands')) {
+										args['PythonForCommands'] = UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands')!;
 									} else {
-										args['PythonVirtualEnv'] = 'python';
+										args['PythonForCommands'] = 'python';
 									}
 									
 									const contextMap = {

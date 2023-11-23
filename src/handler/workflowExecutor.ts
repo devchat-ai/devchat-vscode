@@ -1,9 +1,3 @@
-
-
-
-// TODO
-// 临时解决方案，后续需要修改
-
 import * as vscode from 'vscode';
 import { UiUtilWrapper } from "../util/uiUtil";
 import { MessageHandler } from "../handler/messageHandler";
@@ -47,18 +41,6 @@ async function handleWorkflowRequest(request): Promise<string | undefined> {
 		});
 	}
 }
-
-
-// TODO
-// 临时解决方案，后续需要修改
-// 执行workflow
-
-// workflow执行时，都是通过启动一个进程的方式来执行。
-// 与一般进程不同的是：
-// 1. 通过UI交互可以停止该进程；
-// 2. 需要在进程启动前初始化相关的环境变量
-// 3. 需要处理进程的通信
-
 
 export class WorkflowRunner {
 	private _commandRunner: CommandRun | null = null;
@@ -220,37 +202,30 @@ export class WorkflowRunner {
 	}
 
 	public async run(workflow: string, commandDefines: any, message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-		/*
-		1. 判断workflow是否有输入存在
-		2. 获取workflow的环境变量信息
-		3. 执行workflow command
-		4. 处理workflow command输出
-		*/
-
 		this._panel = panel;
 		
-		// 获取workflow的python命令
-		const pythonVirtualEnv: string  | undefined = vscode.workspace.getConfiguration('DevChat').get('PythonVirtualEnv');
+		// all workflow run in decchat-command virtual env
+		const pythonVirtualEnv: string  | undefined = vscode.workspace.getConfiguration('DevChat').get('PythonForCommands');
 		if (!pythonVirtualEnv) {
-			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Index code fail.", hash: "", user: "", date: 0, isError: true });
+			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "Python for Commands is not ready, please see OUTPUT for more detail.", hash: "", user: "", date: 0, isError: true });
 			return ;
 		}
 
-		// 获取扩展路径
+		// devchat-core packages are installed in extensionPath/tools/site-packages
 		const extensionPath = UiUtilWrapper.extensionPath();
 
-		// 获取api_key 和 api_base
+		// api_key and api_base
 		const [apiKey, aipBase] = await this._getApiKeyAndApiBase();
 		if (!apiKey) {
 			MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: "The OpenAI key is invalid!", hash: "", user: "", date: 0, isError: true });
 			return ;
 		}
 
-		// 构建子进程环境变量
+		// envs for Command
 		const workflowEnvs = {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"PYTHONUTF8":1,
-			"DEVCHATPYTHON": UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3",
+			"DEVCHATPYTHON": UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3",
 			"PYTHONLIBPATH": `${extensionPath}/tools/site-packages`,
 			"PARENT_HASH": message.parent_hash,
 			...process.env,
@@ -290,7 +265,6 @@ export class WorkflowRunner {
 				logger.channel()?.show();
 			}
 
-			//MessageHandler.sendMessage(panel,  { command: 'receiveMessagePartial', text: resultOut, hash:logHash, user:"", isError: false });
 			MessageHandler.sendMessage(panel,  { command: 'receiveMessage', text: resultOut, hash:logHash, user:"", date:0, isError: false });
 
 			const dateStr = Math.floor(Date.now()/1000).toString();

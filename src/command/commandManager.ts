@@ -126,10 +126,12 @@ class CommandManager {
 
 	async processText(text: string): Promise<string> {
 		let result = text.trim();
+		const messageTextArr = result.split(/ |\n|\t/);
+		const commandName = messageTextArr[0];
 
 		for (const commandObj of await this.getCommandListByDevChatRun()) {
 			const commandObjNamePattern = "/" + commandObj.name + " ";
-			if (commandObj.name === result || result.indexOf(commandObjNamePattern) === 0) {
+			if (commandObjNamePattern === commandName) {
 				const newInstructFile = await commandObj.handler(commandObj.name, "");
 				result = newInstructFile + result;
 				break;
