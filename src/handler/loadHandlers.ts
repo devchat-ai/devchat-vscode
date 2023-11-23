@@ -20,7 +20,6 @@ import { getSetting, updateSetting } from './updateConfig';
 import { featureToggle, featureToggles } from './featureToggle';
 import { getUserAccessKey } from './userAccessKey';
 import { regModelList } from './regValidModelList';
-import { isDevChatInstalled } from './checkDevChatAsk';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -95,6 +94,5 @@ messageHandler.registerHandler('featureToggles', featureToggles);
 messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
 
 messageHandler.registerHandler('regModelList', regModelList);
-messageHandler.registerHandler('isDevChatInstalled', isDevChatInstalled);
 
 messageHandler.registerHandler('userInput', userInput);

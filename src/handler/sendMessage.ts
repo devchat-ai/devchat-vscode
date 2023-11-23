@@ -17,7 +17,6 @@ import DevChat from '../toolwrapper/devchat';
 
 const exec = promisify(execCb);
 
-let askcodeRunner : CommandRun | null = null;
 let commandRunner : WorkflowRunner | null = null;
 
 let _lastMessage: any = undefined;

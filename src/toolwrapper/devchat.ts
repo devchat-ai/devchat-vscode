@@ -256,7 +256,7 @@ class DevChat {
 				OPENAI_API_KEY: newActiveLlmModelKey ,
 					...openAiApiBaseObject
 			};
-			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 
 			logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
 			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(keyInfo)}`);
@@ -329,7 +329,7 @@ class DevChat {
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
@@ -369,7 +369,7 @@ class DevChat {
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
@@ -409,7 +409,7 @@ class DevChat {
 				OPENAI_API_KEY: openaiApiKey,
 			},
 		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
@@ -463,7 +463,7 @@ class DevChat {
 			},
 		};
 
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -498,7 +498,7 @@ class DevChat {
 			},
 		};
 
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -524,7 +524,7 @@ class DevChat {
 			},
 		};
 
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
 		if (stderr) {
@@ -551,7 +551,7 @@ class DevChat {
 			},
 		};
 
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonPath") || "python3";
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
 
 		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);

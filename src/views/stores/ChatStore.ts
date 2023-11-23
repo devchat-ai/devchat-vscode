@@ -46,18 +46,6 @@ interface DevChatInstalledMessage {
     result: boolean;
 }
 
-export const isDevChatInstalled = async () => {
-    return new Promise<boolean>((resolve, reject) => {
-        try {
-            messageUtil.sendMessage({ command: 'isDevChatInstalled'});
-            messageUtil.registerHandler('isDevChatInstalled', (message:DevChatInstalledMessage) => {
-                resolve(message.result);
-            });
-        } catch (e) {
-            reject(e);
-        }
-    });
-};
 
 export const deleteMessage = async (messageHash: string) => {
     return new Promise<{ hash: string }>((resolve, reject) => {
@@ -227,7 +215,7 @@ You can configure DevChat from [Settings](#settings).`;
                         contexts: chatContexts,
                         message: userMessage
                     });
-                const isInstalled = yield isDevChatInstalled();
+                const isInstalled = true;
 				
                 if (isInstalled){
                     // self.disabled = true;
@@ -242,18 +230,8 @@ You can configure DevChat from [Settings](#settings).`;
 						message: '' 
 					});
 					startGenerating(userMessage, chatContexts);
-                } else {
-                    self.messages.push({
-                            type: 'bot',
-                            message: `The ask-code workflow hasn't been installed. 
-
-Please click the button below to install the necessary components. 
-
-The process might take a few minutes, depending on your network connection. In the meantime, feel free to chat with me about other topics.
-
-<button value="start_askcode">Install Now</button>`
-                        });
                 }
+
                 // goto bottom
                 goScrollBottom();
             }),

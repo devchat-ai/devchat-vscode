@@ -43,8 +43,8 @@ export async function installDevchat(): Promise<string> {
 			// write content to pythonPathFile
 			fs.writeFileSync(pythonPathFile, content);
 
-			// update DevChat.PythonPath configration
-			await UiUtilWrapper.updateConfiguration("DevChat", "PythonPath", pythonApp);
+			// update DevChat.PythonForChat configration
+			await UiUtilWrapper.updateConfiguration("DevChat", "PythonForChat", pythonApp);
 			return pythonApp;
 		} else {
 			// if current os is not windows, we need to get default python path
@@ -69,7 +69,7 @@ export async function installDevchat(): Promise<string> {
 			}
 			logger.channel()?.info(`Create env success: ${pythonCommand}`);
 
-			await UiUtilWrapper.updateConfiguration("DevChat", "PythonPath", pythonCommand);
+			await UiUtilWrapper.updateConfiguration("DevChat", "PythonForChat", pythonCommand);
 			return pythonCommand;
 		}
 	} catch (error) {

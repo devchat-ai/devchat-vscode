@@ -533,13 +533,7 @@
 					"order": 14,
 					"description": "Limit the number of prompts in the chat view."
 				},
-				"DevChat.askcode.supportedFileTypes": {
-					"type": "string",
-					"default": ".+\\.js$, .+\\.ts$, .+\\.jsx$, .+\\.tsx$, .+\\.java$, .+\\.py$, .+\\.go$, .+\\.rb$, .+\\.php$, .+\\.cpp$, .+\\.c$, .+\\.cs$, .+\\.swift$, .+\\.rs$, .+\\.sh$, .+\\.bash$, .+\\.zsh$, .+\\.m$, .+\\.mm$, .+\\.h$, .+\\.hpp$, .+\\.hh$, .+\\.html$, .+\\.htm$, .+\\.xhtml$, .+\\.xml$, .+\\.css$, .+\\.scss$, .+\\.sass$, .+\\.less$, .+\\.json$, .+\\.yaml$, .+\\.yml$, .+\\.toml$, .+\\.ini$, .+\\.md$, .+\\.markdown$, .+\\.txt$, .+\\.csv$, .+\\.sql$, .+\\.sqlite$, .+\\.db$, .+\\.hql$, .+\\.psql$, .+\\.pgsql$, .+\\.plpgsql$",
-					"order": 15,
-					"description": "Comma-separated list of regular expressions for supported file types for analysis."
-				},
-				"DevChat.PythonPath": {
+				"DevChat.PythonForChat": {
 					"type": "string",
 					"default": "",
 					"input": {
@@ -552,7 +546,7 @@
 					},
 					"description": "Which Python interpreter to use with DevChat?"
 				},
-				"DevChat.PythonVirtualEnv": {
+				"DevChat.PythonForCommands": {
 					"type": "string",
 					"default": "",
 					"description": "Path to the Python virtual environment for AskCode."
@@ -660,16 +654,6 @@
 				"title": "添加到DevChat"
 			},
 			{
-				"command": "DevChat.AskCodeIndexStart",
-				"title": "Start AskCode Index",
-				"category": "DevChat"
-			},
-			{
-				"command": "DevChat.AskCodeIndexStop",
-				"title": "Stop AskCode Index",
-				"category": "DevChat"
-			},
-			{
 				"command": "DevChat.InstallCommands",
 				"title": "Install slash commands",
 				"category": "DevChat"
@@ -677,6 +661,11 @@
 			{
 				"command": "DevChat.UpdataChatModels",
 				"title": "Update Chat Models",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.InstallCommandPython",
+				"title": "Install Python for Commands",
 				"category": "DevChat"
 			}
 		],
