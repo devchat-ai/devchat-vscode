@@ -4,11 +4,15 @@ class MessageUtil {
   private static instance: MessageUtil;
 
   handlers: { [x: string]: any };
+  vscodeApi: any;
   messageListener: any;
 
   constructor() {
     this.handlers = {};
     this.messageListener = null;
+    if (process.env.platform === "vscode") {
+      this.vscodeApi = window.acquireVsCodeApi();
+    }
 
     if (!this.messageListener) {
       this.messageListener = (event: { data: any }) => {
@@ -64,7 +68,7 @@ class MessageUtil {
     if (process.env.platform === "idea") {
       IdeaBridge.sendMessage(message);
     } else {
-      window.acquireVsCodeApi().postMessage(message);
+      this.vscodeApi.postMessage(message);
     }
   }
 }

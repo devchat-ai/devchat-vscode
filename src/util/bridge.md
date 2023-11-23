@@ -40,4 +40,4 @@
 - regModelList // 与 regModelList
 - receiveMessagePartial // 部分对话
 - receiveMessage // 对话
-- systemMessage ？？
+- systemMessage // 没用了

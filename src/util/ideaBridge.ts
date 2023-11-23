@@ -80,7 +80,7 @@ const JStoIdea = {
         content: code,
       },
     };
-
+    console.log("request viewDiff: ", params);
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getUserAccessKey: () => {
@@ -112,6 +112,33 @@ const JStoIdea = {
         break;
     }
   },
+  updateSetting: (value: string) => {
+    // 因为现在只有更换模型，所以直接取 value
+    const params = {
+      action: "updateSetting/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {
+        setting: {
+          currentModel: value,
+        },
+      },
+    };
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  commit: (code: string) => {
+    const params = {
+      action: "commitCode/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {
+        message: code,
+      },
+    };
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
 };
 
 class IdeaBridge {
@@ -122,6 +149,7 @@ class IdeaBridge {
     this.handle = {};
     // 注册全局的回调函数，用于接收来自IDEA的消息
     window.IdeaToJSMessage = (res: any) => {
+      console.log("IdeaToJSMessage res: ", res);
       switch (res.action) {
         case "sendMessage/response":
           this.resviceMessage(res);
@@ -135,13 +163,50 @@ class IdeaBridge {
         case "listCommands/response":
           this.resviceCommandList(res);
           break;
-        case "getKey/response":
-          this.resviceAccessKey(res.payload.key);
+        // 这里暂时不用，因为获取到的只有 key，信息不全
+        // 所以用 resviceSettings 来获取
+        // case "getKey/response":
+        //   this.resviceAccessKey(res.payload.key);
+        //   break;
+        case "addContext/notify":
+          this.resviesContext(res);
+          break;
+        case "getSetting/response":
+          this.resviceSettings(res);
           break;
         default:
           break;
       }
     };
+  }
+
+  resviesContext(res) {
+    console.log("resviesContextres: ", res);
+    const params = {
+      file: res.payload.path,
+      result: "",
+    };
+    const contextObj = {
+      path: res.payload.path,
+      content: res.payload.content,
+      command: "",
+    };
+    params.result = JSON.stringify(contextObj);
+    this.handle.contextDetailResponse(params);
+  }
+
+  resviceSettings(res) {
+    // 用户设置的回调
+    const setting = res.payload.setting;
+    // 当前的默认模型
+    this.handle.getSetting({
+      value: setting.currentModel,
+    });
+    this.handle.getUserAccessKey({
+      endPoint: setting.apiBase,
+      accessKey: setting.apiKey,
+      keyType: setting.apiKey.startsWith("DC") ? "DevChat" : "OpenAi",
+    });
   }
 
   resviceAccessKey(res: string = "") {
@@ -241,9 +306,17 @@ class IdeaBridge {
       case "getUserAccessKey":
         JStoIdea.getUserAccessKey();
         break;
-
       case "doCommand":
         JStoIdea.etcCommand(message);
+        break;
+      case "show_diff":
+        JStoIdea.viewDiff(message.content);
+        break;
+      case "updateSetting":
+        JStoIdea.updateSetting(message.value);
+        break;
+      case "doCommit":
+        JStoIdea.commit(message.content);
         break;
       default:
         break;

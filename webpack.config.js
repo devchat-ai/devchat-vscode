@@ -165,6 +165,9 @@ const webviewConfig = {
       filename: "welcome.html",
       chunks: ["welcome"],
     }),
+    new DefinePlugin({
+      "process.env.platform": JSON.stringify("vscode"),
+    }),
   ],
 };
 
