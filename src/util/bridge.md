@@ -41,3 +41,25 @@
 - receiveMessagePartial // 部分对话
 - receiveMessage // 对话
 - systemMessage // 没用了
+
+# css
+
+--vscode-editor-font-familyy
+--vscode-editor-font-size
+--vscode-dropdown-background
+--vscode-dropdown-border
+--vscode-foreground
+--vscode-sideBar-background
+--vscode-dropdown-foreground
+--vscode-menu-foreground
+--vscode-commandCenter-activeForeground
+--vscode-commandCenter-activeBackground
+--vscode-menu-border
+--vscode-menu-background
+--vscode-commandCenter-border
+--vscode-editor-foreground
+--vscode-input-background
+--vscode-input-border
+--vscode-input-foreground
+--vscode-disabledForeground
+--vscode-toolbar-activeBackground
