@@ -72,7 +72,7 @@ export async function diffView(code: string, tarFile: string) {
 	vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
 }
 
-async function getFileContent(fileName: string): Promise<string | undefined> {
+export async function getFileContent(fileName: string): Promise<string | undefined> {
 	const readFile = util.promisify(fs.readFile);
 	try {
 		// Read file content from fileName
@@ -122,7 +122,7 @@ async function getNewCode(message: any): Promise<string | undefined> {
 }
 
 regInMessage({ command: 'show_diff', content: '', fileName: '' });
-export async function showDiff(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+export async function applyCodeWithDiff(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
 	const newCode = await getNewCode(message);
 	if (!newCode) {
 		return;
@@ -131,16 +131,3 @@ export async function showDiff(message: any, panel: vscode.WebviewPanel | vscode
 	diffView(newCode, message.fileName);
 	return;
 }
-
-regInMessage({ command: 'block_apply', content: '', fileName: '' });
-export async function blockApply(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
-	const newCode = await getNewCode(message);
-	if (!newCode) {
-		return;
-	}
-
-	diffView(newCode, message.fileName);
-	return;
-}
-
-

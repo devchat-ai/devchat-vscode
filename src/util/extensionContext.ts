@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { DevChatViewProvider } from '../panel/devchatView';
 
-class ExtensionContextHolder {
+export class ExtensionContextHolder {
   private static _context: vscode.ExtensionContext | undefined;
   private static _provider: DevChatViewProvider | undefined;
 
@@ -21,5 +21,3 @@ class ExtensionContextHolder {
 	return this._provider;
   }
 }
-
-export default ExtensionContextHolder;

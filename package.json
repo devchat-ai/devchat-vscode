@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.1.33",
+	"version": "0.1.55",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -630,7 +630,7 @@
 				"title": "DevChat"
 			},
 			{
-				"command": "devchat.addConext",
+				"command": "devchat.addContext",
 				"title": "Add to DevChat"
 			},
 			{
@@ -727,7 +727,7 @@
 					"when": "false"
 				},
 				{
-					"command": "devchat.addConext",
+					"command": "devchat.addContext",
 					"when": "false"
 				},
 				{
@@ -759,7 +759,7 @@
 				},
 				{
 					"when": "!isChineseLocale && resourceLangId != 'git'",
-					"command": "devchat.addConext",
+					"command": "devchat.addContext",
 					"group": "navigation"
 				}
 			],
@@ -874,7 +874,6 @@
 		"ncp": "^2.0.0",
 		"node-fetch": "^3.3.1",
 		"nonce": "^1.0.4",
-		"openai": "^3.2.1",
 		"quote": "^0.4.0",
 		"react-markdown": "^8.0.7",
 		"react-syntax-highlighter": "^15.5.0",

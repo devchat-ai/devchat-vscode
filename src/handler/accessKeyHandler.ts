@@ -14,18 +14,22 @@ export async function getUserAccessKey(message: any, panel: vscode.WebviewPanel|
 	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		const llmModelData = await ApiKeyManager.llmModel();
 		if (!llmModelData || !llmModelData.api_key) {
-			MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": "", "keyType": "", "endPoint": ""});
+			MessageHandler.sendMessage(panel, 
+				{
+					"command": "getUserAccessKey",
+					"accessKey": "",
+					"keyType": "",
+					"endPoint": ""
+				}
+			);
 			return;
 		}
 
-		let keyType: string = "others";
-		if (llmModelData.api_key?.startsWith("DC.")) {
-			keyType = "DevChat";
-		}
-
-		let openAiApiBase = llmModelData.api_base;
-		if (!openAiApiBase) {
-			openAiApiBase = "";
-		}
-		MessageHandler.sendMessage(panel, {"command": "getUserAccessKey", "accessKey": llmModelData.api_key, "keyType": keyType, "endPoint": openAiApiBase});
+		const keyData = {
+			"command": "getUserAccessKey",
+			"accessKey": llmModelData.api_key,
+			"keyType": llmModelData.api_key?.startsWith("DC.") ? "DevChat" : "others",
+			"endPoint": llmModelData.api_base ? llmModelData.api_base : ""
+		};
+		MessageHandler.sendMessage(panel, keyData);
 }

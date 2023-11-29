@@ -1,14 +1,12 @@
-// devchat.ts
 import * as dotenv from 'dotenv';
 import * as path from 'path';
-import * as fs from 'fs';
 
 import { logger } from '../util/logger';
 import { CommandRun, saveModelSettings } from "../util/commonUtil";
-import ExtensionContextHolder from '../util/extensionContext';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
-import { exitCode } from 'process';
+import { assertValue } from '../util/check';
+import { getFileContent } from '../handler/diffHandler';
 
 
 const envPath = path.join(__dirname, '..', '.env');
@@ -18,9 +16,6 @@ export interface ChatOptions {
 	parent?: string;
 	reference?: string[];
 	header?: string[];
-	functions?: string;
-	role?: string;
-	function_name?: string;
 	context?: string[];
 }
 
@@ -48,29 +43,22 @@ export interface CommandEntry {
 	description: string;
 }
 
-// define TopicEntry interface
-/*
-[
-	{
-		root_prompt: LogEntry,
-		latest_time: 1689849274,
-		hidden: false,
-		title: null
-	}
-]
-*/
 export interface TopicEntry {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	root_prompt: LogEntry;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	latest_time: number;
 	hidden: boolean;
 	title: string | null;
 }
 
 export interface ChatResponse {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"prompt-hash": string;
 	user: string;
 	date: string;
 	response: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	finish_reason: string;
 	isError: boolean;
 }
@@ -83,12 +71,25 @@ class DevChat {
 		this.commandRun = new CommandRun();
 	}
 
-	public stop() {
-		this.commandRun.stop();
+	private async loadContextsFromFiles(contexts: string[] | undefined): Promise<string[]> {
+		if (!contexts) {
+			return [];
+		}
+
+		const loadedContexts: string[] = [];
+		for (const context of contexts) {
+			const contextContent = await getFileContent(context);
+			if (!contextContent) {
+				continue;
+			}
+
+			loadedContexts.push(contextContent);
+		}
+		return loadedContexts;
 	}
 
-	async buildArgs(options: ChatOptions): Promise<string[]> {
-		let args = ["prompt"];
+	private async buildArgs(options: ChatOptions): Promise<string[]> {
+		let args = ["-m", "devchat", "prompt"];
 
 		if (options.reference) {
 			for (const reference of options.reference) {
@@ -106,481 +107,22 @@ class DevChat {
 			}
 		}
 
-		// TODO: fix openai function calling
-		// const isEnableFunctionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
-		// if (options.functions && isEnableFunctionCalling) {
-		// 	args.push("-f", options.functions);
-		// }
-
-		if (options.function_name) {
-			args.push("-n", options.function_name);
-		}
-
 		if (options.parent) {
 			args.push("-p", options.parent);
 		}
 
 		const llmModelData = await ApiKeyManager.llmModel();
-		if (llmModelData && llmModelData.model) {
-			args.push("-m", llmModelData.model);
-		}
+		assertValue(!llmModelData || !llmModelData.model, 'You must select a LLM model to use for conversations');
+		args.push("-m", llmModelData.model);
+
+		args.push("-ns");
+		args.push("-a");
 
 		return args;
 	}
 
-	private parseOutData(stdout: string, isPartial: boolean): ChatResponse {
-		const responseLines = stdout.trim().split("\n");
-
-		if (responseLines.length < 2) {
-			return {
-				"prompt-hash": "",
-				user: "",
-				date: "",
-				response: "",
-				finish_reason: "",
-				isError: isPartial ? false : true,
-			};
-		}
-
-		const userLine = responseLines.shift()!;
-		const user = (userLine.match(/User: (.+)/)?.[1]) ?? "";
-
-		const dateLine = responseLines.shift()!;
-		const date = (dateLine.match(/Date: (.+)/)?.[1]) ?? "";
-
-
-		let promptHashLine = "";
-		for (let i = responseLines.length - 1; i >= 0; i--) {
-			if (responseLines[i].startsWith("prompt")) {
-				promptHashLine = responseLines[i];
-				responseLines.splice(i, 1);
-				break;
-			}
-		}
-
-		let finishReasonLine = "";
-		for (let i = responseLines.length - 1; i >= 0; i--) {
-			if (responseLines[i].startsWith("finish_reason:")) {
-				finishReasonLine = responseLines[i];
-				responseLines.splice(i, 1);
-				break;
-			}
-		}
-
-		if (!promptHashLine) {
-			return {
-				"prompt-hash": "",
-				user: user,
-				date: date,
-				response: responseLines.join("\n"),
-				finish_reason: "",
-				isError: isPartial ? false : true,
-			};
-		}
-
-		const finishReason = finishReasonLine.split(" ")[1];
-		const promptHash = promptHashLine.split(" ")[1];
-		const response = responseLines.join("\n");
-
-		return {
-			"prompt-hash": promptHash,
-			user,
-			date,
-			response,
-			finish_reason: finishReason,
-			isError: false,
-		};
-	}
-
-	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
-		const llmModelData = await ApiKeyManager.llmModel();
-		if (!llmModelData) {
-			return {
-				"prompt-hash": "",
-				user: "",
-				date: "",
-				response: `Error: no valid llm model is selected!`,
-				finish_reason: "",
-				isError: true,
-			};
-		}
-
-		const args = await this.buildArgs(options);
-		args.push("--");
-		args.push(content);
-
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		let openaiApiKey = await ApiKeyManager.getApiKey();
-		if (!openaiApiKey) {
-			logger.channel()?.error('The OpenAI key is invalid!');
-			logger.channel()?.show();
-		}
-
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		const openAiApiBaseObject = llmModelData.api_base? { OPENAI_API_BASE: llmModelData.api_base } : {};
-		const activeLlmModelKey = llmModelData.api_key;
-
-		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-		if (!devChat) {
-			devChat = 'devchat';
-		}
-
-		await saveModelSettings();
-
-		try {
-
-			let receviedStdout = "";
-			const onStdoutPartial = (stdout: string) => {
-				receviedStdout += stdout;
-				const data = this.parseOutData(receviedStdout, true);
-				onData(data);
-			};
-
-			const spawnAsyncOptions = {
-				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-				cwd: workspaceDir,
-				env: {
-					PYTHONUTF8:1,
-					PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-					...process.env,
-					OPENAI_API_KEY: activeLlmModelKey,
-					...openAiApiBaseObject
-				},
-			};
-
-			// activeLlmModelKey is an api key, I will output it to the log
-			// so, replace mid-sub string with *
-			// for example: sk-1234567890 -> sk-1*****7890, keep first 4 char and last 4 char visible
-			const newActiveLlmModelKey = activeLlmModelKey.replace(/^(.{4})(.*)(.{4})$/, (_, first, middle, last) => first + middle.replace(/./g, '*') + last);
-			const keyInfo = {
-				OPENAI_API_KEY: newActiveLlmModelKey ,
-					...openAiApiBaseObject
-			};
-			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-
-			logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-			logger.channel()?.info(`Running devchat with environment: ${JSON.stringify(keyInfo)}`);
-			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
-
-			if (stderr) {
-				let newStderr = stderr;
-				if (stderr.indexOf('Failed to verify access key') > 0) {
-					newStderr += `\nPlease check your key data: ${JSON.stringify(keyInfo)}`;
-				}
-				return {
-					"prompt-hash": "",
-					user: "",
-					date: "",
-					response: newStderr,
-					finish_reason: "",
-					isError: true,
-				};
-			}
-
-			const response = this.parseOutData(stdout, false);
-			return response;
-		} catch (error: any) {
-			return {
-				"prompt-hash": "",
-				user: "",
-				date: "",
-				response: `Error: ${error.stderr}\nExit code: ${error.code}`,
-				finish_reason: "",
-				isError: true,
-			};
-		}
-	}
-
-	async logInsert(request: string, response: string, parent: string | undefined) {
-		let log_data = {
-			"model": "gpt-4",
-			"messages": [
-				{
-					"role": "user",
-					"content": request
-				},
-				{
-					"role": "assistant",
-					"content": response
-				}
-			],
-			"timestamp": Math.floor(Date.now()/1000),
-			"request_tokens": 1,
-			"response_tokens": 1
-		};
-		if (parent) {
-			log_data["parent"] = parent;
-		}
-
-		
-		const args = ["log", "--insert", JSON.stringify(log_data)];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		const openaiApiKey = process.env.OPENAI_API_KEY;
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-				OPENAI_API_KEY: openaiApiKey,
-			},
-		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-			return false;
-		}
-		if (stdout.indexOf('Failed to insert log') >= 0) {
-			logger.channel()?.error(`Failed to insert log: ${log_data}`);
-			logger.channel()?.show();
-			return false;
-		}
-
-		if (code !== 0) {
-			logger.channel()?.error(`Exit code: ${code}`);
-			logger.channel()?.show();
-			return false;
-		}
-		return true;
-	}
-
-	async delete(hash: string): Promise<boolean> {
-		const args = ["log", "--delete", hash];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		const openaiApiKey = process.env.OPENAI_API_KEY;
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-				OPENAI_API_KEY: openaiApiKey,
-			},
-		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-			return false;
-		}
-		if (stdout.indexOf('Failed to delete prompt') >= 0) {
-			logger.channel()?.error(`Failed to delete prompt: ${hash}`);
-			logger.channel()?.show();
-			return false;
-		}
-
-		if (code !== 0) {
-			logger.channel()?.error(`Exit code: ${code}`);
-			logger.channel()?.show();
-			return false;
-		}
-		return true;
-	}
-
-	async log(options: LogOptions = {}): Promise<LogEntry[]> {
-		const args = this.buildLogArgs(options);
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		const openaiApiKey = process.env.OPENAI_API_KEY;
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-				OPENAI_API_KEY: openaiApiKey,
-			},
-		};
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-			return [];
-		}
-
-		const logs = JSON.parse(stdout.trim()).reverse();
-		for (const log of logs) {
-			log.response = log.responses[0];
-			delete log.responses;
-		}
-		return logs;
-	}
-
-	// command devchat run --list
-	// output:
-	// [
-	// 	{
-	// 	"name": "code",
-	// 	"description": "Generate code with a general template embedded into the prompt."
-	// 	},
-	// 	{
-	// 	"name": "code.py",
-	// 	"description": "Generate code with a Python-specific template embedded into the prompt."
-	// 	},
-	// 	{
-	// 	"name": "commit_message",
-	// 	"description": "Generate a commit message for the given git diff."
-	// 	},
-	// 	{
-	// 	"name": "release_note",
-	// 	"description": "Generate a release note for the given commit log."
-	// 	}
-	// ]
-	async commands(): Promise<CommandEntry[]> {
-		const args = ["run", "--list"];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-			},
-		};
-
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-			return [];
-		}
-
-		try {
-			const commands = JSON.parse(stdout.trim());
-			return commands;
-		} catch (error) {
-			logger.channel()?.error(`Error parsing JSON: ${error}`);
-			logger.channel()?.show();
-			return [];
-		}
-	}
-
-	async commandPrompt(command: string): Promise<string> {
-		const args = ["run", command];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-			},
-		};
-
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-		}
-		return stdout;
-	}
-
-	async updateSysCommand(): Promise<string> {
-		const args = ["run", "--update-sys"];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-			},
-		};
-
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-		}
-		logger.channel()?.info(`${stdout}`);
-		return stdout;
-	}
-
-	async topics(): Promise<TopicEntry[]> {
-		const args = ["topic", "-l"];
-		const devChat = this.getDevChatPath();
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-		
-		logger.channel()?.info(`Running devchat with arguments: ${args.join(" ")}`);
-		const spawnOptions = {
-			maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
-			cwd: workspaceDir,
-			env: {
-				PYTHONUTF8:1,
-				PYTHONPATH: UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				...process.env,
-			},
-		};
-
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, ["-m", "devchat"].concat(args), spawnOptions, undefined, undefined, undefined, undefined);
-
-		logger.channel()?.info(`Finish devchat with arguments: ${args.join(" ")}`);
-		if (stderr) {
-			logger.channel()?.error(`Error: ${stderr}`);
-			logger.channel()?.show();
-			return [];
-		}
-
-		try {
-			const topics = JSON.parse(stdout.trim()).reverse();
-			// convert responses to respose, and remove responses field
-			// responses is in TopicEntry.root_prompt.responses
-			for (const topic of topics) {
-				if (topic.root_prompt.responses) {
-					topic.root_prompt.response = topic.root_prompt.responses[0];
-					delete topic.root_prompt.responses;
-				}
-			}
-			return topics;
-		} catch (error) {
-			logger.channel()?.error(`Error parsing JSON: ${error}`);
-			logger.channel()?.show();
-			return [];
-		}
-	}
-
 	private buildLogArgs(options: LogOptions): string[] {
-		let args = ["log"];
+		let args = ["-m", "devchat", "log"];
 
 		if (options.skip) {
 			args.push('--skip', `${options.skip}`);
@@ -599,12 +141,326 @@ class DevChat {
 		return args;
 	}
 
-	private getDevChatPath(): string {
-		let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-		if (!devChat) {
-			devChat = 'devchat';
+	private parseOutData(stdout: string, isPartial: boolean): ChatResponse {
+		const responseLines = stdout.trim().split("\n");
+
+		if (responseLines.length < 2) {
+			return this.createChatResponse("", "", "", "", !isPartial);
 		}
-		return devChat;
+
+		const [userLine, remainingLines1] = this.extractLine(responseLines, "User: ");
+		const user = this.parseLine(userLine, /User: (.+)/);
+
+		const [dateLine, remainingLines2] = this.extractLine(remainingLines1, "Date: ");
+		const date = this.parseLine(dateLine, /Date: (.+)/);
+
+		const [promptHashLine, remainingLines3] = this.extractLine(remainingLines2, "prompt");
+		const [finishReasonLine, remainingLines4] = this.extractLine(remainingLines3, "finish_reason:");
+
+		if (!promptHashLine) {
+			return this.createChatResponse("", user, date, remainingLines4.join("\n"), !isPartial);
+		}
+
+		const finishReason = finishReasonLine.split(" ")[1];
+		const promptHash = promptHashLine.split(" ")[1];
+		const response = remainingLines4.join("\n");
+
+		return this.createChatResponse(promptHash, user, date, response, false, finishReason);
+	}
+
+	private extractLine(lines: string[], startWith: string): [string, string[]] {
+		const index = lines.findIndex(line => line.startsWith(startWith));
+		const extractedLine = index !== -1 ? lines.splice(index, 1)[0] : "";
+		return [extractedLine, lines];
+	}
+
+	private parseLine(line: string, regex: RegExp): string {
+		return (line.match(regex)?.[1]) ?? "";
+	}
+
+	private createChatResponse(promptHash: string, user: string, date: string, response: string, isError: boolean, finishReason = ""): ChatResponse {
+		return {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			"prompt-hash": promptHash,
+			user,
+			date,
+			response,
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			finish_reason: finishReason,
+			isError,
+		};
+	}
+
+	private async runCommand(args: string[]): Promise<{code: number | null, stdout: string, stderr: string}> {
+		// build env variables for command
+		const envs = {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			"PYTHONUTF8":1,
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
+			...process.env
+		};
+
+		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
+		logger.channel()?.info(`Running command:${pythonApp} ${args.join(" ")}`);
+		
+		// run command
+		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(
+			pythonApp,
+			args,
+			{
+				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+				cwd: UiUtilWrapper.workspaceFoldersFirstPath(),
+				env: envs
+			},
+			undefined, undefined, undefined, undefined
+		);
+
+		return {code, stdout, stderr};
+	}
+
+	public input(data: string) {
+		this.commandRun?.write(data + "\n");
+	}
+
+	public stop() {
+		this.commandRun.stop();
+	}
+
+	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
+		try {
+			// build args for devchat prompt command
+			const args = await this.buildArgs(options);
+			args.push("--");
+			args.push(content);
+
+			// build env variables for prompt command
+			const llmModelData = await ApiKeyManager.llmModel();
+			assertValue(!llmModelData, "No valid llm model selected");
+			const envs = {
+				...process.env,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"PYTHONUTF8": 1,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "python3",
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"DEVCHATPYTHON": UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3",
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"PYTHONLIBPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"OPENAI_API_KEY": llmModelData.api_key,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				...llmModelData.api_base? { "OPENAI_API_BASE": llmModelData.api_base } : {}
+			};
+
+			// build process options
+			const spawnAsyncOptions = {
+				maxBuffer: 10 * 1024 * 1024, // Set maxBuffer to 10 MB
+				cwd: UiUtilWrapper.workspaceFoldersFirstPath(),
+				env: envs
+			};
+
+			// save llm model config
+			await saveModelSettings();
+
+			logger.channel()?.info(`api_key: ${llmModelData.api_key.replace(/^(.{4})(.*)(.{4})$/, (_, first, middle, last) => first + middle.replace(/./g, '*') + last)}`);
+			logger.channel()?.info(`api_base: ${llmModelData.api_base}`);
+
+			// run command
+			//     handle stdout as steam mode
+			let receviedStdout = "";
+			const onStdoutPartial = (stdout: string) => {
+				receviedStdout += stdout;
+				const data = this.parseOutData(receviedStdout, true);
+				onData(data);
+			};
+			//     run command
+			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
+			logger.channel()?.info(`Running devchat:${pythonApp} ${args.join(" ")}`);
+			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
+			//     handle result
+			assertValue(code !== 0, stderr || "Command exited with error code");
+			const responseData = this.parseOutData(stdout, false);
+			await this.logInsert(options.context, content, responseData.response, options.parent);
+			const logs = await this.log({"maxCount": 1});
+			assertValue(!logs || !logs.length, "Failed to insert devchat log");
+			//     return result
+			return {
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"prompt-hash": logs[0]['hash'],
+				user: "",
+				date: "",
+				response: stdout,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				finish_reason: "",
+				isError: false,
+			};
+		} catch (error: any) {
+			return {
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"prompt-hash": "",
+				user: "",
+				date: "",
+				response: `Error: ${error.message}`,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				finish_reason: "error",
+				isError: true,
+			};
+		}
+	}
+
+	async logInsert(contexts: string[] | undefined, request: string, response: string, parent: string | undefined): Promise<boolean> {
+		try {
+			// build log data
+			const llmModelData = await ApiKeyManager.llmModel();
+			const contextContentList = await this.loadContextsFromFiles(contexts);
+			const contextWithRoleList = contextContentList.map(content => {
+				return {
+					"role": "system",
+					"content": `<context>${content}</context>`
+				};
+			});
+
+			let logData = {
+				"model": llmModelData?.model || "gpt-3.5-turbo",
+				"messages": [
+					{
+						"role": "user",
+						"content": request
+					},
+					{
+						"role": "assistant",
+						"content": response
+					},
+					...contextWithRoleList
+				],
+				"timestamp": Math.floor(Date.now()/1000),
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"request_tokens": 1,
+				// eslint-disable-next-line @typescript-eslint/naming-convention
+				"response_tokens": 1,
+				...parent? {"parent": parent} : {}
+			};
+
+			// build args for log insert
+			const args = ["-m", "devchat", "log", "--insert", JSON.stringify(logData)];
+			
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stdout.indexOf('Failed to insert log') >= 0, stdout);
+			assertValue(stderr, stderr);
+
+			return true;
+		} catch (error: any) {
+			logger.channel()?.error(`Failed to insert log: ${error.message}`);
+			logger.channel()?.show();
+			return false;
+		}
+	}
+
+	async delete(hash: string): Promise<boolean> {
+		try {
+			// build args for log delete
+			const args = ["-m", "devchat", "log", "--delete", hash];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stdout.indexOf('Failed to delete prompt') >= 0, stdout);
+			assertValue(stderr, stderr);
+
+			return true;
+		} catch (error: any) {
+			logger.channel()?.error(`Failed to delete log: ${error.message}`);
+			logger.channel()?.show();
+			return false;
+		}
+	}
+
+	async log(options: LogOptions = {}): Promise<LogEntry[]> {
+		try {
+			const args = this.buildLogArgs(options);
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stderr, stderr);
+
+			const logs = JSON.parse(stdout.trim()).reverse();
+			for (const log of logs) {
+				log.response = log.responses[0];
+				delete log.responses;
+			}
+			return logs;
+		} catch (error: any) {
+			logger.channel()?.error(`Failed to get logs: ${error.message}`);
+			logger.channel()?.show();
+			return [];
+		}
+	}
+
+	async commands(): Promise<CommandEntry[]> {
+		try {
+			const args = ["-m", "devchat", "run", "--list"];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stderr, stderr);
+
+			const commands = JSON.parse(stdout.trim());
+
+			return commands;
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return [];
+		}
+	}
+
+	async updateSysCommand(): Promise<string> {
+		try {
+			const args = ["-m", "devchat", "run", "--update-sys"];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stderr, stderr);
+
+			logger.channel()?.info(`${stdout}`);
+			return stdout;
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return "";
+		}
+	}
+
+	async topics(): Promise<TopicEntry[]> {
+		try {
+			const args = ["-m", "devchat", "topic", "-l"];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			assertValue(stderr, stderr);
+
+			const topics = JSON.parse(stdout.trim()).reverse();
+			for (const topic of topics) {
+				if (topic.root_prompt.responses) {
+					topic.root_prompt.response = topic.root_prompt.responses[0];
+					delete topic.root_prompt.responses;
+				}
+			}
+			return topics;
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return [];
+		}
 	}
 }
 

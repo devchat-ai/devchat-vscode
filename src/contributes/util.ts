@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { handleCodeSelected } from '../context/contextCodeSelected';
 import { handleFileSelected } from '../context/contextFileSelected';
 import { MessageHandler } from '../handler/messageHandler';
-import { regInMessage, regOutMessage } from '../util/reg_messages';
+import { regOutMessage } from '../util/reg_messages';
 import { logger } from '../util/logger';
 
 regOutMessage({command: 'appendContext', context: ''});

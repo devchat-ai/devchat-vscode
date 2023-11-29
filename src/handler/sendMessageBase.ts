@@ -1,14 +1,100 @@
-import DevChat, { ChatResponse } from '../toolwrapper/devchat';
-import CommandManager from '../command/commandManager';
+import DevChat, { ChatOptions, ChatResponse } from '../toolwrapper/devchat';
 import { logger } from '../util/logger';
 import messageHistory from '../util/messageHistory';
 import { TopicManager } from '../topic/topicManager';
-import CustomCommands from '../command/customCommand';
+import { assertValue } from '../util/check';
 
 
-let waitCreateTopic = false;
+/**
+ * Class to handle topic updates.
+ */
+export class TopicUpdateHandler {
+	/**
+	 * Flag to indicate if the topic is being updated from the webview.
+	 */
+	private static isTopicUpdatingFromWebview: boolean = false;
 
+	/**
+	 * Checks if the topic change was triggered by the webview.
+	 * 
+	 * @returns {boolean} - Returns true if the topic change was triggered by the webview, false otherwise.
+	 */
+	public static isTopicChangeTriggeredByWebview(): boolean {
+		return TopicUpdateHandler.isTopicUpdatingFromWebview;
+	}
 
+	/**
+	 * Processes the topic change after a chat.
+	 * 
+	 * @param {string | undefined} parentHash - The hash of the parent message, if any.
+	 * @param {any} message - The message object.
+	 * @param {ChatResponse} chatResponse - The chat response object.
+	 * @returns {Promise<void>} - A Promise that resolves when the topic change has been processed.
+	 */
+	public static async processTopicChangeAfterChat(parentHash:string | undefined, message: any, chatResponse: ChatResponse): Promise<void> {
+		TopicUpdateHandler.isTopicUpdatingFromWebview = true;
+		try {
+			if (!chatResponse.isError) {
+				let topicId = TopicManager.getInstance().currentTopicId;
+				if (!topicId) {
+					// create new topic
+					const topic = TopicManager.getInstance().createTopic();
+					topicId = topic.topicId;
+				}
+
+				TopicManager.getInstance().updateTopic(
+					topicId!,
+					chatResponse['prompt-hash'],
+					parseDateStringToTimestamp(chatResponse.date),
+					message.text,
+					chatResponse.response
+				);
+			}
+		} finally {
+			TopicUpdateHandler.isTopicUpdatingFromWebview = false;
+		}
+	}
+}
+
+/**
+ * Class to handle user interaction stop events.
+ */
+class UserStopHandler {
+	/**
+	 * Flag to indicate if user interaction is stopped.
+	 */
+	private static userStop: boolean = false;
+
+	/**
+	 * Stops user interaction.
+	 */
+	public static stopUserInteraction(): void {
+		UserStopHandler.userStop = true;
+	}
+
+	/**
+	 * Resumes user interaction.
+	 */
+	public static resumeUserInteraction(): void {
+		UserStopHandler.userStop = false;
+	}
+
+	/**
+	 * Checks if user interaction is stopped.
+	 * 
+	 * @returns {boolean} - Returns true if user interaction is stopped, false otherwise.
+	 */
+	public static isUserInteractionStopped(): boolean {
+		return UserStopHandler.userStop;
+	}
+}
+
+/**
+ * Parses a date string and returns the corresponding timestamp.
+ *
+ * @param {string} dateString - The date string to be parsed.
+ * @returns {number} - The timestamp corresponding to the date string.
+ */
 function parseDateStringToTimestamp(dateString: string): number {
 	const dateS = Date.parse(dateString);
 	if (!isNaN(dateS)) {
@@ -24,11 +110,12 @@ function parseDateStringToTimestamp(dateString: string): number {
 	return date.getTime();
 }
 
-export function getWaitCreateTopic(): boolean {
-	return waitCreateTopic;
-}
-
-// Add this function to messageHandler.ts
+/**
+ * Parses a message and extracts the context, instruction, reference, and text.
+ *
+ * @param {string} message - The message to be parsed.
+ * @returns {{ context: string[]; instruction: string[]; reference: string[]; text: string }} - An object containing the context, instruction, reference, and text extracted from the message.
+ */
 export function parseMessage(message: string): { context: string[]; instruction: string[]; reference: string[]; text: string } {
 	const contextRegex = /\[context\|(.*?)\]/g;
 	const instructionRegex = /\[instruction\|(.*?)\]/g;
@@ -65,148 +152,151 @@ export function parseMessage(message: string): { context: string[]; instruction:
 	return { context: contextPaths, instruction: instructionPaths, reference: referencePaths, text };
 }
 
-export function getInstructionFiles(): string[] {
-	const instructionFiles: string[] = [];
+/**
+ * Parses a message and sets the chat options based on the parsed message.
+ *
+ * @param {any} message - The message object.
+ * @returns {Promise<[{ context: string[]; instruction: string[]; reference: string[]; text: string }, ChatOptions]>} - A Promise that resolves to an array containing the parsed message and the chat options.
+ */
+export async function parseMessageAndSetOptions(message: any): Promise<[{ context: string[]; instruction: string[]; reference: string[]; text: string }, ChatOptions]> {
+	const parsedMessage = parseMessage(message.text);
 
-	const customCommands = CustomCommands.getInstance().getCommands();
-	// visit customCommands, get default command
-	for (const command of customCommands) {
-		if (command.default) {
-			for (const instruction of command.instructions) {
-				instructionFiles.push(`${instruction}`);
-			}
-		}
-	}
+	const chatOptions: ChatOptions = {
+		header: [],
+		...message.parent_hash ? { parent: message.parent_hash } : {},
+		...parsedMessage.context.length > 0 ? { context: parsedMessage.context } : {},
+		...parsedMessage.reference.length > 0 ? { reference: parsedMessage.reference } : {},
+	};
 
-	return instructionFiles;
+	return [parsedMessage, chatOptions];
 }
 
-const devChat = new DevChat();
-let userStop = false;
-
-
-// 将解析消息的部分提取到一个单独的函数中
-export async function parseMessageAndSetOptions(message: any, chatOptions: any): Promise<{ context: string[]; instruction: string[]; reference: string[]; text: string }> {
-	const newText2 = await CommandManager.getInstance().processText(message.text);
-	const parsedMessage = parseMessage(newText2);
-
-	if (parsedMessage.context.length > 0) {
-		chatOptions.context = parsedMessage.context;
-	}
-
-	chatOptions.header = getInstructionFiles();
-	if ((parsedMessage.instruction && parsedMessage.instruction.length > 0) || newText2 !== message.text) {
-		chatOptions.header = parsedMessage.instruction;
-	}
-
-	if (parsedMessage.reference.length > 0) {
-		chatOptions.reference = parsedMessage.reference;
-	}
-
-	return parsedMessage;
+/**
+ * Adds a message to the message history.
+ *
+ * @param {any} message - The message object.
+ * @param {ChatResponse} chatResponse - The chat response object.
+ * @param {string | undefined} parentHash - The hash of the parent message, if any.
+ * @returns {void}
+ */
+export async function addMessageToHistory(message: any, chatResponse: ChatResponse, parentHash: string | undefined): Promise<void> {
+	messageHistory.add({ 
+		request: message.text, 
+		text: chatResponse.response, 
+		parentHash, 
+		hash: chatResponse['prompt-hash'], 
+		user: chatResponse.user, 
+		date: chatResponse.date 
+	});
 }
 
-
-export async function handleTopic(parentHash:string | undefined, message: any, chatResponse: ChatResponse) {
-	waitCreateTopic = true;
-	try {
-		if (!chatResponse.isError) {
-			messageHistory.add({ request: message.text, text: chatResponse.response, parentHash, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date });
-	
-			let topicId = TopicManager.getInstance().currentTopicId;
-			if (!topicId) {
-				// create new topic
-				const topic = TopicManager.getInstance().createTopic();
-				topicId = topic.topicId;
-			}
-	
-			TopicManager.getInstance().updateTopic(topicId!, chatResponse['prompt-hash'], parseDateStringToTimestamp(chatResponse.date), message.text, chatResponse.response);
-		}
-	} finally {
-		waitCreateTopic = false;
-	}
-}
-
-export async function handlerResponseText(partialDataText: string, chatResponse: ChatResponse) : Promise<string|undefined> {
+/**
+ * Processes the chat response by replacing certain patterns in the response text.
+ *
+ * @param {ChatResponse} chatResponse - The chat response object.
+ * @returns {string} - The processed response text.
+ */
+export function processChatResponse(chatResponse: ChatResponse) : string {
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
-	if (userStop) {
-		userStop = false;
-		if (chatResponse.isError) {
-			return undefined;
-		}
-	}
-	
 	return responseText;
 }
 
-// 重构后的sendMessage函数
-export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void, function_name: string| undefined = undefined): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
-	userStop = false;
-	const chatOptions: any = {};
-	const parsedMessage = await parseMessageAndSetOptions(message, chatOptions);
 
-	if (message.parent_hash) {
-		chatOptions.parent = message.parent_hash;
+const devChat = new DevChat();
+
+/**
+ * Sends a message to the DevChat and handles the response.
+ *
+ * @param {any} message - The message object.
+ * @param {(data: { command: string, text: string, user: string, date: string}) => void} handlePartialData - A function to handle partial data.
+ * @param {string | undefined} function_name - The name of the function, if any.
+ * @returns {Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean } | undefined>} - A Promise that resolves to an object containing the command, text, hash, user, date, and isError properties, or undefined if an error occurred.
+ */
+export async function sendMessageBase(message: any, handlePartialData: (data: { command: string, text: string, user: string, date: string}) => void): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }|undefined> {
+	try {
+		UserStopHandler.resumeUserInteraction();
+		
+		// parse context and others from message
+		const [parsedMessage, chatOptions] = await parseMessageAndSetOptions(message);
+		logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
+
+		// call devchat chat
+		const chatResponse = await devChat.chat(
+			parsedMessage.text,
+			chatOptions,
+			(partialResponse: ChatResponse) => {
+				const partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+				handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
+			});
+
+		assertValue(UserStopHandler.isUserInteractionStopped(), "User Stopped");
+		
+		await addMessageToHistory(message, chatResponse, message.parent_hash);
+		await TopicUpdateHandler.processTopicChangeAfterChat(message.parent_hash, message, chatResponse);
+		
+		return {
+			command: 'receiveMessage',
+			text: processChatResponse(chatResponse),
+			hash: chatResponse['prompt-hash'],
+			user: chatResponse.user,
+			date: chatResponse.date,
+			isError: chatResponse.isError
+		};
+	} catch (error: any) {
+		logger.channel()?.error(`Error occurred while sending response: ${error.message}`);
+		return ;
+	} finally {
+		UserStopHandler.resumeUserInteraction();
 	}
-	logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
-
-	chatOptions.functions = "./.chat/functions.json";
-	if (function_name) {
-		chatOptions.function_name = function_name;
-		chatOptions.role = "function";
-	}
-
-	let partialDataText = '';
-	const onData = (partialResponse: ChatResponse) => {
-		partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
-		handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
-	};
-
-	const chatResponse = await devChat.chat(parsedMessage.text, chatOptions, onData);
-	await handleTopic(message.parent_hash, message, chatResponse);
-	const responseText = await handlerResponseText(partialDataText, chatResponse);
-	if (responseText === undefined) {
-		return;
-	}
-	
-	return { command: 'receiveMessage', text: responseText, hash: chatResponse['prompt-hash'], user: chatResponse.user, date: chatResponse.date, isError: chatResponse.isError };
 }
 
+/**
+ * Stops the DevChat and user interaction.
+ *
+ * @param {any} message - The message object.
+ * @returns {Promise<void>} - A Promise that resolves when the DevChat and user interaction have been stopped.
+ */
 export async function stopDevChatBase(message: any): Promise<void> {
 	logger.channel()?.info(`Stopping devchat`);
-	userStop = true;
+	UserStopHandler.stopUserInteraction();
 	devChat.stop();
 }
 
-export async function insertDevChatLog(message: any, request: string, response: string): Promise<string | undefined> {
-	logger.channel()?.info(`Inserting devchat log`);
-	await devChat.logInsert(request, response, message.parent_hash);
-	const logs = await devChat.log({"maxCount": 1});
-	if (logs && logs.length > 0) {
-		return logs[0]['hash'];
-	} else {
-		return undefined;
+/**
+ * Deletes a chat message.
+ * Each message is identified by a hash.
+ * 
+ * @param {Object} message - The message object.
+ * @param {string} message.hash - The hash of the message.
+ * @returns {Promise<boolean>} - Returns true if the deletion was successful, false otherwise.
+ * @throws Will throw an error if the deletion was unsuccessful.
+ */
+export async function deleteChatMessageBase(message:{'hash': string}): Promise<boolean> {
+	try {
+		assertValue(!message.hash, 'Message hash is required');
+		// delete the message from messageHistory
+		messageHistory.delete(message.hash);
+
+		// delete the message by devchat
+		const bSuccess = await devChat.delete(message.hash);
+		assertValue(!bSuccess, "Failed to delete message from devchat");
+
+		TopicManager.getInstance().deleteMessageOnCurrentTopic(message.hash);
+		return true;
+	} catch (error: any) {
+		logger.channel()?.error(`Error: ${error.message}`);
+		logger.channel()?.show();
+		return false;
 	}
 }
 
-// delete a chat message
-// each message is identified by hash
-export async function deleteChatMessageBase(message:{'hash': string}): Promise<boolean> {
-	// if hash is undefined, return
-	if (!message.hash) {
-		return true;
-	}
 
-	// delete the message from messageHistory
-	messageHistory.delete(message.hash);
-
-	// delete the message by devchat
-	const bSuccess = await devChat.delete(message.hash);
-	if (bSuccess) {
-		let topicId = TopicManager.getInstance().currentTopicId;
-		if (topicId) {
-			TopicManager.getInstance().deleteMessage(topicId, message.hash);
-		}
-	}
-	return bSuccess;
+/**
+ * Sends a text message to the DevChat.
+ *
+ * @param {string} text - The text message to be sent.
+ * @returns {Promise<void>} - A Promise that resolves when the message has been sent.
+ */
+export async function sendTextToDevChat(text: string): Promise<void> {
+	return devChat.input(text);
 }

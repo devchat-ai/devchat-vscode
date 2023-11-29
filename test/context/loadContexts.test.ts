@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import '../../src/context/loadContexts';
-import ChatContextManager from '../../src/context/contextManager';
+import { ChatContextManager } from '../../src/context/contextManager';
 import { gitDiffCachedContext } from '../../src/context/contextGitDiffCached';
 import { gitDiffContext } from '../../src/context/contextGitDiff';
 import { customCommandContext } from '../../src/context/contextCustomCommand';

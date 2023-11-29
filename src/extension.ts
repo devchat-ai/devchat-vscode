@@ -21,14 +21,14 @@ import {
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
 
-import ExtensionContextHolder from './util/extensionContext';
+import { ExtensionContextHolder } from './util/extensionContext';
 import { logger } from './util/logger';
 import { LoggerChannelVscode } from './util/logger_vscode';
 import { createStatusBarItem } from './panel/statusBarView';
 import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
-import { FT } from './util/feature_flags/feature_toggles';
 import { ApiKeyManager } from './util/apiKey';
+import { startRpcServer } from './ide_services/services';
 
 async function isProviderHasSetted() {
 	try {
@@ -241,5 +241,7 @@ async function activate(context: vscode.ExtensionContext) {
     regApplyDiffResultCommand(context);
 
     regPythonPathCommand(context);
+
+	startRpcServer();
 }
 exports.activate = activate;

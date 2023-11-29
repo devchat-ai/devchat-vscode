@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 
-import ExtensionContextHolder from './extensionContext';
+import { ExtensionContextHolder } from './extensionContext';
 import { UiUtil } from './uiUtil';
 import { logger } from './logger';
 

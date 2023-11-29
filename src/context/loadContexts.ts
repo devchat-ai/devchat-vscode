@@ -1,4 +1,4 @@
-import ChatContextManager from './contextManager';
+import { ChatContextManager } from './contextManager';
 import { gitDiffCachedContext } from './contextGitDiffCached';
 import { gitDiffContext } from './contextGitDiff';
 import { customCommandContext } from './contextCustomCommand';

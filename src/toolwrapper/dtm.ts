@@ -1,7 +1,3 @@
-import { spawn } from "child_process";
-import * as path from 'path';
-import * as fs from 'fs';
-
 import { logger } from "../util/logger";
 import { CommandRun } from "../util/commonUtil";
 import { UiUtilWrapper  } from "../util/uiUtil";
@@ -27,7 +23,6 @@ class DtmWrapper {
 			const result = await this.commandRun.spawnAsync("git", ['commit', '-m', commitMsg], { cwd: this.workspaceDir }, undefined, undefined, undefined, undefined);
 			return { status: result.exitCode || 0, message: result.stdout, log: result.stderr };
 		} catch (error) {
-			// 处理 runCommand 中的 reject 错误
 			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
 			return error as DtmResponse;
@@ -40,7 +35,6 @@ class DtmWrapper {
 			const result = await this.commandRun.spawnAsync("git", ['commit', '-am', commitMsg], { cwd: this.workspaceDir }, undefined, undefined, undefined, undefined);
 			return { status: result.exitCode || 0, message: result.stdout, log: result.stderr };
 		} catch (error) {
-			// 处理 runCommand 中的 reject 错误
 			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
 			return error as DtmResponse;

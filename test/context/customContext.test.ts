@@ -2,7 +2,6 @@ import { expect } from 'chai';
 import CustomContexts from '../../src/context/customContext';
 import fs from 'fs';
 import path from 'path';
-import CustomCommands, { Command } from '../../src/command/customCommand';
 
 describe('CustomContexts', () => {
     const workflowsDir = path.join(__dirname, 'test-workflows');
