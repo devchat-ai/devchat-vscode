@@ -110,11 +110,11 @@ export async function startRpcServer() {
 		res.end(JSON.stringify(responseResult));
 	}
 	
-	server.listen(3000, () => {
+	server.listen(0, () => {
 		const address = server!.address();
         // `address()`返回的对象包含`port`属性，它是系统分配的端口号
         const port = typeof address === 'string' ? address : address?.port;
         logger.channel()?.info(`Server running at http://localhost:${port}/`);
-		process.env.DEVCHAT_IDE_SERVICE_URL = `http://localhost:${port}/`;
+		process.env.DEVCHAT_IDE_SERVICE_URL = `http://localhost:${port}`;
 	});
 }
