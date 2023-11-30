@@ -4,9 +4,13 @@ import { logger } from "./logger";
 type Action = {
 	action: "delete" | "insert" | "modify";
 	content?: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	insert_after?: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	insert_before?: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	original_content?: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	new_content?: string;
 };
 

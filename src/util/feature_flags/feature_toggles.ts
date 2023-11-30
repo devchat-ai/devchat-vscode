@@ -11,6 +11,7 @@ const featureTogglesJson = `
 const featureToggles = JSON.parse(featureTogglesJson);
 
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function FT(feature: string): boolean {
     const betaInvitationCode = vscode.workspace.getConfiguration('DevChat').get<string>('betaInvitationCode');
     const expectedInvitationCode = 'WELCOMEADDTODEVCHAT';
@@ -18,6 +19,7 @@ export function FT(feature: string): boolean {
     return betaInvitationCode === expectedInvitationCode || featureToggles[feature] === true;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export function FTs(): any {
 	// visited features
 	let newFeatureToggles = {};

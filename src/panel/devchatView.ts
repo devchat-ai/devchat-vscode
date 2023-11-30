@@ -81,16 +81,4 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			//   this.updateWebviewContent();
 		}
 	}
-
-	// public dispose() {
-	// 	ChatPanel._instance = undefined;
-	// 	this._panel.dispose();
-	// 	while (this._disposables.length) {
-	// 		const disposable = this._disposables.pop();
-	// 		if (disposable) {
-	// 			disposable.dispose();
-	// 		}
-	// 	}
-	// }
-
 }

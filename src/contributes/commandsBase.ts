@@ -73,14 +73,14 @@ export function checkDevChatDependency(showError: boolean = true): boolean {
 			return false;
 		}
 
-		logger.channel()?.info("devchat has installed.")
+		logger.channel()?.info("devchat has installed.");
 		return true;
 	} catch(error) {
-		const error_status = `Failed to check DevChat dependency due to error: ${error}`;
-		if (devchatStatus !== error_status && showError) {
-			logger.channel()?.warn(error_status);
+		const errorStatus = `Failed to check DevChat dependency due to error: ${error}`;
+		if (devchatStatus !== errorStatus && showError) {
+			logger.channel()?.warn(errorStatus);
 			logger.channel()?.show();
-			devchatStatus = error_status;
+			devchatStatus = errorStatus;
 		}
 
 		return false;
