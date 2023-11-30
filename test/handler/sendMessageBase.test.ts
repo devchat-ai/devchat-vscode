@@ -1,14 +1,9 @@
 import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { Context } from 'mocha';
 import sinon from 'sinon';
 import * as path from 'path';
-import { parseMessage, getInstructionFiles, parseMessageAndSetOptions, handleTopic, handlerResponseText, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
-import DevChat, { ChatResponse } from '../../src/toolwrapper/devchat';
-import CommandManager from '../../src/command/commandManager';
-import messageHistory from '../../src/util/messageHistory';
-import { TopicManager } from '../../src/topic/topicManager';
-import CustomCommands from '../../src/command/customCommand';
+import { parseMessage, parseMessageAndSetOptions, TopicUpdateHandler, processChatResponse, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
+import { ChatResponse } from '../../src/toolwrapper/devchat';
 import { UiUtilWrapper } from '../../src/util/uiUtil';
 
 import * as dotenv from 'dotenv';
@@ -42,13 +37,6 @@ describe('sendMessageBase', () => {
 		});
 	});
 
-	describe('getInstructionFiles', () => {
-		it('should return instruction files', () => {
-			const result = getInstructionFiles();
-			expect(result).to.be.an('array');
-		});
-	});
-
 	describe('parseMessageAndSetOptions', () => {
 		it('should parse message and set options correctly', async () => {
 			const message = {
@@ -69,7 +57,7 @@ describe('sendMessageBase', () => {
 	});
 
 
-	describe('handleTopic', () => {
+	describe('TopicUpdateHandler.processTopicChangeAfterChat', () => {
 		it('should handle topic correctly', async () => {
 			const parentHash = 'somehash';
 			const message = {
@@ -84,12 +72,12 @@ describe('sendMessageBase', () => {
 				'prompt-hash': 'responsehash'
 			};
 
-			await handleTopic(parentHash, message, chatResponse);
+			await TopicUpdateHandler.processTopicChangeAfterChat(parentHash, message, chatResponse);
 			// Check if the topic was updated correctly
 		});
 	});
 
-	describe('handlerResponseText', () => {
+	describe('processChatResponse', () => {
 		it('should handle response text correctly when isError is false', async () => {
 			const partialDataText = 'Partial data';
 			const chatResponse: ChatResponse = {
@@ -101,7 +89,7 @@ describe('sendMessageBase', () => {
 				'prompt-hash': 'responsehash'
 			};
 
-			const result = await handlerResponseText(partialDataText, chatResponse);
+			const result = await processChatResponse(chatResponse);
 			expect(result).to.equal('Hello, user!');
 		});
 
@@ -116,7 +104,7 @@ describe('sendMessageBase', () => {
 				'prompt-hash': 'responsehash'
 			};
 
-			const result = await handlerResponseText(partialDataText, chatResponse);
+			const result = await processChatResponse(chatResponse);
 			expect(result).to.equal('Error occurred!');
 		});
 	});

@@ -2,22 +2,17 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { stopDevChatBase, sendMessageBase, deleteChatMessageBase, insertDevChatLog, handleTopic } from './sendMessageBase';
+import { 
+		stopDevChatBase,
+		sendMessageBase, 
+		deleteChatMessageBase, 
+		sendTextToDevChat 
+	} from './sendMessageBase';
 import { UiUtilWrapper } from '../util/uiUtil';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
-import { ApiKeyManager } from '../util/apiKey';
-import { logger } from '../util/logger';
-import { exec as execCb } from 'child_process';
-import { promisify } from 'util';
-import { CommandResult, CommandRun, createTempSubdirectory } from '../util/commonUtil';
-import { WorkflowRunner } from './workflowExecutor';
-import DevChat from '../toolwrapper/devchat';
 
-const exec = promisify(execCb);
-
-let commandRunner : WorkflowRunner | null = null;
 
 let _lastMessage: any = undefined;
 
@@ -37,68 +32,11 @@ export function deleteTempFiles(fileName: string): void {
     fs.unlinkSync(fileName);
 }
 
-regInMessage({command: 'userInput', text: '{"field": "value", "field2": "value2"}'});;
-export async function userInput(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	commandRunner?.input(message.text);
-}
+function writeContextInfoToTempFiles(message : any) : string[] {
+	let tempFiles: string[] = [];
+	message.old_text = message.old_text || message.text;
 
-
-// eslint-disable-next-line @typescript-eslint/naming-convention
-regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
-regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
-regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
-export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, functionName: string|undefined = undefined): Promise<void> {
-	// check whether the message is a command
-	if (functionName !== undefined && functionName !== "") {
-		const messageText = _lastMessage[0].text.trim();
-		if (messageText[0] === '/' && message.text[0] !== '/') {
-			const indexS = messageText.indexOf(' ');
-			let preCommand = messageText;
-			if (indexS !== -1) {
-				preCommand = messageText.substring(0, indexS);
-			}
-
-			message.text = preCommand + ' ' + message.text;
-		}
-	}
-	_lastMessage = [message, functionName];
-
-	const messageText = message.text.trim();
-	if (messageText[0] === '/') {
-		// split messageText by ' ' or '\n' or '\t'
-		const messageTextArr = messageText.split(/ |\n|\t/);
-		// get command name from messageTextArr
-		const commandName = messageTextArr[0].substring(1);
-		// test whether the command is a execute command
-		const devChat = new DevChat();
-		const stdout = await devChat.commandPrompt(commandName);
-		// try parse stdout by json
-		let stdoutJson: any = null;
-		try {
-			stdoutJson = JSON.parse(stdout);
-		} catch (error) {
-			// do nothing
-		}
-
-		if (stdoutJson) {
-			// run command
-			try {
-				commandRunner = null;
-		
-				commandRunner = new WorkflowRunner();
-				await commandRunner.run(commandName, stdoutJson, message, panel);
-			} finally {
-				commandRunner = null;
-			}
-			
-			return ;
-		}
-	}
-
-    // Add a new field to store the names of temporary files
-    let tempFiles: string[] = [];
-
-    // Handle the contextInfo field in the message
+	// Handle the contextInfo field in the message
     if (Array.isArray(message.contextInfo)) {
         for (let context of message.contextInfo) {
             if (typeof context === 'object' && context !== null && 'context' in context) {
@@ -115,16 +53,34 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
                     }
                 }
                 // Insert the file name into the text field
-                message.text += ` [context|${context.file}]`;
+                message.text = message.old_text + ` [context|${context.file}]`;
             }
         }
     }
-	// clear message.contextInfo
-	message.contextInfo = undefined;
+
+	return tempFiles;
+}
+
+regInMessage({command: 'userInput', text: '{"field": "value", "field2": "value2"}'});;
+export async function userInput(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+	sendTextToDevChat(message.text);
+}
+
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+regInMessage({command: 'sendMessage', text: '', parent_hash: undefined});
+regOutMessage({ command: 'receiveMessage', text: 'xxxx', hash: 'xxx', user: 'xxx', date: 'xxx'});
+regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', date: 'xxx'});
+export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, functionName: string|undefined = undefined): Promise<void> {
+	// check whether the message is a command
+	_lastMessage = message;
+
+    // Add a new field to store the names of temporary files
+    const tempFiles: string[] = writeContextInfoToTempFiles(message);
 
     const responseMessage = await sendMessageBase(message, (data: { command: string, text: string, user: string, date: string}) => {
         MessageHandler.sendMessage(panel, data, false);
-    }, functionName);
+    });
     if (responseMessage) {
         MessageHandler.sendMessage(panel, responseMessage);
     }
@@ -141,18 +97,13 @@ regInMessage({command: 'regeneration'});
 export async function regeneration(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// call sendMessage to send last message again
 	if (_lastMessage) {
-		await sendMessage(_lastMessage[0], panel, _lastMessage[1]);
+		await sendMessage(_lastMessage, panel);
 	}
 }
 
 regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	stopDevChatBase(message);
-
-	if (commandRunner) {
-		commandRunner.stop();
-		commandRunner = null;
-	}
 }
 
 regInMessage({command: 'deleteChatMessage', hash: 'xxx'});

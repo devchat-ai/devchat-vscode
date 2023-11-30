@@ -17,7 +17,7 @@ export async function featureToggle(message: any, panel: vscode.WebviewPanel|vsc
 
 regInMessage({command: 'featureToggles'});
 regOutMessage({command: 'featureToggles', features: {'feature name': true}});
-export async function featureToggles(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+export async function getFeatureToggles(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
     const featureTaggles = FTs();
 	MessageHandler.sendMessage(panel, {command: 'featureToggles', features: featureTaggles});
 }

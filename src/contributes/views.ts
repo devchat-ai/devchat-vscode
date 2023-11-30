@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { DevChatViewProvider } from '../panel/devchatView';
 import { TopicTreeDataProvider } from '../panel/topicView';
-import ExtensionContextHolder from '../util/extensionContext';
+import { ExtensionContextHolder } from '../util/extensionContext';
 
 
 export function regDevChatView(context: vscode.ExtensionContext) {

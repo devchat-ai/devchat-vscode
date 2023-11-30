@@ -124,6 +124,12 @@ export class TopicManager {
 		}
 	}
 
+	deleteMessageOnCurrentTopic(messageHash: string): void {
+		if (this.currentTopicId) {
+			TopicManager.getInstance().deleteMessage(this.currentTopicId, messageHash);
+		}
+	}
+
 	getTopic(topicId: string): Topic | undefined {
 		/**
 		 * 获取topic

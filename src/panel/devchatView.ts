@@ -2,17 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import WebviewManager from './webviewManager';
 
-import '../handler/loadHandlers';
+import '../handler/handlerRegister';
 import handleMessage from '../handler/messageHandler';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
-import ExtensionContextHolder from '../util/extensionContext';
-import CustomCommands from '../command/customCommand';
+import { ExtensionContextHolder } from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
-import ChatContextManager from '../context/contextManager';
-import ActionManager from '../action/actionManager';
-import { getWaitCreateTopic } from '../handler/sendMessageBase';
-import { CustomActions } from '../action/customAction';
+import { ChatContextManager } from '../context/contextManager';
+import { TopicUpdateHandler } from '../handler/sendMessageBase';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -33,10 +30,6 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
 			ChatContextManager.getInstance().loadCustomContexts(workflowsDir);
-			ActionManager.getInstance().loadCustomActions(workflowsDir);
-			
-			const actionInstrucFile = path.join(UiUtilWrapper.workspaceFoldersFirstPath()!, './.chat/functions.json');
-			ActionManager.getInstance().saveActionInstructionFile( actionInstrucFile);
 		}
 	}
 
@@ -73,7 +66,7 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 		);
 
 		TopicManager.getInstance().addOnCurrentTopicIdChangeListener((topicId) => {
-			if (topicId && getWaitCreateTopic()) {
+			if (topicId && TopicUpdateHandler.isTopicChangeTriggeredByWebview()) {
 				return;
 			}
 			this.reloadWebview();

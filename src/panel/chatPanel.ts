@@ -2,12 +2,10 @@
 
 import * as vscode from 'vscode';
 import * as path from 'path';
-import '../handler/loadHandlers';
+import '../handler/handlerRegister';
 import handleMessage from '../handler/messageHandler';
 import WebviewManager from './webviewManager';
 
-import CustomCommands from '../command/customCommand';
-import CommandManager from '../command/commandManager';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
 import { UiUtilWrapper } from '../util/uiUtil';
 
@@ -24,7 +22,6 @@ export default class ChatPanel {
 		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
 		if (workspaceDir) {
 			const workflowsDir = path.join(workspaceDir!, '.chat', 'workflows');
-			CustomCommands.getInstance().parseCommands(workflowsDir);
 		}
 
 		if (ChatPanel._instance) {

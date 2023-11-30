@@ -7,7 +7,7 @@ import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { logger } from '../util/logger';
 
 regInMessage({command: 'doCommand', content: ['command', 'arg1', 'arg2']});
-export async function doCommand(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+export async function doVscodeCommand(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
     // execute vscode command
     // message.content[0]: vscode command
     // message.content[1:]: args for command

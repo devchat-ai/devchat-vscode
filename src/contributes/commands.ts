@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as os from 'os';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
-import ExtensionContextHolder from '../util/extensionContext';
+import { ExtensionContextHolder } from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
@@ -11,14 +11,14 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { isValidApiKey } from '../handler/historyMessagesBase';
 
 import { logger } from '../util/logger';
-import { CommandRun} from '../util/commonUtil';
 
 import path from 'path';
 
-import { sendCommandListByDevChatRun, updateChatModels } from '../handler/regCommandList';
+import { sendCommandListByDevChatRun, updateChatModels } from '../handler/workflowCommandHandler';
 import DevChat from "../toolwrapper/devchat";
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
+
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
@@ -40,7 +40,7 @@ function registerAddContextCommand(context: vscode.ExtensionContext) {
 
 		await sendFileSelectMessage(ExtensionContextHolder.provider?.view()!, uri.fsPath);
 	};
-	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext', callback));
+	context.subscriptions.push(vscode.commands.registerCommand('devchat.addContext', callback));
 	context.subscriptions.push(vscode.commands.registerCommand('devchat.addConext_chinese', callback));
 }
 
@@ -266,7 +266,6 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 		// 2. check requirements.txt in ~/.chat dir
 		// 3. install requirements.txt
 
-		
 		// 1. install python >= 3.11
 		logger.channel()?.info(`create env for python ...`);
 		logger.channel()?.info(`try to create env by mamba ...`);

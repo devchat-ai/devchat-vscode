@@ -12,7 +12,7 @@ export interface ChatContext {
     handler: () => Promise<string[]>;
   }
   
-  class ChatContextManager {
+export class ChatContextManager {
     private static instance: ChatContextManager;
     private contexts: ChatContext[] = [];
   
@@ -66,7 +66,7 @@ export interface ChatContext {
       return this.contexts;
     }
   
-    async processText(command: string): Promise<string[]> {
+    async handleContextSelected(command: string): Promise<string[]> {
         for (const contextObj of this.contexts) {
             if (contextObj.name === command) {
                 return await contextObj.handler();
@@ -77,4 +77,3 @@ export interface ChatContext {
     }
   }
   
-  export default ChatContextManager;

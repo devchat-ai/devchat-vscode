@@ -1,25 +1,20 @@
 import { messageHandler } from './messageHandler';
-import { codeApply } from './codeApply';
-import { codeFileApply } from './codeFileApply';
-import { convertCommand } from './convertCommand';
-import { doCommit } from './doCommit';
-import { historyMessages } from './historyMessages';
-import { regCommandList, regCommandListByDevChatRun } from './regCommandList';
-import { regContextList } from './regContextList';
+import { insertCodeBlockToFile } from './codeBlockHandler';
+import { replaceCodeBlockToFile } from './codeBlockHandler';
+import { doCommit } from './commitHandler';
+import { getHistoryMessages } from './historyMessagesHandler';
+import { getWorkflowCommandList } from './workflowCommandHandler';
+import { getWorkflowContextList } from './workflowContextHandler';
 import { sendMessage, stopDevChat, regeneration, deleteChatMessage, userInput } from './sendMessage';
-import { blockApply } from './showDiff';
-import { showDiff } from './showDiff';
-import { addConext } from './addContext';
-import { addRefCommandContext } from './addRefCommandContext';
-import { contextDetail } from './contextDetail';
+import { applyCodeWithDiff } from './diffHandler';
+import { addConext } from './contextHandler';
+import { getContextDetail } from './contextHandler';
 import { listAllMessages } from './listMessages';
-import { regActionList } from './regActionList';
-import { applyAction } from './applyAction';
-import { doCommand } from './doCommand';
-import { getSetting, updateSetting } from './updateConfig';
-import { featureToggle, featureToggles } from './featureToggle';
-import { getUserAccessKey } from './userAccessKey';
-import { regModelList } from './regValidModelList';
+import { doVscodeCommand } from './vscodeCommandHandler';
+import { getSetting, updateSetting } from './userSettingHandler';
+import { featureToggle, getFeatureToggles } from './featureToggleHandler';
+import { getUserAccessKey } from './accessKeyHandler';
+import { getValidLlmModelList } from './llmModelHandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -27,26 +22,23 @@ import { regModelList } from './regValidModelList';
 messageHandler.registerHandler('addContext', addConext);
 // Apply the code block replied by AI to the currently active view
 // Response: none
-messageHandler.registerHandler('code_apply', codeApply);
+messageHandler.registerHandler('code_apply', insertCodeBlockToFile);
 // Apply the code block replied by AI to the currently active view, replacing the current file content
 // Response: none
-messageHandler.registerHandler('code_file_apply', codeFileApply);
-// Convert the command input into a natural language description sent to AI
-// Response: { command: 'convertCommand', result: <natural language description> }
-messageHandler.registerHandler('convertCommand', convertCommand);
+messageHandler.registerHandler('code_file_apply', replaceCodeBlockToFile);
 // Perform commit operation
 // Response: none
 messageHandler.registerHandler('doCommit', doCommit);
 // Get the history messages, called when the user view is displayed
 // Response: { command: 'historyMessages', result: <history messages> }
 // <history messages> is a list, the specific attribute information is determined when the interface is added
-messageHandler.registerHandler('historyMessages', historyMessages);
+messageHandler.registerHandler('historyMessages', getHistoryMessages);
 // Register the command list
 // Response: { command: 'regCommandList', result: <command list> }
-messageHandler.registerHandler('regCommandList', regCommandListByDevChatRun);
+messageHandler.registerHandler('regCommandList', getWorkflowCommandList);
 // Register the context list
 // Response: { command: 'regContextList', result: <context list> }
-messageHandler.registerHandler('regContextList', regContextList);
+messageHandler.registerHandler('regContextList', getWorkflowContextList);
 // Send a message, send the message entered by the user to AI
 // Response:
 //    { command: 'receiveMessagePartial', text: <response message text>, user: <user>, date: <date> }
@@ -57,42 +49,32 @@ messageHandler.registerHandler('sendMessage', sendMessage);
 messageHandler.registerHandler('stopDevChat', stopDevChat);
 // Show diff
 // Response: none
-messageHandler.registerHandler('block_apply', blockApply);
 // Show diff, for historical reasons, the same as above
-messageHandler.registerHandler('show_diff', showDiff);
-// Process the ref command entered by the user
-// Response: { command: 'appendContext', context: <context file> }
-messageHandler.registerHandler('addRefCommandContext', addRefCommandContext);
+messageHandler.registerHandler('show_diff', applyCodeWithDiff);
 // Get context details
 // Response: { command: 'contextDetailResponse', 'file':<context file>, result: <context file content> }
 // <context file content> is a JSON string
-messageHandler.registerHandler('contextDetail', contextDetail);
+messageHandler.registerHandler('contextDetail', getContextDetail);
 // Debug handler
 messageHandler.registerHandler('listAllMessages', listAllMessages);
 // Regeneration
 // The response is the same as sendMessage
 messageHandler.registerHandler('regeneration', regeneration);
-// Register the action list
-// Response: { command: 'regActionList', result: <action list> }
-messageHandler.registerHandler('regActionList', regActionList);
-// Apply action for code block
-// Response: none
-messageHandler.registerHandler('applyAction', applyAction);
 // Delete chat message
 // Response: { command: 'deletedChatMessage', result: <message id> }
 messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);
 
 // Execute vscode command
 // Response: none
-messageHandler.registerHandler('doCommand', doCommand);
+messageHandler.registerHandler('doCommand', doVscodeCommand);
 
 messageHandler.registerHandler('updateSetting', updateSetting);
 messageHandler.registerHandler('getSetting', getSetting);
 messageHandler.registerHandler('featureToggle', featureToggle);
-messageHandler.registerHandler('featureToggles', featureToggles);
+messageHandler.registerHandler('featureToggles', getFeatureToggles);
 
 messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
 
-messageHandler.registerHandler('regModelList', regModelList);
+messageHandler.registerHandler('regModelList', getValidLlmModelList);
 
 messageHandler.registerHandler('userInput', userInput);

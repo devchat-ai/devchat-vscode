@@ -1,9 +1,8 @@
 import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
-import { isIndexingStopped, isNeedIndexingCode } from '../util/askCodeUtil';
 import { ProgressBar } from '../util/progressBar';
-import ExtensionContextHolder from '../util/extensionContext';
+import { ExtensionContextHolder } from '../util/extensionContext';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
