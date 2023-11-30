@@ -60,13 +60,13 @@ async function isProviderHasSetted() {
 	
 }
 
-async function  configUpdateTo_1115() {
-	const support_models = [
+async function  configUpdateTo1115() {
+	const supportModels = [
 		"Model.gpt-3-5-1106",
 		"Model.gpt-4-turbo",
 	];
 
-	for (const model of support_models) {
+	for (const model of supportModels) {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
 		if (Object.keys(modelConfig1).length === 0) {
 			let modelConfigNew = {};
@@ -80,7 +80,7 @@ async function  configUpdateTo_1115() {
 	}
 }
 
-async function configUpdateTo_0924() {
+async function configUpdateTo0924() {
 	if (await isProviderHasSetted()) {
 		return ;
 	}
@@ -122,7 +122,7 @@ async function configUpdateTo_0924() {
 		await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
 	}
 
-	const support_models = [
+	const supportModels = [
 		"Model.gpt-3-5",
 		"Model.gpt-3-5-1106",
 		"Model.gpt-3-5-16k",
@@ -136,7 +136,7 @@ async function configUpdateTo_0924() {
 		"Model.llama-2-70b-chat"
 	];
 
-	for (const model of support_models) {
+	for (const model of supportModels) {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
 		if (Object.keys(modelConfig1).length === 0) {
 			modelConfigNew = {"provider": "devchat"};
@@ -154,19 +154,19 @@ async function configUpdateTo_0924() {
 }
 
 
-async function configUpdate0912To_0924() {
+async function configUpdate0912To0924() {
 	if (await isProviderHasSetted()) {
 		return ;
 	}
 	
-	const old_models = [
+	const oldModels = [
 		"Model.gpt-3-5",
 		"Model.gpt-3-5-16k",
 		"Model.gpt-4",
 		"Model.claude-2"
 	];
 
-	for (const model of old_models) {
+	for (const model of oldModels) {
 		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
 		if (Object.keys(modelConfig).length !== 0) {
 			let modelProperties: any = {};
@@ -176,7 +176,7 @@ async function configUpdate0912To_0924() {
 			}
 
 			if (modelConfig["api_key"]) {
-				let providerConfigNew = {}
+				let providerConfigNew = {};
 				providerConfigNew["access_key"] = modelConfig["api_key"];
 				if (modelConfig["api_base"]) {
 					providerConfigNew["api_base"] = modelConfig["api_base"];
@@ -211,9 +211,9 @@ async function activate(context: vscode.ExtensionContext) {
     logger.init(LoggerChannelVscode.getInstance());
     UiUtilWrapper.init(new UiUtilVscode());
 
-	await configUpdateTo_0924();
-	await configUpdate0912To_0924();
-	await configUpdateTo_1115();
+	await configUpdateTo0924();
+	await configUpdate0912To0924();
+	await configUpdateTo1115();
 
     regLanguageContext();
 

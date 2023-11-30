@@ -7,6 +7,7 @@ export interface LogChannel {
 	show(): void;
 }
 
+// eslint-disable-next-line @typescript-eslint/naming-convention
 export class logger {
 	private static _channel: LogChannel | undefined;
 	public static init(channel: LogChannel): void {

@@ -16,6 +16,7 @@ export async function featureToggle(message: any, panel: vscode.WebviewPanel|vsc
 }
 
 regInMessage({command: 'featureToggles'});
+// eslint-disable-next-line @typescript-eslint/naming-convention
 regOutMessage({command: 'featureToggles', features: {'feature name': true}});
 export async function getFeatureToggles(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
     const featureTaggles = FTs();

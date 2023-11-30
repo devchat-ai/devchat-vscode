@@ -6,31 +6,7 @@ import { UiUtilWrapper } from '../util/uiUtil';
 
 
 const functionRegistry: any = {
-	"/hellox": {
-		"keys": [],
-		"handler": async () => {
-			return "111222";
-		}
-	},
-	"/hellox2": {
-		"keys": ["a", "b"],
-		"handler": async (a: string, b: string) => {
-			return a+b;
-		}
-	},
-	"/hellox3": {
-		"keys": [],
-		"handler": async () => {
-			return {
-				"name": "v1",
-				"age": 20,
-				"others": {
-					"address": "sh",
-					"phone": "123456789"
-				}
-			};
-		}
-	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/get_lsp_brige_port": {
 		"keys": [],
 		"handler": async () => {
@@ -106,6 +82,7 @@ export async function startRpcServer() {
 			responseResult['error'] = "Function not found";
 		}
 	
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		res.writeHead(200, { 'Content-Type': 'application/json' });
 		res.end(JSON.stringify(responseResult));
 	}

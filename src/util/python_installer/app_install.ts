@@ -40,7 +40,7 @@ export async function createEnvByMamba(pkgName: string, pkgVersion: string, pyth
 
 export async function createEnvByConda(pkgName: string, pkgVersion: string, pythonVersion: string) : Promise<string> {
 	// install conda
-	logger.channel()?.info('Install conda ...')
+	logger.channel()?.info('Install conda ...');
 	const condaCommand = await installConda();
 	if (!condaCommand) {
 		logger.channel()?.error('Install conda failed');
@@ -86,7 +86,7 @@ export async function appInstall(pkgName: string, pkgVersion: string, pythonVers
 	logger.channel()?.info(`Create env success: ${pythonCommand}`);
 
 	// install devchat in the env
-	logger.channel()?.info('Install python packages ...')
+	logger.channel()?.info('Install python packages ...');
 	let isInstalled = false;
 	// try 3 times
 	for (let i = 0; i < 4; i++) {
