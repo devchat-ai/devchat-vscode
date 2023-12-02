@@ -202,7 +202,6 @@ class DevChat {
 		};
 
 		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
-		logger.channel()?.info(`Running command:${pythonApp} ${args.join(" ")}`);
 		
 		// run command
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(
