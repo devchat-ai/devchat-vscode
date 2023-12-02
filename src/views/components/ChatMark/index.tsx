@@ -2,9 +2,19 @@ import React from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 
 const useStyles = createStyles((theme) => ({
-    chatmarkBox:{
+    container:{
         padding:0,
         margin:0,
+    },
+    button:{
+        marginTop:theme.spacing.xs,
+        marginRight:theme.spacing.xs,
+    },
+    checkbox:{
+        marginTop:theme.spacing.xs,
+    },
+    radio:{
+        marginTop:theme.spacing.xs,
     }
   }));
   
@@ -30,21 +40,21 @@ const ChatMark = ({ children }) => {
                 match = line.match(/\((.*?)\)\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    widgets.push(<Button key={id}>{title}</Button>);
+                    widgets.push(<Button className={classes.button} key={id} size='xs'>{title}</Button>);
                 }
             } else if (line.startsWith('> [')) {
                 // Checkbox widget
                 match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
                 if (match) {
                     const [status, id, title] = match.slice(1);
-                    widgets.push(<Checkbox key={id} label={title} checked={status === 'x'} />);
+                    widgets.push(<Checkbox className={classes.checkbox} key={id} label={title} checked={status === 'x'} size='xs'/>);
                 }
             } else if (line.startsWith('> -')) {
                 // Radio button widget
                 match = line.match(/-\s\((.*?)\):\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    radioGroup.push(<Radio key={id} value={id} label={title} />);
+                    radioGroup.push(<Radio className={classes.radio} key={id} value={id} label={title} size='xs'/>);
 
                     // 检查下一行是否还是 Radio，如果不是则结束当前 Group
                     const nextLine = lines[index + 1];
@@ -77,7 +87,7 @@ const ChatMark = ({ children }) => {
     };
 
     return (
-        <Box className={classes.chatmarkBox}>
+        <Box className={classes.container}>
             {renderWidgets(children)}
         </Box>
     );
