@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Checkbox, Group, Radio, Textarea, createStyles } from '@mantine/core';
+import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 
 const useStyles = createStyles((theme) => ({
     chatmarkBox:{
@@ -21,7 +21,7 @@ const ChatMark = ({ children }) => {
             let match;
 
             if (!line.startsWith('>')) {
-                widgets.push(<p key={index}>{line}</p>);
+                widgets.push(<Text key={index}>{line}</Text>);
                 return;
             }
 
