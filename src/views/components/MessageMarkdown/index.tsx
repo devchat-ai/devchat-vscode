@@ -13,6 +13,7 @@ import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
 import {fromMarkdown} from 'mdast-util-from-markdown';
 import {visit} from 'unist-util-visit';
+import ChatMark from "@/views/components/ChatMark";
 
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
@@ -151,6 +152,10 @@ Generate a professionally written and formatted release note in markdown with th
                 if (lanugage === 'step' || lanugage === 'Step') {
                     let done = Number(index) < codes.length? true : lastNode.type !== 'code';
                     return <Step language={lanugage} done={temp?done:true}>{value}</Step>;
+                }
+
+                if (lanugage === 'chatmark' || lanugage === 'ChatMark') {
+                    return <ChatMark>{value}</ChatMark>;
                 }
 
                 return !inline && lanugage ? (
