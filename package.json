@@ -808,7 +808,8 @@
 		"lint": "eslint src --ext ts",
 		"test": "mocha",
 		"build": "webpack --config webpack.config.js",
-		"dev": "webpack serve --config webpack.config.js --open"
+		"dev": "webpack serve --config webpack.config.js --open",
+		"idea": "webpack --config webpack.idea.config.js &&  mv dist/main.js dist/main.html ../devchat-intellij/src/main/resources/static && echo '🎆done'"
 	},
 	"devDependencies": {
 		"@babel/core": "^7.21.8",
@@ -872,6 +873,8 @@
 		"@tiptap/react": "^2.0.3",
 		"@tiptap/starter-kit": "^2.0.3",
 		"axios": "^1.3.6",
+		"clean-webpack-plugin": "^4.0.0",
+		"dayjs": "^1.11.10",
 		"dotenv": "^16.0.3",
 		"js-yaml": "^4.1.0",
 		"mdast": "^3.0.0",
