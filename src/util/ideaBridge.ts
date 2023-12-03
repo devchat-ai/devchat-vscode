@@ -1,5 +1,14 @@
 const JStoIdea = {
-  sendMessage: (message: string, context: string = "", parent: string = "") => {
+  sendMessage: (message: string, context: any = [], parent: string = "") => {
+    const paramsContext: any = [];
+    if (Array.isArray(context) && context.length > 0) {
+      context.forEach((item) => {
+        paramsContext.push({
+          type: "code",
+          ...item.context,
+        });
+      });
+    }
     const params = {
       action: "sendMessage/request",
       metadata: {
@@ -7,11 +16,11 @@ const JStoIdea = {
         parent: parent,
       },
       payload: {
-        contexts: [],
+        contexts: paramsContext,
         message: message,
       },
     };
-
+    console.log("ready to call java send message", JSON.stringify(params));
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getModel: () => {
@@ -20,8 +29,8 @@ const JStoIdea = {
       metadata: {
         callback: "IdeaToJSMessage",
       },
+      payload: {},
     };
-
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getContextList: () => {
@@ -30,6 +39,7 @@ const JStoIdea = {
       metadata: {
         callback: "IdeaToJSMessage",
       },
+      payload: {},
     };
 
     window.JSJavaBridge.callJava(JSON.stringify(params));
@@ -40,8 +50,9 @@ const JStoIdea = {
       metadata: {
         callback: "IdeaToJSMessage",
       },
+      payload: {},
     };
-
+    console.log("reday to call java command list", JSON.stringify(params));
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   insertCode: (code) => {
@@ -80,7 +91,7 @@ const JStoIdea = {
         content: code,
       },
     };
-    console.log("request viewDiff: ", params);
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getUserAccessKey: () => {
@@ -89,6 +100,7 @@ const JStoIdea = {
       metadata: {
         callback: "IdeaToJSMessage",
       },
+      payload: {},
     };
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
@@ -111,6 +123,18 @@ const JStoIdea = {
       default:
         break;
     }
+  },
+  getTopicList: () => {
+    // 获取 topic 列表
+    const params = {
+      action: "listTopics/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {},
+    };
+
+    window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   updateSetting: (value: string) => {
     // 因为现在只有更换模型，所以直接取 value
@@ -137,6 +161,18 @@ const JStoIdea = {
         message: code,
       },
     };
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  getTopicDetail: (topicHash: string) => {
+    const params = {
+      action: "listConversations/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+        topicHash: topicHash,
+      },
+      payload: {},
+    };
+    console.log("ready to call java getTopicDetail", params);
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
 };
@@ -174,14 +210,36 @@ class IdeaBridge {
         case "getSetting/response":
           this.resviceSettings(res);
           break;
+        case "listTopics/response":
+          this.resviceTopicList(res);
+          break;
+        case "listConversations/response":
+          this.resviceTopicDetail(res);
+          break;
         default:
           break;
       }
     };
   }
 
+  resviceTopicDetail(res) {
+    // 接收到这里需要触发 loadHistoryMessages
+    const list = res.payload.conversations.map((item) => ({
+      ...item,
+      response: item.responses.join("\n"),
+    }));
+    this.handle.loadHistoryMessages({
+      entries: list,
+    });
+  }
+
+  resviceTopicList(res) {
+    console.log("resviceTopicList res: ", res);
+    const list = res.payload.topics;
+    this.handle.listTopics(list);
+  }
+
   resviesContext(res) {
-    console.log("resviesContextres: ", res);
     const params = {
       file: res.payload.path,
       result: "",
@@ -277,11 +335,13 @@ class IdeaBridge {
   }
 
   sendMessage(message: any) {
+    console.log("sendMessage message: ", message);
     // 根据 command 分发到不同的方法·
     switch (message.command) {
       // 发送消息
       case "sendMessage":
-        JStoIdea.sendMessage(message.text, message.context, message.parent);
+        console.log("message: ", message);
+        JStoIdea.sendMessage(message.text, message.contextInfo, message.parent);
         break;
       // 重新生成消息，用于发送失败时再次发送
       case "regeneration":
@@ -317,6 +377,12 @@ class IdeaBridge {
         break;
       case "doCommit":
         JStoIdea.commit(message.content);
+        break;
+      case "listTopics":
+        JStoIdea.getTopicList();
+        break;
+      case "getTopicDetail":
+        JStoIdea.getTopicDetail(message.topicHash);
         break;
       default:
         break;
