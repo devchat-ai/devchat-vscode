@@ -20,6 +20,11 @@ const useStyles = createStyles((theme) => ({
         marginTop:theme.spacing.xs,
     },
     editor:{
+        backgroundColor: 'var(--vscode-input-background)',
+        borderColor: 'var(--vscode-input-border)',
+        color: 'var(--vscode-input-foreground)',
+    },
+    editorWrapper:{
         marginTop:theme.spacing.xs,
     }
   }));
@@ -74,7 +79,7 @@ const ChatMark = ({ children }) => {
                 editorContent += line.substring(1) + '\n';
             } else if (editorContent) {
                 // Add the accumulated editor content as a widget
-                widgets.push(<Textarea className={classes.editor} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
+                widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
                 editorContent = ''; // Reset for next block
             } else {
               if (radioGroup.length > 0) {
@@ -86,7 +91,7 @@ const ChatMark = ({ children }) => {
 
         // Check for remaining editor content
         if (editorContent) {
-            widgets.push(<Textarea className={classes.editor} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
+            widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
         }
 
         return widgets;
