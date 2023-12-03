@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
+import { useListState, useSetState } from '@mantine/hooks';
 
 const useStyles = createStyles((theme) => ({
     container:{
@@ -31,6 +32,20 @@ const useStyles = createStyles((theme) => ({
   
 const ChatMark = ({ children }) => {
     const {classes} = useStyles();
+    const [checkboxValues, setCheckboxValues] = useSetState({});
+    const [radioValues, setRadioValues] = useSetState({});
+    
+    const handleButtonClick = ({id,event}) => {
+        console.log(id);
+    };
+    
+    const handleCheckboxChange = ({id,event})=>{
+        setCheckboxValues({[id]:event.currentTarget.checked});
+    };
+    const handleRadioChange = ({id,event})=>{
+        setRadioValues({[id]:event.currentTarget.checked});
+    };
+
     // Render markdown widgets
     const renderWidgets = (markdown) => {
         const lines = markdown.split('\n');
@@ -51,21 +66,24 @@ const ChatMark = ({ children }) => {
                 match = line.match(/\((.*?)\)\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    widgets.push(<Button className={classes.button} key={id} size='xs'>{title}</Button>);
+                    widgets.push(<Button className={classes.button} key={id} size='xs' onClick={event => handleButtonClick({id,event})}>{title}</Button>);
                 }
             } else if (line.startsWith('> [')) {
                 // Checkbox widget
                 match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
                 if (match) {
                     const [status, id, title] = match.slice(1);
-                    widgets.push(<Checkbox className={classes.checkbox} classNames={{label:classes.label}} key={id} label={title} checked={status === 'x'} size='xs'/>);
+                    if(!(id in checkboxValues)){
+                        setCheckboxValues({[id]:status === 'x'});
+                    }
+                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
                 }
             } else if (line.startsWith('> -')) {
                 // Radio button widget
                 match = line.match(/-\s\((.*?)\):\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    radioGroup.push(<Radio className={classes.radio}  classNames={{label:classes.label}} key={id} value={id} label={title} size='xs'/>);
+                    radioGroup.push(<Radio classNames={{root:classes.radio,label:classes.label}} key={radioValues[id]} value={id} label={title} size='xs' onChange={event => handleRadioChange({id,event})}/>);
 
                     // 检查下一行是否还是 Radio，如果不是则结束当前 Group
                     const nextLine = lines[index + 1];
