@@ -13,7 +13,13 @@ const useStyles = createStyles((theme) => ({
     checkbox:{
         marginTop:theme.spacing.xs,
     },
+    label:{
+        color:'var(--vscode-editor-foreground)',
+    },
     radio:{
+        marginTop:theme.spacing.xs,
+    },
+    editor:{
         marginTop:theme.spacing.xs,
     }
   }));
@@ -47,14 +53,14 @@ const ChatMark = ({ children }) => {
                 match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
                 if (match) {
                     const [status, id, title] = match.slice(1);
-                    widgets.push(<Checkbox className={classes.checkbox} key={id} label={title} checked={status === 'x'} size='xs'/>);
+                    widgets.push(<Checkbox className={classes.checkbox} classNames={{label:classes.label}} key={id} label={title} checked={status === 'x'} size='xs'/>);
                 }
             } else if (line.startsWith('> -')) {
                 // Radio button widget
                 match = line.match(/-\s\((.*?)\):\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    radioGroup.push(<Radio className={classes.radio} key={id} value={id} label={title} size='xs'/>);
+                    radioGroup.push(<Radio className={classes.radio}  classNames={{label:classes.label}} key={id} value={id} label={title} size='xs'/>);
 
                     // 检查下一行是否还是 Radio，如果不是则结束当前 Group
                     const nextLine = lines[index + 1];
@@ -68,7 +74,7 @@ const ChatMark = ({ children }) => {
                 editorContent += line.substring(1) + '\n';
             } else if (editorContent) {
                 // Add the accumulated editor content as a widget
-                widgets.push(<Textarea key={widgets.length} defaultValue={editorContent.trimEnd()} />);
+                widgets.push(<Textarea className={classes.editor} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
                 editorContent = ''; // Reset for next block
             } else {
               if (radioGroup.length > 0) {
@@ -80,7 +86,7 @@ const ChatMark = ({ children }) => {
 
         // Check for remaining editor content
         if (editorContent) {
-            widgets.push(<Textarea key={widgets.length} defaultValue={editorContent.trimEnd()} />);
+            widgets.push(<Textarea className={classes.editor} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
         }
 
         return widgets;
