@@ -47,9 +47,17 @@ const ChatMark = ({ children }) => {
     
     const handleCheckboxChange = ({id,event})=>{
         setCheckboxValues({[id]:event.currentTarget.checked});
+        const yamlStr = yaml.dump({
+            [id]:'checked'
+        });
+        chat.userInput('```yaml\n'+yamlStr+'\n```');
     };
     const handleRadioChange = ({id,event})=>{
         setRadioValues({[id]:event.currentTarget.checked});
+        const yamlStr = yaml.dump({
+            [id]:'checked'
+        });
+        chat.userInput('```yaml\n'+yamlStr+'\n```');
     };
 
     // Render markdown widgets
