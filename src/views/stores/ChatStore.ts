@@ -201,6 +201,12 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom();
         };
 
+        const userInput = (content: string) => {
+            messageUtil.sendMessage({
+                command: 'userInput',
+                text: content
+            });
+        };
 
         return {
             helpMessage,
@@ -209,6 +215,7 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom,
             startGenerating,
             commonMessage,
+            userInput,
             devchatAsk : flow(function* (userMessage, chatContexts) {
                 self.messages.push({
                         type: 'user',
