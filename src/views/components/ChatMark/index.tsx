@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 import { useListState, useSetState } from '@mantine/hooks';
+import { useMst } from '@/views/stores/RootStore';
+import yaml from 'js-yaml';
 
 const useStyles = createStyles((theme) => ({
     container:{
@@ -34,9 +36,13 @@ const ChatMark = ({ children }) => {
     const {classes} = useStyles();
     const [checkboxValues, setCheckboxValues] = useSetState({});
     const [radioValues, setRadioValues] = useSetState({});
+    const {chat} = useMst();
     
     const handleButtonClick = ({id,event}) => {
-        console.log(id);
+        const yamlStr = yaml.dump({
+            [id]:'click'
+        });
+        chat.userInput('```yaml\n'+yamlStr+'\n```');
     };
     
     const handleCheckboxChange = ({id,event})=>{
