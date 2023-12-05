@@ -116,7 +116,7 @@ const ChatMark = ({ children, ...props }) => {
                     // if(checkboxValues[id] === undefined){
                     //     setCheckboxValues({[id]:status === 'x'?'checked':'unchecked'});
                     // }
-                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
+                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]==='checked'} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
                 }
             } else if (line.startsWith('> -')) {
                 // Radio button widget
