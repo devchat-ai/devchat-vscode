@@ -42,7 +42,8 @@ const ChatMark = ({ children }) => {
         const yamlStr = yaml.dump({
             [id]:'click'
         });
-        chat.userInput('```yaml\n'+yamlStr+'\n```');
+        const inputStr = '```yaml\n'+yamlStr+'\n```';
+        chat.userInput(inputStr);
     };
     
     const handleCheckboxChange = ({id,event})=>{
@@ -50,14 +51,16 @@ const ChatMark = ({ children }) => {
         const yamlStr = yaml.dump({
             [id]:'checked'
         });
-        chat.userInput('```yaml\n'+yamlStr+'\n```');
+        const inputStr = '```yaml\n'+yamlStr+'\n```';
+        chat.userInput(inputStr);
     };
     const handleRadioChange = ({id,event})=>{
         setRadioValues({[id]:event.currentTarget.checked});
         const yamlStr = yaml.dump({
             [id]:'checked'
         });
-        chat.userInput('```yaml\n'+yamlStr+'\n```');
+        const inputStr = '```yaml\n'+yamlStr+'\n```';
+        chat.userInput(inputStr);
     };
 
     // Render markdown widgets

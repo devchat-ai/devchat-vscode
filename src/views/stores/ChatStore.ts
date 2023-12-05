@@ -202,6 +202,7 @@ You can configure DevChat from [Settings](#settings).`;
         };
 
         const userInput = (content: string) => {
+            self.currentMessage = self.currentMessage + '\n'+ content;
             messageUtil.sendMessage({
                 command: 'userInput',
                 text: content
