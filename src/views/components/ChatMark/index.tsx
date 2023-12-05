@@ -2,12 +2,17 @@ import React, { useState } from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 import { useListState, useSetState } from '@mantine/hooks';
 import { useMst } from '@/views/stores/RootStore';
-import yaml from 'js-yaml';
 
 const useStyles = createStyles((theme) => ({
     container:{
         padding:0,
         margin:0,
+    },
+    submit:{
+        marginTop:theme.spacing.xs,
+        marginRight:theme.spacing.xs,
+    },
+    cancel:{
     },
     button:{
         marginTop:theme.spacing.xs,
@@ -32,35 +37,53 @@ const useStyles = createStyles((theme) => ({
     }
   }));
   
-const ChatMark = ({ children }) => {
+const ChatMark = ({ children, ...props }) => {
     const {classes} = useStyles();
     const [checkboxValues, setCheckboxValues] = useSetState({});
     const [radioValues, setRadioValues] = useSetState({});
+    const [editorValues, setEditorValues] = useSetState({});
     const {chat} = useMst();
     
+    const handleSubmit = () => {
+        chat.userInput({
+            ...checkboxValues,
+            ...radioValues,
+            ...editorValues
+        });
+    };
+
+    const handleCancel = () => {
+        chat.userInput({
+            'form':'cancel'
+        });
+    };
+
     const handleButtonClick = ({id,event}) => {
-        const yamlStr = yaml.dump({
+        chat.userInput({
             [id]:'click'
         });
-        const inputStr = '```yaml\n'+yamlStr+'\n```';
-        chat.userInput(inputStr);
     };
     
     const handleCheckboxChange = ({id,event})=>{
-        setCheckboxValues({[id]:event.currentTarget.checked});
-        const yamlStr = yaml.dump({
-            [id]:'checked'
-        });
-        const inputStr = '```yaml\n'+yamlStr+'\n```';
-        chat.userInput(inputStr);
+        const value = event.currentTarget.checked?'checked':'unchecked';
+        setCheckboxValues({[id]:value});
+        if(props.type !== 'form'){
+            chat.userInput({
+                [id]:value
+            });
+        }
     };
     const handleRadioChange = ({id,event})=>{
-        setRadioValues({[id]:event.currentTarget.checked});
-        const yamlStr = yaml.dump({
-            [id]:'checked'
-        });
-        const inputStr = '```yaml\n'+yamlStr+'\n```';
-        chat.userInput(inputStr);
+        const value = event.currentTarget.checked?'checked':'unchecked';
+        setRadioValues({[id]:value});
+        if(props.type !== 'form'){
+            chat.userInput({
+                [id]:value
+            });
+        }
+    };
+    const handleEditorChange = ({id,event})=>{
+        setEditorValues({[id]:event.currentTarget.value});
     };
 
     // Render markdown widgets
@@ -90,9 +113,9 @@ const ChatMark = ({ children }) => {
                 match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
                 if (match) {
                     const [status, id, title] = match.slice(1);
-                    if(!(id in checkboxValues)){
-                        setCheckboxValues({[id]:status === 'x'});
-                    }
+                    // if(checkboxValues[id] === undefined){
+                    //     setCheckboxValues({[id]:status === 'x'?'checked':'unchecked'});
+                    // }
                     widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
                 }
             } else if (line.startsWith('> -')) {
@@ -103,7 +126,7 @@ const ChatMark = ({ children }) => {
                     radioGroup.push(<Radio classNames={{root:classes.radio,label:classes.label}} key={radioValues[id]} value={id} label={title} size='xs' onChange={event => handleRadioChange({id,event})}/>);
 
                     // 检查下一行是否还是 Radio，如果不是则结束当前 Group
-                    const nextLine = lines[index + 1];
+                    const nextLine = index + 1 < lines.length? lines[index + 1]:null;
                     if (!nextLine || !nextLine.startsWith('> -')) {
                         widgets.push(<Radio.Group key={`group-${index}`}>{radioGroup}</Radio.Group>);
                         radioGroup = []; // 重置为下一个可能的 Group
@@ -111,11 +134,15 @@ const ChatMark = ({ children }) => {
                 }
             } else if (line.startsWith('>')) {
                 // Collecting editor lines
-                editorContent += line.substring(1) + '\n';
-            } else if (editorContent) {
-                // Add the accumulated editor content as a widget
-                widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
-                editorContent = ''; // Reset for next block
+                editorContent += line.substring(2) + '\n';
+                // Check for remaining editor content
+                const nextLine = index + 1 < lines.length? lines[index + 1]:null;
+                if (!nextLine || !nextLine.startsWith('>')) {
+                    const id = `editor${Object.keys(editorValues).length}`;
+                    // setEditorValues({[id]:editorContent.trimEnd()});
+                    widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} rows={10} onChange={event => handleEditorChange({id,event})}/>);
+                    editorContent = '';
+                }
             } else {
               if (radioGroup.length > 0) {
                   widgets.push(<Radio.Group key={`group-${index}`}>{radioGroup}</Radio.Group>);
@@ -124,17 +151,19 @@ const ChatMark = ({ children }) => {
             }
         });
 
-        // Check for remaining editor content
-        if (editorContent) {
-            widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} />);
-        }
-
         return widgets;
     };
 
     return (
         <Box className={classes.container}>
-            {renderWidgets(children)}
+            {props.type==='form'
+                ?<form>
+                    {renderWidgets(children)}
+                    <Button className={classes.submit}  size='xs' onClick={handleSubmit}>Submit</Button>
+                    <Button className={classes.cancel}  size='xs' onClick={handleCancel}>Cancel</Button>
+                </form>
+                :renderWidgets(children)
+            }
         </Box>
     );
 };
