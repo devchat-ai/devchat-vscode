@@ -100,9 +100,11 @@ export interface CommandResult {
 
 export class CommandRun {
 	private childProcess: any;
+	private _input: string;
 
 	// init childProcess in construction function
 	constructor() {
+		this._input = "";
 		this.childProcess = null;
 	}
 
@@ -129,7 +131,8 @@ export class CommandRun {
 			let stderr = '';
 
 			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
-				const dataStr = data.toString();
+				const dataStr = this._input + data.toString();
+				this._input = "";
 				if (onData) {
 					onData(dataStr);
 				}
@@ -186,6 +189,7 @@ export class CommandRun {
 
 	public write(input: string) {
 		if (this.childProcess) {
+			this._input += input;
 			this.childProcess.stdin.write(input);
 		}
 	}
