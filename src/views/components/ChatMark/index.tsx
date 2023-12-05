@@ -45,11 +45,20 @@ const ChatMark = ({ children, ...props }) => {
     const {chat} = useMst();
     
     const handleSubmit = () => {
-        chat.userInput({
-            ...checkboxValues,
-            ...radioValues,
+        let formData = {
             ...editorValues
-        });
+        };
+        for(let key in checkboxValues){
+            if(checkboxValues[key]==='checked'){
+                formData[key] = checkboxValues[key];
+            }
+        }
+        for(let key in radioValues){
+            if(radioValues[key]==='checked'){
+                formData[key] = radioValues[key];
+            }
+        }
+        chat.userInput(formData);
     };
 
     const handleCancel = () => {
