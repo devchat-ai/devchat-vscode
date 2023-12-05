@@ -45,11 +45,20 @@ const ChatMark = ({ children, ...props }) => {
     const {chat} = useMst();
     
     const handleSubmit = () => {
-        chat.userInput({
-            ...checkboxValues,
-            ...radioValues,
+        let formData = {
             ...editorValues
-        });
+        };
+        for(let key in checkboxValues){
+            if(checkboxValues[key]==='checked'){
+                formData[key] = checkboxValues[key];
+            }
+        }
+        for(let key in radioValues){
+            if(radioValues[key]==='checked'){
+                formData[key] = radioValues[key];
+            }
+        }
+        chat.userInput(formData);
     };
 
     const handleCancel = () => {
@@ -116,7 +125,7 @@ const ChatMark = ({ children, ...props }) => {
                     // if(checkboxValues[id] === undefined){
                     //     setCheckboxValues({[id]:status === 'x'?'checked':'unchecked'});
                     // }
-                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
+                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]==='checked'} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
                 }
             } else if (line.startsWith('> -')) {
                 // Radio button widget
