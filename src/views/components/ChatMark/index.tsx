@@ -53,26 +53,21 @@ interface Wdiget{
   
 const ChatMark = ({ children, ...props }) => {
     const {classes} = useStyles();
-    const [checkboxValues, setCheckboxValues] = useSetState({});
-    const [radioValues, setRadioValues] = useSetState({});
-    const [editorValues, setEditorValues] = useSetState({});
     const [widgets,widgetsHandlers] = useListState<Wdiget>();
     const {chat} = useMst();
     
     const handleSubmit = () => {
-        let formData = {
-            ...editorValues
-        };
-        for(let key in checkboxValues){
-            if(checkboxValues[key]==='checked'){
-                formData[key] = checkboxValues[key];
+        let formData = {};
+        widgets.forEach((widget)=>{
+            if(widget.type === 'text'
+                || widget.type === 'button'
+                || (widget.type === 'radio' && widget.value === 'unchecked')
+                || (widget.type === 'checkbox' && widget.value === 'unchecked')){
+                // ignore
+                return; 
             }
-        }
-        for(let key in radioValues){
-            if(radioValues[key]==='checked'){
-                formData[key] = radioValues[key];
-            }
-        }
+            formData[widget.id] = widget.value;
+        });
         chat.userInput(formData);
     };
 
@@ -82,38 +77,54 @@ const ChatMark = ({ children, ...props }) => {
         });
     };
 
-    const handleButtonClick = ({id,event}) => {
+    const handleButtonClick = ({event,index}) => {
+        const widget = widgets[index];
+        widget['value'] = event.currentTarget.value;;
+        widgetsHandlers.setItem(index,widget);
         chat.userInput({
-            [id]:'click'
+            [widget['id']]:'click'
         });
     };
     
-    const handleCheckboxChange = ({id,event})=>{
-        const value = event.currentTarget.checked?'checked':'unchecked';
-        setCheckboxValues({[id]:value});
+    const handleCheckboxChange = ({event,index})=>{
+        const widget = widgets[index];
+        widget['value'] = event.currentTarget.checked?'checked':'unchecked';
+        widgetsHandlers.setItem(index,widget);
         if(props.type !== 'form'){
             chat.userInput({
-                [id]:value
+                [widget['id']]:widget.value
             });
         }
     };
-    const handleRadioChange = ({id,event})=>{
-        const value = event.currentTarget.checked?'checked':'unchecked';
-        setRadioValues({[id]:value});
+    const handleRadioChange = ({event,allValues})=>{
+        debugger;
+        widgetsHandlers.apply((item, index) => {
+            if(allValues.includes(item.id)){
+                if(item.id === event){
+                    item.value = 'checked';
+                }else{
+                    item.value = 'unchecked';
+                }
+            }
+            return item;
+        });
         if(props.type !== 'form'){
             chat.userInput({
-                [id]:value
+                value:'checked'
             });
         }
     };
-    const handleEditorChange = ({id,event})=>{
-        setEditorValues({[id]:event.currentTarget.value});
+    const handleEditorChange = ({event,index})=>{
+        const widget = widgets[index];
+        widget['value'] = event.currentTarget.value;
+        widgetsHandlers.setItem(index,widget);
     };
 
     useEffect(()=>{
 
         const lines = children.split('\n');
         let editorContentTemp = '';
+        let editorCount = 0;
 
         lines.forEach((line, index) => {
 
@@ -162,7 +173,7 @@ const ChatMark = ({ children, ...props }) => {
                 // if next line is not editor, then end current editor
                 const nextLine = index + 1 < lines.length? lines[index + 1]:null;
                 if (!nextLine || !nextLine.startsWith('>')) {
-                    const id = `editor${Object.keys(editorValues).length}`;
+                    const id = `editor${editorCount++}`;
                     widgetsHandlers.append({
                         id,
                         type:'editor',
@@ -178,51 +189,60 @@ const ChatMark = ({ children, ...props }) => {
     // Render markdown widgets
     const renderWidgets = (widgets) => {
         let radioGroupTemp:any = []; 
+        let radioValuesTemp:any = []; 
         let wdigetsTemp:any = [];
         widgets.map((widget, index) => {
             if (widget.type === 'text') {
                 wdigetsTemp.push(<Text key={index}>{widget.value}</Text>);
             } else if (widget.type === 'button') {
-                const id = widget.id;
                 wdigetsTemp.push(<Button 
                         className={classes.button} 
-                        key={id} size='xs' 
-                        onClick={event => handleButtonClick({id,event})}>
+                        key={'widget'+index} 
+                        size='xs'
+                        value={widget.value}
+                        onClick={event => handleButtonClick({event,index})}>
                             {widget.title}
                         </Button>);
             } else if (widget.type === 'checkbox') {
-                const id = widget.id;
                 wdigetsTemp.push(<Checkbox 
                         classNames={{root:classes.checkbox,label:classes.label}} 
-                        key={id} 
+                        key={'widget'+index} 
                         label={widget.title} 
                         checked={widget.value==='checked'} 
                         size='xs'  
-                        onChange={event => handleCheckboxChange({id,event})}/>);
+                        onChange={event => handleCheckboxChange({event,index})}/>);
             } else if (widget.type === 'radio') {
-                const id = widget.id;
+                radioValuesTemp.push(widget.id);
                 radioGroupTemp.push(<Radio 
                         classNames={{root:classes.radio,label:classes.label}} 
-                        key={radioValues[id]} 
-                        value={id} 
+                        key={'widget'+index} 
                         label={widget.title} 
-                        size='xs' 
-                        onChange={event => handleRadioChange({id,event})}/>);
+                        value={widget.id} 
+                        size='xs' />);
                 // if next widget is not radio, then end current group
                 const nextWidget = index + 1 < widgets.length? widgets[index + 1]:null;
                 if (!nextWidget || nextWidget.type !== 'radio') {
-                    const radioGroup = <Radio.Group key={`group-${index}`}>{radioGroupTemp}</Radio.Group>;
+                    const radioGroup = ((radios,allValues)=><Radio.Group 
+                                            key={`radio-group-${index}`} 
+                                            onChange={
+                                                event => handleRadioChange({
+                                                        event,
+                                                        allValues
+                                                    })
+                                            }>
+                                            {radios}
+                                        </Radio.Group>)(radioGroupTemp,radioValuesTemp);
                     radioGroupTemp = [];
+                    radioValuesTemp = [];
                     wdigetsTemp.push(radioGroup);
                 }
             } else if (widget.type === 'editor') {
-                const id = widget.id;
                 wdigetsTemp.push(<Textarea 
                         classNames={{wrapper:classes.editorWrapper,input:classes.editor}} 
-                        key={id} 
+                        key={'widget'+index} 
                         defaultValue={widget.value} 
                         rows={10} 
-                        onChange={event => handleEditorChange({id,event})}/>);
+                        onChange={event => handleEditorChange({event,index})}/>);
             }
         });
         return wdigetsTemp;
