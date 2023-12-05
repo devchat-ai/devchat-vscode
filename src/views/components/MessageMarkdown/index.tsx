@@ -124,12 +124,32 @@ Generate a professionally written and formatted release note in markdown with th
         {...props}
         remarkPlugins={[()=> (tree) =>{
             visit(tree, function (node) {
-                if (node.type === 'code' && (node.lang ==='step' || node.lang ==='Step')) {
-                    node.data = {
-                        hProperties:{
-                            index: index++
-                        }
-                    };
+                if (node.type === 'code') {
+                    if(node.lang ==='step' || node.lang ==='Step'){
+                        node.data = {
+                            hProperties:{
+                                index: index++
+                            }
+                        };
+                    }
+                    if(node.lang ==='chatmark' || node.lang ==='ChatMark'){
+                        const metaData = (function parse(string) {
+                            const regexp = /((?<k1>(?!=)\S+)=((?<v1>(["'`])(.*?)\5)|(?<v2>\S+)))|(?<k2>\S+)/g;    
+                            const io = (string ?? '').matchAll(regexp);
+
+                            return new Map(
+                                [...io]
+                                .map((item) => item?.groups)
+                                .map(({ k1, k2, v1, v2 }) => [k1 ?? k2, v1 ?? v2]),
+                            );
+                        })(node.meta);
+                        const metaDataValue = metaData.get('type');
+                        node.data={
+                            hProperties:{
+                                type: metaDataValue
+                            }
+                        };
+                    }
                 }
             });
         }]}
@@ -155,7 +175,7 @@ Generate a professionally written and formatted release note in markdown with th
                 }
 
                 if (lanugage === 'chatmark' || lanugage === 'ChatMark') {
-                    return <ChatMark>{value}</ChatMark>;
+                    return <ChatMark {...node.properties}>{value}</ChatMark>;
                 }
 
                 return !inline && lanugage ? (
