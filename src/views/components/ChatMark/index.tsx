@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 import { useListState, useSetState } from '@mantine/hooks';
 import { useMst } from '@/views/stores/RootStore';
+import { type } from 'os';
+import { debug } from 'console';
 
 const useStyles = createStyles((theme) => ({
     container:{
@@ -11,21 +13,25 @@ const useStyles = createStyles((theme) => ({
     submit:{
         marginTop:theme.spacing.xs,
         marginRight:theme.spacing.xs,
+        marginBottom:theme.spacing.xs,
     },
     cancel:{
     },
     button:{
         marginTop:theme.spacing.xs,
         marginRight:theme.spacing.xs,
+        marginBottom:theme.spacing.xs,
     },
     checkbox:{
         marginTop:theme.spacing.xs,
+        marginBottom:theme.spacing.xs,
     },
     label:{
         color:'var(--vscode-editor-foreground)',
     },
     radio:{
         marginTop:theme.spacing.xs,
+        marginBottom:theme.spacing.xs,
     },
     editor:{
         backgroundColor: 'var(--vscode-input-background)',
@@ -34,14 +40,23 @@ const useStyles = createStyles((theme) => ({
     },
     editorWrapper:{
         marginTop:theme.spacing.xs,
+        marginBottom:theme.spacing.xs,
     }
   }));
+
+interface Wdiget{
+    id:string,
+    value:string,
+    title?:string,
+    type:'editor'|'checkbox'|'radio'|'button'|'text'
+}
   
 const ChatMark = ({ children, ...props }) => {
     const {classes} = useStyles();
     const [checkboxValues, setCheckboxValues] = useSetState({});
     const [radioValues, setRadioValues] = useSetState({});
     const [editorValues, setEditorValues] = useSetState({});
+    const [widgets,widgetsHandlers] = useListState<Wdiget>();
     const {chat} = useMst();
     
     const handleSubmit = () => {
@@ -95,83 +110,133 @@ const ChatMark = ({ children, ...props }) => {
         setEditorValues({[id]:event.currentTarget.value});
     };
 
-    // Render markdown widgets
-    const renderWidgets = (markdown) => {
-        const lines = markdown.split('\n');
-        let editorContent = '';
-        const widgets:any = [];
-        let radioGroup:any = []; 
+    useEffect(()=>{
+
+        const lines = children.split('\n');
+        let editorContentTemp = '';
 
         lines.forEach((line, index) => {
-            let match;
 
-            if (!line.startsWith('>')) {
-                widgets.push(<Text key={index}>{line}</Text>);
-                return;
-            }
-
-            if (line.startsWith('> (')) {
-                // Button widget
-                match = line.match(/\((.*?)\)\s(.*)/);
+            if (!line.startsWith('>')) { // Text widget
+                widgetsHandlers.append({
+                    id:`text${index}`,
+                    type:'text',
+                    value:line,
+                });
+            } else if (line.startsWith('> (')) { // Button widget
+                let match = line.match(/\((.*?)\)\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    widgets.push(<Button className={classes.button} key={id} size='xs' onClick={event => handleButtonClick({id,event})}>{title}</Button>);
+                    widgetsHandlers.append({
+                        id,
+                        title,
+                        type:'button',
+                        value:title,
+                    });
                 }
-            } else if (line.startsWith('> [')) {
-                // Checkbox widget
-                match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
+            } else if (line.startsWith('> [')) { // Checkbox widget
+                let match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
                 if (match) {
                     const [status, id, title] = match.slice(1);
-                    // if(checkboxValues[id] === undefined){
-                    //     setCheckboxValues({[id]:status === 'x'?'checked':'unchecked'});
-                    // }
-                    widgets.push(<Checkbox classNames={{root:classes.checkbox,label:classes.label}} key={id} label={title} checked={checkboxValues[id]==='checked'} size='xs'  onChange={event => handleCheckboxChange({id,event})}/>);
+                    widgetsHandlers.append({
+                        id,
+                        title,
+                        type:'checkbox',
+                        value:status === 'x'?'checked':'unchecked',
+                    });
                 }
-            } else if (line.startsWith('> -')) {
-                // Radio button widget
-                match = line.match(/-\s\((.*?)\):\s(.*)/);
+            } else if (line.startsWith('> - (')) { // Radio button widget
+                let match = line.match(/-\s\((.*?)\):\s(.*)/);
                 if (match) {
                     const [id, title] = match.slice(1);
-                    radioGroup.push(<Radio classNames={{root:classes.radio,label:classes.label}} key={radioValues[id]} value={id} label={title} size='xs' onChange={event => handleRadioChange({id,event})}/>);
-
-                    // 检查下一行是否还是 Radio，如果不是则结束当前 Group
-                    const nextLine = index + 1 < lines.length? lines[index + 1]:null;
-                    if (!nextLine || !nextLine.startsWith('> -')) {
-                        widgets.push(<Radio.Group key={`group-${index}`}>{radioGroup}</Radio.Group>);
-                        radioGroup = []; // 重置为下一个可能的 Group
-                    }
+                    widgetsHandlers.append({
+                        id,
+                        title,
+                        type:'radio',
+                        value:'unchecked',
+                    });
                 }
-            } else if (line.startsWith('>')) {
+            } else if (line.startsWith('>')) { // Editor widget
                 // Collecting editor lines
-                editorContent += line.substring(2) + '\n';
-                // Check for remaining editor content
+                editorContentTemp += line.substring(2) + '\n';
+                // if next line is not editor, then end current editor
                 const nextLine = index + 1 < lines.length? lines[index + 1]:null;
                 if (!nextLine || !nextLine.startsWith('>')) {
                     const id = `editor${Object.keys(editorValues).length}`;
-                    // setEditorValues({[id]:editorContent.trimEnd()});
-                    widgets.push(<Textarea classNames={{wrapper:classes.editorWrapper,input:classes.editor}} key={widgets.length} defaultValue={editorContent.trimEnd()} rows={10} onChange={event => handleEditorChange({id,event})}/>);
-                    editorContent = '';
+                    widgetsHandlers.append({
+                        id,
+                        type:'editor',
+                        value:editorContentTemp,
+                    });
+                    editorContentTemp = '';
                 }
-            } else {
-              if (radioGroup.length > 0) {
-                  widgets.push(<Radio.Group key={`group-${index}`}>{radioGroup}</Radio.Group>);
-                  radioGroup = []; // 重置为下一个可能的 Group
-              }
             }
         });
 
-        return widgets;
+    },[]);
+
+    // Render markdown widgets
+    const renderWidgets = (widgets) => {
+        let radioGroupTemp:any = []; 
+        let wdigetsTemp:any = [];
+        widgets.map((widget, index) => {
+            if (widget.type === 'text') {
+                wdigetsTemp.push(<Text key={index}>{widget.value}</Text>);
+            } else if (widget.type === 'button') {
+                const id = widget.id;
+                wdigetsTemp.push(<Button 
+                        className={classes.button} 
+                        key={id} size='xs' 
+                        onClick={event => handleButtonClick({id,event})}>
+                            {widget.title}
+                        </Button>);
+            } else if (widget.type === 'checkbox') {
+                const id = widget.id;
+                wdigetsTemp.push(<Checkbox 
+                        classNames={{root:classes.checkbox,label:classes.label}} 
+                        key={id} 
+                        label={widget.title} 
+                        checked={widget.value==='checked'} 
+                        size='xs'  
+                        onChange={event => handleCheckboxChange({id,event})}/>);
+            } else if (widget.type === 'radio') {
+                const id = widget.id;
+                radioGroupTemp.push(<Radio 
+                        classNames={{root:classes.radio,label:classes.label}} 
+                        key={radioValues[id]} 
+                        value={id} 
+                        label={widget.title} 
+                        size='xs' 
+                        onChange={event => handleRadioChange({id,event})}/>);
+                // if next widget is not radio, then end current group
+                const nextWidget = index + 1 < widgets.length? widgets[index + 1]:null;
+                if (!nextWidget || nextWidget.type !== 'radio') {
+                    const radioGroup = <Radio.Group key={`group-${index}`}>{radioGroupTemp}</Radio.Group>;
+                    radioGroupTemp = [];
+                    wdigetsTemp.push(radioGroup);
+                }
+            } else if (widget.type === 'editor') {
+                const id = widget.id;
+                wdigetsTemp.push(<Textarea 
+                        classNames={{wrapper:classes.editorWrapper,input:classes.editor}} 
+                        key={id} 
+                        defaultValue={widget.value} 
+                        rows={10} 
+                        onChange={event => handleEditorChange({id,event})}/>);
+            }
+        });
+        return wdigetsTemp;
     };
 
     return (
         <Box className={classes.container}>
             {props.type==='form'
                 ?<form>
-                    {renderWidgets(children)}
+                    {renderWidgets(widgets)}
                     <Button className={classes.submit}  size='xs' onClick={handleSubmit}>Submit</Button>
                     <Button className={classes.cancel}  size='xs' onClick={handleCancel}>Cancel</Button>
                 </form>
-                :renderWidgets(children)
+                :renderWidgets(widgets)
             }
         </Box>
     );
