@@ -250,10 +250,11 @@ const ChatMark = ({ children, ...props }) => {
                 }
             } else if (widget.type === 'editor') {
                 wdigetsTemp.push(<Textarea 
+                        autosize
                         classNames={{wrapper:classes.editorWrapper,input:classes.editor}} 
                         key={'widget'+index} 
                         defaultValue={widget.value} 
-                        rows={10} 
+                        maxRows={10} 
                         onChange={event => handleEditorChange({event,index})}/>);
             }
         });
