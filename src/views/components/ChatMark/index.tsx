@@ -122,64 +122,77 @@ const ChatMark = ({ children, ...props }) => {
     useEffect(()=>{
 
         const lines = children.split('\n');
-        let editorContentTemp = '';
-        let editorCount = 0;
+        let detectEditorId = '';
+        let editorContentRecorder = '';
+
+        const textRegex = /^([^>].*)/; // Text widget
+        const buttonRegex = /^>\s*\((.*?)\)\s*(.*)/; // Button widget
+        const checkboxRegex = /^>\s*\[([x ]*)\]\((.*?)\)\s*(.*)/; // Checkbox widget
+        const radioRegex = /^>\s*-\s*\((.*?)\)\s*(.*)/; // Radio button widget
+        const editorRegex = /^>\s*\|\s*\((.*?)\)/; // Editor widget
+        const editorContentRegex = /^>\s*(.*)/; // Editor widget
 
         lines.forEach((line, index) => {
 
-            if (!line.startsWith('>')) { // Text widget
+            let match;
+
+            if (match = line.match(textRegex)) {
                 widgetsHandlers.append({
                     id:`text${index}`,
                     type:'text',
                     value:line,
                 });
-            } else if (line.startsWith('> (')) { // Button widget
-                let match = line.match(/\((.*?)\)\s(.*)/);
-                if (match) {
-                    const [id, title] = match.slice(1);
-                    widgetsHandlers.append({
-                        id,
-                        title,
-                        type:'button',
-                        value:title,
-                    });
-                }
-            } else if (line.startsWith('> [')) { // Checkbox widget
-                let match = line.match(/\[([x ]*)\]\((.*?)\):\s*(.*)/);
-                if (match) {
-                    const [status, id, title] = match.slice(1);
-                    widgetsHandlers.append({
-                        id,
-                        title,
-                        type:'checkbox',
-                        value:status === 'x'?'checked':'unchecked',
-                    });
-                }
-            } else if (line.startsWith('> - (')) { // Radio button widget
-                let match = line.match(/-\s\((.*?)\):\s(.*)/);
-                if (match) {
-                    const [id, title] = match.slice(1);
-                    widgetsHandlers.append({
-                        id,
-                        title,
-                        type:'radio',
-                        value:'unchecked',
-                    });
-                }
-            } else if (line.startsWith('>')) { // Editor widget
-                // Collecting editor lines
-                editorContentTemp += line.substring(2) + '\n';
-                // if next line is not editor, then end current editor
-                const nextLine = index + 1 < lines.length? lines[index + 1]:null;
-                if (!nextLine || !nextLine.startsWith('>')) {
-                    const id = `editor${editorCount++}`;
-                    widgetsHandlers.append({
-                        id,
-                        type:'editor',
-                        value:editorContentTemp,
-                    });
-                    editorContentTemp = '';
-                }
+            } else if (match = line.match(buttonRegex)) {
+                const [id, title] = match.slice(1);
+                widgetsHandlers.append({
+                    id,
+                    title,
+                    type:'button',
+                    value:title,
+                });
+            } else if (match = line.match(checkboxRegex)) {
+                const [status, id, title] = match.slice(1);
+                widgetsHandlers.append({
+                    id,
+                    title,
+                    type:'checkbox',
+                    value:status === 'x'?'checked':'unchecked',
+                });
+            } else if (match = line.match(radioRegex)) {
+                const [id, title] = match.slice(1);
+                widgetsHandlers.append({
+                    id,
+                    title,
+                    type:'radio',
+                    value:'unchecked',
+                });
+            } else if (match = line.match(editorRegex)) {
+                const [id] = match.slice(1);
+                detectEditorId = id;
+                widgetsHandlers.append({
+                    id,
+                    type:'editor',
+                    value: '',
+                });
+            } else if(match = line.match(editorContentRegex)){
+                const [content] = match.slice(1);
+                editorContentRecorder += content + '\n';
+            }
+            // if next line is not editor, then end current editor
+            const nextLine = index + 1 < lines.length? lines[index + 1]:null;
+            if (detectEditorId && (!nextLine || !nextLine.startsWith('>'))) {
+                // remove last \n
+                editorContentRecorder = editorContentRecorder.substring(0, editorContentRecorder.length - 1);
+                // apply editor content to widget
+                ((editorId,editorContent) => widgetsHandlers.apply((item)=>{
+                    if(item.id === editorId){
+                        item.value = editorContent;
+                    }
+                    return item;
+                }))(detectEditorId,editorContentRecorder);
+                // reset editor
+                detectEditorId = '';
+                editorContentRecorder = '';
             }
         });
 
