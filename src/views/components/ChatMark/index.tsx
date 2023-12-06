@@ -97,7 +97,6 @@ const ChatMark = ({ children, ...props }) => {
         }
     };
     const handleRadioChange = ({event,allValues})=>{
-        debugger;
         widgetsHandlers.apply((item, index) => {
             if(allValues.includes(item.id)){
                 if(item.id === event){
