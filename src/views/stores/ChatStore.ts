@@ -213,6 +213,8 @@ ${yaml.dump(values)}
                 command: 'userInput',
                 text: inputStr
             });
+            // goto bottom
+            goScrollBottom();
         };
 
         return {
