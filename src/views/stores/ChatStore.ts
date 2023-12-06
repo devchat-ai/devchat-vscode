@@ -203,7 +203,11 @@ You can configure DevChat from [Settings](#settings).`;
         };
 
         const userInput = (values:any) => {
-            const inputStr = '\n```yaml\n'+yaml.dump(values)+'\n```\n';
+            const inputStr = `
+\`\`\`yaml type=chatmark-values
+${yaml.dump(values)}
+\`\`\`
+`;
             self.currentMessage = self.currentMessage + inputStr;
             messageUtil.sendMessage({
                 command: 'userInput',

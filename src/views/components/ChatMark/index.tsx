@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Box, Button, Checkbox, Text, Radio, Textarea, createStyles } from '@mantine/core';
 import { useListState, useSetState } from '@mantine/hooks';
 import { useMst } from '@/views/stores/RootStore';
-import { type } from 'os';
-import { debug } from 'console';
+import yaml from 'js-yaml';
 
 const useStyles = createStyles((theme) => ({
     container:{
@@ -51,12 +50,14 @@ interface Wdiget{
     type:'editor'|'checkbox'|'radio'|'button'|'text'
 }
   
-const ChatMark = ({ children, ...props }) => {
+const ChatMark = ({ children,value }) => {
     const {classes} = useStyles();
     const [widgets,widgetsHandlers] = useListState<Wdiget>();
     const {chat} = useMst();
     const [autoForm,setAutoForm] = useState(false); // if any widget is checkbox,radio or editor wdiget, the form is auto around them
-    
+    const values = value?yaml.load(value):{};
+    const [disabled,setDisabled] = useState(!!value);
+
     const handleSubmit = () => {
         let formData = {};
         widgets.forEach((widget)=>{
@@ -147,7 +148,7 @@ const ChatMark = ({ children, ...props }) => {
                     id,
                     title,
                     type:'checkbox',
-                    value:status === 'x'?'checked':'unchecked',
+                    value: disabled?'unchecked':status === 'x'?'checked':'unchecked',
                 });
                 setAutoForm(true);
             } else if (match = line.match(radioRegex)) {
@@ -189,7 +190,14 @@ const ChatMark = ({ children, ...props }) => {
                 editorContentRecorder = '';
             }
         });
-
+        for (const key in values) {
+            widgetsHandlers.apply((item)=>{
+                if(item.id === key){
+                    item.value = values[key];
+                }
+                return item;
+            });
+        }
     },[]);
 
     // Render markdown widgets
@@ -203,6 +211,7 @@ const ChatMark = ({ children, ...props }) => {
             } else if (widget.type === 'button') {
                 wdigetsTemp.push(<Button 
                         className={classes.button} 
+                        disabled={disabled}
                         key={'widget'+index} 
                         size='xs'
                         value={widget.value}
@@ -212,6 +221,7 @@ const ChatMark = ({ children, ...props }) => {
             } else if (widget.type === 'checkbox') {
                 wdigetsTemp.push(<Checkbox 
                         classNames={{root:classes.checkbox,label:classes.label}} 
+                        disabled={disabled}
                         key={'widget'+index} 
                         label={widget.title} 
                         checked={widget.value==='checked'} 
@@ -221,6 +231,7 @@ const ChatMark = ({ children, ...props }) => {
                 radioValuesTemp.push(widget.id);
                 radioGroupTemp.push(<Radio 
                         classNames={{root:classes.radio,label:classes.label}} 
+                        disabled={disabled}
                         key={'widget'+index} 
                         label={widget.title} 
                         value={widget.id} 
@@ -244,6 +255,7 @@ const ChatMark = ({ children, ...props }) => {
                 }
             } else if (widget.type === 'editor') {
                 wdigetsTemp.push(<Textarea 
+                        disabled={disabled}
                         autosize
                         classNames={{wrapper:classes.editorWrapper,input:classes.editor}} 
                         key={'widget'+index} 
@@ -257,12 +269,12 @@ const ChatMark = ({ children, ...props }) => {
 
     return (
         <Box className={classes.container}>
-            {autoForm
+            {autoForm && !disabled
                 ?<form>
                     {renderWidgets(widgets)}
                     <Box>
-                        <Button className={classes.submit}  size='xs' onClick={handleSubmit}>Submit</Button>
-                        <Button className={classes.cancel}  size='xs' onClick={handleCancel}>Cancel</Button>
+                        <Button className={classes.submit} size='xs' onClick={handleSubmit}>Submit</Button>
+                        <Button className={classes.cancel} size='xs' onClick={handleCancel}>Cancel</Button>
                     </Box>
                 </form>
                 :renderWidgets(widgets)
