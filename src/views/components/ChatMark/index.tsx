@@ -180,7 +180,7 @@ const ChatMark = ({ children,value }) => {
                 editorContentRecorder = editorContentRecorder.substring(0, editorContentRecorder.length - 1);
                 // apply editor content to widget
                 ((editorId,editorContent) => widgetsHandlers.apply((item)=>{
-                    if(item.id === editorId){
+                    if(item.id === editorId && !disabled){
                         item.value = editorContent;
                     }
                     return item;
