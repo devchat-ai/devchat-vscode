@@ -74,7 +74,7 @@ const ChatMark = ({ children, ...props }) => {
 
     const handleCancel = () => {
         chat.userInput({
-            'form':'cancel'
+            'form':'canceled'
         });
     };
 
@@ -83,7 +83,7 @@ const ChatMark = ({ children, ...props }) => {
         widget['value'] = event.currentTarget.value;;
         widgetsHandlers.setItem(index,widget);
         chat.userInput({
-            [widget['id']]:'click'
+            [widget['id']]:'clicked'
         });
     };
     
