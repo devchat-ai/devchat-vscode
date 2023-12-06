@@ -55,6 +55,7 @@ const ChatMark = ({ children, ...props }) => {
     const {classes} = useStyles();
     const [widgets,widgetsHandlers] = useListState<Wdiget>();
     const {chat} = useMst();
+    const [autoForm,setAutoForm] = useState(false); // if any widget is checkbox,radio or editor wdiget, the form is auto around them
     
     const handleSubmit = () => {
         let formData = {};
@@ -90,11 +91,6 @@ const ChatMark = ({ children, ...props }) => {
         const widget = widgets[index];
         widget['value'] = event.currentTarget.checked?'checked':'unchecked';
         widgetsHandlers.setItem(index,widget);
-        if(props.type !== 'form'){
-            chat.userInput({
-                [widget['id']]:widget.value
-            });
-        }
     };
     const handleRadioChange = ({event,allValues})=>{
         widgetsHandlers.apply((item, index) => {
@@ -107,11 +103,6 @@ const ChatMark = ({ children, ...props }) => {
             }
             return item;
         });
-        if(props.type !== 'form'){
-            chat.userInput({
-                value:'checked'
-            });
-        }
     };
     const handleEditorChange = ({event,index})=>{
         const widget = widgets[index];
@@ -158,6 +149,7 @@ const ChatMark = ({ children, ...props }) => {
                     type:'checkbox',
                     value:status === 'x'?'checked':'unchecked',
                 });
+                setAutoForm(true);
             } else if (match = line.match(radioRegex)) {
                 const [id, title] = match.slice(1);
                 widgetsHandlers.append({
@@ -166,6 +158,7 @@ const ChatMark = ({ children, ...props }) => {
                     type:'radio',
                     value:'unchecked',
                 });
+                setAutoForm(true);
             } else if (match = line.match(editorRegex)) {
                 const [id] = match.slice(1);
                 detectEditorId = id;
@@ -174,6 +167,7 @@ const ChatMark = ({ children, ...props }) => {
                     type:'editor',
                     value: '',
                 });
+                setAutoForm(true);
             } else if(match = line.match(editorContentRegex)){
                 const [content] = match.slice(1);
                 editorContentRecorder += content + '\n';
@@ -263,11 +257,13 @@ const ChatMark = ({ children, ...props }) => {
 
     return (
         <Box className={classes.container}>
-            {props.type==='form'
+            {autoForm
                 ?<form>
                     {renderWidgets(widgets)}
-                    <Button className={classes.submit}  size='xs' onClick={handleSubmit}>Submit</Button>
-                    <Button className={classes.cancel}  size='xs' onClick={handleCancel}>Cancel</Button>
+                    <Box>
+                        <Button className={classes.submit}  size='xs' onClick={handleSubmit}>Submit</Button>
+                        <Button className={classes.cancel}  size='xs' onClick={handleCancel}>Cancel</Button>
+                    </Box>
                 </form>
                 :renderWidgets(widgets)
             }
