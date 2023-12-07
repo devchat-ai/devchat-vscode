@@ -89,7 +89,7 @@ const MessageList = observer((props: any) => {
                         </Group>
                     </Card>}
                     <MessageContext key={`message-context-${index}`} contexts={contexts} />
-                    <MessageBody key={`message-codeblock-${index}`} messageType={messageType} >
+                    <MessageBody key={`message-codeblock-${index}`} messageType={messageType} messageDone={!(index === chat.messages.length -1 && chat.generating)}>
                         {messageText}
                     </MessageBody>
                 </Box >

@@ -7,6 +7,7 @@ import { useMst } from "@/views/stores/RootStore";
 interface IProps {
     messageType: string,
     children: string,
+    messageDone?: boolean,
     temp?: boolean
 }
 
@@ -23,14 +24,14 @@ const useStyles = createStyles((theme, options:any) => ({
 }));
 
 const MessageBody = observer((props: IProps) => {
-    const { children, messageType, temp=false } = props;
+    const { children, messageType, temp=false ,messageDone} = props;
     const { chat } = useMst();
     const {classes} = useStyles({
         chatPanelWidth:chat.chatPanelWidth
     });
     return (
         messageType === 'bot'
-            ? <MessageMarkdown className={classes.bodyWidth} temp={temp}>
+            ? <MessageMarkdown className={classes.bodyWidth} temp={temp} messageDone={messageDone}>
                 {children}
             </MessageMarkdown>
             : <Container

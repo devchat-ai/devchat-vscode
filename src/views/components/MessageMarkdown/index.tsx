@@ -27,6 +27,7 @@ const useStyles = createStyles((theme) => ({
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
     className: string,
+    messageDone?: boolean,
     temp?: boolean
 }
 
@@ -48,7 +49,7 @@ function parseMetaData(string) {
 }
 
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
-    const { children,temp=false } = props;
+    const { children,temp=false,messageDone } = props;
     const { chat } = useMst();
     const [steps, setSteps] = useState<Step[]>([]);
     const tree = fromMarkdown(children);
@@ -223,7 +224,7 @@ Generate a professionally written and formatted release note in markdown with th
 
                 if (lanugage === 'chatmark' || lanugage === 'ChatMark') {
                     const chatmarkValue = chatmarkValues[`chatmark-${index}`];
-                    return <ChatMark value={chatmarkValue}>{value}</ChatMark>;
+                    return <ChatMark value={chatmarkValue} messageDone={messageDone}>{value}</ChatMark>;
                 }
 
                 return !inline && lanugage ? (
