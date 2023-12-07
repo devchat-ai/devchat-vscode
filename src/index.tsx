@@ -23,6 +23,15 @@ const myTheme: MantineThemeOverride = {
           ],
     },
     primaryColor: 'merico',
+    components: {
+        Text: {
+            styles: {
+                root:{
+                    fontSize: 'var(--vscode-editor-font-size)',
+                }
+            }
+        },
+      },
 };
   
 
