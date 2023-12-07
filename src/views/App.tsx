@@ -14,7 +14,7 @@ export default function App() {
             styles={{
                 main: {
                     padding:'40px 0 0 0',
-                    fontFamily: 'var(--vscode-editor-font-familyy)',
+                    fontFamily: 'var(--vscode-editor-font-family)',
                     fontSize: 'var(--vscode-editor-font-size)',
                 },
             }}

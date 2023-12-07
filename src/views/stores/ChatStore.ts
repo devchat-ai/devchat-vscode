@@ -3,6 +3,7 @@ import messageUtil from '@/util/MessageUtil';
 import { ChatContext } from '@/views/stores/InputStore';
 import { features } from "process";
 import { Slice } from "@tiptap/pm/model";
+import yaml from 'js-yaml';
 
 interface Context {
     content: string;
@@ -201,6 +202,20 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom();
         };
 
+        const userInput = (values:any) => {
+            const inputStr = `
+\`\`\`yaml type=chatmark-values
+${yaml.dump(values)}
+\`\`\`
+`;
+            self.currentMessage = self.currentMessage + inputStr;
+            messageUtil.sendMessage({
+                command: 'userInput',
+                text: inputStr
+            });
+            // goto bottom
+            goScrollBottom();
+        };
 
         return {
             helpMessage,
@@ -209,6 +224,7 @@ You can configure DevChat from [Settings](#settings).`;
             goScrollBottom,
             startGenerating,
             commonMessage,
+            userInput,
             devchatAsk : flow(function* (userMessage, chatContexts) {
                 self.messages.push({
                         type: 'user',

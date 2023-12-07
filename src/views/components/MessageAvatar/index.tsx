@@ -14,7 +14,7 @@ import { IChatContext } from "@/views/stores/InputStore";
 
 interface IProps {
     item?: IMessage,
-    avatarType?: "user" | "bot" | "system",
+    avatarType?: string,
     copyMessage?: string,
     messageContexts?: IChatContext[],
     deleteHash?: string,

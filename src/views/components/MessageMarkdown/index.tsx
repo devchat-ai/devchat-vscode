@@ -13,6 +13,9 @@ import { Message } from "@/views/stores/ChatStore";
 import messageUtil from '@/util/MessageUtil';
 import {fromMarkdown} from 'mdast-util-from-markdown';
 import {visit} from 'unist-util-visit';
+import ChatMark from "@/views/components/ChatMark";
+import { useSetState } from "@mantine/hooks";
+import { toMarkdown } from "mdast-util-to-markdown";
 
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
@@ -26,6 +29,17 @@ type Step = {
     endsWithTripleBacktick: boolean;
 };
 
+function parseMetaData(string) {
+    const regexp = /((?<k1>(?!=)\S+)=((?<v1>(["'`])(.*?)\5)|(?<v2>\S+)))|(?<k2>\S+)/g;    
+    const io = (string ?? '').matchAll(regexp);
+
+    return new Map(
+        [...io]
+        .map((item) => item?.groups)
+        .map(({ k1, k2, v1, v2 }) => [k1 ?? k2, v1 ?? v2]),
+    );
+}
+
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
     const { children,temp=false } = props;
     const { chat } = useMst();
@@ -33,7 +47,7 @@ const MessageMarkdown = observer((props: MessageMarkdownProps) => {
     const tree = fromMarkdown(children);
     const codes = tree.children.filter(node => node.type === 'code');    
     const lastNode = tree.children[tree.children.length-1];
-    let index = 1;
+    const [chatmarkValues,setChatmarkValues] = useSetState({});
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -119,19 +133,65 @@ Generate a professionally written and formatted release note in markdown with th
         }
     };
 
+    useEffect(()=>{
+        let previousNode:any = null;
+        let chatmarkCount = 0;
+        visit(tree, function (node) {
+            if (node.type === 'code') {
+                // set meta data as props
+                const metaData = parseMetaData(node.meta);
+                let props = {...metaData};
+                if(node.lang ==='chatmark' || node.lang ==='ChatMark'){
+                    props['index'] = chatmarkCount;
+                } else if ((node.lang === 'yaml' || node.lang === 'YAML') && previousNode && previousNode.type === 'code' && previousNode.lang === 'chatmark') {
+                    setChatmarkValues({[`chatmark-${previousNode.data.hProperties.index}`]:node.value});
+                }
+                node.data={
+                    hProperties:{
+                        ...props
+                    }
+                };
+                // record node and count data for next loop
+                previousNode = node;
+                if(node.lang ==='chatmark' || node.lang ==='ChatMark'){
+                    chatmarkCount++;
+                }
+            }
+        });
+    },[children]);
+
     return <ReactMarkdown
         {...props}
         remarkPlugins={[()=> (tree) =>{
+            let stepCount = 1;
+            let chatmarkCount = 0;
             visit(tree, function (node) {
-                if (node.type === 'code' && (node.lang ==='step' || node.lang ==='Step')) {
-                    node.data = {
+                if (node.type === 'code') {
+                    // set meta data as props
+                    const metaData = parseMetaData(node.meta);
+                    let props = {...metaData};
+                    if(node.lang ==='step' || node.lang ==='Step'){
+                        props['index'] = stepCount;
+                    } else if(node.lang ==='chatmark' || node.lang ==='ChatMark'){
+                        props['id'] = `chatmark-${chatmarkCount}`;
+                        props['index'] = chatmarkCount;
+                    } 
+                    node.data={
                         hProperties:{
-                            index: index++
+                            ...props
                         }
                     };
+                    // record node and count data for next loop
+                    if(node.lang ==='chatmark' || node.lang ==='ChatMark'){
+                        chatmarkCount++;
+                    }
+                    if(node.lang ==='step' || node.lang ==='Step'){
+                        stepCount++;
+                    }
                 }
             });
         }]}
+
         rehypePlugins={[rehypeRaw]}
         components={{
             code({ node, inline, className, children, index,  ...props }) {
@@ -151,6 +211,11 @@ Generate a professionally written and formatted release note in markdown with th
                 if (lanugage === 'step' || lanugage === 'Step') {
                     let done = Number(index) < codes.length? true : lastNode.type !== 'code';
                     return <Step language={lanugage} done={temp?done:true}>{value}</Step>;
+                }
+
+                if (lanugage === 'chatmark' || lanugage === 'ChatMark') {
+                    const chatmarkValue = chatmarkValues[`chatmark-${index}`];
+                    return <ChatMark value={chatmarkValue}>{value}</ChatMark>;
                 }
 
                 return !inline && lanugage ? (
