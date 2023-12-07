@@ -229,6 +229,8 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 				const leftDoc = await vscode.workspace.openTextDocument(leftUri);
 				const rightDoc = await vscode.workspace.openTextDocument(rightUri);
 
+				// close rightDoc
+				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 				// 将右边文档的内容替换到左边文档
 				const leftEditor = await vscode.window.showTextDocument(leftDoc);
 				await leftEditor.edit(editBuilder => {
