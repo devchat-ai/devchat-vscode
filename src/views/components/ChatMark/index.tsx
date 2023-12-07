@@ -50,13 +50,13 @@ interface Wdiget{
     type:'editor'|'checkbox'|'radio'|'button'|'text'
 }
   
-const ChatMark = ({ children,value }) => {
+const ChatMark = ({ children,value,messageDone }) => {
     const {classes} = useStyles();
     const [widgets,widgetsHandlers] = useListState<Wdiget>();
     const {chat} = useMst();
     const [autoForm,setAutoForm] = useState(false); // if any widget is checkbox,radio or editor wdiget, the form is auto around them
     const values = value?yaml.load(value):{};
-    const [disabled,setDisabled] = useState(!!value);
+    const [disabled,setDisabled] = useState(messageDone||!!value);
 
     const handleSubmit = () => {
         let formData = {};

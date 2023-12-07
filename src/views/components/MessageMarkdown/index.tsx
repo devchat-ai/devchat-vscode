@@ -1,4 +1,4 @@
-import { Button, Anchor, Stack, Group, Box } from "@mantine/core";
+import { Button, Anchor, Stack, Group, Box, createStyles } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -17,9 +17,17 @@ import ChatMark from "@/views/components/ChatMark";
 import { useSetState } from "@mantine/hooks";
 import { toMarkdown } from "mdast-util-to-markdown";
 
+const useStyles = createStyles((theme) => ({
+    link:{
+        '&:hover':{
+            color:theme.colors.merico[6]
+        }
+    }
+}));
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
     className: string,
+    messageDone?: boolean,
     temp?: boolean
 }
 
@@ -41,13 +49,14 @@ function parseMetaData(string) {
 }
 
 const MessageMarkdown = observer((props: MessageMarkdownProps) => {
-    const { children,temp=false } = props;
+    const { children,temp=false,messageDone } = props;
     const { chat } = useMst();
     const [steps, setSteps] = useState<Step[]>([]);
     const tree = fromMarkdown(children);
     const codes = tree.children.filter(node => node.type === 'code');    
     const lastNode = tree.children[tree.children.length-1];
     const [chatmarkValues,setChatmarkValues] = useSetState({});
+    const {classes} = useStyles();
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -215,7 +224,7 @@ Generate a professionally written and formatted release note in markdown with th
 
                 if (lanugage === 'chatmark' || lanugage === 'ChatMark') {
                     const chatmarkValue = chatmarkValues[`chatmark-${index}`];
-                    return <ChatMark value={chatmarkValue}>{value}</ChatMark>;
+                    return <ChatMark value={chatmarkValue} messageDone={messageDone}>{value}</ChatMark>;
                 }
 
                 return !inline && lanugage ? (
@@ -270,7 +279,9 @@ Generate a professionally written and formatted release note in markdown with th
                     "#extension",
                     "#settings"].filter((item) => item === href);
                 return customAnchors.length > 0
-                    ? <Anchor href={href} onClick={() => {
+                    ? <Anchor
+                        className={classes.link}
+                        href={href} onClick={() => {
                         handleExplain(href);
                     }}>
                         {children}
