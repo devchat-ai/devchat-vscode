@@ -32,13 +32,9 @@ async function getUndefinedSymbols(content: string): Promise<string[] | undefine
     \`\`\`
 	During this process, you cannot invoke the GPT function. The code snippet is as follows: \n\`\`\`` + content + '```';  ;
 
-	const chatResponse = await devChat.chat(newContent, chatOptions, onData);
+	const chatResponse = await devChat.chat(newContent, chatOptions, onData, false);
 	if (chatResponse && chatResponse.response) {
 		logger.channel()?.info(chatResponse.response);
-	}
-
-	if (!chatResponse.isError) {
-		await devChat.delete(chatResponse['prompt-hash']);
 	}
 
 	// parse data in chatResponse.response

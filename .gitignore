@@ -11,3 +11,6 @@ node_modules
 .chat/prompts.db
 
 .vscode/settings.json
+actions_backup/
+.DS_Store
+
