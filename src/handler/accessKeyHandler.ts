@@ -31,5 +31,5 @@ export async function getUserAccessKey(message: any, panel: vscode.WebviewPanel|
 			"keyType": llmModelData.api_key?.startsWith("DC.") ? "DevChat" : "others",
 			"endPoint": llmModelData.api_base ? llmModelData.api_base : ""
 		};
-		MessageHandler.sendMessage(panel, keyData);
+		MessageHandler.sendMessage(panel, keyData, false);
 }

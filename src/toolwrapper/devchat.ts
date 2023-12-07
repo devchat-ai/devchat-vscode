@@ -116,7 +116,11 @@ class DevChat {
 		args.push("-m", llmModelData.model);
 
 		args.push("-ns");
-		args.push("-a");
+
+		const functionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
+		if (functionCalling) {
+			args.push("-a");
+		}
 
 		return args;
 	}
@@ -194,11 +198,11 @@ class DevChat {
 	private async runCommand(args: string[]): Promise<{code: number | null, stdout: string, stderr: string}> {
 		// build env variables for command
 		const envs = {
+			...process.env,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"PYTHONUTF8":1,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
-			...process.env
+			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages"
 		};
 
 		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
@@ -291,7 +295,7 @@ class DevChat {
 				"prompt-hash": logs[0]['hash'],
 				user: "",
 				date: "",
-				response: stdout,
+				response: responseData.response,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				finish_reason: "",
 				isError: false,

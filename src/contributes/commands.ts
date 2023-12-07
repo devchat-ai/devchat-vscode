@@ -87,6 +87,12 @@ function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string)
 			if (passwordInput === undefined) {
 				return;
 			}
+			if (provider === "DevChat" && passwordInput.trim() !== "") {
+				if (!passwordInput.trim().startsWith("DC.")) {
+					UiUtilWrapper.showErrorMessage("Your key is invalid! DevChat Access Key is: DC.xxxxx");
+					return;
+				}
+			}
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your key is invalid!");
@@ -223,6 +229,8 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 				const leftDoc = await vscode.workspace.openTextDocument(leftUri);
 				const rightDoc = await vscode.workspace.openTextDocument(rightUri);
 
+				// close rightDoc
+				await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
 				// 将右边文档的内容替换到左边文档
 				const leftEditor = await vscode.window.showTextDocument(leftDoc);
 				await leftEditor.edit(editBuilder => {
@@ -289,9 +297,9 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 		if (!fs.existsSync(requirementsFile)) {
 			requirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'sys', 'requirements.txt');
 			if (!fs.existsSync(requirementsFile)) {
-				logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
-				logger.channel()?.show();
-				vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
+				// logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
+				// logger.channel()?.show();
+				// vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
 				return ;
 			}
 		}
@@ -319,7 +327,7 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 		}
 		
 		UiUtilWrapper.updateConfiguration("DevChat", "PythonForCommands", pythonCommand.trim());
-		vscode.window.showInformationMessage(`All slash Command has ready to use! Please input / to try it!`);
+		vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
 	});
 
 	context.subscriptions.push(disposable);
