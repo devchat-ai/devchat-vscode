@@ -1,888 +1,889 @@
 {
-  "name": "devchat",
-  "displayName": "DevChat",
-  "description": "Write prompts, not code",
-  "version": "0.1.88",
-  "icon": "assets/devchat.png",
-  "publisher": "merico",
-  "engines": {
-    "vscode": "^1.75.0"
-  },
-  "extensionDependencies": [
-    "merico.lang-bridge-vsc"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/devchat-ai/devchat-vscode.git"
-  },
-  "categories": [
-    "Programming Languages",
-    "Snippets",
-    "Machine Learning",
-    "Education"
-  ],
-  "keywords": [
-    "ai",
-    "anthropic",
-    "assistant",
-    "autocomplete",
-    "bot",
-    "chat",
-    "chatbot",
-    "codegen",
-    "c#",
-    "c++",
-    "codex",
-    "co-pilot",
-    "devchat",
-    "documentation",
-    "go",
-    "golang",
-    "intellisense",
-    "java",
-    "javascript",
-    "keybindings",
-    "kotlin",
-    "llm",
-    "model",
-    "openai",
-    "php",
-    "pilot",
-    "python",
-    "refactor",
-    "ruby",
-    "sourcegraph",
-    "snippets",
-    "test",
-    "typescript"
-  ],
-  "activationEvents": [
-    "*"
-  ],
-  "main": "./dist/extension.js",
-  "files": [
-    "dist/*",
-    "bin/*",
-    "assets/*",
-    "tools/*",
-    "workflows/*",
-    "LICENSE",
-    "README.md"
-  ],
-  "contributes": {
-    "configuration": {
-      "title": "DevChat",
-      "properties": {
-        "devchat.Provider.devchat": {
-          "type": "object",
-          "properties": {
-            "access_key": {
-              "type": "string",
-              "default": "",
-              "description": "[required*] Specify access key for selected provider."
-            },
-            "api_base": {
-              "type": "string",
-              "default": "",
-              "description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
-            }
-          },
-          "required": [
-            "access_key"
-          ],
-          "additionalProperties": false,
-          "order": -1,
-          "markdownDescription": "Specify the properties for devchat provider."
-        },
-        "devchat.Provider.openai": {
-          "type": "object",
-          "properties": {
-            "access_key": {
-              "type": "string",
-              "default": "",
-              "description": "[required*] Specify access key for selected provider."
-            },
-            "api_base": {
-              "type": "string",
-              "default": "",
-              "description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
-            }
-          },
-          "required": [
-            "access_key"
-          ],
-          "additionalProperties": false,
-          "order": -1,
-          "markdownDescription": "Specify the properties for openai provider."
-        },
-        "devchat.Model.gpt-3-5": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat",
-                "openai"
-              ],
-              "description": "[required*] Specify which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            },
-            "presence_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-            },
-            "frequency_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-            }
-          },
-          "required": [
-            "provider",
-            "key"
-          ],
-          "additionalProperties": false,
-          "order": 0,
-          "markdownDescription": "Specify the properties for gpt-3.5-turbo model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
-        },
-        "devchat.Model.gpt-3-5-1106": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat",
-                "openai"
-              ],
-              "description": "[required*] Specify which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            },
-            "presence_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-            },
-            "frequency_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-            }
-          },
-          "required": [
-            "provider",
-            "key"
-          ],
-          "additionalProperties": false,
-          "order": 0,
-          "markdownDescription": "Specify the properties for gpt-3.5-turbo-1106 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
-        },
-        "devchat.Model.gpt-3-5-16k": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat",
-                "openai"
-              ],
-              "description": "[required*] Specify which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            },
-            "presence_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-            },
-            "frequency_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-            }
-          },
-          "required": [
-            "provider",
-            "key"
-          ],
-          "additionalProperties": false,
-          "order": 1,
-          "markdownDescription": "Specify properties for gpt-3.5-turbo-16k model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.gpt-4": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat",
-                "openai"
-              ],
-              "description": "[required*] Specify which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            },
-            "presence_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-            },
-            "frequency_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-            }
-          },
-          "additionalProperties": false,
-          "order": 2,
-          "markdownDescription": "properties for gpt-4 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
-        },
-        "devchat.Model.gpt-4-turbo": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat",
-                "openai"
-              ],
-              "description": "[required*] Specify which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            },
-            "presence_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
-            },
-            "frequency_penalty": {
-              "type": "number",
-              "default": 0,
-              "description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
-            }
-          },
-          "additionalProperties": false,
-          "order": 2,
-          "markdownDescription": "properties for gpt-4-turbo model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
-        },
-        "devchat.Model.claude-2": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.3,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 1000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for claude-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.xinghuo-2": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.5,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 4000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for xinghuo-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.chatglm_pro": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.5,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for chatglm_pro model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.ERNIE-Bot": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.5,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for ERNIE-Bot model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.CodeLlama-34b-Instruct": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "api_secret": {
-              "type": "string",
-              "default": "",
-              "description": "[required*] Specify secret key for selected provider."
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.5,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 4000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for CodeLlama-34b-Instruct. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.Model.llama-2-70b-chat": {
-          "type": "object",
-          "properties": {
-            "provider": {
-              "type": "string",
-              "default": "devchat",
-              "enum": [
-                "devchat"
-              ],
-              "description": "[required*] which provider host this llm model"
-            },
-            "api_secret": {
-              "type": "string",
-              "default": "",
-              "description": "[required*] Specify secret key for selected provider."
-            },
-            "temperature": {
-              "type": "number",
-              "default": 0.5,
-              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
-            },
-            "max_tokens": {
-              "type": "number",
-              "default": 4000,
-              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
-            }
-          },
-          "additionalProperties": false,
-          "order": 3,
-          "markdownDescription": "properties for llama-2-70b-chat. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
-        },
-        "devchat.defaultModel": {
-          "oneOf": [
-            {
-              "type": "string",
-              "default": "gpt-3.5-turbo",
-              "enum": [
-                "gpt-3.5-turbo",
-                "gpt-3.5-turbo-1106",
-                "gpt-3.5-turbo-16k",
-                "gpt-4",
-                "gpt-4-1106-preview",
-                "claude-2",
-                "xinghuo-2",
-                "chatglm_pro",
-                "ERNIE-Bot",
-                "CodeLlama-34b-Instruct",
-                "llama-2-70b-chat"
-              ]
-            },
-            {
-              "type": "string",
-              "default": "gpt-3.5-turbo"
-            }
-          ],
-          "order": 7,
-          "markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://web.devchat.ai/pricing)"
-        },
-        "DevChat.OpenAI.stream": {
-          "type": "boolean",
-          "default": true,
-          "order": 10,
-          "description": "Whether to stream a response."
-        },
-        "DevChat.EnableFunctionCalling": {
-          "type": "boolean",
-          "default": false,
-          "order": 11,
-          "description": "Enable function calling for GPT."
-        },
-        "DevChat.DevChatPath": {
-          "type": "string",
-          "default": "",
-          "input": {
-            "type": "file",
-            "filter": {
-              "All files": [
-                "devchat"
-              ]
-            }
-          },
-          "order": 12,
-          "description": "Where is the devchat binary located?"
-        },
-        "DevChat.betaInvitationCode": {
-          "type": "string",
-          "default": "",
-          "order": 13,
-          "description": "The invitation code for beta testing."
-        },
-        "DevChat.maxLogCount": {
-          "type": "number",
-          "default": 20,
-          "order": 14,
-          "description": "Limit the number of prompts in the chat view."
-        },
-        "DevChat.PythonForChat": {
-          "type": "string",
-          "default": "",
-          "input": {
-            "type": "file",
-            "filter": {
-              "All files": [
-                "python*"
-              ]
-            }
-          },
-          "description": "Which Python interpreter to use with DevChat?"
-        },
-        "DevChat.PythonForCommands": {
-          "type": "string",
-          "default": "",
-          "description": "Path to the Python virtual environment for AskCode."
-        }
-      }
-    },
-    "viewsContainers": {
-      "activitybar": [
-        {
-          "id": "devchat-sidebar",
-          "title": "DevChat",
-          "icon": "assets/devchat_icon.svg"
-        }
-      ]
-    },
-    "views": {
-      "devchat-sidebar": [
-        {
-          "type": "webview",
-          "id": "devchat-view",
-          "name": "DevChat"
-        },
-        {
-          "type": "tree",
-          "id": "devchat-topicview",
-          "name": "DevChat-Topic"
-        }
-      ]
-    },
-    "commands": [
-      {
-        "command": "devchat-topicview.reloadTopic",
-        "title": "Reload Topics",
-        "icon": "$(refresh)"
-      },
-      {
-        "command": "devchat-topicview.selectTopic",
-        "title": "Select Topic",
-        "icon": "$(add)"
-      },
-      {
-        "command": "devchat-topicview.addTopic",
-        "title": "Add Topic",
-        "icon": "$(add)"
-      },
-      {
-        "command": "devchat-topicview.deleteSelectedTopic",
-        "title": "Delete Selected Topic",
-        "icon": "$(trash)"
-      },
-      {
-        "command": "devchat-topicview.deleteTopic",
-        "title": "Delete topic"
-      },
-      {
-        "command": "devchat.applyDiffResult",
-        "title": "Apply Diff",
-        "icon": "assets/devchat_apply.svg"
-      },
-      {
-        "command": "devchat.createEntry",
-        "title": "Create Entry"
-      },
-      {
-        "command": "DevChat.AccessKey.OpenAI",
-        "title": "Input OpenAI API Key",
-        "category": "DevChat"
-      },
-      {
-        "command": "DevChat.AccessKey.DevChat",
-        "title": "Input DevChat Access Key",
-        "category": "DevChat"
-      },
-      {
-        "command": "DevChat.PythonPath",
-        "title": "Set Python Path",
-        "category": "DevChat"
-      },
-      {
-        "command": "devchat.openChatPanel",
-        "title": "DevChat"
-      },
-      {
-        "command": "devchat.addContext",
-        "title": "Add to DevChat"
-      },
-      {
-        "command": "devchat.askForCode",
-        "title": "Add to DevChat"
-      },
-      {
-        "command": "devchat.askForFile",
-        "title": "Add to DevChat"
-      },
-      {
-        "command": "devchat.addConext_chinese",
-        "title": "添加到DevChat"
-      },
-      {
-        "command": "devchat.askForCode_chinese",
-        "title": "添加到DevChat"
-      },
-      {
-        "command": "devchat.askForFile_chinese",
-        "title": "添加到DevChat"
-      },
-      {
-        "command": "DevChat.InstallCommands",
-        "title": "Install slash commands",
-        "category": "DevChat"
-      },
-      {
-        "command": "DevChat.UpdataChatModels",
-        "title": "Update Chat Models",
-        "category": "DevChat"
-      },
-      {
-        "command": "DevChat.InstallCommandPython",
-        "title": "Install Python for Commands",
-        "category": "DevChat"
-      }
-    ],
-    "menus": {
-      "view/item/context": [
-        {
-          "command": "devchat-topicview.deleteTopic",
-          "when": "view == devchat-topicview",
-          "group": "1_modification"
-        }
-      ],
-      "view/title": [
-        {
-          "command": "devchat-topicview.addTopic",
-          "when": "view == devchat-topicview",
-          "group": "navigation"
-        },
-        {
-          "command": "devchat-topicview.deleteSelectedTopic",
-          "when": "view == devchat-topicview",
-          "group": "navigation"
-        },
-        {
-          "command": "devchat-topicview.reloadTopic",
-          "when": "view == devchat-topicview",
-          "group": "navigation"
-        }
-      ],
-      "editor/title": [
-        {
-          "command": "devchat.applyDiffResult",
-          "group": "navigation",
-          "when": "editorTextFocus && isInDiffEditor"
-        }
-      ],
-      "commandPalette": [
-        {
-          "command": "devchat-topicview.reloadTopic",
-          "when": "false"
-        },
-        {
-          "command": "devchat-topicview.selectTopic",
-          "when": "false"
-        },
-        {
-          "command": "devchat-topicview.addTopic",
-          "when": "false"
-        },
-        {
-          "command": "devchat-topicview.deleteSelectedTopic",
-          "when": "false"
-        },
-        {
-          "command": "devchat-topicview.deleteTopic",
-          "when": "false"
-        },
-        {
-          "command": "devchat.applyDiffResult",
-          "when": "false"
-        },
-        {
-          "command": "devchat.addContext",
-          "when": "false"
-        },
-        {
-          "command": "devchat.askForCode",
-          "when": "false"
-        },
-        {
-          "command": "devchat.askForFile",
-          "when": "false"
-        },
-        {
-          "command": "devchat.addConext_chinese",
-          "when": "false"
-        },
-        {
-          "command": "devchat.askForCode_chinese",
-          "when": "false"
-        },
-        {
-          "command": "devchat.askForFile_chinese",
-          "when": "false"
-        }
-      ],
-      "explorer/context": [
-        {
-          "when": "isChineseLocale && resourceLangId != 'git'",
-          "command": "devchat.addConext_chinese",
-          "group": "navigation"
-        },
-        {
-          "when": "!isChineseLocale && resourceLangId != 'git'",
-          "command": "devchat.addContext",
-          "group": "navigation"
-        }
-      ],
-      "editor/context": [
-        {
-          "command": "devchat.askForCode_chinese",
-          "when": "isChineseLocale && editorTextFocus && editorHasSelection",
-          "group": "navigation"
-        },
-        {
-          "command": "devchat.askForCode",
-          "when": "!isChineseLocale && editorTextFocus && editorHasSelection",
-          "group": "navigation"
-        },
-        {
-          "command": "devchat.askForFile",
-          "when": "!isChineseLocale && editorTextFocus && !editorHasSelection",
-          "group": "navigation"
-        },
-        {
-          "command": "devchat.askForFile_chinese",
-          "when": "isChineseLocale && editorTextFocus && !editorHasSelection",
-          "group": "navigation"
-        }
-      ]
-    }
-  },
-  "scripts": {
-    "vscode:uninstall": "node ./dist/uninstall",
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "mocha",
-    "build": "webpack --config webpack.config.js",
-    "dev": "webpack serve --config webpack.config.js --open"
-  },
-  "devDependencies": {
-    "@babel/core": "^7.21.8",
-    "@babel/preset-env": "^7.21.5",
-    "@babel/preset-react": "^7.18.6",
-    "@babel/preset-typescript": "^7.21.5",
-    "@types/chai": "^4.3.5",
-    "@types/glob": "^8.1.0",
-    "@types/mocha": "^10.0.1",
-    "@types/mock-fs": "^4.13.1",
-    "@types/ncp": "^2.0.5",
-    "@types/node": "16.x",
-    "@types/proxyquire": "^1.3.28",
-    "@types/react-dom": "^18.2.3",
-    "@types/react-syntax-highlighter": "^15.5.6",
-    "@types/shell-escape": "^0.2.1",
-    "@types/sinon": "^10.0.15",
-    "@types/uuid": "^9.0.1",
-    "@types/vscode": "^1.75.0",
-    "@typescript-eslint/eslint-plugin": "^5.56.0",
-    "@typescript-eslint/parser": "^5.56.0",
-    "@vscode/test-electron": "^2.3.0",
-    "babel-loader": "^9.1.2",
-    "chai": "^4.3.7",
-    "copy-webpack-plugin": "^11.0.0",
-    "css-loader": "^6.7.3",
-    "dotenv": "^16.0.3",
-    "eslint": "^8.36.0",
-    "file-loader": "^6.2.0",
-    "glob": "^8.1.0",
-    "html-webpack-plugin": "^5.5.1",
-    "jest": "^29.5.0",
-    "json-loader": "^0.5.7",
-    "mocha": "^10.2.0",
-    "mock-fs": "^5.2.0",
-    "proxyquire": "^2.1.3",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "sinon": "^15.1.0",
-    "style-loader": "^3.3.2",
-    "ts-jest": "^29.1.0",
-    "ts-loader": "^9.4.2",
-    "ts-node": "^10.9.1",
-    "typescript": "^4.9.5",
-    "url-loader": "^4.1.1",
-    "vscode-test": "^1.6.1",
-    "webpack": "^5.76.3",
-    "webpack-cli": "^5.0.1",
-    "webpack-dev-server": "^4.13.3"
-  },
-  "dependencies": {
-    "@emotion/react": "^11.10.8",
-    "@mantine/core": "^6.0.10",
-    "@mantine/dropzone": "^6.0.10",
-    "@mantine/hooks": "^6.0.10",
-    "@mantine/prism": "^6.0.10",
-    "@mantine/tiptap": "^6.0.10",
-    "@tabler/icons-react": "^2.17.0",
-    "@tiptap/extension-link": "^2.0.3",
-    "@tiptap/pm": "^2.0.0",
-    "@tiptap/react": "^2.0.3",
-    "@tiptap/starter-kit": "^2.0.3",
-    "axios": "^1.3.6",
-    "dotenv": "^16.0.3",
-    "js-yaml": "^4.1.0",
-    "mdast": "^3.0.0",
-    "mdast-util-from-markdown": "^2.0.0",
-    "mdast-util-to-markdown": "^2.1.0",
-    "mobx": "^6.10.0",
-    "mobx-react": "^9.0.0",
-    "mobx-state-tree": "^5.1.8",
-    "ncp": "^2.0.0",
-    "node-fetch": "^3.3.1",
-    "nonce": "^1.0.4",
-    "quote": "^0.4.0",
-    "react-markdown": "^8.0.7",
-    "react-syntax-highlighter": "^15.5.0",
-    "rehype-raw": "^6.1.1",
-    "shell-escape": "^0.2.0",
-    "string-argv": "^0.3.2",
-    "unified": "^11.0.3",
-    "unist-util-visit": "^5.0.0",
-    "uuid": "^9.0.0",
-    "yaml": "^2.3.2"
-  }
+	"name": "devchat",
+	"displayName": "DevChat",
+	"description": "Write prompts, not code",
+	"version": "0.1.55",
+	"icon": "assets/devchat.png",
+	"publisher": "merico",
+	"engines": {
+		"vscode": "^1.75.0"
+	},
+	"extensionDependencies": [
+		"merico.lang-bridge-vsc"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/devchat-ai/devchat-vscode.git"
+	},
+	"categories": [
+		"Programming Languages",
+		"Snippets",
+		"Machine Learning",
+		"Education"
+	],
+	"keywords": [
+		"ai",
+		"anthropic",
+		"assistant",
+		"autocomplete",
+		"bot",
+		"chat",
+		"chatbot",
+		"codegen",
+		"c#",
+		"c++",
+		"codex",
+		"co-pilot",
+		"devchat",
+		"documentation",
+		"go",
+		"golang",
+		"intellisense",
+		"java",
+		"javascript",
+		"keybindings",
+		"kotlin",
+		"llm",
+		"model",
+		"openai",
+		"php",
+		"pilot",
+		"python",
+		"refactor",
+		"ruby",
+		"sourcegraph",
+		"snippets",
+		"test",
+		"typescript"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./dist/extension.js",
+	"files": [
+		"dist/*",
+		"bin/*",
+		"assets/*",
+		"tools/*",
+		"workflows/*",
+		"LICENSE",
+		"README.md"
+	],
+	"contributes": {
+		"configuration": {
+			"title": "DevChat",
+			"properties": {
+				"devchat.Provider.devchat": {
+					"type": "object",
+					"properties": {
+						"access_key": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify access key for selected provider."
+						},
+						"api_base": {
+							"type": "string",
+							"default": "",
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
+						}
+					},
+					"required": [
+						"access_key"
+					],
+					"additionalProperties": false,
+					"order": -1,
+					"markdownDescription": "Specify the properties for devchat provider."
+				},
+				"devchat.Provider.openai": {
+					"type": "object",
+					"properties": {
+						"access_key": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify access key for selected provider."
+						},
+						"api_base": {
+							"type": "string",
+							"default": "",
+							"description": "[optional*] Specify the api base for selected provider. Leave it blank if you want to use default api base."
+						}
+					},
+					"required": [
+						"access_key"
+					],
+					"additionalProperties": false,
+					"order": -1,
+					"markdownDescription": "Specify the properties for openai provider."
+				},
+				"devchat.Model.gpt-3-5": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"presence_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+						},
+						"frequency_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+						}
+					},
+					"required": [
+						"provider",
+						"key"
+					],
+					"additionalProperties": false,
+					"order": 0,
+					"markdownDescription": "Specify the properties for gpt-3.5-turbo model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
+				},
+				"devchat.Model.gpt-3-5-1106": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"presence_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+						},
+						"frequency_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+						}
+					},
+					"required": [
+						"provider",
+						"key"
+					],
+					"additionalProperties": false,
+					"order": 0,
+					"markdownDescription": "Specify the properties for gpt-3.5-turbo-1106 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
+				},
+				"devchat.Model.gpt-3-5-16k": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"presence_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+						},
+						"frequency_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+						}
+					},
+					"required": [
+						"provider",
+						"key"
+					],
+					"additionalProperties": false,
+					"order": 1,
+					"markdownDescription": "Specify properties for gpt-3.5-turbo-16k model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.gpt-4": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"presence_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+						},
+						"frequency_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+						}
+					},
+					"additionalProperties": false,
+					"order": 2,
+					"markdownDescription": "properties for gpt-4 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
+				},
+				"devchat.Model.gpt-4-turbo": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat",
+								"openai"
+							],
+							"description": "[required*] Specify which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"presence_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on whether they appear in the text so far, increasing the model's likelihood to talk about new topics."
+						},
+						"frequency_penalty": {
+							"type": "number",
+							"default": 0,
+							"description": "[optional*] Number between -2.0 and 2.0. Positive values penalize new tokens based on their existing frequency in the text so far, decreasing the model's likelihood to repeat the same line verbatim."
+						}
+					},
+					"additionalProperties": false,
+					"order": 2,
+					"markdownDescription": "properties for gpt-4-turbo model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
+				},
+				"devchat.Model.claude-2": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.3,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 1000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for claude-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.xinghuo-2": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for xinghuo-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.chatglm_pro": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for chatglm_pro model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.ERNIE-Bot": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for ERNIE-Bot model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.CodeLlama-34b-Instruct": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"api_secret": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify secret key for selected provider."
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for CodeLlama-34b-Instruct. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.Model.llama-2-70b-chat": {
+					"type": "object",
+					"properties": {
+						"provider": {
+							"type": "string",
+							"default": "devchat",
+							"enum": [
+								"devchat"
+							],
+							"description": "[required*] which provider host this llm model"
+						},
+						"api_secret": {
+							"type": "string",
+							"default": "",
+							"description": "[required*] Specify secret key for selected provider."
+						},
+						"temperature": {
+							"type": "number",
+							"default": 0.5,
+							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						}
+					},
+					"additionalProperties": false,
+					"order": 3,
+					"markdownDescription": "properties for llama-2-70b-chat. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+				},
+				"devchat.defaultModel": {
+					"oneOf": [
+						{
+							"type": "string",
+							"default": "gpt-3.5-turbo",
+							"enum": [
+								"gpt-3.5-turbo",
+								"gpt-3.5-turbo-1106",
+								"gpt-3.5-turbo-16k",
+								"gpt-4",
+								"gpt-4-1106-preview",
+								"claude-2",
+								"xinghuo-2",
+								"chatglm_pro",
+								"ERNIE-Bot",
+								"CodeLlama-34b-Instruct",
+								"llama-2-70b-chat"
+							]
+						},
+						{
+							"type": "string",
+							"default": "gpt-3.5-turbo"
+						}
+					],
+					"order": 7,
+					"markdownDescription": "Specify the default llm model for DevChat. [Price of each model](https://web.devchat.ai/pricing)"
+				},
+				"DevChat.OpenAI.stream": {
+					"type": "boolean",
+					"default": true,
+					"order": 10,
+					"description": "Whether to stream a response."
+				},
+				"DevChat.EnableFunctionCalling": {
+					"type": "boolean",
+					"default": false,
+					"order": 11,
+					"description": "Enable function calling for GPT."
+				},
+				"DevChat.DevChatPath": {
+					"type": "string",
+					"default": "",
+					"input": {
+						"type": "file",
+						"filter": {
+							"All files": [
+								"devchat"
+							]
+						}
+					},
+					"order": 12,
+					"description": "Where is the devchat binary located?"
+				},
+				"DevChat.betaInvitationCode": {
+					"type": "string",
+					"default": "",
+					"order": 13,
+					"description": "The invitation code for beta testing."
+				},
+				"DevChat.maxLogCount": {
+					"type": "number",
+					"default": 20,
+					"order": 14,
+					"description": "Limit the number of prompts in the chat view."
+				},
+				"DevChat.PythonForChat": {
+					"type": "string",
+					"default": "",
+					"input": {
+						"type": "file",
+						"filter": {
+							"All files": [
+								"python*"
+							]
+						}
+					},
+					"description": "Which Python interpreter to use with DevChat?"
+				},
+				"DevChat.PythonForCommands": {
+					"type": "string",
+					"default": "",
+					"description": "Path to the Python virtual environment for AskCode."
+				}
+			}
+		},
+		"viewsContainers": {
+			"activitybar": [
+				{
+					"id": "devchat-sidebar",
+					"title": "DevChat",
+					"icon": "assets/devchat_icon.svg"
+				}
+			]
+		},
+		"views": {
+			"devchat-sidebar": [
+				{
+					"type": "webview",
+					"id": "devchat-view",
+					"name": "DevChat"
+				},
+				{
+					"type": "tree",
+					"id": "devchat-topicview",
+					"name": "DevChat-Topic"
+				}
+			]
+		},
+		"commands": [
+			{
+				"command": "devchat-topicview.reloadTopic",
+				"title": "Reload Topics",
+				"icon": "$(refresh)"
+			},
+			{
+				"command": "devchat-topicview.selectTopic",
+				"title": "Select Topic",
+				"icon": "$(add)"
+			},
+			{
+				"command": "devchat-topicview.addTopic",
+				"title": "Add Topic",
+				"icon": "$(add)"
+			},
+			{
+				"command": "devchat-topicview.deleteSelectedTopic",
+				"title": "Delete Selected Topic",
+				"icon": "$(trash)"
+			},
+			{
+				"command": "devchat-topicview.deleteTopic",
+				"title": "Delete topic"
+			},
+			{
+				"command": "devchat.applyDiffResult",
+				"title": "Apply Diff",
+				"icon": "assets/devchat_apply.svg"
+			},
+			{
+				"command": "devchat.createEntry",
+				"title": "Create Entry"
+			},
+			{
+				"command": "DevChat.AccessKey.OpenAI",
+				"title": "Input OpenAI API Key",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.AccessKey.DevChat",
+				"title": "Input DevChat Access Key",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.PythonPath",
+				"title": "Set Python Path",
+				"category": "DevChat"
+			},
+			{
+				"command": "devchat.openChatPanel",
+				"title": "DevChat"
+			},
+			{
+				"command": "devchat.addContext",
+				"title": "Add to DevChat"
+			},
+			{
+				"command": "devchat.askForCode",
+				"title": "Add to DevChat"
+			},
+			{
+				"command": "devchat.askForFile",
+				"title": "Add to DevChat"
+			},
+			{
+				"command": "devchat.addConext_chinese",
+				"title": "添加到DevChat"
+			},
+			{
+				"command": "devchat.askForCode_chinese",
+				"title": "添加到DevChat"
+			},
+			{
+				"command": "devchat.askForFile_chinese",
+				"title": "添加到DevChat"
+			},
+			{
+				"command": "DevChat.InstallCommands",
+				"title": "Install slash commands",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.UpdataChatModels",
+				"title": "Update Chat Models",
+				"category": "DevChat"
+			},
+			{
+				"command": "DevChat.InstallCommandPython",
+				"title": "Install Python for Commands",
+				"category": "DevChat"
+			}
+		],
+		"menus": {
+			"view/item/context": [
+				{
+					"command": "devchat-topicview.deleteTopic",
+					"when": "view == devchat-topicview",
+					"group": "1_modification"
+				}
+			],
+			"view/title": [
+				{
+					"command": "devchat-topicview.addTopic",
+					"when": "view == devchat-topicview",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat-topicview.deleteSelectedTopic",
+					"when": "view == devchat-topicview",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat-topicview.reloadTopic",
+					"when": "view == devchat-topicview",
+					"group": "navigation"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "devchat.applyDiffResult",
+					"group": "navigation",
+					"when": "editorTextFocus && isInDiffEditor"
+				}
+			],
+			"commandPalette": [
+				{
+					"command": "devchat-topicview.reloadTopic",
+					"when": "false"
+				},
+				{
+					"command": "devchat-topicview.selectTopic",
+					"when": "false"
+				},
+				{
+					"command": "devchat-topicview.addTopic",
+					"when": "false"
+				},
+				{
+					"command": "devchat-topicview.deleteSelectedTopic",
+					"when": "false"
+				},
+				{
+					"command": "devchat-topicview.deleteTopic",
+					"when": "false"
+				},
+				{
+					"command": "devchat.applyDiffResult",
+					"when": "false"
+				},
+				{
+					"command": "devchat.addContext",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForCode",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForFile",
+					"when": "false"
+				},
+				{
+					"command": "devchat.addConext_chinese",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForCode_chinese",
+					"when": "false"
+				},
+				{
+					"command": "devchat.askForFile_chinese",
+					"when": "false"
+				}
+			],
+			"explorer/context": [
+				{
+					"when": "isChineseLocale && resourceLangId != 'git'",
+					"command": "devchat.addConext_chinese",
+					"group": "navigation"
+				},
+				{
+					"when": "!isChineseLocale && resourceLangId != 'git'",
+					"command": "devchat.addContext",
+					"group": "navigation"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "devchat.askForCode_chinese",
+					"when": "isChineseLocale && editorTextFocus && editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForCode",
+					"when": "!isChineseLocale && editorTextFocus && editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForFile",
+					"when": "!isChineseLocale && editorTextFocus && !editorHasSelection",
+					"group": "navigation"
+				},
+				{
+					"command": "devchat.askForFile_chinese",
+					"when": "isChineseLocale && editorTextFocus && !editorHasSelection",
+					"group": "navigation"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:uninstall": "node ./dist/uninstall",
+		"vscode:prepublish": "npm run package",
+		"compile": "webpack",
+		"watch": "webpack --watch",
+		"package": "webpack --mode production --devtool hidden-source-map",
+		"compile-tests": "tsc -p . --outDir out",
+		"watch-tests": "tsc -p . -w --outDir out",
+		"pretest": "npm run compile-tests && npm run compile && npm run lint",
+		"lint": "eslint src --ext ts",
+		"test": "mocha",
+		"build": "webpack --config webpack.config.js",
+		"dev": "webpack serve --config webpack.config.js --open"
+	},
+	"devDependencies": {
+		"@babel/core": "^7.21.8",
+		"@babel/preset-env": "^7.21.5",
+		"@babel/preset-react": "^7.18.6",
+		"@babel/preset-typescript": "^7.21.5",
+		"@types/chai": "^4.3.5",
+		"@types/glob": "^8.1.0",
+		"@types/mocha": "^10.0.1",
+		"@types/mock-fs": "^4.13.1",
+		"@types/ncp": "^2.0.5",
+		"@types/node": "16.x",
+		"@types/proxyquire": "^1.3.28",
+		"@types/react-dom": "^18.2.3",
+		"@types/react-syntax-highlighter": "^15.5.6",
+		"@types/shell-escape": "^0.2.1",
+		"@types/sinon": "^10.0.15",
+		"@types/uuid": "^9.0.1",
+		"@types/vscode": "^1.75.0",
+		"@typescript-eslint/eslint-plugin": "^5.56.0",
+		"@typescript-eslint/parser": "^5.56.0",
+		"@vscode/test-electron": "^2.3.0",
+		"babel-loader": "^9.1.2",
+		"chai": "^4.3.7",
+		"copy-webpack-plugin": "^11.0.0",
+		"css-loader": "^6.7.3",
+		"dotenv": "^16.0.3",
+		"eslint": "^8.36.0",
+		"file-loader": "^6.2.0",
+		"glob": "^8.1.0",
+		"html-webpack-plugin": "^5.5.1",
+		"jest": "^29.5.0",
+		"json-loader": "^0.5.7",
+		"mocha": "^10.2.0",
+		"mock-fs": "^5.2.0",
+		"proxyquire": "^2.1.3",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0",
+		"sinon": "^15.1.0",
+		"style-loader": "^3.3.2",
+		"ts-jest": "^29.1.0",
+		"ts-loader": "^9.4.2",
+		"ts-node": "^10.9.1",
+		"typescript": "^4.9.5",
+		"url-loader": "^4.1.1",
+		"vscode-test": "^1.6.1",
+		"webpack": "^5.76.3",
+		"webpack-cli": "^5.0.1",
+		"webpack-dev-server": "^4.13.3"
+	},
+	"dependencies": {
+		"@emotion/react": "^11.10.8",
+		"@mantine/core": "^6.0.10",
+		"@mantine/dropzone": "^6.0.10",
+		"@mantine/hooks": "^6.0.10",
+		"@mantine/prism": "^6.0.10",
+		"@mantine/tiptap": "^6.0.10",
+		"@tabler/icons-react": "^2.17.0",
+		"@tiptap/extension-link": "^2.0.3",
+		"@tiptap/pm": "^2.0.0",
+		"@tiptap/react": "^2.0.3",
+		"@tiptap/starter-kit": "^2.0.3",
+		"axios": "^1.3.6",
+		"dotenv": "^16.0.3",
+		"js-yaml": "^4.1.0",
+		"mdast": "^3.0.0",
+		"mdast-util-from-markdown": "^2.0.0",
+		"mdast-util-to-markdown": "^2.1.0",
+		"mobx": "^6.10.0",
+		"mobx-react": "^9.0.0",
+		"mobx-state-tree": "^5.1.8",
+		"ncp": "^2.0.0",
+		"node-fetch": "^3.3.1",
+		"nonce": "^1.0.4",
+		"quote": "^0.4.0",
+		"react-markdown": "^8.0.7",
+		"react-syntax-highlighter": "^15.5.0",
+		"rehype-raw": "^6.1.1",
+		"shell-escape": "^0.2.0",
+		"string-argv": "^0.3.2",
+		"tree-kill": "^1.2.2",
+		"unified": "^11.0.3",
+		"unist-util-visit": "^5.0.0",
+		"uuid": "^9.0.0",
+		"yaml": "^2.3.2"
+	}
 }

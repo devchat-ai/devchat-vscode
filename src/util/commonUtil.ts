@@ -12,7 +12,7 @@ import { logger } from './logger';
 import { spawn, exec } from 'child_process';
 import { UiUtilWrapper } from './uiUtil';
 import { ApiKeyManager } from './apiKey';
-
+var kill = require('tree-kill');
 
 export async function saveModelSettings(): Promise<void> {
 	// support models
@@ -196,8 +196,11 @@ export class CommandRun {
 
 	public stop() {
 		if (this.childProcess) {
-			this.childProcess.kill();
-			this.childProcess = null;
+			kill(this.childProcess.pid, 'SIGKILL', (err) => {
+				if (err) {
+					logger.channel()?.error('Failed to kill process tree:', err);
+				}
+			});
 		}
 	}
 }
