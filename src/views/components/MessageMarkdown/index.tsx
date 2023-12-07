@@ -1,4 +1,4 @@
-import { Button, Anchor, Stack, Group, Box } from "@mantine/core";
+import { Button, Anchor, Stack, Group, Box, createStyles } from "@mantine/core";
 import React, { useEffect, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import rehypeRaw from "rehype-raw";
@@ -17,6 +17,13 @@ import ChatMark from "@/views/components/ChatMark";
 import { useSetState } from "@mantine/hooks";
 import { toMarkdown } from "mdast-util-to-markdown";
 
+const useStyles = createStyles((theme) => ({
+    link:{
+        '&:hover':{
+            color:theme.colors.merico[6]
+        }
+    }
+}));
 interface MessageMarkdownProps extends React.ComponentProps<typeof ReactMarkdown> {
     children: string,
     className: string,
@@ -48,6 +55,7 @@ const MessageMarkdown = observer((props: MessageMarkdownProps) => {
     const codes = tree.children.filter(node => node.type === 'code');    
     const lastNode = tree.children[tree.children.length-1];
     const [chatmarkValues,setChatmarkValues] = useSetState({});
+    const {classes} = useStyles();
 
     const handleExplain = (value: string | undefined) => {
         console.log(value);
@@ -270,7 +278,9 @@ Generate a professionally written and formatted release note in markdown with th
                     "#extension",
                     "#settings"].filter((item) => item === href);
                 return customAnchors.length > 0
-                    ? <Anchor href={href} onClick={() => {
+                    ? <Anchor
+                        className={classes.link}
+                        href={href} onClick={() => {
                         handleExplain(href);
                     }}>
                         {children}
