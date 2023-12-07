@@ -298,8 +298,8 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 			requirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'sys', 'requirements.txt');
 			if (!fs.existsSync(requirementsFile)) {
 				logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
-				logger.channel()?.show();
-				vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
+				// logger.channel()?.show();
+				// vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
 				return ;
 			}
 		}
