@@ -116,7 +116,11 @@ class DevChat {
 		args.push("-m", llmModelData.model);
 
 		args.push("-ns");
-		args.push("-a");
+
+		const functionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
+		if (functionCalling) {
+			args.push("-a");
+		}
 
 		return args;
 	}
