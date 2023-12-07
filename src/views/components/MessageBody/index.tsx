@@ -1,4 +1,4 @@
-import { Container, createStyles } from "@mantine/core";
+import { Container, createStyles ,Text} from "@mantine/core";
 import React from "react";
 import { observer } from "mobx-react-lite";
 import MessageMarkdown from "@/views/components/MessageMarkdown";
@@ -14,6 +14,11 @@ interface IProps {
 const useStyles = createStyles((theme, options:any) => ({
     bodyWidth:{
         width: options.chatPanelWidth - 20,
+    },
+    userContent:{
+        fontFamily: theme.fontFamily,
+        whiteSpace: 'pre-wrap',
+        wordBreak: 'break-word',
     }
 }));
 
@@ -32,13 +37,9 @@ const MessageBody = observer((props: IProps) => {
                 sx={{
                     margin: 0,
                     padding: 0,
-                    width: chat.chatPanelWidth - 20,
-                    pre: {
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                    },
+                    width: chat.chatPanelWidth - 20
                 }}>
-                <pre>{children}</pre>
+                <pre className={classes.userContent}>{children}</pre>
             </Container>
     );
 });
