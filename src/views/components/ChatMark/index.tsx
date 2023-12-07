@@ -148,7 +148,7 @@ const ChatMark = ({ children,value,messageDone }) => {
                     id,
                     title,
                     type:'checkbox',
-                    value: disabled?'unchecked':status === 'x'?'checked':'unchecked',
+                    value: status === 'x'?'checked':'unchecked',
                 });
                 setAutoForm(true);
             } else if (match = line.match(radioRegex)) {
@@ -180,7 +180,7 @@ const ChatMark = ({ children,value,messageDone }) => {
                 editorContentRecorder = editorContentRecorder.substring(0, editorContentRecorder.length - 1);
                 // apply editor content to widget
                 ((editorId,editorContent) => widgetsHandlers.apply((item)=>{
-                    if(item.id === editorId && !disabled){
+                    if(item.id === editorId){
                         item.value = editorContent;
                     }
                     return item;
