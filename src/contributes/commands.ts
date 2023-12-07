@@ -87,6 +87,12 @@ function regAccessKeyCommand(context: vscode.ExtensionContext, provider: string)
 			if (passwordInput === undefined) {
 				return;
 			}
+			if (provider === "DevChat" && passwordInput.trim() !== "") {
+				if (!passwordInput.trim().startsWith("DC.")) {
+					UiUtilWrapper.showErrorMessage("Your key is invalid! DevChat Access Key is: DC.xxxxx");
+					return;
+				}
+			}
 
 			if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
 				UiUtilWrapper.showErrorMessage("Your key is invalid!");
