@@ -230,7 +230,7 @@ class DevChat {
 		this.commandRun.stop();
 	}
 
-	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void): Promise<ChatResponse> {
+	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void, saveToLog: boolean = true): Promise<ChatResponse> {
 		try {
 			// build args for devchat prompt command
 			const args = await this.buildArgs(options);
@@ -286,13 +286,17 @@ class DevChat {
 			//     handle result
 			assertValue(code !== 0, stderr || "Command exited with error code");
 			const responseData = this.parseOutData(stdout, false);
-			await this.logInsert(options.context, content, responseData.response, options.parent);
-			const logs = await this.log({"maxCount": 1});
-			assertValue(!logs || !logs.length, "Failed to insert devchat log");
+			let promptHash = "";
+			if (saveToLog) {
+				await this.logInsert(options.context, content, responseData.response, options.parent);
+				const logs = await this.log({"maxCount": 1});
+				assertValue(!logs || !logs.length, "Failed to insert devchat log");
+				promptHash = logs[0]["hash"];
+			}
 			//     return result
 			return {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"prompt-hash": logs[0]['hash'],
+				"prompt-hash": promptHash,
 				user: "",
 				date: "",
 				response: responseData.response,
