@@ -19,6 +19,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 
     // add a timer to update the status bar item
 	progressBar.update("Checking dependencies", 0);
+	let hasInstallCommands = false;
 	const timer = setInterval(async () => {
 		try {
 			progressBar.update("Checking dependencies", 0);
@@ -54,8 +55,12 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			progressBar.end();
 	
 			// download workflows from github or gitlab
-			await vscode.commands.executeCommand('DevChat.InstallCommands');
-			vscode.commands.executeCommand('DevChat.InstallCommandPython');
+			if (!hasInstallCommands) {
+				hasInstallCommands = true;
+				await vscode.commands.executeCommand('DevChat.InstallCommands');
+				vscode.commands.executeCommand('DevChat.InstallCommandPython');
+			}
+			
 			clearInterval(timer);
 		} catch (error) {
 			statusBarItem.text = `$(warning)DevChat`;
