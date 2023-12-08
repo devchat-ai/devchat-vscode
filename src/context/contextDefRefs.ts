@@ -52,7 +52,7 @@ async function getSelectedSymbol(): Promise<vscode.DocumentSymbol | undefined> {
 
 export const defRefsContext: ChatContext = {
 	name: 'symbol references',
-	description: 'find code sites referencing the selected symbol (class, function, variable, etc.)',
+	description: 'find all references of selected symbol',
 	handler: async () => {
 		const activeEditor = vscode.window.activeTextEditor;
 		if (!activeEditor) {
