@@ -293,15 +293,22 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 
 		// 2. check requirements.txt in ~/.chat dir
 		// ~/.chat/requirements.txt
-		let requirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'requirements.txt');
+		const usrRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'usr', 'requirements.txt');
+		const orgRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'org', 'requirements.txt');
+		const sysRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'sys', 'requirements.txt');
+		let requirementsFile = sysRequirementsFile;
+		if (fs.existsSync(orgRequirementsFile)) {
+			requirementsFile = orgRequirementsFile;
+		}
+		if (fs.existsSync(usrRequirementsFile)) {
+			requirementsFile = usrRequirementsFile;
+		}
+
 		if (!fs.existsSync(requirementsFile)) {
-			requirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'sys', 'requirements.txt');
-			if (!fs.existsSync(requirementsFile)) {
-				// logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
-				// logger.channel()?.show();
-				// vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
-				return ;
-			}
+			// logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
+			// logger.channel()?.show();
+			// vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
+			return ;
 		}
 
 		// 3. install requirements.txt
