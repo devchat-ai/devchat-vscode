@@ -26,10 +26,17 @@ async function getUndefinedSymbols(content: string): Promise<string[] | undefine
 
 	const onData = (partialResponse) => { };
 	const newContent = `
-	Your task is to list the symbols(For example, variable names, function names, etc) in the current code snippet(or maybe just a selected symbol) whose semantics you don't know. Only output the symbol list information, which should be in the form of a markdown code block. for example: 
+	As a software developer skilled in code analysis, your goal is to examine and understand a provided code snippet.
+	The code may include various symbols, encompassing both variables and functions.
+	However, the snippet doesn't include the definitions of some of these symbols.
+	Now your specific task is to identify and list all such symbols whose definitions are missing but are essential for comprehending the entire code.
+	This will help in fully grasping the behavior and purpose of the code. Note that the code snippet in question could range from a few lines to a singular symbol.
+	
+	Response is json string, don't include any other output except the json object. The json object should be an array of strings, each string is a symbol name:
 	\`\`\`json
     ["f1", "f2"]
     \`\`\`
+
 	During this process, you cannot invoke the GPT function. The code snippet is as follows: \n\`\`\`` + content + '```';  ;
 
 	const chatResponse = await devChat.chat(newContent, chatOptions, onData, false);
@@ -248,6 +255,10 @@ export const refDefsContext: ChatContext = {
 		}
 		
 		const selectedText = await getCurrentSelectText(activeEditor);
+		if (selectedText === "") {
+			logger.channel()?.error(`No code selected! Current selected editor is: ${activeEditor.document.uri.fsPath}}`);
+			return [];
+		}
 		const symbolList = await getUndefinedSymbols(selectedText);
 		if (symbolList === undefined) {
 			logger.channel()?.error('Failed to get symbol list!');
