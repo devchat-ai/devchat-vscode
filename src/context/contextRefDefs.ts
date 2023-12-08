@@ -145,7 +145,7 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 			for (const symbolSplitItem of symbolSplit) {
 				const symbolPositionNew = symbol.indexOf(symbolSplitItem, curPosition) + symbolPosition;
 				curPosition = symbolPositionNew - symbolPosition + symbolSplitItem.length;
-				const newPos = selection.start.translate({lineDelta: pos.line, characterDelta: symbolPositionNew });
+				const newPos = new vscode.Position(pos.line + selection.start.line, (pos.line > 0 ? 0 : selection.start.character) + symbolPositionNew);
 				logger.channel()?.info(`handle sub symble: ${symbolSplitItem} at ${newPos.line}:${newPos.character}`);
 
 				try{
