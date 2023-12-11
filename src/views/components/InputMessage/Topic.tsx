@@ -6,21 +6,20 @@ import messageUtil from "@/util/MessageUtil";
 import dayjs from "dayjs";
 
 export default function Topic({ styleName }) {
+  const [drawerOpened, { open: openDrawer, close: closeDrawer }] =
+    useDisclosure(false);
   const [topicList, setTopicList] = useState([]);
+
   useEffect(() => {
     messageUtil.sendMessage({
       command: "listTopics",
     });
     messageUtil.registerHandler("listTopics", (data) => {
-      console.log("listTopics data: ", data);
       setTopicList(data);
     });
   }, []);
-  const [drawerOpened, { open: openDrawer, close: closeDrawer }] =
-    useDisclosure(false);
 
   const showTopic = (root_prompt: any) => {
-    console.log("root_prompt: ", root_prompt);
     closeDrawer();
     messageUtil.sendMessage({
       command: "getTopicDetail",
@@ -56,12 +55,29 @@ export default function Topic({ styleName }) {
             }}
             onClick={() => showTopic(item?.root_prompt)}
           >
-            <Flex justify="space-between">
-              <Text fz="sm" fw={700}>
-                {item?.root_prompt.request}
+            <Flex justify="space-between" gap="sm">
+              <Text
+                fz="sm"
+                fw={700}
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  flex: 1,
+                }}
+              >
+                {item?.root_prompt.title}
               </Text>
-              <Text fz="sm" c="dimmed">
-                {dayjs(item?.latest_time * 1000).format("YYYY-MM-DD HH:mm:ss")}
+              <Text
+                fz="sm"
+                c="dimmed"
+                sx={{
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {dayjs(item?.latest_time * 1000).format("MM-DD HH:mm:ss")}
               </Text>
             </Flex>
 

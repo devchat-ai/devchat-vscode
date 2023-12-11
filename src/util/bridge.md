@@ -35,7 +35,7 @@
 - contextDetailResponse // 获取到的文件内容
 - loadHistoryMessages // 与 historyMessages 对应
 - isDevChatInstalled // 与 isDevChatInstalled 对应
-- deletedChatMessage // 与 deleteChatMessage 对应·
+- deletedChatMessage // 与 deleteChatMessage 对应
 - regContextList // 与 regContextList 对应
 - regModelList // 与 regModelList
 - receiveMessagePartial // 部分对话
@@ -63,3 +63,8 @@
 --vscode-input-foreground
 --vscode-disabledForeground
 --vscode-toolbar-activeBackground
+
+1. 请求 loadHistoryMessages 根据全局 id 返回空/对应的消息
+   1.1. 参数只有分页
+2. 请求 loadConversations,用于切换全局的 id
+   2.1 loadConversations 的响应里，请求 1

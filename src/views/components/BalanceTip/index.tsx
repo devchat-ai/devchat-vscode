@@ -42,6 +42,7 @@ export default function WechatTip() {
   const [accessKey, setAccessKey] = useState("");
   const [env, setEnv] = useState("prod");
   const [loading, setLoading] = useState(false);
+  const platform = process.env.platform;
 
   const getSettings = () => {
     messageUtil.sendMessage({
@@ -95,6 +96,15 @@ export default function WechatTip() {
     );
   }, []);
 
+  const openLink = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    messageUtil.sendMessage({
+      command: "openLink",
+      url: envMap[env].link,
+    });
+  };
+
   if (balance === null || balance === undefined) {
     return null;
   }
@@ -105,6 +115,11 @@ export default function WechatTip() {
       position="left"
       width="200"
       withArrow={true}
+      styles={{
+        arrow: {
+          borderColor: "var(--vscode-menu-border)",
+        },
+      }}
       zIndex={999}
     >
       <HoverCard.Target>
@@ -116,16 +131,25 @@ export default function WechatTip() {
       </HoverCard.Target>
       <HoverCard.Dropdown
         sx={{
-          background: "var(--vscode-dropdown-background)",
-          borderColor: "var(--vscode-dropdown-border)",
           color: "var(--vscode-foreground)",
+          borderColor: "var(--vscode-menu-border)",
+          backgroundColor: "var(--vscode-menu-background)",
         }}
       >
         <Group style={{ width: "90%" }}>
           <Text size="sm">
             Your remaining credit is {formatCurrency(balance, currency)}. Sign
-            in to <a href={envMap[env].link}>web.devchat.ai </a>to{" "}
-            {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
+            in to{" "}
+            {platform === "idea" ? (
+              <Text td="underline" c="blue" onClick={(e) => openLink(e)}>
+                web.devchat.ai{" "}
+              </Text>
+            ) : (
+              <a href={envMap[env].link} target="_blank">
+                web.devchat.ai{" "}
+              </a>
+            )}
+            to {bindWechat ? "purchase more tokens." : "earn additional ¥8"}
           </Text>
           <LoadingOverlay visible={loading} />
         </Group>

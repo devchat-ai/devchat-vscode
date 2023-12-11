@@ -20,7 +20,7 @@ const JStoIdea = {
         message: message,
       },
     };
-    console.log("ready to call java send message", JSON.stringify(params));
+    console.log("ready to send message: ", params);
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getModel: () => {
@@ -52,7 +52,7 @@ const JStoIdea = {
       },
       payload: {},
     };
-    console.log("reday to call java command list", JSON.stringify(params));
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   insertCode: (code) => {
@@ -95,8 +95,9 @@ const JStoIdea = {
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
   getUserAccessKey: () => {
+    // 这里需要发送一个请求，获取完整的用户设置
     const params = {
-      action: "getKey/request",
+      action: "getSetting/request",
       metadata: {
         callback: "IdeaToJSMessage",
       },
@@ -114,10 +115,19 @@ const JStoIdea = {
      */
     const content = Array.isArray(command.content) ? command.content[0] : "";
     switch (content) {
-      case content.includes("workbench.action.openSettings"):
+      case "workbench.action.openSettings":
         // 打开设置
+        const params = {
+          action: "showSettingDialog/request",
+          metadata: {
+            callback: "IdeaToJSMessage",
+          },
+          payload: {},
+        };
+
+        window.JSJavaBridge.callJava(JSON.stringify(params));
         break;
-      case content.includes("AccessKey.DevChat"):
+      case "AccessKey.DevChat":
         // 设置key
         break;
       default:
@@ -165,14 +175,56 @@ const JStoIdea = {
   },
   getTopicDetail: (topicHash: string) => {
     const params = {
-      action: "listConversations/request",
+      action: "loadConversations/request",
       metadata: {
         callback: "IdeaToJSMessage",
         topicHash: topicHash,
       },
       payload: {},
     };
-    console.log("ready to call java getTopicDetail", params);
+
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  historyMessages: (message) => {
+    const params = {
+      action: "loadHistoryMessages/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {
+        pageIndex: message?.page || 0,
+      },
+    };
+
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  deleteChatMessage: (message) => {
+    const params = {
+      action: "deleteLastConversation/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {
+        promptHash: message?.hash || "",
+      },
+    };
+
+    window.JSJavaBridge.callJava(JSON.stringify(params));
+  },
+  openLink: (message) => {
+    if (!message?.url) {
+      return false;
+    }
+    const params = {
+      action: "openLink/request",
+      metadata: {
+        callback: "IdeaToJSMessage",
+      },
+      payload: {
+        url: message?.url || "",
+      },
+    };
+
     window.JSJavaBridge.callJava(JSON.stringify(params));
   },
 };
@@ -185,8 +237,14 @@ class IdeaBridge {
     this.handle = {};
     // 注册全局的回调函数，用于接收来自IDEA的消息
     window.IdeaToJSMessage = (res: any) => {
-      console.log("IdeaToJSMessage res: ", res);
+      console.log("IdeaToJSMessage: ", res);
       switch (res.action) {
+        case "deleteLastConversation/response":
+          this.resviceDeleteMessage(res);
+          break;
+        case "loadHistoryMessages/response":
+          this.resviceHistoryMessages(res);
+          break;
         case "sendMessage/response":
           this.resviceMessage(res);
           break;
@@ -213,7 +271,7 @@ class IdeaBridge {
         case "listTopics/response":
           this.resviceTopicList(res);
           break;
-        case "listConversations/response":
+        case "loadConversations/response":
           this.resviceTopicDetail(res);
           break;
         default:
@@ -222,19 +280,39 @@ class IdeaBridge {
     };
   }
 
-  resviceTopicDetail(res) {
-    // 接收到这里需要触发 loadHistoryMessages
-    const list = res.payload.conversations.map((item) => ({
-      ...item,
-      response: item.responses.join("\n"),
-    }));
-    this.handle.loadHistoryMessages({
-      entries: list,
+  resviceDeleteMessage(res) {
+    const hash = res?.payload?.promptHash || "";
+    this.handle.deletedChatMessage({
+      hash,
     });
   }
 
+  resviceHistoryMessages(res) {
+    const list: any = [];
+    if (res?.payload?.messages?.length > 0) {
+      res?.payload?.messages.forEach((item) => {
+        list.push({
+          ...item,
+          response: item.responses?.join("\n"),
+        });
+      });
+    }
+
+    this.handle.reloadMessage({
+      entries: list.reverse(),
+      pageIndex: 0,
+    });
+  }
+
+  resviceTopicDetail(res) {
+    // 用于重置后端全局的 topic id
+    if (res?.payload?.reset) {
+      // 重置后请求历史消息
+      JStoIdea.historyMessages({ page: 0 });
+    }
+  }
+
   resviceTopicList(res) {
-    console.log("resviceTopicList res: ", res);
     const list = res.payload.topics;
     this.handle.listTopics(list);
   }
@@ -256,6 +334,7 @@ class IdeaBridge {
   resviceSettings(res) {
     // 用户设置的回调
     const setting = res.payload.setting;
+
     // 当前的默认模型
     this.handle.getSetting({
       value: setting.currentModel,
@@ -307,17 +386,21 @@ class IdeaBridge {
   }
 
   resviceMessage(response: any) {
+    console.log(
+      "response.metadata.isFinalChunk: ",
+      response.metadata.isFinalChunk
+    );
     // 接受到消息
-    if (response.metadata.isFinalChunk) {
+    if (response.metadata?.isFinalChunk) {
       // 结束对话
       this.handle["receiveMessage"]({
-        text: response.payload.message || response.metadata.error,
-        isError: response.metadata.error.length > 0,
-        hash: response.payload.promptHash || "",
+        text: response.payload?.message || response.metadata?.error || "",
+        isError: response.metadata?.error.length > 0,
+        hash: response.payload?.promptHash || "",
       });
     } else {
       this.handle["receiveMessagePartial"]({
-        text: response.payload.message,
+        text: response?.payload?.message || "",
       });
     }
   }
@@ -335,13 +418,15 @@ class IdeaBridge {
   }
 
   sendMessage(message: any) {
-    console.log("sendMessage message: ", message);
     // 根据 command 分发到不同的方法·
     switch (message.command) {
       // 发送消息
       case "sendMessage":
-        console.log("message: ", message);
-        JStoIdea.sendMessage(message.text, message.contextInfo, message.parent);
+        JStoIdea.sendMessage(
+          message.text,
+          message.contextInfo,
+          message.parent_hash
+        );
         break;
       // 重新生成消息，用于发送失败时再次发送
       case "regeneration":
@@ -383,6 +468,15 @@ class IdeaBridge {
         break;
       case "getTopicDetail":
         JStoIdea.getTopicDetail(message.topicHash);
+        break;
+      case "historyMessages":
+        JStoIdea.historyMessages(message);
+        break;
+      case "deleteChatMessage":
+        JStoIdea.deleteChatMessage(message);
+        break;
+      case "openLink":
+        JStoIdea.openLink(message);
         break;
       default:
         break;
