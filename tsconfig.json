@@ -21,6 +21,6 @@
 		}
 	},
 	"exclude": [
-		"test"
+		"test","gui"
 	]
 }

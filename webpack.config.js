@@ -6,6 +6,7 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const { DefinePlugin } = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 
 //@ts-check
 /** @typedef {import('webpack').Configuration} WebpackConfig **/
@@ -59,7 +60,9 @@ const extensionConfig = {
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },
-  plugins: [],
+  plugins: [
+    new CleanWebpackPlugin()
+  ],
 };
 
 /** @type WebpackConfig */
@@ -171,4 +174,4 @@ const webviewConfig = {
   ],
 };
 
-module.exports = [extensionConfig, webviewConfig];
+module.exports = extensionConfig;
