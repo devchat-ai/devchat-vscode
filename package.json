@@ -797,7 +797,7 @@
 		}
 	},
 	"scripts": {
-		"vscode":"cd ./gui && yarn && yarn vscode",
+		"build:gui":"cd ./gui && yarn && yarn vscode",
 		"vscode:uninstall": "node ./dist/uninstall",
 		"vscode:prepublish": "npm run package",
 		"compile": "webpack",
@@ -808,7 +808,7 @@
 		"pretest": "npm run compile-tests && npm run compile && npm run lint",
 		"lint": "eslint src --ext ts",
 		"test": "mocha",
-		"build": "webpack --config webpack.config.js",
+		"build": "webpack --config webpack.config.js && yarn build:gui",
 		"dev": "webpack serve --config webpack.config.js --open",
 		"idea": "webpack --config webpack.idea.config.js &&  mv dist/main.js dist/main.html ../devchat-intellij/src/main/resources/static && echo '🎆done'"
 	},
