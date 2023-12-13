@@ -137,6 +137,9 @@ const InputMessage = observer((props: any) => {
         messageUtil.registerHandler('regCommandList', (message: { result: object[]}) => {
             input.updateCommands(message.result);
         });
+		messageUtil.registerHandler('chatWithDevChat', (message: {command: string, message: string}) => {
+			chat.commonMessage(message.message, []);
+		});
         messageUtil.registerHandler('appendContext', (message: { command: string; context: string }) => {
             // context is a temp file path
             const match = /\|([^]+?)\]/.exec(message.context);

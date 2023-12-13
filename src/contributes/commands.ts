@@ -18,6 +18,7 @@ import { sendCommandListByDevChatRun, updateChatModels } from '../handler/workfl
 import DevChat from "../toolwrapper/devchat";
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
+import { chatWithDevChat } from '../handler/chatHandler';
 
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
@@ -335,6 +336,15 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 		
 		UiUtilWrapper.updateConfiguration("DevChat", "PythonForCommands", pythonCommand.trim());
 		vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
+	});
+
+	context.subscriptions.push(disposable);
+}
+
+export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('DevChat.Chat', async (message: string) => {
+		ensureChatPanel(context);
+		chatWithDevChat(ExtensionContextHolder.provider?.view()!, message);
 	});
 
 	context.subscriptions.push(disposable);

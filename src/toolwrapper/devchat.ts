@@ -247,10 +247,6 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "python3",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"DEVCHATPYTHON": UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3",
-				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"PYTHONLIBPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
-				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"OPENAI_API_KEY": llmModelData.api_key,

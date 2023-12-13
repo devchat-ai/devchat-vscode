@@ -16,7 +16,8 @@ import {
     regPythonPathCommand,
 	registerInstallCommandsCommand,
 	registerUpdateChatModelsCommand,
-	registerInstallCommandsPython
+	registerInstallCommandsPython,
+	registerDevChatChatCommand
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -29,6 +30,7 @@ import { UiUtilWrapper } from './util/uiUtil';
 import { UiUtilVscode } from './util/uiUtil_vscode';
 import { ApiKeyManager } from './util/apiKey';
 import { startRpcServer } from './ide_services/services';
+import { registerCodeLensProvider } from './panel/codeLens';
 
 async function isProviderHasSetted() {
 	try {
@@ -216,6 +218,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await configUpdateTo1115();
 
     regLanguageContext();
+	registerCodeLensProvider(context);
 
     regDevChatView(context);
     regTopicView(context);
@@ -241,6 +244,7 @@ async function activate(context: vscode.ExtensionContext) {
     regApplyDiffResultCommand(context);
 
     regPythonPathCommand(context);
+	registerDevChatChatCommand(context);
 
 	startRpcServer();
 }
