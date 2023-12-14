@@ -174,6 +174,9 @@ def git_repo_case(git_url, expected_commit_message):
     current_directory = ''
     code_diff = ''
     
+    def title():
+        return f'commit {git_url}'
+    
     def input_mock(output):
         nonlocal stdout_result
         nonlocal ui_processed
@@ -258,6 +261,9 @@ def case1():
         )]
     current_input_index = 0
     last_commit_id = None
+    
+    def title():
+        return 'commit local repo'
     
     def input_mock(output):
         nonlocal current_input_index
