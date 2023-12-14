@@ -1,6 +1,6 @@
 [submodule "tools"]
 	path = tools
-	url = git@github.com:devchat-ai/devchat-vscode-tools.git
+	url = https://github.com/devchat-ai/devchat-vscode-tools.git
 [submodule "gui"]
 	path = gui
 	url = https://github.com/devchat-ai/devchat-gui.git
