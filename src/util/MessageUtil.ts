@@ -1,26 +1,27 @@
-
-// @ts-ignore
-const vscodeApi = window.acquireVsCodeApi();
+import IdeaBridge from "./ideaBridge";
 
 class MessageUtil {
-
   private static instance: MessageUtil;
 
-  handlers: { [x: string]: any; };
+  handlers: { [x: string]: any };
+  vscodeApi: any;
   messageListener: any;
 
   constructor() {
     this.handlers = {};
     this.messageListener = null;
+    if (process.env.platform === "vscode") {
+      this.vscodeApi = window.acquireVsCodeApi();
+    }
 
     if (!this.messageListener) {
-      this.messageListener = (event: { data: any; }) => {
+      this.messageListener = (event: { data: any }) => {
         const message = event.data;
         this.handleMessage(message);
       };
-      window.addEventListener('message', this.messageListener);
+      window.addEventListener("message", this.messageListener);
     } else {
-      console.log('Message listener has already been bound.');
+      console.log("Message listener has already been bound.");
     }
   }
 
@@ -33,10 +34,14 @@ class MessageUtil {
 
   // Register a message handler for a specific message type
   registerHandler(messageType: string, handler: any) {
-    if (!this.handlers[messageType]) {
-      this.handlers[messageType] = [];
+    if (process.env.platform === "idea") {
+      IdeaBridge.registerHandler(messageType, handler);
+    } else {
+      if (!this.handlers[messageType]) {
+        this.handlers[messageType] = [];
+      }
+      this.handlers[messageType].push(handler);
     }
-    this.handlers[messageType].push(handler);
   }
 
   // Unregister a message handler for a specific message type
@@ -49,17 +54,22 @@ class MessageUtil {
   }
 
   // Handle a received message
-  handleMessage(message: { command: string | number; }) {
+  handleMessage(message: { command: string | number }) {
     const handlers = this.handlers[message.command];
     if (handlers) {
-      handlers.forEach((handler: (arg0: { command: string | number; }) => any) => handler(message));
+      handlers.forEach((handler: (arg0: { command: string | number }) => any) =>
+        handler(message)
+      );
     }
   }
 
   // Send a message to the VSCode API
   sendMessage(message: any) {
-    // console.log(`${JSON.stringify(message)}`);
-    vscodeApi.postMessage(message);
+    if (process.env.platform === "idea") {
+      IdeaBridge.sendMessage(message);
+    } else {
+      this.vscodeApi.postMessage(message);
+    }
   }
 }
 

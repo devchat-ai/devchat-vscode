@@ -5,6 +5,7 @@ import {
 } from '@mantine/core';
 import ChatPanel from '@/views/pages/ChatPanel';
 import Head from '@/views/components/Header';
+import './App.css';
 
 export default function App() {
     const theme = useMantineTheme();

@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import { IconGitBranchChecked, IconShellCommand } from "@/views/components/ChatIcons";
 import messageUtil from '@/util/MessageUtil';
 import InputContexts from './InputContexts';
+import Topic from './Topic';
 import { observer } from "mobx-react-lite";
 import { useMst } from "@/views/stores/RootStore";
 import { ChatContext } from "@/views/stores/InputStore";
@@ -36,6 +37,7 @@ const InputMessage = observer((props: any) => {
     const { input, chat } = useMst();
     const { contexts, menuOpend, menuType, currentMenuIndex, contextMenus, commandMenus,modelMenus } = input;
     const { generating } = chat;
+    const showTopic = process.env.platform === 'idea';
 
     const [drawerOpened, { open: openDrawer, close: closeDrawer }] = useDisclosure(false);
 
@@ -388,6 +390,9 @@ const InputMessage = observer((props: any) => {
                          })}
                     </Menu.Dropdown>
                 </Menu>
+                {
+                    showTopic && <Topic styleName={classes.actionIcon}/>
+                }
             </Group>
             {contexts && contexts.length > 0 &&
                 <Drawer

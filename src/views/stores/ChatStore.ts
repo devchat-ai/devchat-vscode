@@ -332,6 +332,33 @@ ${yaml.dump(values)}
                 self.isTop = false;
                 self.isBottom = false;
             },
+            reloadMessage:({entries,pageIndex})=>{
+                if (entries.length > 0) {
+                    self.pageIndex = pageIndex;
+                    const messages = entries
+                        .map((entry, index) => {
+                            const { hash, user, date, request, response, context } = entry;
+                            const chatContexts = context?.map(({ content }) => {
+                                return JSON.parse(content);
+                            });
+                            return [
+                                { type: 'user', message: request, contexts: chatContexts, date: date, hash: hash },
+                                { type: 'bot', message: response, date: date, hash: hash },
+                            ];
+                        })
+                        .flat();
+                    if (self.pageIndex === 0) {
+                        self.messages = messages;
+                    } else if (self.pageIndex > 0) {
+                        self.messages.concat(...messages);
+                    }
+                } else {
+                    self.isLastPage = true;
+                    if (self.messages.length === 0) {
+                        helpMessage(true);
+                    }
+                }
+            },
             fetchHistoryMessages: flow(function* (params: { pageIndex: number }) {
                 const { pageIndex, entries } = yield fetchHistoryMessages(params);
                 if (entries.length > 0) {

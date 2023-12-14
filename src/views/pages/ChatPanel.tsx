@@ -85,6 +85,9 @@ const chatPanel = observer(() => {
         getSettings();
         getFeatureToggles();
         chat.fetchHistoryMessages({ pageIndex: 0 }).then();
+        messageUtil.registerHandler('reloadMessage',(message:any)=>{
+            chat.reloadMessage(message);
+        });
         messageUtil.registerHandler(
             "receiveMessagePartial",
             (message: { text: string }) => {
