@@ -61,6 +61,7 @@ def run_devchat_command(model, commit_command, input_mock):
 def run_commit_tests():
     model = 'gpt-4-1106-preview'  # 替换为实际的模型名称
     
+    case_results = []
     for case in commit_cases.get_cases():
         case_result = False
         exit_code = -1
@@ -69,8 +70,21 @@ def run_commit_tests():
             exit_code = run_devchat_command(model, case['input'], case['input_mock'])
             case_result = case['assert']()
             case['teardown']()
+            case_results.append((case['title'](), case_result and exit_code == 0))
         else:
             print('Error: test case setup failed!')
+            case_results.append((case['title'](), 'Error: test case setup failed!'))
         print('Case result:', case_result, '  Exit code:', exit_code)
+    
+    print('All case results:')
+    is_error = False
+    for case_result in case_results:
+        print(case_result[0], case_result[1])
+        if case_result[1] != True:
+            is_error = True
+    if is_error:
+        sys.exit(-1)
+    else:
+        sys.exit(0)
 
 run_commit_tests()
