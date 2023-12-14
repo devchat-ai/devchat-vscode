@@ -16,9 +16,9 @@ def run_devchat_command(model, commit_command, input_mock):
     timeout = 300  # 超时时间，单位为秒
     # 构建命令
     command = [
-        sys.executable, '-m', 'devchat', 'prompt', '-m', model, '--', commit_command
+        sys.executable, '-m', 'devchat', 'prompt', '-m', 'gpt-3.5-turbo', '--', commit_command
     ]
-    
+
     # 使用subprocess.Popen执行命令
     with subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True, env=os.environ) as process:
         def monitor():
@@ -73,9 +73,4 @@ def run_commit_tests():
             print('Error: test case setup failed!')
         print('Case result:', case_result, '  Exit code:', exit_code)
 
-# run_commit_tests()
-
-def hello2():
-    print('hello2')
-
-hello2()
+run_commit_tests()
