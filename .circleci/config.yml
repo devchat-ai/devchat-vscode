@@ -12,12 +12,15 @@ jobs:
       - run: git submodule update --init
       - run: npm install
       - run: npm run build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   test:
     executor: node-executor
     steps:
-      - checkout
-      - run: git submodule sync
-      - run: git submodule update --init
+      - attach_workspace:
+          at: .
       - run:
           name: Install Python
           command: |
@@ -40,6 +43,10 @@ jobs:
             git config --global user.email "tester@merico.dev"
             git config --global user.name "tester"
             python3 test/workflows/workflow_test.py
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   publish:
     executor: node-executor
     steps:
