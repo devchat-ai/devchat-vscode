@@ -119,13 +119,11 @@ def compare_result_parser(response):
         return result['choice']
     return None
 
-def commit_message_compare(prompt_compare, commit_message_a, commit_message_b, diff):
+def commit_message_compare(commit_message_a, commit_message_b, diff):
     # call openai to compare which commit message is better
     json_str = '{ "choice": "first" , "reason": ""}'
     prompt = f"""
 You are a software developer, your task is to compare two commit messages and choose the better one.
-You can compare the commit messages by the following rules:
-{prompt_compare}
 
 The input for task has two commit messages and a diff of the code changes. You will choose the better commit message and response as JSON format, the format is:
 ```json
@@ -168,7 +166,7 @@ code change diff:
     return compare_result_parser(content)
 
 
-def git_repo_case(git_url, expected_commit_message, prompt_compare: str):
+def git_repo_case(git_url, expected_commit_message):
     target_repo_dir = '/tmp/commit_test/cases'
     
     ui_processed = 0
@@ -201,7 +199,6 @@ def git_repo_case(git_url, expected_commit_message, prompt_compare: str):
 
     def assert_result():
         nonlocal expected_commit_message
-        nonlocal prompt_compare
         nonlocal git_url
         _1, commit_hash, _1 = extract_repo_info(git_url)
         # get last commit message by git log
@@ -209,7 +206,7 @@ def git_repo_case(git_url, expected_commit_message, prompt_compare: str):
         # does last commit message match expected commit message?
         print('expect:', expected_commit_message)
         print('actual:', commit_message)
-        better_one = commit_message_compare(prompt_compare, expected_commit_message, commit_message, diff_of_commit(os.getcwd(), commit_hash))
+        better_one = commit_message_compare(expected_commit_message, commit_message, diff_of_commit(os.getcwd(), commit_hash))
         return better_one == 'right' or better_one == 'second'
         # print('AI says better one is:', better_one)
         # return commit_message and commit_message == expected_commit_message
