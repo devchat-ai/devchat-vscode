@@ -70,7 +70,7 @@ def run_commit_tests():
             exit_code = run_devchat_command(model, case['input'], case['input_mock'])
             case_result = case['assert']()
             case['teardown']()
-            case_results.append((case['title'](), case_result and exit_code == 0))
+            case_results.append((case['title'], case_result and exit_code == 0))
         else:
             print('Error: test case setup failed!')
             case_results.append((case['title'](), 'Error: test case setup failed!'))
