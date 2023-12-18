@@ -251,10 +251,27 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 
 export function registerInstallCommandsCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.InstallCommands', async () => {
+        const sysDirPath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.chat', 'workflows', 'sys');
         const devchat = new DevChat();
-		await devchat.updateSysCommand();
 
-		sendCommandListByDevChatRun();
+        // Check if ~/.chat/workflows/sys directory exists
+        if (!fs.existsSync(sysDirPath)) {
+            // Directory does not exist, wait for updateSysCommand to finish
+            await devchat.updateSysCommand();
+            sendCommandListByDevChatRun();
+        } else {
+            // Directory exists, execute sendCommandListByDevChatRun immediately
+            sendCommandListByDevChatRun();
+
+            // Then asynchronously execute updateSysCommand
+            devchat.updateSysCommand().then(() => {
+                // After updateSysCommand finishes, execute sendCommandListByDevChatRun again
+                sendCommandListByDevChatRun();
+            }).catch((error) => {
+                // Handle any errors that occur during updateSysCommand
+                console.error('Error updating sys command:', error);
+            });
+        }
     });
 
     context.subscriptions.push(disposable);
