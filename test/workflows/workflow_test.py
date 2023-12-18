@@ -8,9 +8,6 @@ import commit_cases
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
-os.environ['PYTHONPATH'] = os.path.join(ROOT_DIR, 'tools', 'site-packages')
-os.environ['command_python'] = '/Users/admin/.chat/mamba/envs/devchat-commands/bin/python'
-
 
 def run_devchat_command(model, commit_command, input_mock):
     timeout = 300  # 超时时间，单位为秒
