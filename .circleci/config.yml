@@ -16,6 +16,37 @@ jobs:
           root: .
           paths:
             - .
+  test:
+    executor: node-executor
+    steps:
+      - attach_workspace:
+          at: .
+      - run:
+          name: Install Python
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y python3 python3-pip
+      - run:
+          name: update workflows
+          command: |
+            export PYTHONPATH="$PYTHONPATH:$(pwd)/tools/site-packages"
+            mkdir -p ~/.chat/workflows
+            git clone https://github.com/devchat-ai/workflows.git ~/.chat/workflows/sys
+            cd ~/.chat/workflows/sys
+            git fetch
+            git checkout update_workflow_util
+            python3 -m devchat run --list
+      - run:
+          name: Run workflow tests
+          command: |
+            export PYTHONPATH="$PYTHONPATH:$(pwd)/tools/site-packages"
+            git config --global user.email "tester@merico.dev"
+            git config --global user.name "tester"
+            python3 test/workflows/workflow_test.py
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
   publish:
     executor: node-executor
     steps:
@@ -38,9 +69,18 @@ workflows:
               only: /.*/
             branches:
               ignore: []
+      - test:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /.*/
+            branches:
+              ignore: /.*/
       - publish:
           requires:
             - build
+            - test
           filters:
             tags:
               only: /.*/

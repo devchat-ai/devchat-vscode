@@ -14,3 +14,4 @@ node_modules
 actions_backup/
 .DS_Store
 
+__pycache__/
