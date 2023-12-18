@@ -89,7 +89,7 @@ class DevChat {
 	}
 
 	private async buildArgs(options: ChatOptions): Promise<string[]> {
-		let args = ["-m", "devchat", "prompt"];
+		let args = ["-m", "devchat", "route"];
 
 		if (options.reference) {
 			for (const reference of options.reference) {
@@ -114,8 +114,6 @@ class DevChat {
 		const llmModelData = await ApiKeyManager.llmModel();
 		assertValue(!llmModelData || !llmModelData.model, 'You must select a LLM model to use for conversations');
 		args.push("-m", llmModelData.model);
-
-		args.push("-ns");
 
 		const functionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
 		if (functionCalling) {
