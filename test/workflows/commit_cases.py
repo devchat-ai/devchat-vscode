@@ -8,8 +8,7 @@ import ui_parser
 import yaml
 import openai
 
-
-# 从GitHub链接中提取仓库URL和提交哈希
+# Extract the repository URL and commit hash from the GitHub link
 def extract_repo_info(github_link):
     match = re.match(r'https://github\.com/(.+)/(.+)/commit/(.+)', github_link)
     if not match:
@@ -19,49 +18,49 @@ def extract_repo_info(github_link):
     repo_url = f'https://github.com/{user_repo}.git'
     return repo_url, commit_hash, match.group(2)
 
-# 克隆仓库到指定目录
+# Clone the repository to the specified directory
 def clone_repo(repo_url, target_dir):
     subprocess.run(["git", "clone", repo_url, target_dir], check=True)
 
-# 检出特定提交
+# Checkout a specific commit
 def checkout_commit(target_dir, commit_hash):
     subprocess.run(["git", "checkout", commit_hash], cwd=target_dir, check=True)
 
-# 获取指定提交的差异
+# Get the diff of a specific commit
 def diff_of_commit(target_dir, commit_hash):
-    # 初始化subprocess的Popen对象，执行git diff命令
+    # Initialize a subprocess.Popen object to execute the git diff command
     proc = subprocess.Popen(['git', 'diff', commit_hash + '^!'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-    # 获取命令输出和错误信息
+    # Get the command output and error information
     stdout, stderr = proc.communicate()
 
-    # 检查是否有错误信息
+    # Check if there is any error information
     if stderr:
         print("Error:", stderr.decode())
         return None
     return stdout.decode()
 
-# 重置提交（保留工作目录的更改）
+# Reset commit (keep changes in the working directory)
 def reset_commit(target_dir):
     subprocess.run(["git", "reset", "HEAD~1"], cwd=target_dir, check=True)
 
-# 主函数
+# Main function
 def clone_and_reset(github_link, target_dir):
     try:
-        # 从GitHub链接中提取仓库URL和提交哈希
+        # Extract the repository URL and commit hash from the GitHub link
         repo_url, commit_hash, repo_name = extract_repo_info(github_link)
         
-        # 创建目标目录（如果不存在）
+        # Create the target directory (if it does not exist)
         repo_path = os.path.join(target_dir, repo_name)
         os.makedirs(repo_path, exist_ok=True)
         
-        # 克隆仓库到指定目录
+        # Clone the repository to the specified directory
         clone_repo(repo_url, repo_path)
         
-        # 检出特定提交
+        # Checkout a specific commit
         checkout_commit(repo_path, commit_hash)
         
-        # 重置提交
+        # Reset commit
         reset_commit(repo_path)
         return repo_path
     except Exception as err:
@@ -69,46 +68,43 @@ def clone_and_reset(github_link, target_dir):
         return None
     
 
-
 def get_last_commit_id():
-    # 使用git rev-parse命令获取当前HEAD的提交ID
+    # Use the git rev-parse command to get the current HEAD's commit ID
     command = ['git', 'rev-parse', 'HEAD']
     try:
-        # 执行命令，并捕获标准输出
+        # Execute the command and capture the standard output
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        # 返回标准输出内容，即最后一个提交的ID
+        # Return the standard output content, which is the ID of the last commit
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        # 如果命令执行失败，打印错误信息
+        # If the command execution fails, print the error information
         print(f"Error: {e.stderr}")
         return None
 
 def reset_last_commit():
-    # 使用git reset命令重置最后一个提交
-    # --soft 选项将保留更改在工作目录中
+    # Use the git reset command to reset the last commit
+    # The --soft option will keep the changes in the working directory
     command = ['git', 'reset', '--soft', 'HEAD~1']
     try:
-        # 执行命令
+        # Execute the command
         subprocess.run(command, check=True)
         print("Last commit has been reset successfully.")
     except subprocess.CalledProcessError as e:
-        # 如果命令执行失败，打印错误信息
+        # If the command execution fails, print the error information
         print(f"Error: {e}")
 
-
 def get_last_commit_message():
-    # 使用git log命令获取最新的提交消息，-1表示最后一个提交
+    # Use the git log command to get the latest commit message, -1 indicates the last commit
     command = ['git', 'log', '-1', '--pretty=%B']
     try:
-        # 执行命令，并捕获标准输出
+        # Execute the command and capture the standard output
         result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, check=True)
-        # 返回标准输出内容，即最后一个提交的消息
+        # Return the standard output content, which is the message of the last commit
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
-        # 如果命令执行失败，打印错误信息
+        # If the command execution fails, print the error information
         print(f"Error: {e.stderr}")
         return None
-
 
 def compare_result_parser(response):
     start = response.find('```json')
