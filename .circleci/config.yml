@@ -12,6 +12,12 @@ jobs:
       - run: git submodule update --init
       - run: npm install
       - run: npm run build
+      - run: :
+          name: "test install"
+          command: |
+            ls
+            cd gui
+            ls
       - persist_to_workspace:
           root: .
           paths:
