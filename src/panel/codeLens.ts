@@ -6,6 +6,7 @@ import { has } from 'mobx';
 interface FunctionDefinition {
 	name: string;
 	containerName: string | null;
+	containerRange: vscode.Range | null;
 	range: vscode.Range;
 }
 
@@ -86,24 +87,25 @@ async function getFunctionDefinitions(document: vscode.TextDocument, inner_funct
 		return [];
 	}
 
-	function extractFunctions(symbol: vscode.DocumentSymbol, containerName: string | null, hasInFunction: boolean = false): FunctionDefinition[] {
-		console.log('==> symbol range:', symbol.range, symbol.name, symbol.kind);
+	function extractFunctions(symbol: vscode.DocumentSymbol, containerSymbol: vscode.DocumentSymbol | null, hasInFunction: boolean = false): FunctionDefinition[] {
 		let functions: FunctionDefinition[] = [];
-		if (symbol.kind === vscode.SymbolKind.Function || symbol.kind === vscode.SymbolKind.Method) {
+		const isFunction = symbol.kind === vscode.SymbolKind.Function || symbol.kind === vscode.SymbolKind.Method;
+		if (isFunction) {
 			if (!inner_function || (inner_function && hasInFunction)) {
 				functions.push({
 					name: symbol.name,
-					containerName: containerName,
+					containerName: containerSymbol? containerSymbol.name : null,
+					containerRange: containerSymbol? containerSymbol.range : null,
 					range: symbol.range
 				});
 			}
 			hasInFunction = true;
 		}
 
-		if (inner_function) {
+		if (inner_function || !isFunction) {
 			if (symbol.children && symbol.children.length > 0) {
 				symbol.children.forEach(child => {
-					functions = functions.concat(extractFunctions(child, symbol.name, hasInFunction));
+					functions = functions.concat(extractFunctions(child, symbol, hasInFunction));
 				});
 			}
 		}
@@ -149,12 +151,16 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
 
 					// Read range content in document
 					const functionCode = document.getText(range);
+					const parentRange = funcDef.containerRange;
+					const parentRangeStr = parentRange? `[${parentRange.start.line}, ${parentRange.end.line}]` : "";
 
 					// Fix the string replacement syntax and closing parentheses
 					const prompt = codelenRegister.promptGenerator
 						.replace('{__filename__}', document.uri.fsPath)
 						.replace('{__functionName__}', funcDef.name)
 						.replace('{__functionRange__}', `[${range.start.line}, ${range.end.line}]`)
+						.replace('{__containerName__}', funcDef.containerName || '')
+						.replace('{__containerRange__}', parentRangeStr)
 						.replace('{__functionCode__}', functionCode); // Fixed syntax
 
 					const lens = new vscode.CodeLens(range, {
