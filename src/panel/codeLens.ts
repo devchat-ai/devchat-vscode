@@ -152,15 +152,16 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
 					// Read range content in document
 					const functionCode = document.getText(range);
 					const parentRange = funcDef.containerRange;
-					const parentRangeStr = parentRange? `[${parentRange.start.line}, ${parentRange.end.line}]` : "";
-
+					
 					// Fix the string replacement syntax and closing parentheses
 					const prompt = codelenRegister.promptGenerator
 						.replace('{__filename__}', document.uri.fsPath)
 						.replace('{__functionName__}', funcDef.name)
-						.replace('{__functionRange__}', `[${range.start.line}, ${range.end.line}]`)
+						.replace('{__functionStartLine__}', `${range.start.line}`)
+						.replace('{__functionEndLine__}', `${range.end.line}`)
 						.replace('{__containerName__}', funcDef.containerName || '')
-						.replace('{__containerRange__}', parentRangeStr)
+						.replace('{__containerStartLine__}', `${parentRange? parentRange.start.line : -1}`)
+						.replace('{__containerEndLine__}', `${parentRange? parentRange.end.line : -1}`)
 						.replace('{__functionCode__}', functionCode); // Fixed syntax
 
 					const lens = new vscode.CodeLens(range, {
