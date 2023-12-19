@@ -62,6 +62,10 @@ jobs:
       - attach_workspace:
           at: .
       - run:
+          name: "Check Dist"
+          command: |
+            ls ./dist
+      - run:
           name: "Update version in package.json"
           command: |
             sed -i "s/\"version\": \".*\",/\"version\": \"${CIRCLE_TAG:1}\",/" package.json
