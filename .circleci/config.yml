@@ -16,7 +16,9 @@ jobs:
           name: "test install"
           command: |
             ls
+            echo "---------"
             cd gui
+            echo "========="
             ls
       - persist_to_workspace:
           root: .
