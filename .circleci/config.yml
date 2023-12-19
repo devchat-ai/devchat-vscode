@@ -33,9 +33,6 @@ jobs:
             mkdir -p ~/.chat/workflows
             git clone https://github.com/devchat-ai/workflows.git ~/.chat/workflows/sys
             cd ~/.chat/workflows/sys
-            git fetch
-            git checkout update_workflow_util
-            python3 -m devchat run --list
       - run:
           name: Run workflow tests
           command: |
