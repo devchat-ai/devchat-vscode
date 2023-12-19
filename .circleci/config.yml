@@ -17,9 +17,13 @@ jobs:
           command: |
             ls
             echo "---------"
+            ls ./dist
+            echo "---------"
             cd gui
             echo "========="
             ls
+            echo "========="
+            ls ./dist
       - persist_to_workspace:
           root: .
           paths:
