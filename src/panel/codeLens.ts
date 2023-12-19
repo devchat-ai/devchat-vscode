@@ -155,15 +155,14 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
 					
 					// Fix the string replacement syntax and closing parentheses
 					const prompt = codelenRegister.promptGenerator
-						.replace('{__filename__}', document.uri.fsPath)
-						.replace('{__functionName__}', funcDef.name)
-						.replace('{__functionStartLine__}', `${range.start.line}`)
-						.replace('{__functionEndLine__}', `${range.end.line}`)
-						.replace('{__containerName__}', funcDef.containerName || '')
-						.replace('{__containerStartLine__}', `${parentRange? parentRange.start.line : -1}`)
-						.replace('{__containerEndLine__}', `${parentRange? parentRange.end.line : -1}`)
-						.replace('{__functionCode__}', functionCode); // Fixed syntax
-
+						.replace(/{__filename__}/g, document.uri.fsPath)
+						.replace(/{__functionName__}/g, funcDef.name)
+						.replace(/{__functionStartLine__}/g, `${range.start.line}`)
+						.replace(/{__functionEndLine__}/g, `${range.end.line}`)
+						.replace(/{__containerName__}/g, funcDef.containerName || '')
+						.replace(/{__containerStartLine__}/g, `${parentRange ? parentRange.start.line : -1}`)
+						.replace(/{__containerEndLine__}/g, `${parentRange ? parentRange.end.line : -1}`)
+						.replace(/{__functionCode__}/g, functionCode); // Fixed syntax to replace all occurrences
 					const lens = new vscode.CodeLens(range, {
 						title: codelenRegister.objectName,
 						command: "DevChat.Chat",
