@@ -61,7 +61,6 @@ const extensionConfig = {
     level: "log", // enables logging required for problem matchers
   },
   plugins: [
-    new CleanWebpackPlugin()
   ],
 };
 
