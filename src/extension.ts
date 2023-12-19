@@ -223,6 +223,7 @@ async function activate(context: vscode.ExtensionContext) {
     regDevChatView(context);
     regTopicView(context);
 
+	
     registerAccessKeySettingCommand(context);
     registerOpenChatPanelCommand(context);
     registerAddContextCommand(context);
