@@ -13,7 +13,7 @@ def run_devchat_command(model, commit_command, input_mock):
     timeout = 300  # 超时时间，单位为秒
     # 构建命令
     command = [
-        sys.executable, '-m', 'devchat', 'prompt', '-m', 'gpt-3.5-turbo', '--', commit_command
+        sys.executable, '-m', 'devchat', 'route', '-m', 'gpt-3.5-turbo', '--', commit_command
     ]
 
     # 使用subprocess.Popen执行命令
