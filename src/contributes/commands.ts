@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as os from 'os';
+import * as path from 'path';
+import * as util from 'util';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
 import { ExtensionContextHolder } from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
@@ -12,14 +14,32 @@ import { isValidApiKey } from '../handler/historyMessagesBase';
 
 import { logger } from '../util/logger';
 
-import path from 'path';
-
 import { sendCommandListByDevChatRun, updateChatModels } from '../handler/workflowCommandHandler';
 import DevChat from "../toolwrapper/devchat";
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
 import { chatWithDevChat } from '../handler/chatHandler';
 
+const readdir = util.promisify(fs.readdir);
+const stat = util.promisify(fs.stat);
+const mkdir = util.promisify(fs.mkdir);
+const copyFile = util.promisify(fs.copyFile);
+
+async function copyDirectory(src: string, dest: string): Promise<void> {
+    await mkdir(dest, { recursive: true });
+    const entries = await readdir(src, { withFileTypes: true });
+
+    for (let entry of entries) {
+        const srcPath = path.join(src, entry.name);
+        const destPath = path.join(dest, entry.name);
+
+        if (entry.isDirectory()) {
+            await copyDirectory(srcPath, destPath);
+        } else {
+            await copyFile(srcPath, destPath);
+        }
+    }
+}
 
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
@@ -251,8 +271,15 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 
 export function registerInstallCommandsCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand('DevChat.InstallCommands', async () => {
-        const sysDirPath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.chat', 'workflows', 'sys');
-        const devchat = new DevChat();
+        const homePath = process.env.HOME || process.env.USERPROFILE || '';
+        const sysDirPath = path.join(homePath, '.chat', 'workflows', 'sys');
+        const pluginDirPath = path.join(UiUtilWrapper.extensionPath(), 'workflowsCommands'); // Adjust this path as needed
+
+		const devchat = new DevChat();
+
+		if (!fs.existsSync(sysDirPath)) {
+			await copyDirectory(pluginDirPath, sysDirPath);
+        }
 
         // Check if ~/.chat/workflows/sys directory exists
         if (!fs.existsSync(sysDirPath)) {
