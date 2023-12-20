@@ -4,3 +4,6 @@
 [submodule "gui"]
 	path = gui
 	url = https://github.com/devchat-ai/devchat-gui.git
+[submodule "workflowsCommands"]
+	path = workflowsCommands
+	url = https://github.com/devchat-ai/workflows.git
