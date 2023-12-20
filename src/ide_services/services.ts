@@ -30,6 +30,39 @@ const functionRegistry: any = {
 		}
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/ide_language": {
+		"keys": [],
+		"handler": async () => {
+			const config = vscode.workspace.getConfiguration();
+			const language = config.get('workbench.editor.languageDetection') ? vscode.env.language : config.get('window.menuBarVisibility');
+			return language;
+		}
+	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/log_info": {
+		"keys": ["message"],
+		"handler": async (message: string) => {
+			logger.channel()?.info(message);
+			return true;
+		}
+	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/log_warn": {
+		"keys": ["message"],
+		"handler": async (message: string) => {
+			logger.channel()?.warn(message);
+			return true;
+		}
+	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/log_error": {
+		"keys": ["message"],
+		"handler": async (message: string) => {
+			logger.channel()?.error(message);
+			return true;
+		}
+	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/open_folder": {
 		"keys": ["folder"],
 		"handler": async (folder: string) => {
