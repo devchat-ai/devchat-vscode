@@ -243,7 +243,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONUTF8": 1,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "python3",
+				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
