@@ -73,6 +73,7 @@ async function createOpenAiKeyEnv() {
     const openAiApiBase = llmModelData.api_base;
     if (openAiApiBase) {
         envs['OPENAI_API_BASE'] = openAiApiBase;
+		envs['OPENAI_BASE_URL'] = openAiApiBase;
     }
 
 	return envs;
