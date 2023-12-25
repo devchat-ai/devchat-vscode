@@ -15,6 +15,7 @@ import { getSetting, updateSetting } from './userSettingHandler';
 import { featureToggle, getFeatureToggles } from './featureToggleHandler';
 import { getUserAccessKey } from './accessKeyHandler';
 import { getValidLlmModelList } from './llmModelHandler';
+import { getIdeLanguage } from './langHandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -78,3 +79,5 @@ messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
 messageHandler.registerHandler('regModelList', getValidLlmModelList);
 
 messageHandler.registerHandler('userInput', userInput);
+
+messageHandler.registerHandler('getIdeLanguage', getIdeLanguage);

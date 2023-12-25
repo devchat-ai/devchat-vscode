@@ -551,6 +551,16 @@
 					"type": "string",
 					"default": "",
 					"description": "Path to the Python virtual environment for AskCode."
+				},
+				"DevChat.Language": {
+					"type": "string",
+					"default": "en",
+					"enum": ["en", "zh-cn"],
+					"enumDescriptions": [
+						"English",
+						"Simplified Chinese"
+					],
+					"description": "The language used for DevChat interface."
 				}
 			}
 		},
