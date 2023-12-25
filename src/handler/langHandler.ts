@@ -9,7 +9,7 @@ regOutMessage({ command: 'ideLanguage', lang: "" }); // Placeholder for the lang
 export async function getIdeLanguage(panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
     // Get the current IDE language setting
     const ideLanguage = vscode.env.language;
-	// 'en' stands for English, 'zh-cn' stands for Simplified Chinese
+	// 'en' stands for English, 'zh' stands for Simplified Chinese
 
     // Construct the message with the language information
     const langMessage = {

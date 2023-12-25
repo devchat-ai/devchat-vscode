@@ -34,7 +34,7 @@ const functionRegistry: any = {
 		"keys": [],
 		"handler": async () => {
 			const language = vscode.env.language;
-			// 'en' stands for English, 'zh-cn' stands for Simplified Chinese
+			// 'en' stands for English, 'zh' stands for Simplified Chinese
 			return language;
 		}
 	},
