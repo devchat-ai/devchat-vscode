@@ -33,8 +33,8 @@ const functionRegistry: any = {
 	"/ide_language": {
 		"keys": [],
 		"handler": async () => {
-			const config = vscode.workspace.getConfiguration();
-			const language = config.get('workbench.editor.languageDetection') ? vscode.env.language : config.get('window.menuBarVisibility');
+			const language = vscode.env.language;
+			// 'en' stands for English, 'zh' stands for Simplified Chinese
 			return language;
 		}
 	},
