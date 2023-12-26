@@ -33,7 +33,7 @@ const functionRegistry: any = {
 	"/ide_language": {
 		"keys": [],
 		"handler": async () => {
-			const language = vscode.env.language;
+			const language = vscode.env.language.startsWith("zh-") ? "zh" : "en";
 			// 'en' stands for English, 'zh' stands for Simplified Chinese
 			return language;
 		}
