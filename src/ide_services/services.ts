@@ -31,7 +31,6 @@ const functionRegistry: any = {
 	"/definitions": {
 		"keys": ["abspath", "line", "character", "token"],
 		"handler": async (abspath: string, line: string|undefined = undefined, character: string|undefined = undefined, token: string|undefined = undefined) => {
-			logger.channel()?.info(`get definitions: ${abspath}, ${line}, ${character}, ${token}`);
 			if (token !== undefined) {
 				const definitions = await findDefinitionsOfToken(abspath, token);
 				return definitions;
@@ -44,7 +43,6 @@ const functionRegistry: any = {
 	"/references": {
 		"keys": ["abspath", "line", "character"],
 		"handler": async (abspath: string, line: number, character: number) => {
-			logger.channel()?.info(`get references: ${abspath}, ${line}, ${character}`);
 			const references = await findReferences(
 				abspath,
 				Number(line),
@@ -161,7 +159,6 @@ let server: http.Server | null = null;
 export async function startRpcServer() {
 	server = http.createServer((req, res) => {
 		const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
-		logger.channel()?.info(`request: ${parsedUrl}`)
 		if (parsedUrl.pathname === '/favicon.ico') {
 			res.writeHead(204);
 			res.end();
@@ -202,10 +199,6 @@ export async function startRpcServer() {
 	});
 
 	async function handleRequest(parsedUrl: URL, params: any, res: http.ServerResponse) {
-		// log current datetime
-		const date = new Date();
-		logger.channel()?.info(`date: ${date.toISOString()}`);
-
 		try {
 			let responseResult = {};
 		
@@ -240,9 +233,6 @@ export async function startRpcServer() {
 			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
 		}
-
-		const date2 = new Date();
-		logger.channel()?.info(`date finish: ${date2.toISOString()}`);
 	}
 	
 	server.listen(0, () => {
