@@ -159,6 +159,7 @@ let server: http.Server | null = null;
 export async function startRpcServer() {
 	server = http.createServer((req, res) => {
 		const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
+		logger.channel()?.info(`request: ${parsedUrl}`)
 		if (parsedUrl.pathname === '/favicon.ico') {
 			res.writeHead(204);
 			res.end();
@@ -228,7 +229,6 @@ export async function startRpcServer() {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			res.writeHead(200, { 'Content-Type': 'application/json' });
 			res.end(JSON.stringify(responseResult));
-			logger.channel()?.info(`result:${responseResult}`);
 		} catch (error) {
 			logger.channel()?.error(`Error: ${error}`);
 			logger.channel()?.show();
