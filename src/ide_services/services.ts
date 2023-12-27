@@ -10,7 +10,12 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
 
+import {
+    findDefinitions,
+    findDefinitionsOfToken,
+} from "./lsp_bridge/feature/find-defs";
 
+import { findReferences } from "./lsp_bridge/feature/find-refs";
 
 
 const functionRegistry: any = {
@@ -18,7 +23,33 @@ const functionRegistry: any = {
 	"/get_lsp_brige_port": {
 		"keys": [],
 		"handler": async () => {
-			return await UiUtilWrapper.getLSPBrigePort();
+			logger.channel()?.info(`get lsp bridge port: ${process.env.DEVCHAT_IDE_SERVICE_PORT}`);
+			// return await UiUtilWrapper.getLSPBrigePort();
+			return process.env.DEVCHAT_IDE_SERVICE_PORT;
+		}
+	},
+	"/definitions": {
+		"keys": ["abspath", "line", "character", "token"],
+		"handler": async (abspath: string, line: string|undefined = undefined, character: string|undefined = undefined, token: string|undefined = undefined) => {
+			if (token !== undefined) {
+				const definitions = await findDefinitionsOfToken(abspath, token);
+				return definitions;
+			} else {
+				const definitions = await findDefinitions(abspath, Number(line), Number(character));
+				return definitions;
+			}
+		}
+	},
+	"/references": {
+		"keys": ["abspath", "line", "character"],
+		"handler": async (abspath: string, line: number, character: number) => {
+			const references = await findReferences(
+				abspath,
+				Number(line),
+				Number(character)
+			);
+
+			return references;
 		}
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -128,6 +159,7 @@ let server: http.Server | null = null;
 export async function startRpcServer() {
 	server = http.createServer((req, res) => {
 		const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
+		logger.channel()?.info(`request: ${parsedUrl}`)
 		if (parsedUrl.pathname === '/favicon.ico') {
 			res.writeHead(204);
 			res.end();
@@ -168,30 +200,39 @@ export async function startRpcServer() {
 	});
 
 	async function handleRequest(parsedUrl: URL, params: any, res: http.ServerResponse) {
-		let responseResult = {};
-	
-		if (functionRegistry[parsedUrl.pathname]) {
-			let keysExist = true;
-			let newParameters: any[] = [];
-			for (let key of functionRegistry[parsedUrl.pathname]['keys']) {
-				if (!params.hasOwnProperty(key)) {
-					keysExist = false;
-					break;
+		try {
+			let responseResult = {};
+		
+			if (functionRegistry[parsedUrl.pathname]) {
+				let keysExist = true;
+				let newParameters: any[] = [];
+				for (let key of functionRegistry[parsedUrl.pathname]['keys']) {
+					if (!params.hasOwnProperty(key)) {
+						// check whether key in functionRegistry[parsedUrl.pathname]['optional']
+						newParameters.push(undefined);
+						continue;
+					}
+					newParameters.push(params[key]);
 				}
-				newParameters.push(params[key]);
-			}
-			if (!keysExist) {
-				responseResult['error'] = "Missing required parameters";
+				if (!keysExist) {
+					responseResult['error'] = "Missing required parameters";
+				} else {
+					responseResult['result'] = await functionRegistry[parsedUrl.pathname]['handler'](...newParameters);
+					if (parsedUrl.pathname === "/definitions" || parsedUrl.pathname === "/references") {
+						responseResult = responseResult['result'];
+					}
+				}
 			} else {
-				responseResult['result'] = await functionRegistry[parsedUrl.pathname]['handler'](...newParameters);
+				responseResult['error'] = "Function not found";
 			}
-		} else {
-			responseResult['error'] = "Function not found";
+		
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			res.writeHead(200, { 'Content-Type': 'application/json' });
+			res.end(JSON.stringify(responseResult));
+		} catch (error) {
+			logger.channel()?.error(`Error: ${error}`);
+			logger.channel()?.show();
 		}
-	
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		res.writeHead(200, { 'Content-Type': 'application/json' });
-		res.end(JSON.stringify(responseResult));
 	}
 	
 	server.listen(0, () => {
@@ -200,5 +241,6 @@ export async function startRpcServer() {
         const port = typeof address === 'string' ? address : address?.port;
         logger.channel()?.info(`Server running at http://localhost:${port}/`);
 		process.env.DEVCHAT_IDE_SERVICE_URL = `http://localhost:${port}`;
+		process.env.DEVCHAT_IDE_SERVICE_PORT = `${port}`;
 	});
 }
