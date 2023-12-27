@@ -554,7 +554,7 @@
 				},
 				"DevChat.Language": {
 					"type": "string",
-					"default": "en",
+					"default": "",
 					"enum": ["en", "zh"],
 					"enumDescriptions": [
 						"English",
