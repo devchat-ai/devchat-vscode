@@ -555,7 +555,10 @@
 				"DevChat.Language": {
 					"type": "string",
 					"default": "",
-					"enum": ["en", "zh"],
+					"enum": [
+						"en",
+						"zh"
+					],
 					"enumDescriptions": [
 						"English",
 						"Simplified Chinese"
@@ -873,6 +876,7 @@
 		"dotenv": "^16.0.3",
 		"js-yaml": "^4.1.0",
 		"mdast": "^3.0.0",
+		"mobx": "^6.12.0",
 		"ncp": "^2.0.0",
 		"node-fetch": "^3.3.1",
 		"nonce": "^1.0.4",
