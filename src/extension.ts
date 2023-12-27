@@ -206,6 +206,16 @@ async function configUpdate0912To0924() {
 	}
 }
 
+async function setLangDefaultValue() {
+	const lang = vscode.env.language;
+	if (!UiUtilWrapper.getConfiguration("DevChat", "Language")) {
+		if (lang.startsWith("zh-")) {
+			UiUtilWrapper.updateConfiguration("DevChat", "Language", "zh");
+		} else {
+			UiUtilWrapper.updateConfiguration("DevChat", "Language", "en");
+		}
+	}
+}
 
 async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
@@ -216,6 +226,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await configUpdateTo0924();
 	await configUpdate0912To0924();
 	await configUpdateTo1115();
+	await setLangDefaultValue();
 
     regLanguageContext();
 	registerCodeLensProvider(context);
