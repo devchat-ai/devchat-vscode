@@ -217,6 +217,33 @@ async function setLangDefaultValue() {
 	}
 }
 
+async function updateInvalidSettings() {
+	const oldModels = [
+		"Model.gpt-3-5",
+		"Model.gpt-3-5-16k",
+		"Model.gpt-4",
+		"Model.claude-2"
+	];
+
+	for (const model of oldModels) {
+		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (Object.keys(modelConfig).length !== 0) {
+			let modelProperties: any = {};
+			for (const key of Object.keys(modelConfig || {})) {
+				const property = modelConfig![key];
+				modelProperties[key] = property;
+			}
+
+			if (modelConfig["api_key"]) {
+				delete modelProperties["api_key"];
+				delete modelProperties["api_base"];
+				modelProperties["provider"] = "devchat";
+				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+			}
+		}
+	}
+}
+
 async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
@@ -227,6 +254,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await configUpdate0912To0924();
 	await configUpdateTo1115();
 	await setLangDefaultValue();
+	await updateInvalidSettings();
 
     regLanguageContext();
 	registerCodeLensProvider(context);
