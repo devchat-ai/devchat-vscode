@@ -11,11 +11,13 @@ import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app
 import { installRequirements } from '../util/python_installer/package_install';
 
 import {
-    findDefinitions,
-    findDefinitionsOfToken,
+	findDefinitions,
+	findDefinitionsOfToken,
 } from "./lsp_bridge/feature/find-defs";
 
 import { findReferences } from "./lsp_bridge/feature/find-refs";
+import { convertSymbolsToPlainObjects, executeProviderCommand } from './lsp/lsp';
+import { applyCodeWithDiff } from '../handler/diffHandler';
 
 
 const functionRegistry: any = {
@@ -28,9 +30,68 @@ const functionRegistry: any = {
 			return process.env.DEVCHAT_IDE_SERVICE_PORT;
 		}
 	},
+	"/visible_lines": {
+		"keys": [],
+		"handler": async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor) {
+				const visibleRanges = editor.visibleRanges;
+				const visibleRange = visibleRanges[0];
+				const visibleText = editor.document.getText(visibleRange);
+				const filePath = editor.document.uri.fsPath;
+
+				return {
+					"filePath": filePath,
+					"visibleText": visibleText,
+					"visibleRange": [visibleRange.start.line, visibleRange.end.line]
+
+				};
+			} else {
+				return {
+					"filePath": "",
+					"visibleText": "",
+					"visibleRange": [-1, -1]
+				};
+			}
+		}
+	},
+	"/selected_lines": {
+		"keys": [],
+		"handler": async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (editor) {
+				const selection = editor.selection;
+				const selectedText = editor.document.getText(selection);
+				const startLine = selection.start.line; // VS Code API uses 0-based indexing for lines
+				const endLine = selection.end.line;
+				const charCount = selectedText.length;
+				const filePath = editor.document.uri.fsPath;
+
+				return {
+					"filePath": filePath,
+					"selectedText": selectedText,
+					"selectedRange": [startLine, selection.start.character, endLine, selection.end.character]
+
+				};
+			} else {
+				return {
+					"filePath": "",
+					"selectedText": "",
+					"selectedRange": [-1, -1, -1, -1]
+				};
+			}
+		}
+	},
+	"/diff_apply": {
+		"keys": ["filepath", "content"],
+		"handler": async (filepath: string, content: string) => {
+			applyCodeWithDiff({'fileName': filepath, 'content': content}, undefined );
+			return true;
+		}
+	},
 	"/definitions": {
 		"keys": ["abspath", "line", "character", "token"],
-		"handler": async (abspath: string, line: string|undefined = undefined, character: string|undefined = undefined, token: string|undefined = undefined) => {
+		"handler": async (abspath: string, line: string | undefined = undefined, character: string | undefined = undefined, token: string | undefined = undefined) => {
 			if (token !== undefined) {
 				const definitions = await findDefinitionsOfToken(abspath, token);
 				return definitions;
@@ -52,7 +113,61 @@ const functionRegistry: any = {
 			return references;
 		}
 	},
-	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/document_symbols": {
+		"keys": ["abspath"],
+		"handler": async (abspath: string) => {
+			// A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.
+			const documentSymbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[] | vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', vscode.Uri.file(abspath));
+			if (!documentSymbols) {
+				return [];
+			}
+
+			const symbols = convertSymbolsToPlainObjects(documentSymbols);
+			return symbols;
+		}
+	},
+	"/workspace_symbols": {
+		"keys": ["query"],
+		"handler": async (query: string) => {
+			// A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.
+			const querySymbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeWorkspaceSymbolProvider', query);
+			if (!querySymbols) {
+				return [];
+			}
+
+			return convertSymbolsToPlainObjects(querySymbols);
+		}
+	},
+	"/find_definition": {
+		"keys": ["abspath", "line", "col"],
+		"handler": async (abspath: string, line: string, col: string) => {
+			return await executeProviderCommand('vscode.executeDefinitionProvider', abspath, Number(line), Number(col));
+		}
+	},
+	"/find_type_definition": {
+		"keys": ["abspath", "line", "col"],
+		"handler": async (abspath: string, line: string, col: string) => {
+			return await executeProviderCommand('vscode.executeTypeDefinitionProvider', abspath, Number(line), Number(col));
+		}
+	},
+	"/find_declaration": {
+		"keys": ["abspath", "line", "col"],
+		"handler": async (abspath: string, line: string, col: string) => {
+			return await executeProviderCommand('vscode.executeDeclarationProvider', abspath, Number(line), Number(col));
+		}
+	},
+	"/find_implementation": {
+		"keys": ["abspath", "line", "col"],
+		"handler": async (abspath: string, line: string, col: string) => {
+			return await executeProviderCommand('vscode.executeImplementationProvider', abspath, Number(line), Number(col));
+		}
+	},
+	"/find_reference": {
+		"keys": ["abspath", "line", "col"],
+		"handler": async (abspath: string, line: string, col: string) => {
+			return await executeProviderCommand('vscode.executeReferenceProvider', abspath, Number(line), Number(col));
+		}
+	},
 	"/update_slash_commands": {
 		"keys": [],
 		"handler": async () => {
@@ -133,7 +248,7 @@ const functionRegistry: any = {
 			// try 3 times
 			for (let i = 0; i < 4; i++) {
 				let otherSource: string | undefined = undefined;
-				if (i>1) {
+				if (i > 1) {
 					otherSource = 'https://pypi.tuna.tsinghua.edu.cn/simple/';
 				}
 				isInstalled = await installRequirements(pythonCommand, requirements_file, otherSource);
@@ -147,7 +262,7 @@ const functionRegistry: any = {
 				logger.channel()?.show();
 				return '';
 			}
-			
+
 			return pythonCommand.trim();
 		}
 	}
@@ -202,7 +317,7 @@ export async function startRpcServer() {
 	async function handleRequest(parsedUrl: URL, params: any, res: http.ServerResponse) {
 		try {
 			let responseResult = {};
-		
+
 			if (functionRegistry[parsedUrl.pathname]) {
 				let keysExist = true;
 				let newParameters: any[] = [];
@@ -225,7 +340,7 @@ export async function startRpcServer() {
 			} else {
 				responseResult['error'] = "Function not found";
 			}
-		
+
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			res.writeHead(200, { 'Content-Type': 'application/json' });
 			res.end(JSON.stringify(responseResult));
@@ -234,12 +349,12 @@ export async function startRpcServer() {
 			logger.channel()?.show();
 		}
 	}
-	
+
 	server.listen(0, () => {
 		const address = server!.address();
-        // `address()`返回的对象包含`port`属性，它是系统分配的端口号
-        const port = typeof address === 'string' ? address : address?.port;
-        logger.channel()?.info(`Server running at http://localhost:${port}/`);
+		// `address()`返回的对象包含`port`属性，它是系统分配的端口号
+		const port = typeof address === 'string' ? address : address?.port;
+		logger.channel()?.info(`Server running at http://localhost:${port}/`);
 		process.env.DEVCHAT_IDE_SERVICE_URL = `http://localhost:${port}`;
 		process.env.DEVCHAT_IDE_SERVICE_PORT = `${port}`;
 	});

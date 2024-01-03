@@ -122,7 +122,7 @@ async function getNewCode(message: any): Promise<string | undefined> {
 }
 
 regInMessage({ command: 'show_diff', content: '', fileName: '' });
-export async function applyCodeWithDiff(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+export async function applyCodeWithDiff(message: any, panel: vscode.WebviewPanel | vscode.WebviewView | undefined): Promise<void> {
 	const newCode = await getNewCode(message);
 	if (!newCode) {
 		return;
