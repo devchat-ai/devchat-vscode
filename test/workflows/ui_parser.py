@@ -36,7 +36,7 @@ import re
 
 def extract_ui_blocks(text):
     # 定义用于提取各种UI块的正则表达式
-    ui_block_pattern = re.compile(r'```chatmark type=form\n(.*?)\n```', re.DOTALL)
+    ui_block_pattern = re.compile(r'```chatmark.*?\n(.*?)\n```', re.DOTALL)
     return ui_block_pattern.findall(text)
 
 def parse_ui_block(block):
