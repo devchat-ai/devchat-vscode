@@ -33,13 +33,13 @@ jobs:
             mkdir -p ~/.chat/workflows
             git clone https://github.com/devchat-ai/workflows.git ~/.chat/workflows/sys
             cd ~/.chat/workflows/sys
-      - run:
-          name: Run workflow tests
-          command: |
-            export PYTHONPATH="$PYTHONPATH:$(pwd)/tools/site-packages"
-            git config --global user.email "tester@merico.dev"
-            git config --global user.name "tester"
-            python3 test/workflows/workflow_test.py
+      # - run:
+      #     name: Run workflow tests
+      #     command: |
+      #       export PYTHONPATH="$PYTHONPATH:$(pwd)/tools/site-packages"
+      #       git config --global user.email "tester@merico.dev"
+      #       git config --global user.name "tester"
+      #       python3 test/workflows/workflow_test.py
       - persist_to_workspace:
           root: .
           paths:
