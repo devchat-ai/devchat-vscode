@@ -41,8 +41,9 @@ function apiKeyMissedMessage(): LogEntry {
 		response: `
 OPENAI_API_KEY is missing from your environment or settings. Kindly input your OpenAI or DevChat key, and I'll ensure DevChat is all set for you.
 	
-<button value="setting_openai_key">Set OpenAI key</button>
+<button value="get_devchat_key" href="https://web.devchat.ai" component="a">Register DevChat key</button>
 <button value="setting_devchat_key">Set DevChat key</button>
+<button value="setting_openai_key">Set OpenAI key</button>
 		`,
 		context: []
 	} as LogEntry;
