@@ -58,33 +58,4 @@ export function getValidPythonCommand(): string | undefined {
 	}
 }
 
-export function checkDevChatDependency(showError: boolean = true): boolean {
-	let devChat: string | undefined = UiUtilWrapper.getConfiguration('DevChat', 'DevChatPath');
-	if (!devChat) {
-		return false;
-	}
-
-	try {
-		// Check if DevChat is installed
-		const expectVersion = 'DevChat 0.2.10';
-		const devchatVersion = runCommand(`"${devChat}" --version`).toString().trim();
-		if (devchatVersion < expectVersion) {
-			logger.channel()?.info(`devchat version: ${devchatVersion}, but expect version: ${expectVersion}`);
-			return false;
-		}
-
-		logger.channel()?.info("devchat has installed.");
-		return true;
-	} catch(error) {
-		const errorStatus = `Failed to check DevChat dependency due to error: ${error}`;
-		if (devchatStatus !== errorStatus && showError) {
-			logger.channel()?.warn(errorStatus);
-			logger.channel()?.show();
-			devchatStatus = errorStatus;
-		}
-
-		return false;
-	}
-}
-
 

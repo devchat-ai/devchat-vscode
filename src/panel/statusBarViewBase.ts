@@ -4,7 +4,6 @@ import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 import { TopicManager } from "../topic/topicManager";
-import { checkDevChatDependency } from "../contributes/commandsBase";
 import { ApiKeyManager } from '../util/apiKey';
 import { CommandRun } from '../util/commonUtil';
 import { installDevchat } from '../util/python_installer/install_devchat';
@@ -62,11 +61,6 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		} else if (devchatStatus === 'DevChat has been installed') {
 			return devchatStatus;
 		} else if (devchatStatus === 'An error occurred during the installation of DevChat') {
-			const bOk = checkDevChatDependency(false);
-			if (bOk) {
-				devchatStatus = 'has statisfied the dependency';
-				return devchatStatus;
-			}
 			return devchatStatus;
 		}
 		return "";
