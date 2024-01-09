@@ -288,16 +288,11 @@ export function registerInstallCommandsCommand(context: vscode.ExtensionContext)
             sendCommandListByDevChatRun();
         } else {
             // Directory exists, execute sendCommandListByDevChatRun immediately
-            sendCommandListByDevChatRun();
+            await sendCommandListByDevChatRun();
 
             // Then asynchronously execute updateSysCommand
-            devchat.updateSysCommand().then(() => {
-                // After updateSysCommand finishes, execute sendCommandListByDevChatRun again
-                sendCommandListByDevChatRun();
-            }).catch((error) => {
-                // Handle any errors that occur during updateSysCommand
-                console.error('Error updating sys command:', error);
-            });
+			await devchat.updateSysCommand();
+			await sendCommandListByDevChatRun();
         }
     });
 

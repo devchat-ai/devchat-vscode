@@ -56,7 +56,7 @@ export async function getWorkflowCommandList(message: any, panel: vscode.Webview
 
 export async function sendCommandListByDevChatRun() {
 	if (existPannel) {
-		getWorkflowCommandList({}, existPannel!);
+		await getWorkflowCommandList({}, existPannel!);
 	}
 }
 
