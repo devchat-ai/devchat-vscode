@@ -22,6 +22,18 @@ export async function applyCode(text: string) {
 	await editor.edit((editBuilder: vscode.TextEditorEdit) => {
 		editBuilder.replace(new vscode.Range(start, end), text);
 	});
+
+	// Calculate the range of the inserted text
+	const insertedRange = new vscode.Range(start, editor.document.positionAt(text.length + editor.document.offsetAt(start)));
+
+	// Check if the inserted text is already within the visible range
+	const visibleRanges = editor.visibleRanges;
+	const isRangeVisible = visibleRanges.some(range => range.contains(insertedRange));
+
+	// If the inserted text is not visible, reveal it
+	if (!isRangeVisible) {
+		editor.revealRange(insertedRange, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
+	}
 }
 
 
