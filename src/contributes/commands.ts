@@ -374,7 +374,7 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 		}
 		
 		UiUtilWrapper.updateConfiguration("DevChat", "PythonForCommands", pythonCommand.trim());
-		vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
+		// vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
 	});
 
 	context.subscriptions.push(disposable);

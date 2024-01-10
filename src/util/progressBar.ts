@@ -19,7 +19,7 @@ export class ProgressBar {
             return new Promise<void>((resolve) => {
                 const timer = setInterval(() => {
 					if (this.finish === true && this.error === "") {
-						vscode.window.showInformationMessage(`${this.message}`);
+						// vscode.window.showInformationMessage(`${this.message}`);
 						resolve();
 						clearInterval(timer);
 					} else if (this.finish === true && this.error !== "") {
