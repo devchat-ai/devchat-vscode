@@ -45,7 +45,7 @@ export interface CommandEntry {
 
 export interface TopicEntry {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
-	root_prompt: LogEntry;
+	root_prompt: string;
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	latest_time: number;
 	hidden: boolean;
@@ -89,7 +89,7 @@ class DevChat {
 	}
 
 	private async buildArgs(options: ChatOptions): Promise<string[]> {
-		let args = ["-m", "devchat", "route"];
+		let args = ["-m", "devchatservices", "route"];
 
 		if (options.reference) {
 			for (const reference of options.reference) {
@@ -124,7 +124,7 @@ class DevChat {
 	}
 
 	private buildLogArgs(options: LogOptions): string[] {
-		let args = ["-m", "devchat", "log"];
+		let args = ["-m", "devchatservices", "log"];
 
 		if (options.skip) {
 			args.push('--skip', `${options.skip}`);
@@ -147,7 +147,7 @@ class DevChat {
 		const responseLines = stdout.trim().split("\n");
 
 		if (responseLines.length < 2) {
-			return this.createChatResponse("", "", "", "", !isPartial);
+			return this.createChatResponse("", "", "", stdout, !isPartial);
 		}
 
 		const [userLine, remainingLines1] = this.extractLine(responseLines, "User: ");
@@ -200,7 +200,7 @@ class DevChat {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"PYTHONUTF8":1,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages"
+			//"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages"
 		};
 
 		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
@@ -228,9 +228,19 @@ class DevChat {
 		this.commandRun.stop();
 	}
 
+	public generateUniqueHash(): string {
+		const timestamp = new Date().getTime().toString();
+		const randomString = Math.random().toString(36).substring(2, 15);
+		const hash = timestamp + randomString;
+		return hash;
+	  }
+
 	async chat(content: string, options: ChatOptions = {}, onData: (data: ChatResponse) => void, saveToLog: boolean = true): Promise<ChatResponse> {
 		try {
 			// build args for devchat prompt command
+			if (! options.parent) {
+				options.parent = this.generateUniqueHash();
+			}
 			const args = await this.buildArgs(options);
 			args.push("--");
 			args.push(content);
@@ -245,7 +255,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
+				//"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"OPENAI_API_KEY": llmModelData.api_key,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -283,9 +293,7 @@ class DevChat {
 			let promptHash = "";
 			if (saveToLog) {
 				await this.logInsert(options.context, content, responseData.response, options.parent);
-				const logs = await this.log({"maxCount": 1});
-				assertValue(!logs || !logs.length, "Failed to insert devchat log");
-				promptHash = logs[0]["hash"];
+				promptHash = options.parent;
 			}
 			//     return result
 			return {
@@ -346,7 +354,7 @@ class DevChat {
 			};
 
 			// build args for log insert
-			const args = ["-m", "devchat", "log", "--insert", JSON.stringify(logData)];
+			const args = ["-m", "devchatservices", "log", "--insert", JSON.stringify(logData)];
 			
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -365,7 +373,7 @@ class DevChat {
 	async delete(hash: string): Promise<boolean> {
 		try {
 			// build args for log delete
-			const args = ["-m", "devchat", "log", "--delete", hash];
+			const args = ["-m", "devchatservices", "log", "--delete", hash];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -390,9 +398,9 @@ class DevChat {
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
 			assertValue(stderr, stderr);
 
-			const logs = JSON.parse(stdout.trim()).reverse();
+			const logs = JSON.parse(stdout.trim());
 			for (const log of logs) {
-				log.response = log.responses[0];
+				log.response = log.responses;
 				delete log.responses;
 			}
 			return logs;
@@ -405,7 +413,7 @@ class DevChat {
 
 	async commands(): Promise<CommandEntry[]> {
 		try {
-			const args = ["-m", "devchat", "run", "--list"];
+			const args = ["-m", "devchatservices", "run", "--list"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -424,7 +432,7 @@ class DevChat {
 
 	async updateSysCommand(): Promise<string> {
 		try {
-			const args = ["-m", "devchat", "run", "--update-sys"];
+			const args = ["-m", "devchatservices", "run", "--update-sys"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -442,7 +450,7 @@ class DevChat {
 
 	async topics(): Promise<TopicEntry[]> {
 		try {
-			const args = ["-m", "devchat", "topic", "-l"];
+			const args = ["-m", "devchatservices", "topic", "-l"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -450,12 +458,12 @@ class DevChat {
 			assertValue(stderr, stderr);
 
 			const topics = JSON.parse(stdout.trim()).reverse();
-			for (const topic of topics) {
-				if (topic.root_prompt.responses) {
-					topic.root_prompt.response = topic.root_prompt.responses[0];
-					delete topic.root_prompt.responses;
-				}
-			}
+			// for (const topic of topics) {
+			// 	if (topic.root_prompt.responses) {
+			// 		topic.root_prompt.response = topic.root_prompt.responses[0];
+			// 		delete topic.root_prompt.responses;
+			// 	}
+			// }
 			return topics;
 		} catch (error: any) {
 			logger.channel()?.error(`Error: ${error.message}`);

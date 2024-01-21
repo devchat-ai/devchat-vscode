@@ -258,9 +258,9 @@ export class TopicManager {
 		// visite logEntries
 		// for each logEntry
 		for (const topicEntry of topicEntries) {
-			const name = topicEntry.title ? topicEntry.title : this.createTopicName(topicEntry.root_prompt.request, topicEntry.root_prompt.response);
-			const topic = new Topic(name!, topicEntry.root_prompt.hash, topicEntry.root_prompt.hash, Number(topicEntry.latest_time));
-			topic.updateLastMessageHashAndLastUpdated(topicEntry.root_prompt.hash, topicEntry.latest_time);
+			const name = topicEntry.title;
+			const topic = new Topic(name!, topicEntry.root_prompt, topicEntry.root_prompt, Number(topicEntry.latest_time));
+			topic.updateLastMessageHashAndLastUpdated(topicEntry.root_prompt, topicEntry.latest_time);
 		
 			if (topic.firstMessageHash && this.isDeleteTopic(topic.firstMessageHash)) {
 				continue;
