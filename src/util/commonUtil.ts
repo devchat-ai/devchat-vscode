@@ -27,7 +27,8 @@ export async function saveModelSettings(): Promise<void> {
 		"Model.chatglm_pro": "chatglm_pro",
 		"Model.ERNIE-Bot": "ERNIE-Bot",
 		"Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
-		"Model.llama-2-70b-chat": "llama-2-70b-chat"
+		"Model.llama-2-70b-chat": "llama-2-70b-chat",
+		"Model.abab55": "abab5.5-chat"
 	};
 
 	// is enable stream

@@ -96,6 +96,10 @@ export class ApiKeyManager {
 		if (llama70BModel) {
 			modelList.push(llama70BModel.model);
 		}
+		const abab55Model = await modelProperties('Model.abab55', "abab5.5-chat");
+		if (abab55Model) {
+			modelList.push(abab55Model.model);
+		}
 	
 		return modelList;
 	}
@@ -190,6 +194,9 @@ export class ApiKeyManager {
 		}
 		if (llmModelT === "llama-2-70b-chat") {
 			return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
+		}
+		if (llmModelT === "abab5.5-chat") {
+			return await modelProperties('Model.abab55', "abab5.5-chat");
 		}
 		
 		return undefined;
