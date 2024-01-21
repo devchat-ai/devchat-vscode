@@ -250,11 +250,11 @@ async function activate(context: vscode.ExtensionContext) {
     logger.init(LoggerChannelVscode.getInstance());
     UiUtilWrapper.init(new UiUtilVscode());
 
-	await configUpdateTo0924();
-	await configUpdate0912To0924();
-	await configUpdateTo1115();
-	await setLangDefaultValue();
-	await updateInvalidSettings();
+	// await configUpdateTo0924();
+	// await configUpdate0912To0924();
+	// await configUpdateTo1115();
+	// await setLangDefaultValue();
+	// await updateInvalidSettings();
 
     regLanguageContext();
 	registerCodeLensProvider(context);

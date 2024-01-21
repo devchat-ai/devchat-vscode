@@ -82,11 +82,11 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			if (!hasInstallCommands) {
 				hasInstallCommands = true;
 				await vscode.commands.executeCommand('DevChat.InstallCommands');
-				vscode.commands.executeCommand('DevChat.InstallCommandPython');
+				// vscode.commands.executeCommand('DevChat.InstallCommandPython');
 			}
 			
 			clearInterval(timer);
-			checkDevChatCommandsStatus();
+			// checkDevChatCommandsStatus();
 		} catch (error) {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `Error: ${error}`;
