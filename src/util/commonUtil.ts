@@ -17,17 +17,17 @@ var kill = require('tree-kill');
 export async function saveModelSettings(): Promise<void> {
 	// support models
 	const supportModels = {
-		"Model.gpt-3-5": "gpt-3.5-turbo",
-		"Model.gpt-3-5-1106": "gpt-3.5-turbo-1106",
-		"Model.gpt-3-5-16k": "gpt-3.5-turbo-16k",
-		"Model.gpt-4": "gpt-4",
-		"Model.gpt-4-turbo": "gpt-4-1106-preview",
-		"Model.claude-2": "claude-2",
-		"Model.xinghuo-2": "xinghuo-2",
-		"Model.chatglm_pro": "chatglm_pro",
-		"Model.ERNIE-Bot": "ERNIE-Bot",
-		"Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
-		"Model.llama-2-70b-chat": "llama-2-70b-chat",
+		// "Model.gpt-3-5": "gpt-3.5-turbo",
+		// "Model.gpt-3-5-1106": "gpt-3.5-turbo-1106",
+		// "Model.gpt-3-5-16k": "gpt-3.5-turbo-16k",
+		// "Model.gpt-4": "gpt-4",
+		// "Model.gpt-4-turbo": "gpt-4-1106-preview",
+		// "Model.claude-2": "claude-2",
+		// "Model.xinghuo-2": "xinghuo-2",
+		// "Model.chatglm_pro": "chatglm_pro",
+		// "Model.ERNIE-Bot": "ERNIE-Bot",
+		// "Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
+		// "Model.llama-2-70b-chat": "llama-2-70b-chat",
 		"Model.abab55": "abab5.5-chat"
 	};
 
@@ -50,7 +50,7 @@ export async function saveModelSettings(): Promise<void> {
 
 	let devchatModels = {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"default_model": "gpt-3.5-turbo-16k",
+		"default_model": "abab5.5-chat",
 		"models": devchatConfig
 	};
 		
