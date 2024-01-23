@@ -352,7 +352,9 @@ class DevChat {
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
 			assertValue(stdout.indexOf('Failed to insert log') >= 0, stdout);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			return true;
 		} catch (error: any) {
@@ -371,7 +373,9 @@ class DevChat {
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
 			assertValue(stdout.indexOf('Failed to delete prompt') >= 0, stdout);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			return true;
 		} catch (error: any) {
@@ -388,7 +392,9 @@ class DevChat {
 			const {code, stdout, stderr} = await this.runCommand(args);
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			const logs = JSON.parse(stdout.trim()).reverse();
 			for (const log of logs) {
@@ -410,7 +416,9 @@ class DevChat {
 			const {code, stdout, stderr} = await this.runCommand(args);
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			const commands = JSON.parse(stdout.trim());
 
@@ -429,7 +437,9 @@ class DevChat {
 			const {code, stdout, stderr} = await this.runCommand(args);
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			logger.channel()?.info(`${stdout}`);
 			return stdout;
@@ -447,7 +457,9 @@ class DevChat {
 			const {code, stdout, stderr} = await this.runCommand(args);
 
 			assertValue(code !== 0, stderr || `Command exited with ${code}`);
-			assertValue(stderr, stderr);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
 
 			const topics = JSON.parse(stdout.trim()).reverse();
 			for (const topic of topics) {
