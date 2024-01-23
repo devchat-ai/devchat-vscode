@@ -383,6 +383,14 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('DevChat.Chat', async (message: string) => {
 		ensureChatPanel(context);
+		if (!ExtensionContextHolder.provider?.view()) {
+			// wait 2 seconds
+			await new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve(true);
+				}, 2000);
+			});
+		}
 		chatWithDevChat(ExtensionContextHolder.provider?.view()!, message);
 	});
 

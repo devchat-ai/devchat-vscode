@@ -257,7 +257,6 @@ async function activate(context: vscode.ExtensionContext) {
 	await updateInvalidSettings();
 
     regLanguageContext();
-	registerCodeLensProvider(context);
 
     regDevChatView(context);
     regTopicView(context);
@@ -284,6 +283,7 @@ async function activate(context: vscode.ExtensionContext) {
 
     regPythonPathCommand(context);
 	registerDevChatChatCommand(context);
+	registerCodeLensProvider(context);
 
 	startRpcServer();
 }
