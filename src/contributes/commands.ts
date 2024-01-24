@@ -405,6 +405,8 @@ export function registerHandleUri(context: vscode.ExtensionContext){
 			}
 			providerConfigNew.access_key = accessKey;
 			vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
+			ensureChatPanel(context);
+			ExtensionContextHolder.provider?.reloadWebview();
 		  }
 		}
 	}));
