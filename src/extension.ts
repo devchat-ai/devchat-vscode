@@ -17,7 +17,8 @@ import {
 	registerInstallCommandsCommand,
 	registerUpdateChatModelsCommand,
 	registerInstallCommandsPython,
-	registerDevChatChatCommand
+	registerDevChatChatCommand,
+	registerHandleUri,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView, regTopicView } from './contributes/views';
@@ -286,5 +287,7 @@ async function activate(context: vscode.ExtensionContext) {
 	registerCodeLensProvider(context);
 
 	startRpcServer();
+	logger.channel()?.info(`registerHandleUri:`);
+	registerHandleUri(context)
 }
 exports.activate = activate;

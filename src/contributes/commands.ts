@@ -397,6 +397,29 @@ export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(disposable);
 }
 
+export function registerHandleUri(context: vscode.ExtensionContext){
+	context.subscriptions.push(vscode.window.registerUriHandler({
+		handleUri(uri) {
+		  // 解析 URI 并执行相应的操作
+		  if (uri.path.includes('accesskey')) {
+			const accessKey = uri.path.split('/')[2];
+			const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", 'Provider.devchat');
+			const providerConfigNew:any = {}
+			if (Object.keys(modelConfig).length !== 0){
+				for (const key of Object.keys(modelConfig || {})) {
+					const property = modelConfig![key];
+					providerConfigNew[key] = property;
+				}
+			}
+			providerConfigNew.access_key = accessKey;
+			vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
+			ensureChatPanel(context);
+			ExtensionContextHolder.provider?.reloadWebview();
+		  }
+		}
+	}));
+}
+
 export {
 	registerOpenChatPanelCommand,
 	registerAddContextCommand,
