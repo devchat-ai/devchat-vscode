@@ -399,7 +399,7 @@ export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
 
 export function registerHandleUri(context: vscode.ExtensionContext){
 	context.subscriptions.push(vscode.window.registerUriHandler({
-		handleUri(uri) {
+		async handleUri(uri) {
 		  // 解析 URI 并执行相应的操作
 		  if (uri.path.includes('accesskey')) {
 			const accessKey = uri.path.split('/')[2];
@@ -414,6 +414,11 @@ export function registerHandleUri(context: vscode.ExtensionContext){
 			providerConfigNew.access_key = accessKey;
 			vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
 			ensureChatPanel(context);
+			await new Promise((resolve, reject) => {
+				setTimeout(() => {
+					resolve(true);
+				}, 1000);
+			});
 			ExtensionContextHolder.provider?.reloadWebview();
 		  }
 		}
