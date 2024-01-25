@@ -167,10 +167,10 @@ export async function historyMessagesBase(): Promise<LoadHistoryMessages | undef
 	}
 	updateCurrentMessageHistory(topicId!, logEntriesFlat);
 
-	const apiKeyMessage = await apiKeyInvalidMessage();
-	if (apiKeyMessage !== undefined) {
-		return apiKeyMessage;
-	}
+	// const apiKeyMessage = await apiKeyInvalidMessage();
+	// if (apiKeyMessage !== undefined) {
+	// 	return apiKeyMessage;
+	// }
 
 	return {
 		command: 'loadHistoryMessages',
