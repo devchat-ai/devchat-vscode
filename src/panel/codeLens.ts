@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { logger } from '../util/logger';
+import { log } from 'console';
 
 interface FunctionDefinition {
 	name: string;
@@ -33,11 +35,15 @@ export class CodeLensManager {
   }
 
   private loadConfig(): void {
-    if (!fs.existsSync(this.configFilePath)) {
-      this.initializeConfig();
+	if (!fs.existsSync(this.configFilePath)) {
+	    this.initializeConfig();
     } else {
-      const data = fs.readFileSync(this.configFilePath, 'utf8');
-      this.registrations = JSON.parse(data);
+		const data = fs.readFileSync(this.configFilePath, "utf-8");
+		this.registrations = JSON.parse(data);
+
+		if (this.registrations.length === 0) {
+			this.initializeConfig();
+		}
     }
   }
 
@@ -130,7 +136,11 @@ async function getFunctionDefinitions(document: vscode.TextDocument, inner_funct
 class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
     // The provideCodeLenses method should have the correct signature
     async provideCodeLenses(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.CodeLens[]> {
-        const lenses: vscode.CodeLens[] = [];
+		// check whether document is a source file
+		if (document.languageId === 'log') {
+			return [];
+		}
+		const lenses: vscode.CodeLens[] = [];
 		const functionDefinitions = await getFunctionDefinitions(document);
 		const innerFunctionDefinitions = await getFunctionDefinitions(document, true);
 
@@ -138,7 +148,7 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
 			'function': functionDefinitions,
 			'inner_function': innerFunctionDefinitions
 		};
-
+		
 		for (const [elementType, elements] of Object.entries(matchElements)) {
 			elements.forEach((funcDef) => {
 				const range = new vscode.Range(
@@ -179,6 +189,8 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
 			});
 		}
 
+		// log info find how many functionDefinitions, innerFunctionDefinitions, lenses
+		logger.channel()?.info(`found ${functionDefinitions.length} functions, ${innerFunctionDefinitions.length} inner functions, ${lenses.length} registered codeLenses in document: ${document.fileName}`);
         return lenses;
     }
 }
