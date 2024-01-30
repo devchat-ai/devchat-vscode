@@ -35,6 +35,7 @@ export function deleteTempFiles(fileName: string): void {
 function writeContextInfoToTempFiles(message : any) : string[] {
 	let tempFiles: string[] = [];
 	message.old_text = message.old_text || message.text;
+	message.text = message.old_text
 
 	// Handle the contextInfo field in the message
     if (Array.isArray(message.contextInfo)) {
@@ -53,7 +54,7 @@ function writeContextInfoToTempFiles(message : any) : string[] {
                     }
                 }
                 // Insert the file name into the text field
-                message.text = message.old_text + ` [context|${context.file}]`;
+                message.text = message.text + ` [context|${context.file}]`;
             }
         }
     }
