@@ -157,7 +157,7 @@ code change diff:
     
     content = ''
     for chunk in response:
-        content += chunk.choices[0].delta.content
+        content += (chunk.choices[0].delta.content or "")
     print('AI says:', content)
     return compare_result_parser(content)
 
