@@ -10,12 +10,6 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
 
-import {
-	findDefinitions,
-	findDefinitionsOfToken,
-} from "./lsp_bridge/feature/find-defs";
-
-import { findReferences } from "./lsp_bridge/feature/find-refs";
 import { convertSymbolsToPlainObjects, executeProviderCommand } from './lsp/lsp';
 import { applyCodeWithDiff } from '../handler/diffHandler';
 import { getSymbolDefines } from '../context/contextRefDefs';
@@ -25,6 +19,7 @@ import { installPythonEnv } from './endpoints/installPythonEnv';
 import { logError, logInfo, logWarn } from './endpoints/ideLogging';
 import { updateSlashCommands } from './endpoints/updateSlashCommands';
 import { ideLanguage } from './endpoints/ideLanguage';
+import { LegacyEndpoints } from './endpoints/legacy';
 
 
 const functionRegistry: any = {
@@ -45,29 +40,19 @@ const functionRegistry: any = {
 		"keys": ["filepath", "content"],
 		"handler": UnofficialEndpoints.diffApply
 	},
+	/**
+	 * @deprecated
+	 */
 	"/definitions": {
 		"keys": ["abspath", "line", "character", "token"],
-		"handler": async (abspath: string, line: string | undefined = undefined, character: string | undefined = undefined, token: string | undefined = undefined) => {
-			if (token !== undefined) {
-				const definitions = await findDefinitionsOfToken(abspath, token);
-				return definitions;
-			} else {
-				const definitions = await findDefinitions(abspath, Number(line), Number(character));
-				return definitions;
-			}
-		}
+		"handler": LegacyEndpoints.definitions
 	},
+	/**
+	 * @deprecated
+	 */
 	"/references": {
 		"keys": ["abspath", "line", "character"],
-		"handler": async (abspath: string, line: number, character: number) => {
-			const references = await findReferences(
-				abspath,
-				Number(line),
-				Number(character)
-			);
-
-			return references;
-		}
+		"handler": LegacyEndpoints.references
 	},
 	"/document_symbols": {
 		"keys": ["abspath"],
