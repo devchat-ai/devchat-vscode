@@ -18,6 +18,7 @@ import {
 import { findReferences } from "./lsp_bridge/feature/find-refs";
 import { convertSymbolsToPlainObjects, executeProviderCommand } from './lsp/lsp';
 import { applyCodeWithDiff } from '../handler/diffHandler';
+import { getSymbolDefines } from '../context/contextRefDefs';
 
 
 const functionRegistry: any = {
@@ -264,6 +265,19 @@ const functionRegistry: any = {
 			}
 
 			return pythonCommand.trim();
+		}
+	},
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	"/get_symbol_defines_in_selected_code": {
+		"keys": [],
+		"handler": async () => {
+			// find needed symbol defines in current editor document
+			// return value is a list of symbol defines
+			// each define has three fileds: 
+			// path: file path contain that symbol define
+			// startLine: start line in that file
+			// content: source code for symbol define
+			return getSymbolDefines();
 		}
 	}
 };
