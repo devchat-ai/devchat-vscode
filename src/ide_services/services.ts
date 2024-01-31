@@ -20,17 +20,18 @@ import { convertSymbolsToPlainObjects, executeProviderCommand } from './lsp/lsp'
 import { applyCodeWithDiff } from '../handler/diffHandler';
 import { getSymbolDefines } from '../context/contextRefDefs';
 import { UnofficialEndpoints } from './endpoints/unofficial';
+import { getServicePort } from './endpoints/getServicePort';
+import { installPythonEnv } from './endpoints/installPythonEnv';
+import { logError, logInfo, logWarn } from './endpoints/ideLogging';
+import { updateSlashCommands } from './endpoints/updateSlashCommands';
+import { ideLanguage } from './endpoints/ideLanguage';
 
 
 const functionRegistry: any = {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/get_lsp_brige_port": {
 		"keys": [],
-		"handler": async () => {
-			logger.channel()?.info(`get lsp bridge port: ${process.env.DEVCHAT_IDE_SERVICE_PORT}`);
-			// return await UiUtilWrapper.getLSPBrigePort();
-			return process.env.DEVCHAT_IDE_SERVICE_PORT;
-		}
+		"handler": getServicePort
 	},
 	"/visible_lines": {
 		"keys": [],
@@ -98,43 +99,27 @@ const functionRegistry: any = {
 	},
 	"/update_slash_commands": {
 		"keys": [],
-		"handler": async () => {
-			vscode.commands.executeCommand('DevChat.InstallCommands');
-			return true;
-		}
+		"handler": updateSlashCommands
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/ide_language": {
 		"keys": [],
-		"handler": async () => {
-			const language = UiUtilWrapper.getConfiguration("DevChat", "Language");
-			// 'en' stands for English, 'zh' stands for Simplified Chinese
-			return language;
-		}
+		"handler": ideLanguage
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/log_info": {
 		"keys": ["message"],
-		"handler": async (message: string) => {
-			logger.channel()?.info(message);
-			return true;
-		}
+		"handler": logInfo
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/log_warn": {
 		"keys": ["message"],
-		"handler": async (message: string) => {
-			logger.channel()?.warn(message);
-			return true;
-		}
+		"handler": logWarn
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/log_error": {
 		"keys": ["message"],
-		"handler": async (message: string) => {
-			logger.channel()?.error(message);
-			return true;
-		}
+		"handler": logError
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/open_folder": {
@@ -145,47 +130,7 @@ const functionRegistry: any = {
 	"/install_python_env": {
 		"keys": ["command_name", "requirements_file"],
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"handler": async (command_name: string, requirements_file: string) => {
-			// 1. install python >= 3.11
-			logger.channel()?.info(`create env for python ...`);
-			logger.channel()?.info(`try to create env by mamba ...`);
-			let pythonCommand = await createEnvByMamba(command_name, "", "3.11.4");
-
-			if (!pythonCommand || pythonCommand === "") {
-				logger.channel()?.info(`create env by mamba failed, try to create env by conda ...`);
-				pythonCommand = await createEnvByConda(command_name, "", "3.11.4");
-			}
-
-			if (!pythonCommand || pythonCommand === "") {
-				logger.channel()?.error(`create virtual python env failed, you need create it by yourself with command: "conda create -n devchat-commands python=3.11.4"`);
-				logger.channel()?.show();
-
-				return "";
-			}
-
-			// 3. install requirements.txt
-			// run command: pip install -r {requirementsFile}
-			let isInstalled = false;
-			// try 3 times
-			for (let i = 0; i < 4; i++) {
-				let otherSource: string | undefined = undefined;
-				if (i > 1) {
-					otherSource = 'https://pypi.tuna.tsinghua.edu.cn/simple/';
-				}
-				isInstalled = await installRequirements(pythonCommand, requirements_file, otherSource);
-				if (isInstalled) {
-					break;
-				}
-				logger.channel()?.info(`Install packages failed, try again: ${i + 1}`);
-			}
-			if (!isInstalled) {
-				logger.channel()?.error(`Install packages failed, you can install it with command: "${pythonCommand} -m pip install -r ${requirements_file}"`);
-				logger.channel()?.show();
-				return '';
-			}
-
-			return pythonCommand.trim();
-		}
+		"handler": installPythonEnv
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/get_symbol_defines_in_selected_code": {
