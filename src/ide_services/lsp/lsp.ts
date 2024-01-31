@@ -91,7 +91,7 @@ const convertSymbolInformation = (symbol: vscode.SymbolInformation): any => {
 // Generic function to convert an array of DocumentSymbol or SymbolInformation to a plain object array
 export const convertSymbolsToPlainObjects = (symbols: vscode.DocumentSymbol[] | vscode.SymbolInformation[]): any[] => {
     return symbols.map(symbol => {
-        if (symbol instanceof vscode.DocumentSymbol) {
+		if (symbol.children) {
             // Handle DocumentSymbol with recursive conversion
             return convertDocumentSymbol(symbol);
         } else {
