@@ -123,7 +123,7 @@ const functionRegistry: any = {
 				return [];
 			}
 
-			const symbols = convertSymbolsToPlainObjects(symbols2);
+			const symbols = convertSymbolsToPlainObjects(documentSymbols);
 			return symbols;
 		}
 	},
