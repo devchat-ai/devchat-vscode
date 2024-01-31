@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { ChatContext } from './contextManager';
 
 import { logger } from '../util/logger';
 import { handleCodeSelected } from './contextCodeSelected';
 import DevChat, { ChatOptions } from '../toolwrapper/devchat';
+import { UiUtilWrapper } from '../util/uiUtil';
 
 
 async function getCurrentSelectText(activeEditor: vscode.TextEditor): Promise<string> {
@@ -17,6 +19,16 @@ async function getCurrentSelectText(activeEditor: vscode.TextEditor): Promise<st
 	const selectedText = document.getText(selection);
 
 	return selectedText;
+}
+
+// get full text in activeEditor
+async function getFullText(activeEditor: vscode.TextEditor): Promise<string> {
+	if (!activeEditor) {
+		return "";
+	}
+
+	const document = activeEditor.document;
+	return document.getText();
 }
 
 async function getUndefinedSymbols(content: string): Promise<string[] | undefined> {
@@ -126,12 +138,31 @@ function isLocationInstance(loc: vscode.Location | vscode.LocationLink): boolean
 	}
 }
 
-async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEditor): Promise<string[]> {
-	const document = activeEditor!.document;
-	const selection = activeEditor!.selection;
-	const selectedText = document.getText(selection);
+async function handleCodeSelectedNoFile(fileSelected: string, codeSelected: string, startLine: number) {
+    const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+	const relativePath = path.relative(workspaceDir!, fileSelected);
+	
+	const data = {
+		path: relativePath,
+		startLine: startLine,
+		content: codeSelected
+	};
+	return data;
+}
 
-	let contextList: string[] = [await handleCodeSelected(activeEditor!.document.uri.fsPath, selectedText, selection.start.line)];
+async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEditor, toFile: boolean = true): Promise<string[]> {
+	const document = activeEditor!.document;
+	let selection = activeEditor!.selection;
+	let selectedText = document!.getText(selection);
+	if (selectedText === "" && !toFile) {
+		selectedText = await getFullText(activeEditor);
+		selection = new vscode.Selection(0, 0, 0, 0);
+	}
+
+	let contextList: any[] = [];
+	if (toFile) {
+		contextList = [await handleCodeSelectedNoFile(document.uri.fsPath, selectedText, selection.start.line)];
+	}
 	let hasVisitedSymbols: Set<string> = new Set();
 	let hasPushedSymbols: Set<string> = new Set();
 
@@ -227,9 +258,17 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 
 							if (targetSymbol.kind === vscode.SymbolKind.Variable) {
 								const renageNew = new vscode.Range(targetSymbol.range.start.line, 0, targetSymbol.range.end.line, 10000);
-								contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
+								if (toFile) {
+									contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
+								} else {
+									contextList.push(await handleCodeSelectedNoFile(targetUri.fsPath, documentNew.getText(renageNew), targetSymbol.range.start.line));
+								}
 							} else {
-								contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
+								if (toFile) {
+									contextList.push(await handleCodeSelected(targetUri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
+								} else {
+									contextList.push(await handleCodeSelectedNoFile(targetUri.fsPath, documentNew.getText(targetSymbol.range), targetSymbol.range.start.line));
+								}
 							}
 						}
 					}
@@ -242,26 +281,56 @@ async function getSymbolDefine(symbolList: string[], activeEditor: vscode.TextEd
 	return contextList;
 }
 
+export async function getSymbolDefines() {
+	const activeEditor = vscode.window.activeTextEditor;
+	
+	if (!activeEditor) {
+		logger.channel()?.error('No code selected!');
+		logger.channel()?.show();
+		return [];
+	}
+	
+	let selectedText = await getCurrentSelectText(activeEditor);
+	if (selectedText === "") {
+		selectedText = await getFullText(activeEditor);
+	}
+	if (selectedText === "") {
+		logger.channel()?.error(`No code selected! Current selected editor is: ${activeEditor.document.uri.fsPath}}`);
+		logger.channel()?.show();
+		return [];
+	}
+	const symbolList = await getUndefinedSymbols(selectedText);
+	if (symbolList === undefined) {
+		logger.channel()?.error('Failed to get symbol list!');
+		logger.channel()?.show();
+		return [];
+	}
+	const contextList = await getSymbolDefine(symbolList, activeEditor, false);
+	return contextList;
+}
 
 export const refDefsContext: ChatContext = {
 	name: 'symbol definitions',
 	description: 'find related definitions of classes, functions, etc. in selected code',
 	handler: async () => {
 		const activeEditor = vscode.window.activeTextEditor;
-		logger.channel()?.show();
+		
 		if (!activeEditor) {
 			logger.channel()?.error('No code selected!');
+			logger.channel()?.show();
 			return [];
 		}
 		
 		const selectedText = await getCurrentSelectText(activeEditor);
 		if (selectedText === "") {
 			logger.channel()?.error(`No code selected! Current selected editor is: ${activeEditor.document.uri.fsPath}}`);
+			logger.channel()?.show();
 			return [];
 		}
 		const symbolList = await getUndefinedSymbols(selectedText);
 		if (symbolList === undefined) {
 			logger.channel()?.error('Failed to get symbol list!');
+			logger.channel()?.show();
 			return [];
 		}
 		const contextList = await getSymbolDefine(symbolList, activeEditor);
