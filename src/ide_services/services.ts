@@ -19,6 +19,7 @@ import { findReferences } from "./lsp_bridge/feature/find-refs";
 import { convertSymbolsToPlainObjects, executeProviderCommand } from './lsp/lsp';
 import { applyCodeWithDiff } from '../handler/diffHandler';
 import { getSymbolDefines } from '../context/contextRefDefs';
+import { UnofficialEndpoints } from './endpoints/unofficial';
 
 
 const functionRegistry: any = {
@@ -33,62 +34,15 @@ const functionRegistry: any = {
 	},
 	"/visible_lines": {
 		"keys": [],
-		"handler": async () => {
-			const editor = vscode.window.activeTextEditor;
-			if (editor) {
-				const visibleRanges = editor.visibleRanges;
-				const visibleRange = visibleRanges[0];
-				const visibleText = editor.document.getText(visibleRange);
-				const filePath = editor.document.uri.fsPath;
-
-				return {
-					"filePath": filePath,
-					"visibleText": visibleText,
-					"visibleRange": [visibleRange.start.line, visibleRange.end.line]
-
-				};
-			} else {
-				return {
-					"filePath": "",
-					"visibleText": "",
-					"visibleRange": [-1, -1]
-				};
-			}
-		}
+		"handler": UnofficialEndpoints.visibleLines
 	},
 	"/selected_lines": {
 		"keys": [],
-		"handler": async () => {
-			const editor = vscode.window.activeTextEditor;
-			if (editor) {
-				const selection = editor.selection;
-				const selectedText = editor.document.getText(selection);
-				const startLine = selection.start.line; // VS Code API uses 0-based indexing for lines
-				const endLine = selection.end.line;
-				const charCount = selectedText.length;
-				const filePath = editor.document.uri.fsPath;
-
-				return {
-					"filePath": filePath,
-					"selectedText": selectedText,
-					"selectedRange": [startLine, selection.start.character, endLine, selection.end.character]
-
-				};
-			} else {
-				return {
-					"filePath": "",
-					"selectedText": "",
-					"selectedRange": [-1, -1, -1, -1]
-				};
-			}
-		}
+		"handler": UnofficialEndpoints.selectedLines
 	},
 	"/diff_apply": {
 		"keys": ["filepath", "content"],
-		"handler": async (filepath: string, content: string) => {
-			applyCodeWithDiff({'fileName': filepath, 'content': content}, undefined );
-			return true;
-		}
+		"handler": UnofficialEndpoints.diffApply
 	},
 	"/definitions": {
 		"keys": ["abspath", "line", "character", "token"],
@@ -116,58 +70,31 @@ const functionRegistry: any = {
 	},
 	"/document_symbols": {
 		"keys": ["abspath"],
-		"handler": async (abspath: string) => {
-			// A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.
-			const documentSymbols = await vscode.commands.executeCommand<vscode.DocumentSymbol[] | vscode.SymbolInformation[]>('vscode.executeDocumentSymbolProvider', vscode.Uri.file(abspath));
-			if (!documentSymbols) {
-				return [];
-			}
-
-			const symbols = convertSymbolsToPlainObjects(documentSymbols);
-			return symbols;
-		}
+		"handler": UnofficialEndpoints.documentSymbols
 	},
 	"/workspace_symbols": {
 		"keys": ["query"],
-		"handler": async (query: string) => {
-			// A promise that resolves to an array of SymbolInformation and DocumentSymbol instances.
-			const querySymbols = await vscode.commands.executeCommand<vscode.SymbolInformation[]>('vscode.executeWorkspaceSymbolProvider', query);
-			if (!querySymbols) {
-				return [];
-			}
-
-			return convertSymbolsToPlainObjects(querySymbols);
-		}
+		"handler": UnofficialEndpoints.workspaceSymbols
 	},
 	"/find_definition": {
 		"keys": ["abspath", "line", "col"],
-		"handler": async (abspath: string, line: string, col: string) => {
-			return await executeProviderCommand('vscode.executeDefinitionProvider', abspath, Number(line), Number(col));
-		}
+		"handler": UnofficialEndpoints.findDefinition
 	},
 	"/find_type_definition": {
 		"keys": ["abspath", "line", "col"],
-		"handler": async (abspath: string, line: string, col: string) => {
-			return await executeProviderCommand('vscode.executeTypeDefinitionProvider', abspath, Number(line), Number(col));
-		}
+		"handler": UnofficialEndpoints.findTypeDefinition
 	},
 	"/find_declaration": {
 		"keys": ["abspath", "line", "col"],
-		"handler": async (abspath: string, line: string, col: string) => {
-			return await executeProviderCommand('vscode.executeDeclarationProvider', abspath, Number(line), Number(col));
-		}
+		"handler": UnofficialEndpoints.findTypeDefinition
 	},
 	"/find_implementation": {
 		"keys": ["abspath", "line", "col"],
-		"handler": async (abspath: string, line: string, col: string) => {
-			return await executeProviderCommand('vscode.executeImplementationProvider', abspath, Number(line), Number(col));
-		}
+		"handler": UnofficialEndpoints.findImplementation
 	},
 	"/find_reference": {
 		"keys": ["abspath", "line", "col"],
-		"handler": async (abspath: string, line: string, col: string) => {
-			return await executeProviderCommand('vscode.executeReferenceProvider', abspath, Number(line), Number(col));
-		}
+		"handler": UnofficialEndpoints.findReference
 	},
 	"/update_slash_commands": {
 		"keys": [],
@@ -212,14 +139,7 @@ const functionRegistry: any = {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/open_folder": {
 		"keys": ["folder"],
-		"handler": async (folder: string) => {
-			// open folder by vscode
-			const folderPathParsed = folder.replace('\\', '/');
-			// Updated Uri.parse to Uri.file
-			const folderUri = vscode.Uri.file(folderPathParsed);
-			vscode.commands.executeCommand(`vscode.openFolder`, folderUri);
-			return true;
-		}
+		"handler": UnofficialEndpoints.openFolder
 	},
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/install_python_env": {
@@ -270,15 +190,7 @@ const functionRegistry: any = {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	"/get_symbol_defines_in_selected_code": {
 		"keys": [],
-		"handler": async () => {
-			// find needed symbol defines in current editor document
-			// return value is a list of symbol defines
-			// each define has three fileds: 
-			// path: file path contain that symbol define
-			// startLine: start line in that file
-			// content: source code for symbol define
-			return getSymbolDefines();
-		}
+		"handler": UnofficialEndpoints.getSymbolDefinesInSelectedCode
 	}
 };
 
