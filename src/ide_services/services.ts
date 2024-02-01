@@ -10,6 +10,7 @@ import { updateSlashCommands } from "./endpoints/updateSlashCommands";
 import { ideLanguage } from "./endpoints/ideLanguage";
 import { LegacyEndpoints } from "./endpoints/legacy";
 import { UnofficialEndpoints } from "./endpoints/unofficial";
+import { getDocumentSymbols } from "./endpoints/getDocumentSymbols";
 
 const functionRegistry: any = {
     /**
@@ -42,6 +43,10 @@ const functionRegistry: any = {
     "/log_error": {
         keys: ["message"],
         handler: logError,
+    },
+    "/get_document_symbols": {
+        keys: ["abspath"],
+        handler: getDocumentSymbols,
     },
 
     /**
