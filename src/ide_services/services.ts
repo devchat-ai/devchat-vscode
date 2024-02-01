@@ -67,55 +67,18 @@ const functionRegistry: any = {
     /**
      * Unofficial endpoints
      */
-    "/visible_lines": {
-        keys: [],
-        handler: UnofficialEndpoints.visibleLines,
-    },
-    "/selected_lines": {
-        keys: [],
-        handler: UnofficialEndpoints.selectedLines,
-    },
     "/diff_apply": {
         keys: ["filepath", "content"],
         handler: UnofficialEndpoints.diffApply,
-    },
-
-    "/document_symbols": {
-        keys: ["abspath"],
-        handler: UnofficialEndpoints.documentSymbols,
-    },
-    "/workspace_symbols": {
-        keys: ["query"],
-        handler: UnofficialEndpoints.workspaceSymbols,
-    },
-    "/find_definition": {
-        keys: ["abspath", "line", "col"],
-        handler: UnofficialEndpoints.findDefinition,
-    },
-    "/find_type_definition": {
-        keys: ["abspath", "line", "col"],
-        handler: UnofficialEndpoints.findTypeDefinition,
-    },
-    "/find_declaration": {
-        keys: ["abspath", "line", "col"],
-        handler: UnofficialEndpoints.findTypeDefinition,
-    },
-    "/find_implementation": {
-        keys: ["abspath", "line", "col"],
-        handler: UnofficialEndpoints.findImplementation,
-    },
-    "/find_reference": {
-        keys: ["abspath", "line", "col"],
-        handler: UnofficialEndpoints.findReference,
-    },
-    "/open_folder": {
-        keys: ["folder"],
-        handler: UnofficialEndpoints.openFolder,
     },
     "/get_symbol_defines_in_selected_code": {
         keys: [],
         handler: UnofficialEndpoints.getSymbolDefinesInSelectedCode,
     },
+	"/run_code": {
+		keys: ["code"],
+		handler: UnofficialEndpoints.runCode,
+	},
 };
 
 let server: http.Server | null = null;
@@ -187,9 +150,20 @@ export async function startRpcServer() {
                 if (!keysExist) {
                     responseResult["error"] = "Missing required parameters";
                 } else {
-                    responseResult["result"] = await functionRegistry[
+					const res = await functionRegistry[
                         parsedUrl.pathname
                     ]["handler"](...newParameters);
+					try {
+						if (parsedUrl.pathname === "/run_code") {
+							responseResult["result"] = structuredClone(res);
+						} else {
+							responseResult["result"] = res;
+						}
+					} catch (error) {
+						logger.channel()?.warn(`Error: ${error}`);
+						responseResult["result"] = res;
+					}
+                    
                     if (
                         parsedUrl.pathname === "/definitions" ||
                         parsedUrl.pathname === "/references"
@@ -207,6 +181,10 @@ export async function startRpcServer() {
         } catch (error) {
             logger.channel()?.error(`Error: ${error}`);
             logger.channel()?.show();
+
+			let responseResult = {"error": `Error: ${error}`};
+			res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(responseResult));
         }
     }
 
