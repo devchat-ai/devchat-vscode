@@ -5,7 +5,7 @@ import { logger } from "../util/logger";
 
 import { getServicePort } from "./endpoints/getServicePort";
 import { installPythonEnv } from "./endpoints/installPythonEnv";
-import { logError, logInfo, logWarn } from "./endpoints/ideLogging";
+import { ideLogging} from "./endpoints/ideLogging";
 import { updateSlashCommands } from "./endpoints/updateSlashCommands";
 import { ideLanguage } from "./endpoints/ideLanguage";
 import { LegacyEndpoints } from "./endpoints/legacy";
@@ -32,17 +32,9 @@ const functionRegistry: any = {
         keys: [],
         handler: ideLanguage,
     },
-    "/log_info": {
-        keys: ["message"],
-        handler: logInfo,
-    },
-    "/log_warn": {
-        keys: ["message"],
-        handler: logWarn,
-    },
-    "/log_error": {
-        keys: ["message"],
-        handler: logError,
+    "/ide_logging": {
+        keys: ["level", "message"],
+        handler: ideLogging,
     },
     "/get_document_symbols": {
         keys: ["abspath"],
