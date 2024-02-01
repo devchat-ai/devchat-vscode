@@ -56,14 +56,6 @@ export class ApiKeyManager {
 		if (openaiModel) {
 			modelList.push(openaiModel.model);
 		}
-		const openaiModel1 = await modelProperties('Model.gpt-3-5-1106', "gpt-3.5-turbo-1106");
-		if (openaiModel1) {
-			modelList.push(openaiModel1.model);
-		}
-		const openaiModel2 = await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
-		if (openaiModel2) {
-			modelList.push(openaiModel2.model);
-		}
 		const openaiModel3 = await modelProperties('Model.gpt-4', "gpt-4");
 		if (openaiModel3) {
 			modelList.push(openaiModel3.model);
@@ -72,19 +64,19 @@ export class ApiKeyManager {
 		if (openaiModel4) {
 			modelList.push(openaiModel4.model);
 		}
-		const claudeModel = await modelProperties('Model.claude-2', "claude-2");
+		const claudeModel = await modelProperties('Model.claude-2', "claude-2.1");
 		if (claudeModel) {
 			modelList.push(claudeModel.model);
 		}
-		const xinghuoModel = await modelProperties('Model.xinghuo-2', "xinghuo-2");
+		const xinghuoModel = await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
 		if (xinghuoModel) {
 			modelList.push(xinghuoModel.model);
 		}
-		const glmModel = await modelProperties('Model.chatglm_pro', "chatglm_pro");
+		const glmModel = await modelProperties('Model.chatglm_pro', "GLM-4");
 		if (glmModel) {
 			modelList.push(glmModel.model);
 		}
-		const erniebotModel = await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot");
+		const erniebotModel = await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
 		if (erniebotModel) {
 			modelList.push(erniebotModel.model);
 		}
@@ -161,29 +153,23 @@ export class ApiKeyManager {
 		if (llmModelT === "gpt-3.5-turbo") {
 			return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
 		}
-		if (llmModelT === "gpt-3.5-turbo-1106") {
-			return await modelProperties('Model.gpt-3-5-1106', "gpt-3.5-turbo-1106");
-		}
-		if (llmModelT === "gpt-3.5-turbo-16k") {
-			return await modelProperties('Model.gpt-3-5-16k', "gpt-3.5-turbo-16k");
-		}
 		if (llmModelT === "gpt-4") {
 			return await modelProperties('Model.gpt-4', "gpt-4");
 		}
 		if (llmModelT === "gpt-4-1106-preview") {
 			return await modelProperties('Model.gpt-4-turbo', "gpt-4-1106-preview");
 		}
-		if (llmModelT === "claude-2") {
-			return await modelProperties('Model.claude-2', "claude-2");
+		if (llmModelT === "claude-2.1") {
+			return await modelProperties('Model.claude-2', "claude-2.1");
 		}
-		if (llmModelT === "xinghuo-2") {
-			return await modelProperties('Model.xinghuo-2', "xinghuo-2");
+		if (llmModelT === "xinghuo-3.5") {
+			return await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
 		}
-		if (llmModelT === "chatglm_pro") {
-			return await modelProperties('Model.chatglm_pro', "chatglm_pro");
+		if (llmModelT === "GLM-4") {
+			return await modelProperties('Model.chatglm_pro', "GLM-4");
 		}
-		if (llmModelT === "ERNIE-Bot") {
-			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot");
+		if (llmModelT === "ERNIE-Bot-4.0") {
+			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
 		}
 		if (llmModelT === "CodeLlama-34b-Instruct") {
 			return await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
