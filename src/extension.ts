@@ -152,7 +152,7 @@ async function configUpdateTo0924() {
 	}
 
 	if (!defaultModel) {
-		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2", vscode.ConfigurationTarget.Global);
+		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2.1", vscode.ConfigurationTarget.Global);
 	}
 }
 
@@ -245,6 +245,16 @@ async function updateInvalidSettings() {
 	}
 }
 
+async function updateInvalidDefaultModel() {
+	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
+	if (defaultModel === "gpt-3.5-turbo-1106" || defaultModel === "gpt-3.5-turbo-16k") {
+		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
+	}
+}
+
+// "gpt-3.5-turbo-1106",
+// "gpt-3.5-turbo-16k",
+
 async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
@@ -256,6 +266,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await configUpdateTo1115();
 	await setLangDefaultValue();
 	await updateInvalidSettings();
+	await updateInvalidDefaultModel();
 
     regLanguageContext();
 

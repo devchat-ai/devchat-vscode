@@ -18,14 +18,12 @@ export async function saveModelSettings(): Promise<void> {
 	// support models
 	const supportModels = {
 		"Model.gpt-3-5": "gpt-3.5-turbo",
-		"Model.gpt-3-5-1106": "gpt-3.5-turbo-1106",
-		"Model.gpt-3-5-16k": "gpt-3.5-turbo-16k",
 		"Model.gpt-4": "gpt-4",
 		"Model.gpt-4-turbo": "gpt-4-1106-preview",
-		"Model.claude-2": "claude-2",
-		"Model.xinghuo-2": "xinghuo-2",
-		"Model.chatglm_pro": "chatglm_pro",
-		"Model.ERNIE-Bot": "ERNIE-Bot",
+		"Model.claude-2": "claude-2.1",
+		"Model.xinghuo-2": "xinghuo-3.5",
+		"Model.chatglm_pro": "GLM-4",
+		"Model.ERNIE-Bot": "ERNIE-Bot-4.0",
 		"Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
 		"Model.llama-2-70b-chat": "llama-2-70b-chat"
 	};
