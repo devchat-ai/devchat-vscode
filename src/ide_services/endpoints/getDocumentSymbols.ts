@@ -8,7 +8,9 @@ import { IDEService } from "../types";
  * @param abspath: absolute path of the file
  * @returns an array of IDEService.SymbolNode
  */
-export async function getDocumentSymbols(abspath: string) {
+export async function getDocumentSymbols(
+    abspath: string
+): Promise<IDEService.SymbolNode[]> {
     const documentSymbols = await vscode.commands.executeCommand<
         vscode.DocumentSymbol[] | vscode.SymbolInformation[]
     >("vscode.executeDocumentSymbolProvider", vscode.Uri.file(abspath));

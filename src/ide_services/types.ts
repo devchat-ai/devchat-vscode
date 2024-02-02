@@ -14,6 +14,11 @@ export namespace IDEService {
         end: Position;
     }
 
+    export interface Location {
+        abspath: string;
+        range: Range;
+    }
+
     export interface SymbolNode {
         name: string;
         kind: string;
