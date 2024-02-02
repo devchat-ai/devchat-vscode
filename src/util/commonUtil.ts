@@ -47,7 +47,7 @@ export async function saveModelSettings(): Promise<void> {
 
 	let devchatModels = {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"default_model": "gpt-3.5-turbo-16k",
+		"default_model": "gpt-3.5-turbo",
 		"models": devchatConfig
 	};
 		
