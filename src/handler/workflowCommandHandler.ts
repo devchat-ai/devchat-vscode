@@ -9,6 +9,7 @@ export interface Command {
 	name: string;
 	pattern: string;
 	description: string;
+	path: string;
 	args: number;
 	handler: (commandName: string, userInput: string) => Promise<string>;
 }
@@ -24,6 +25,7 @@ async function getCommandListByDevChatRun(includeHide: boolean = false): Promise
 			name: command.name,
 			pattern: command.name,
 			description: command.description,
+			path: command.path,
 			args: 0,
 			handler: async (commandName: string, userInput: string) => { return ''; }
 		};
