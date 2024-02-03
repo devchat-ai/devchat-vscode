@@ -41,6 +41,7 @@ export interface LogEntry {
 export interface CommandEntry {
 	name: string;
 	description: string;
+	path: string;
 }
 
 export interface TopicEntry {
