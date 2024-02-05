@@ -1,6 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 
 import DevChat, { LogEntry, LogOptions, TopicEntry } from '../toolwrapper/devchat';
 
@@ -203,7 +204,10 @@ export class TopicManager {
 		// 从底层数据库中删除topic
 		// 在.chat/.deletedTopics中记录被删除的topicId
 		// get ${WORKSPACE_ROOT}/.chat/.deletedTopics
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		let workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		if (!workspaceDir) {
+			workspaceDir = os.homedir();
+		}
 		const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
 
 		// read ${WORKSPACE_ROOT}/.chat/.deletedTopics as String[]
@@ -219,7 +223,10 @@ export class TopicManager {
 	}
 
 	isDeleteTopic(topicId: string) {
-		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		let workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		if (!workspaceDir) {
+			workspaceDir = os.homedir();
+		}
 		const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
 
 		if (!fs.existsSync(deletedTopicsPath)) {
