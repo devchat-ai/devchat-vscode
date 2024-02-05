@@ -2,8 +2,6 @@ import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
 import { historyMessagesBase, LoadHistoryMessages, loadTopicHistoryFromCurrentMessageHistory, onApiKeyBase } from './historyMessagesBase';
-import messageHistory from '../util/messageHistory';
-import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
 
 

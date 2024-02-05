@@ -5,8 +5,6 @@ import * as path from 'path';
 import * as util from 'util';
 import { sendFileSelectMessage, sendCodeSelectMessage } from './util';
 import { ExtensionContextHolder } from '../util/extensionContext';
-import { TopicManager } from '../topic/topicManager';
-import { TopicTreeDataProvider, TopicTreeItem } from '../panel/topicView';
 import { FilePairManager } from '../util/diffFilePairs';
 import { ApiKeyManager } from '../util/apiKey';
 import { UiUtilWrapper } from '../util/uiUtil';

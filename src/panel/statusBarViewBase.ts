@@ -3,9 +3,7 @@ import * as path from 'path';
 import { logger } from "../util/logger";
 
 import { UiUtilWrapper } from "../util/uiUtil";
-import { TopicManager } from "../topic/topicManager";
 import { ApiKeyManager } from '../util/apiKey';
-import { CommandRun } from '../util/commonUtil';
 import { installDevchat } from '../util/python_installer/install_devchat';
 
 
@@ -23,8 +21,6 @@ let apiKeyStatus = '';
 
 let preDevchatStatus = '';
 let preApiKeyStatus = '';
-
-let hasLoadTopics: boolean = false;
 
 export async function dependencyCheck(): Promise<[string, string]> {
 	// there are some different status of devchat:
@@ -92,15 +88,6 @@ export async function dependencyCheck(): Promise<[string, string]> {
 
 	const devchatPackageStatus = await getDevChatStatus();
 	const apiAccessKeyStatus = await getApiKeyStatus();
-
-	if (devchatPackageStatus === 'has statisfied the dependency' || devchatPackageStatus === 'DevChat has been installed') {
-		if (apiAccessKeyStatus === 'has valid access key') {
-			if (!hasLoadTopics) {
-				TopicManager.getInstance().loadTopics();
-			}
-			hasLoadTopics = true;
-		}
-	}
 
 	if (devchatPackageStatus !== preDevchatStatus) {
 		logger.channel()?.info(`devchat status: ${devchatPackageStatus}`);
