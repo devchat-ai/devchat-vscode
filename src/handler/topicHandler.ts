@@ -9,7 +9,17 @@ regInMessage({ command: 'getTopics' });
 regOutMessage({ command: 'getTopics', topics: [] });
 export async function getTopics(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
     const devChat = new DevChat();
-	const topicEntries: TopicEntry[] = await devChat.topics();
+	const topicEntriesAll: TopicEntry[] = await devChat.topics();
+
+    let topicEntries: TopicEntry[] = [];
+    for (const topicEntry of topicEntriesAll) {
+        if (TopicManager.getInstance().isDeleteTopic(topicEntry.root_prompt.hash)) {
+            continue;
+        }
+        // append topicEntry to topicEntries
+        topicEntries.push(topicEntry);
+    }
+
     MessageHandler.sendMessage(panel, { command: 'getTopics', topicEntries });
 }
 
