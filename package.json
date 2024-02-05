@@ -548,39 +548,10 @@
 					"type": "webview",
 					"id": "devchat-view",
 					"name": "DevChat"
-				},
-				{
-					"type": "tree",
-					"id": "devchat-topicview",
-					"name": "DevChat-Topic"
 				}
 			]
 		},
 		"commands": [
-			{
-				"command": "devchat-topicview.reloadTopic",
-				"title": "Reload Topics",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "devchat-topicview.selectTopic",
-				"title": "Select Topic",
-				"icon": "$(add)"
-			},
-			{
-				"command": "devchat-topicview.addTopic",
-				"title": "Add Topic",
-				"icon": "$(add)"
-			},
-			{
-				"command": "devchat-topicview.deleteSelectedTopic",
-				"title": "Delete Selected Topic",
-				"icon": "$(trash)"
-			},
-			{
-				"command": "devchat-topicview.deleteTopic",
-				"title": "Delete topic"
-			},
 			{
 				"command": "devchat.applyDiffResult",
 				"title": "Apply Diff",
@@ -655,30 +626,6 @@
 			}
 		],
 		"menus": {
-			"view/item/context": [
-				{
-					"command": "devchat-topicview.deleteTopic",
-					"when": "view == devchat-topicview",
-					"group": "1_modification"
-				}
-			],
-			"view/title": [
-				{
-					"command": "devchat-topicview.addTopic",
-					"when": "view == devchat-topicview",
-					"group": "navigation"
-				},
-				{
-					"command": "devchat-topicview.deleteSelectedTopic",
-					"when": "view == devchat-topicview",
-					"group": "navigation"
-				},
-				{
-					"command": "devchat-topicview.reloadTopic",
-					"when": "view == devchat-topicview",
-					"group": "navigation"
-				}
-			],
 			"editor/title": [
 				{
 					"command": "devchat.applyDiffResult",
@@ -687,26 +634,6 @@
 				}
 			],
 			"commandPalette": [
-				{
-					"command": "devchat-topicview.reloadTopic",
-					"when": "false"
-				},
-				{
-					"command": "devchat-topicview.selectTopic",
-					"when": "false"
-				},
-				{
-					"command": "devchat-topicview.addTopic",
-					"when": "false"
-				},
-				{
-					"command": "devchat-topicview.deleteSelectedTopic",
-					"when": "false"
-				},
-				{
-					"command": "devchat-topicview.deleteTopic",
-					"when": "false"
-				},
 				{
 					"command": "devchat.applyDiffResult",
 					"when": "false"

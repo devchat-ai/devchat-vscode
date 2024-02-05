@@ -9,7 +9,6 @@ import { ExtensionContextHolder } from '../util/extensionContext';
 import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ChatContextManager } from '../context/contextManager';
-import { TopicUpdateHandler } from '../handler/sendMessageBase';
 
 
 export class DevChatViewProvider implements vscode.WebviewViewProvider {
@@ -64,13 +63,6 @@ export class DevChatViewProvider implements vscode.WebviewViewProvider {
 			null,
 			this._context.subscriptions
 		);
-
-		TopicManager.getInstance().addOnCurrentTopicIdChangeListener((topicId) => {
-			if (topicId && TopicUpdateHandler.isTopicChangeTriggeredByWebview()) {
-				return;
-			}
-			this.reloadWebview();
-		});
 	}
 
 	private onDidChangeWorkspaceFolders(event: vscode.WorkspaceFoldersChangeEvent): void {

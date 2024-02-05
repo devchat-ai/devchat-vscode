@@ -155,22 +155,13 @@ export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages | unde
 	}
 }
 
-export async function historyMessagesBase(): Promise<LoadHistoryMessages | undefined> {
-	const topicId = TopicManager.getInstance().currentTopicId;
+export async function historyMessagesBase(topicId: string): Promise<LoadHistoryMessages | undefined> {
 	const logEntriesFlat = await loadTopicHistoryLogs(topicId);
 	if (!logEntriesFlat) {
 		return undefined;
 	}
 
-	if (topicId !== TopicManager.getInstance().currentTopicId) {
-		return undefined;
-	}
-	updateCurrentMessageHistory(topicId!, logEntriesFlat);
-
-	// const apiKeyMessage = await apiKeyInvalidMessage();
-	// if (apiKeyMessage !== undefined) {
-	// 	return apiKeyMessage;
-	// }
+	updateCurrentMessageHistory(topicId, logEntriesFlat);
 
 	return {
 		command: 'loadHistoryMessages',

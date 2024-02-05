@@ -6,57 +6,6 @@ import { assertValue } from '../util/check';
 
 
 /**
- * Class to handle topic updates.
- */
-export class TopicUpdateHandler {
-	/**
-	 * Flag to indicate if the topic is being updated from the webview.
-	 */
-	private static isTopicUpdatingFromWebview: boolean = false;
-
-	/**
-	 * Checks if the topic change was triggered by the webview.
-	 * 
-	 * @returns {boolean} - Returns true if the topic change was triggered by the webview, false otherwise.
-	 */
-	public static isTopicChangeTriggeredByWebview(): boolean {
-		return TopicUpdateHandler.isTopicUpdatingFromWebview;
-	}
-
-	/**
-	 * Processes the topic change after a chat.
-	 * 
-	 * @param {string | undefined} parentHash - The hash of the parent message, if any.
-	 * @param {any} message - The message object.
-	 * @param {ChatResponse} chatResponse - The chat response object.
-	 * @returns {Promise<void>} - A Promise that resolves when the topic change has been processed.
-	 */
-	public static async processTopicChangeAfterChat(parentHash:string | undefined, message: any, chatResponse: ChatResponse): Promise<void> {
-		TopicUpdateHandler.isTopicUpdatingFromWebview = true;
-		try {
-			if (!chatResponse.isError) {
-				let topicId = TopicManager.getInstance().currentTopicId;
-				if (!topicId) {
-					// create new topic
-					const topic = TopicManager.getInstance().createTopic();
-					topicId = topic.topicId;
-				}
-
-				TopicManager.getInstance().updateTopic(
-					topicId!,
-					chatResponse['prompt-hash'],
-					parseDateStringToTimestamp(chatResponse.date),
-					message.text,
-					chatResponse.response
-				);
-			}
-		} finally {
-			TopicUpdateHandler.isTopicUpdatingFromWebview = false;
-		}
-	}
-}
-
-/**
  * Class to handle user interaction stop events.
  */
 class UserStopHandler {
@@ -232,7 +181,6 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 		assertValue(UserStopHandler.isUserInteractionStopped(), "User Stopped");
 		
 		await addMessageToHistory(message, chatResponse, message.parent_hash);
-		await TopicUpdateHandler.processTopicChangeAfterChat(message.parent_hash, message, chatResponse);
 		
 		return {
 			command: 'receiveMessage',
