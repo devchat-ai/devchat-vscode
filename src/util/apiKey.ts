@@ -80,9 +80,17 @@ export class ApiKeyManager {
 		if (erniebotModel) {
 			modelList.push(erniebotModel.model);
 		}
-		const llamaCode2Model = await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
+		const llamaCode2Model = await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
 		if (llamaCode2Model) {
 			modelList.push(llamaCode2Model.model);
+		}
+		const mixtralCode2Model = await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
+		if (mixtralCode2Model) {
+			modelList.push(mixtralCode2Model.model);
+		}
+		const minimaxCode2Model = await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
+		if (minimaxCode2Model) {
+			modelList.push(minimaxCode2Model.model);
 		}
 		const llama70BModel = await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
 		if (llama70BModel) {
@@ -171,8 +179,14 @@ export class ApiKeyManager {
 		if (llmModelT === "ERNIE-Bot-4.0") {
 			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
 		}
-		if (llmModelT === "CodeLlama-34b-Instruct") {
-			return await modelProperties('Model.CodeLlama-34b-Instruct', "CodeLlama-34b-Instruct");
+		if (llmModelT === "togetherai/codellama/CodeLlama-70b-Instruct-hf") {
+			return await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
+		}
+		if (llmModelT === "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1") {
+			return await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
+		}
+		if (llmModelT === "minimax/abab6-chat") {
+			return await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
 		}
 		if (llmModelT === "llama-2-70b-chat") {
 			return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");

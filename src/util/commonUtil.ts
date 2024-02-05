@@ -24,10 +24,11 @@ export async function saveModelSettings(): Promise<void> {
 		"Model.xinghuo-2": "xinghuo-3.5",
 		"Model.chatglm_pro": "GLM-4",
 		"Model.ERNIE-Bot": "ERNIE-Bot-4.0",
-		"Model.CodeLlama-34b-Instruct": "CodeLlama-34b-Instruct",
+		"Model.CodeLlama-70b": "togetherai/codellama/CodeLlama-70b-Instruct-hf",
+		"Model.Mixtral-8x7B": "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1",
+		"Model.Minimax-abab6": "minimax/abab6-chat",
 		"Model.llama-2-70b-chat": "llama-2-70b-chat"
 	};
-
 	// is enable stream
 	const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
 

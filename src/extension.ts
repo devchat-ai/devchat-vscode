@@ -207,6 +207,28 @@ async function configUpdate0912To0924() {
 	}
 }
 
+
+async function configUpdateto240205() {
+	// rename Model.CodeLlama-34b-Instruct to Model.CodeLlama-70b
+	// add new Model.Mixtral-8x7B
+	// add new Model.Minimax-abab6
+    const supportModels = [
+		"Model.CodeLlama-70b",
+		"Model.Mixtral-8x7B",
+		"Model.Minimax-abab6"
+	];
+
+	for (const model of supportModels) {
+		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (Object.keys(modelConfig1).length === 0) {
+			let modelConfigNew = {};
+			modelConfigNew = {"provider": "devchat"};
+			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+		}
+	}
+}
+
+
 async function setLangDefaultValue() {
 	const lang = vscode.env.language;
 	if (!UiUtilWrapper.getConfiguration("DevChat", "Language")) {
@@ -267,6 +289,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await setLangDefaultValue();
 	await updateInvalidSettings();
 	await updateInvalidDefaultModel();
+	await configUpdateto240205();
 
     regLanguageContext();
 
