@@ -202,34 +202,20 @@ export class TopicManager {
 		// TODO
 		// 从底层数据库中删除topic
 		// 在.chat/.deletedTopics中记录被删除的topicId
-		const topic = this._topics[topicId];
-		if (!topic) {
-			return;
+		// get ${WORKSPACE_ROOT}/.chat/.deletedTopics
+		const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
+		const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
+
+		// read ${WORKSPACE_ROOT}/.chat/.deletedTopics as String[]
+		// add topicId to String[]
+		// write String[] to ${WORKSPACE_ROOT}/.chat/.deletedTopics
+		let deletedTopics: string[] = [];
+		
+		if (fs.existsSync(deletedTopicsPath)) {
+			deletedTopics = fs.readFileSync(deletedTopicsPath, 'utf-8').split('\n');
 		}
-
-		if (topic.firstMessageHash) {
-			// get ${WORKSPACE_ROOT}/.chat/.deletedTopics
-			const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-			const deletedTopicsPath = path.join(workspaceDir!, '.chat', '.deletedTopics');
-
-			// read ${WORKSPACE_ROOT}/.chat/.deletedTopics as String[]
-			// add topicId to String[]
-			// write String[] to ${WORKSPACE_ROOT}/.chat/.deletedTopics
-			let deletedTopics: string[] = [];
-			
-			if (fs.existsSync(deletedTopicsPath)) {
-				deletedTopics = fs.readFileSync(deletedTopicsPath, 'utf-8').split('\n');
-			}
-			deletedTopics.push(topic.firstMessageHash);
-			fs.writeFileSync(deletedTopicsPath, deletedTopics.join('\n'));
-		}
-
-		delete this._topics[topicId];
-		this._notifyDeleteTopicListeners(topicId);
-
-		if (topicId === this.currentTopicId) {
-			this.setCurrentTopic(undefined);
-		}
+		deletedTopics.push(topicId);
+		fs.writeFileSync(deletedTopicsPath, deletedTopics.join('\n'));
 	}
 
 	isDeleteTopic(topicId: string) {
