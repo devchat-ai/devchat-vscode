@@ -8,19 +8,17 @@ import { UiUtilWrapper } from '../util/uiUtil';
 
 
 
-regInMessage({command: 'historyMessages', page: 0});
+regInMessage({command: 'historyMessages', topicId: '', page: 0});
 regOutMessage({command: 'loadHistoryMessages', entries: [{hash: '',user: '',date: '',request: '',response: '',context: [{content: '',role: ''}]}]});
-export async function getHistoryMessages(message: {command: string, page: number}, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
+export async function getHistoryMessages(message: {command: string, topicId: string, page: number}, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 	// if history message has load, send it to webview
 	const maxCount = Number(UiUtilWrapper.getConfiguration('DevChat', 'maxLogCount'));
 	const skip = maxCount * (message.page ? message.page : 0);
+	const topicId = message.topicId;
 
-	if (messageHistory.getTopic() !== TopicManager.getInstance().currentTopicId) {
-		const historyMessageAll = await historyMessagesBase();
-		if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
-			MessageHandler.sendMessage(panel, historyMessageAll!);
-			return;
-		}
+	const historyMessageAll = await historyMessagesBase(topicId);
+	if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
+		MessageHandler.sendMessage(panel, historyMessageAll!);
 	}
 
 	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(skip, maxCount);

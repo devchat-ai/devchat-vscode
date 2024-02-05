@@ -16,6 +16,7 @@ import { featureToggle, getFeatureToggles } from './featureToggleHandler';
 import { getUserAccessKey } from './accessKeyHandler';
 import { getValidLlmModelList } from './llmModelHandler';
 import { readFile, writeFile } from './fileHandler';
+import { getTopics, deleteTopic } from './topicHandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -82,4 +83,7 @@ messageHandler.registerHandler('userInput', userInput);
 
 messageHandler.registerHandler('readFile', readFile);
 messageHandler.registerHandler('writeFile', writeFile);
+
+messageHandler.registerHandler('getTopics', getTopics);
+messageHandler.registerHandler('deleteTopic', deleteTopic);
 
