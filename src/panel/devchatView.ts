@@ -6,7 +6,6 @@ import '../handler/handlerRegister';
 import handleMessage from '../handler/messageHandler';
 import { createChatDirectoryAndCopyInstructionsSync } from '../init/chatConfig';
 import { ExtensionContextHolder } from '../util/extensionContext';
-import { TopicManager } from '../topic/topicManager';
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ChatContextManager } from '../context/contextManager';
 

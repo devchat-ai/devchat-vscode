@@ -1,10 +1,8 @@
 
 
-import { TopicManager } from '../topic/topicManager';
 import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 import messageHistory from '../util/messageHistory';
 import { ApiKeyManager } from '../util/apiKey';
-import { logger } from '../util/logger';
 
 let isApiSet: boolean | undefined = undefined;
 
@@ -80,18 +78,14 @@ export async function isWaitForApiKey() {
 
 export async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
 	if (!topicId) {
-		return [];
+		return undefined;
 	}
-	const topic = TopicManager.getInstance().getTopic(topicId);
-	if (!topic || !topic.firstMessageHash) {
-		return [];
-	}
-
+	
 	const devChat = new DevChat();
 	const logOptions: LogOptions = {
 		skip: 0,
 		maxCount: 10000,
-		topic: topic.firstMessageHash
+		topic: topicId
 	};
 	const logEntries = await devChat.log(logOptions);
 

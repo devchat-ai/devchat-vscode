@@ -1,7 +1,6 @@
 import DevChat, { ChatOptions, ChatResponse } from '../toolwrapper/devchat';
 import { logger } from '../util/logger';
 import messageHistory from '../util/messageHistory';
-import { TopicManager } from '../topic/topicManager';
 import { assertValue } from '../util/check';
 
 
@@ -228,8 +227,6 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
 		// delete the message by devchat
 		const bSuccess = await devChat.delete(message.hash);
 		assertValue(!bSuccess, "Failed to delete message from devchat");
-
-		TopicManager.getInstance().deleteMessageOnCurrentTopic(message.hash);
 		return true;
 	} catch (error: any) {
 		logger.channel()?.error(`Error: ${error.message}`);
