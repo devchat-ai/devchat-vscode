@@ -19,7 +19,7 @@ export async function saveModelSettings(): Promise<void> {
 	const supportModels = {
 		"Model.gpt-3-5": "gpt-3.5-turbo",
 		"Model.gpt-4": "gpt-4",
-		"Model.gpt-4-turbo": "gpt-4-1106-preview",
+		"Model.gpt-4-turbo": "gpt-4-turbo-preview",
 		"Model.claude-2": "claude-2.1",
 		"Model.xinghuo-2": "xinghuo-3.5",
 		"Model.chatglm_pro": "GLM-4",
