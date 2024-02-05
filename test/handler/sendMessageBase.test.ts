@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import * as path from 'path';
-import { parseMessage, parseMessageAndSetOptions, TopicUpdateHandler, processChatResponse, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
+import { parseMessage, parseMessageAndSetOptions, processChatResponse, sendMessageBase, stopDevChatBase } from '../../src/handler/sendMessageBase';
 import { ChatResponse } from '../../src/toolwrapper/devchat';
 import { UiUtilWrapper } from '../../src/util/uiUtil';
 
@@ -53,27 +53,6 @@ describe('sendMessageBase', () => {
 			expect(chatOptions.context).to.deep.equal(['path/to/context']);
 			expect(chatOptions.header).to.deep.equal(['path/to/instruction']);
 			expect(chatOptions.reference).to.deep.equal(['path/to/reference']);
-		});
-	});
-
-
-	describe('TopicUpdateHandler.processTopicChangeAfterChat', () => {
-		it('should handle topic correctly', async () => {
-			const parentHash = 'somehash';
-			const message = {
-				text: 'Hello, world!'
-			};
-			const chatResponse: ChatResponse = {
-				"finish_reason": "",
-				response: 'Hello, user!',
-				isError: false,
-				user: 'user',
-				date: '2022-01-01T00:00:00.000Z',
-				'prompt-hash': 'responsehash'
-			};
-
-			await TopicUpdateHandler.processTopicChangeAfterChat(parentHash, message, chatResponse);
-			// Check if the topic was updated correctly
 		});
 	});
 

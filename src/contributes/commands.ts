@@ -162,67 +162,6 @@ export function registerStatusBarItemClickCommand(context: vscode.ExtensionConte
 	);
 }
 
-const topicDeleteCallback = async (item: TopicTreeItem) => {
-	const confirm = 'Delete';
-	const label = typeof item.label === 'string' ? item.label : item.label!.label;
-	const truncatedLabel = label.substring(0, 20) + (label.length > 20 ? '...' : '');
-	const result = await vscode.window.showWarningMessage(
-		`Are you sure you want to delete the topic "${truncatedLabel}"?`,
-		{ modal: true },
-		confirm
-	);
-
-	if (result === confirm) {
-		TopicManager.getInstance().deleteTopic(item.id);
-	}
-};
-
-
-export function regTopicDeleteCommand(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.deleteTopic', topicDeleteCallback)
-	);
-}
-
-export function regAddTopicCommand(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.addTopic', () => {
-			const topic = TopicManager.getInstance().createTopic();
-			TopicManager.getInstance().setCurrentTopic(topic.topicId);
-		})
-	);
-}
-
-export function regDeleteSelectTopicCommand(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.deleteSelectedTopic', () => {
-			const selectedItem = TopicTreeDataProvider.getInstance().selectedItem;
-			if (selectedItem) {
-				topicDeleteCallback(selectedItem);
-			} else {
-				vscode.window.showErrorMessage('No item selected');
-			}
-		})
-	);
-}
-
-export function regSelectTopicCommand(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.selectTopic', (item: TopicTreeItem) => {
-			TopicTreeDataProvider.getInstance().setSelectedItem(item);
-			TopicManager.getInstance().setCurrentTopic(item.id);
-		})
-	);
-}
-
-export function regReloadTopicCommand(context: vscode.ExtensionContext) {
-	context.subscriptions.push(
-		vscode.commands.registerCommand('devchat-topicview.reloadTopic', async () => {
-			TopicManager.getInstance().loadTopics();
-		})
-	);
-}
-
 export function regPythonPathCommand(context: vscode.ExtensionContext) {
 	context.subscriptions.push(
 		vscode.commands.registerCommand('devchat.PythonPath', async () => {

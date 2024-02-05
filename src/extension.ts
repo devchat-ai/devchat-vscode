@@ -6,11 +6,6 @@ import {
     registerAskForCodeCommand,
     registerAskForFileCommand,
     registerAccessKeySettingCommand,
-    regTopicDeleteCommand,
-    regAddTopicCommand,
-    regDeleteSelectTopicCommand,
-    regSelectTopicCommand,
-    regReloadTopicCommand,
     regApplyDiffResultCommand,
     registerStatusBarItemClickCommand,
     regPythonPathCommand,
@@ -21,7 +16,7 @@ import {
 	registerHandleUri,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
-import { regDevChatView, regTopicView } from './contributes/views';
+import { regDevChatView } from './contributes/views';
 
 import { ExtensionContextHolder } from './util/extensionContext';
 import { logger } from './util/logger';
@@ -294,7 +289,6 @@ async function activate(context: vscode.ExtensionContext) {
     regLanguageContext();
 
     regDevChatView(context);
-    regTopicView(context);
 
     registerAccessKeySettingCommand(context);
     registerOpenChatPanelCommand(context);
@@ -309,11 +303,6 @@ async function activate(context: vscode.ExtensionContext) {
 
     createStatusBarItem(context);
 
-    regTopicDeleteCommand(context);
-    regAddTopicCommand(context);
-    regDeleteSelectTopicCommand(context);
-    regSelectTopicCommand(context);
-    regReloadTopicCommand(context);
     regApplyDiffResultCommand(context);
 
     regPythonPathCommand(context);

@@ -12,10 +12,3 @@ export function regDevChatView(context: vscode.ExtensionContext) {
 		})
 	);
 }
-
-export function regTopicView(context: vscode.ExtensionContext) {
-	const yourTreeView = vscode.window.createTreeView('devchat-topicview', {
-		treeDataProvider: TopicTreeDataProvider.getInstance(),
-	});
-	context.subscriptions.push(yourTreeView);
-}
