@@ -135,6 +135,11 @@
 							"default": 1000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 13000,
+							"description": "[optional*] Maximum text length for input to AI."
+						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
@@ -176,6 +181,11 @@
 							"default": 1000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 6000,
+							"description": "[optional*] Maximum text length for input to AI."
+						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
@@ -213,6 +223,11 @@
 							"default": 1000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
 						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 32000,
+							"description": "[optional*] Maximum text length for input to AI."
+						},
 						"presence_penalty": {
 							"type": "number",
 							"default": 0,
@@ -248,6 +263,11 @@
 							"type": "number",
 							"default": 1000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 32000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -272,8 +292,13 @@
 						},
 						"max_tokens": {
 							"type": "number",
-							"default": 4000,
+							"default": 2048,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 6000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -295,6 +320,16 @@
 							"type": "number",
 							"default": 0.5,
 							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 8000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -316,6 +351,16 @@
 							"type": "number",
 							"default": 0.5,
 							"description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+						},
+						"max_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 8000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -345,8 +390,13 @@
 						},
 						"max_tokens": {
 							"type": "number",
-							"default": 4000,
+							"default": 2000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -376,8 +426,13 @@
 						},
 						"max_tokens": {
 							"type": "number",
-							"default": 4000,
+							"default": 2000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -407,8 +462,13 @@
 						},
 						"max_tokens": {
 							"type": "number",
-							"default": 4000,
+							"default": 2000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -438,8 +498,13 @@
 						},
 						"max_tokens": {
 							"type": "number",
-							"default": 4000,
+							"default": 2000,
 							"description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+						},
+						"max_input_tokens": {
+							"type": "number",
+							"default": 4000,
+							"description": "[optional*] Maximum text length for input to AI."
 						}
 					},
 					"additionalProperties": false,
@@ -454,7 +519,7 @@
 							"enum": [
 								"gpt-3.5-turbo",
 								"gpt-4",
-								"gpt-4-1106-preview",
+								"gpt-4-turbo-preview",
 								"claude-2.1",
 								"xinghuo-3.5",
 								"GLM-4",
