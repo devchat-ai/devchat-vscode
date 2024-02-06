@@ -272,6 +272,54 @@ async function updateInvalidDefaultModel() {
 // "gpt-3.5-turbo-1106",
 // "gpt-3.5-turbo-16k",
 
+async function configSetModelDefaultParams() {
+	const modelParams = {
+		"Model.gpt-3-5": {
+			"max_input_tokens": 13000
+		},
+		"Model.gpt-4": {
+			"max_input_tokens": 6000
+		},
+		"Model.gpt-4-turbo": {
+			"max_input_tokens": 32000
+		},
+		"Model.claude-2": {
+			"max_input_tokens": 32000
+		},
+		"Model.xinghuo-2": {
+			"max_input_tokens": 6000
+		},
+		"Model.chatglm_pro": {
+			"max_input_tokens": 8000
+		},
+		"Model.ERNIE-Bot": {
+			"max_input_tokens": 8000
+		},
+		"Model.CodeLlama-70b": {
+			"max_input_tokens": 4000
+		},
+		"Model.Mixtral-8x7B": {
+			"max_input_tokens": 4000
+		},
+		"Model.Minimax-abab6": {
+			"max_input_tokens": 4000
+		},
+		"Model.llama-2-70b-chat": {
+			"max_input_tokens": 4000
+		}
+	};
+
+	// set default params
+	for (const model of Object.keys(modelParams)) {
+		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (!modelConfig["max_input_tokens"]) {
+			modelConfig["max_input_tokens"] = modelParams[model]["max_input_tokens"];
+			await vscode.workspace.getConfiguration("devchat").update(model, modelConfig, vscode.ConfigurationTarget.Global);
+
+		}
+	}
+}
+
 async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
@@ -285,6 +333,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await updateInvalidSettings();
 	await updateInvalidDefaultModel();
 	await configUpdateto240205();
+	await configSetModelDefaultParams();
 
     regLanguageContext();
 
