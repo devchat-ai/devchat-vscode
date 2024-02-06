@@ -378,11 +378,6 @@
 							],
 							"description": "[required*] which provider host this llm model"
 						},
-						"api_secret": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify secret key for selected provider."
-						},
 						"temperature": {
 							"type": "number",
 							"default": 0.5,
@@ -413,11 +408,6 @@
 								"devchat"
 							],
 							"description": "[required*] which provider host this llm model"
-						},
-						"api_secret": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify secret key for selected provider."
 						},
 						"temperature": {
 							"type": "number",
@@ -450,11 +440,6 @@
 							],
 							"description": "[required*] which provider host this llm model"
 						},
-						"api_secret": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify secret key for selected provider."
-						},
 						"temperature": {
 							"type": "number",
 							"default": 0.5,
@@ -485,11 +470,6 @@
 								"devchat"
 							],
 							"description": "[required*] which provider host this llm model"
-						},
-						"api_secret": {
-							"type": "string",
-							"default": "",
-							"description": "[required*] Specify secret key for selected provider."
 						},
 						"temperature": {
 							"type": "number",
