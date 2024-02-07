@@ -2,7 +2,7 @@
 	"name": "devchat",
 	"displayName": "DevChat",
 	"description": "Write prompts, not code",
-	"version": "0.1.55",
+	"version": "0.1.65",
 	"icon": "assets/devchat.png",
 	"publisher": "merico",
 	"engines": {
@@ -668,6 +668,13 @@
 				"command": "DevChat.Chat",
 				"title": "Chat with DevChat",
 				"category": "DevChat"
+			}
+		],
+		"keybindings": [
+			{
+				"command": "devchat.openChatPanel",
+				"key": "ctrl+shift+/",
+				"mac": "cmd+shift+/"
 			}
 		],
 		"menus": {

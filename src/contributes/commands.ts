@@ -17,6 +17,7 @@ import DevChat from "../toolwrapper/devchat";
 import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
 import { installRequirements } from '../util/python_installer/package_install';
 import { chatWithDevChat } from '../handler/chatHandler';
+import { focusDevChatInput } from '../handler/focusHandler';
 
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
@@ -42,6 +43,7 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
 function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
 	let disposable = vscode.commands.registerCommand('devchat.openChatPanel', async () => {
 		await vscode.commands.executeCommand('devchat-view.focus');
+		await focusDevChatInput(ExtensionContextHolder.provider?.view()!);
 	});
 	context.subscriptions.push(disposable);
 }
