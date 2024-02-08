@@ -1,3 +1,4 @@
+
 export class FilePairManager {
   private static instance: FilePairManager;
   private filePairs: Map<string, [string, string]>;
@@ -14,11 +15,12 @@ export class FilePairManager {
   }
 
   addFilePair(file1: string, file2: string): void {
-    this.filePairs.set(file1, [file1, file2]);
-    this.filePairs.set(file2, [file1, file2]);
+    this.filePairs.set(file1.toLowerCase(), [file1, file2]);
+    this.filePairs.set(file2.toLowerCase(), [file1, file2]);
   }
 
   findPair(file: string): [string, string] | undefined {
-    return this.filePairs.get(file);
+    const fileLower = file.toLowerCase();
+    return this.filePairs.get(fileLower);
   }
 }
