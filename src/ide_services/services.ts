@@ -45,6 +45,14 @@ const functionRegistry: any = {
         keys: ["abspath", "line", "character"],
         handler: findTypeDefinitionLocations,
     },
+    "/ide_name": {
+        keys: [],
+        handler: () => "vscode",
+    },
+    "/diff_apply": {
+        keys: ["filepath", "content"],
+        handler: UnofficialEndpoints.diffApply,
+    },
 
     /**
      * @deprecated
@@ -64,10 +72,6 @@ const functionRegistry: any = {
     /**
      * Unofficial endpoints
      */
-    "/diff_apply": {
-        keys: ["filepath", "content"],
-        handler: UnofficialEndpoints.diffApply,
-    },
     "/get_symbol_defines_in_selected_code": {
         keys: [],
         handler: UnofficialEndpoints.getSymbolDefinesInSelectedCode,
