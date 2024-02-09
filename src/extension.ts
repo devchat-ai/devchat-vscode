@@ -27,6 +27,8 @@ import { UiUtilVscode } from './util/uiUtil_vscode';
 import { ApiKeyManager } from './util/apiKey';
 import { startRpcServer } from './ide_services/services';
 import { registerCodeLensProvider } from './panel/codeLens';
+import { stopDevChatBase } from './handler/sendMessageBase';
+import exp from 'constants';
 
 async function isProviderHasSetted() {
 	try {
@@ -362,4 +364,10 @@ async function activate(context: vscode.ExtensionContext) {
 	logger.channel()?.info(`registerHandleUri:`);
 	registerHandleUri(context)
 }
+
+async function deactivate() {
+	// stop devchat
+	await stopDevChatBase({});
+}
 exports.activate = activate;
+exports.deactivate = deactivate;
