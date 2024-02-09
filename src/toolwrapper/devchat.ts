@@ -283,8 +283,7 @@ class DevChat {
 			const responseData = this.parseOutData(stdout, false);
 			let promptHash = "";
 			if (saveToLog) {
-				await this.logInsert(options.context, content, responseData.response, options.parent);
-				const logs = await this.log({"maxCount": 1});
+				const logs = await this.logInsert(options.context, content, responseData.response, options.parent);
 				assertValue(!logs || !logs.length, "Failed to insert devchat log");
 				promptHash = logs[0]["hash"];
 			}
@@ -313,7 +312,7 @@ class DevChat {
 		}
 	}
 
-	async logInsert(contexts: string[] | undefined, request: string, response: string, parent: string | undefined): Promise<boolean> {
+	async logInsert(contexts: string[] | undefined, request: string, response: string, parent: string | undefined): Promise<LogEntry[]> {
 		try {
 			// build log data
 			const llmModelData = await ApiKeyManager.llmModel();
@@ -357,11 +356,16 @@ class DevChat {
 				logger.channel()?.warn(`${stderr}`);
 			}
 
-			return true;
+			const logs = JSON.parse(stdout.trim()).reverse();
+			for (const log of logs) {
+				log.response = log.responses[0];
+				delete log.responses;
+			}
+			return logs;
 		} catch (error: any) {
 			logger.channel()?.error(`Failed to insert log: ${error.message}`);
 			logger.channel()?.show();
-			return false;
+			return [];
 		}
 	}
 
