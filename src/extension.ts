@@ -34,13 +34,13 @@ async function isProviderHasSetted() {
 	try {
 		const providerProperty = "Provider.devchat";
 		const providerConfig: any = UiUtilWrapper.getConfiguration("devchat", providerProperty);
-		if (Object.keys(providerConfig).length > 0) {
+		if (providerConfig && Object.keys(providerConfig).length > 0) {
 			return true;
 		}
 
 		const providerPropertyOpenAI = "Provider.openai";
 		const providerConfigOpenAI: any = UiUtilWrapper.getConfiguration("devchat", providerPropertyOpenAI);
-		if (Object.keys(providerConfigOpenAI).length > 0) {
+		if (providerConfigOpenAI && Object.keys(providerConfigOpenAI).length > 0) {
 			return true;
 		}
 
@@ -68,7 +68,7 @@ async function  configUpdateTo1115() {
 
 	for (const model of supportModels) {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (Object.keys(modelConfig1).length === 0) {
+		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
 			let modelConfigNew = {};
 			modelConfigNew = {"provider": "devchat"};
 			if (model.startsWith("Model.gpt-")) {
@@ -85,11 +85,11 @@ async function configUpdateTo0924() {
 		return ;
 	}
 	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
-
+	
 	let devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
 	let openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
 	const endpointKey = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
-
+	
 	devchatKey = undefined;
 	openaiKey = undefined;
 	if (!devchatKey && !openaiKey) {
@@ -101,7 +101,7 @@ async function configUpdateTo0924() {
 	if (!devchatKey && !openaiKey) {
 		openaiKey = process.env.OPENAI_API_KEY;
 	}
-
+	
 	let modelConfigNew = {};
 	let providerConfigNew = {};
 	if (openaiKey) {
@@ -109,7 +109,7 @@ async function configUpdateTo0924() {
 		if (endpointKey) {
 			providerConfigNew["api_base"] = endpointKey;
 		}
-
+		
 		await vscode.workspace.getConfiguration("devchat").update("Provider.openai", providerConfigNew, vscode.ConfigurationTarget.Global);
 	}
 
@@ -118,10 +118,10 @@ async function configUpdateTo0924() {
 		if (endpointKey) {
 			providerConfigNew["api_base"] = endpointKey;
 		}
-
+		
 		await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
 	}
-
+	
 	const supportModels = [
 		"Model.gpt-3-5",
 		"Model.gpt-3-5-1106",
@@ -135,19 +135,19 @@ async function configUpdateTo0924() {
 		"Model.CodeLlama-34b-Instruct",
 		"Model.llama-2-70b-chat"
 	];
-
+	
 	for (const model of supportModels) {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (Object.keys(modelConfig1).length === 0) {
+		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
 			modelConfigNew = {"provider": "devchat"};
 			if (model.startsWith("Model.gpt-")) {
 				modelConfigNew = {"provider": "openai"};
 			}
-
+			
 			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
 		}
 	}
-
+	
 	if (!defaultModel) {
 		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2.1", vscode.ConfigurationTarget.Global);
 	}
@@ -168,7 +168,7 @@ async function configUpdate0912To0924() {
 
 	for (const model of oldModels) {
 		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (Object.keys(modelConfig).length !== 0) {
+		if (modelConfig && Object.keys(modelConfig).length !== 0) {
 			let modelProperties: any = {};
 			for (const key of Object.keys(modelConfig || {})) {
 				const property = modelConfig![key];
@@ -217,7 +217,7 @@ async function configUpdateto240205() {
 
 	for (const model of supportModels) {
 		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (Object.keys(modelConfig1).length === 0) {
+		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
 			let modelConfigNew = {};
 			modelConfigNew = {"provider": "devchat"};
 			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
@@ -247,7 +247,7 @@ async function updateInvalidSettings() {
 
 	for (const model of oldModels) {
 		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (Object.keys(modelConfig).length !== 0) {
+		if (modelConfig && Object.keys(modelConfig).length !== 0) {
 			let modelProperties: any = {};
 			for (const key of Object.keys(modelConfig || {})) {
 				const property = modelConfig![key];
@@ -326,8 +326,8 @@ async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
     logger.init(LoggerChannelVscode.getInstance());
-    UiUtilWrapper.init(new UiUtilVscode());
-
+	UiUtilWrapper.init(new UiUtilVscode());
+	
 	await configUpdateTo0924();
 	await configUpdate0912To0924();
 	await configUpdateTo1115();
@@ -336,7 +336,7 @@ async function activate(context: vscode.ExtensionContext) {
 	await updateInvalidDefaultModel();
 	await configUpdateto240205();
 	await configSetModelDefaultParams();
-
+	
     regLanguageContext();
 
     regDevChatView(context);
