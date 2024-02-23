@@ -30,6 +30,10 @@ import { registerCodeLensProvider } from './panel/codeLens';
 import { stopDevChatBase } from './handler/sendMessageBase';
 import exp from 'constants';
 
+/**
+ * ABC isProviderHasSetted
+ * @returns 
+ */
 async function isProviderHasSetted() {
 	try {
 		const providerProperty = "Provider.devchat";
