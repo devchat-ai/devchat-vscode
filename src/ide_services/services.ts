@@ -12,6 +12,7 @@ import { LegacyEndpoints } from "./endpoints/legacy";
 import { UnofficialEndpoints } from "./endpoints/unofficial";
 import { getDocumentSymbols } from "./endpoints/getDocumentSymbols";
 import { findTypeDefinitionLocations } from "./endpoints/findTypeDefs";
+import { findDefinitionLocations } from "./endpoints/findDefs";
 
 const functionRegistry: any = {
     /**
@@ -40,6 +41,10 @@ const functionRegistry: any = {
     "/get_document_symbols": {
         keys: ["abspath"],
         handler: getDocumentSymbols,
+    },
+    "/find_def_locations": {
+        keys: ["abspath", "line", "character"],
+        handler: findDefinitionLocations,
     },
     "/find_type_def_locations": {
         keys: ["abspath", "line", "character"],
