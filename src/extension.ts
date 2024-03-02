@@ -353,26 +353,124 @@ async function configSetModelDefaultParams() {
 	}
 }
 
+
+
+async function code_completion(prompt: string): Promise<string[] | null> {
+	const url = 'http://192.168.1.138:11434/api/generate';
+	const headers = {
+	  'Content-Type': 'application/json',
+	};
+	const payload = {
+	  model: 'starcoder:15b',
+	  prompt: prompt,
+	  stream: false,
+	  options: {
+		temperature: 0.2
+	  }
+	};
+  
+	try {
+	  const response = await fetch(url, {
+		method: 'POST',
+		headers,
+		body: JSON.stringify(payload),
+	  });
+  
+	  if (response.ok) {
+		const data = await response.json(); // 使用await解析JSON响应
+		return [data.response];
+	  } else {
+		// 如果响应不是200 OK，处理错误情况
+		console.error('Error response:', response.statusText);
+		return null;
+	  }
+	} catch (error) {
+	  // 处理请求过程中可能出现的错误
+	  console.error('Request failed:', error);
+	  return null;
+	}
+  }
+
+// global flag var
+let gShowCompletion: boolean = false;
+
+function registerCompletionCommand(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('DevChat.completion', async () => {
+		// fire code completion
+		gShowCompletion = true;
+		vscode.commands.executeCommand('editor.action.inlineSuggest.trigger');
+	});
+	context.subscriptions.push(disposable);
+}
+  
+class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {  
+    async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {  
+        logger.channel()?.info("start provideInlineCompletionItems");
+
+        // 等待时间（单位：毫秒），可根据需要调整
+        const delayTime = 5000;
+
+        // 创建一个新的Promise，用于实现等待逻辑
+        await new Promise((resolve) => {
+            const timer = setTimeout(resolve, delayTime);
+            
+            // 如果请求在等待时间结束前被取消，则清除定时器
+            token.onCancellationRequested(() => clearTimeout(timer));
+        });
+		logger.channel()?.info("----->");
+
+        // 如果请求已被取消，则直接返回null
+        if (token.isCancellationRequested) {
+            logger.channel()?.info("request cancelled before completion");
+            return [];
+        }
+
+		// 根据文档和位置计算补全项（这里仅作示例，实际实现可能会有所不同） 
+		// 获取position前文本
+		const documentText = document.getText();
+		const offsetPos = document.offsetAt(position);
+
+		// 获取position前文本
+		const prefix = documentText.substring(0, offsetPos);
+		const suffix = documentText.substring(offsetPos);
+
+		const prompt = "<fim_prefix>" + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+
+		// call code_completion
+		const response = await code_completion(prompt);
+		if (!response) {
+			logger.channel()?.info("finish provideInlineCompletionItems");
+			return [];
+		}
+
+		logger.channel()?.info("finish provideInlineCompletionItems");
+		return [new vscode.InlineCompletionItem(response[0], new vscode.Range(position, position))];  
+    }  
+}
+
+
+
+    
+
 async function activate(context: vscode.ExtensionContext) {
     ExtensionContextHolder.context = context;
 
     logger.init(LoggerChannelVscode.getInstance());
 	UiUtilWrapper.init(new UiUtilVscode());
 	
-	await configUpdateTo0924();
-	await configUpdate0912To0924();
-	await configUpdateTo1115();
-	await setLangDefaultValue();
-	await updateInvalidSettings();
-	await updateInvalidDefaultModel();
-	await configUpdateto240205();
-	await configSetModelDefaultParams();
-	
+	await migrateConfig();
+
+	const provider = new InlineCompletionProvider();  
+    const selector = { pattern: "**" }; // 指定在 JavaScript 文件中触发此提供器  
+    context.subscriptions.push(vscode.languages.registerInlineCompletionItemProvider(selector, provider));  
+
     regLanguageContext();
 
     regDevChatView(context);
 
     registerAccessKeySettingCommand(context);
+	registerCompletionCommand(context);
+
     registerOpenChatPanelCommand(context);
     registerAddContextCommand(context);
     registerAskForCodeCommand(context);
