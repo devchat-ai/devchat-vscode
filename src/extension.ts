@@ -79,7 +79,11 @@ async function  configUpdateTo1115() {
 				modelConfigNew = {"provider": "openai"};
 			}
 
-			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+			try {
+				await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+			} catch (error) {
+				logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+			}
 		}
 	}
 }
@@ -196,12 +200,20 @@ async function configUpdate0912To0924() {
 				
 				delete modelProperties["api_key"];
 				delete modelProperties["api_base"];
-				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				try {
+					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				} catch (error) {
+					logger.channel()?.error(`error: ${error}`);
+				}
 			} else {
 				if (!modelProperties["provider"]) {
 					delete modelProperties["api_base"];
 					modelProperties["provider"] = "devchat";
-					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+					try {
+						await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+					} catch (error) {
+						logger.channel()?.error(`error: ${error}`);
+					}
 				}
 			}
 		}
@@ -224,7 +236,11 @@ async function configUpdateto240205() {
 		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
 			let modelConfigNew = {};
 			modelConfigNew = {"provider": "devchat"};
-			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+			try {
+				await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+			} catch (error) {
+				logger.channel()?.error(`error: ${error}`);
+			}
 		}
 	}
 }
@@ -262,7 +278,11 @@ async function updateInvalidSettings() {
 				delete modelProperties["api_key"];
 				delete modelProperties["api_base"];
 				modelProperties["provider"] = "devchat";
-				await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				try {
+					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
+				} catch (error) {
+					logger.channel()?.error(`error: ${error}`);
+				}
 			}
 		}
 	}
@@ -271,7 +291,11 @@ async function updateInvalidSettings() {
 async function updateInvalidDefaultModel() {
 	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
 	if (defaultModel === "gpt-3.5-turbo-1106" || defaultModel === "gpt-3.5-turbo-16k") {
-		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
+		try {
+			await vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
+		} catch (error) {
+			logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+		}
 	}
 }
 
@@ -320,8 +344,11 @@ async function configSetModelDefaultParams() {
 		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
 		if (!modelConfig["max_input_tokens"]) {
 			modelConfig["max_input_tokens"] = modelParams[model]["max_input_tokens"];
-			await vscode.workspace.getConfiguration("devchat").update(model, modelConfig, vscode.ConfigurationTarget.Global);
-
+			try {
+				await vscode.workspace.getConfiguration("devchat").update(model, modelConfig, vscode.ConfigurationTarget.Global);
+			} catch (error) {
+				logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+			}
 		}
 	}
 }
