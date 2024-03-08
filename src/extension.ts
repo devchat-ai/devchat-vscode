@@ -354,8 +354,48 @@ async function configSetModelDefaultParams() {
 }
 
 
-
 async function code_completion(prompt: string): Promise<string[] | null> {
+	const url = 'https://api.together.xyz/v1/completions';
+	const headers = {
+	  'Content-Type': 'application/json',
+	  Authorization: 'Bearer f8c6ce19a50b5febe2a3e4f989e2b4be5bc04642117f452bfa8bf5afd936a285'
+	};
+	const payload = {
+		model: "codellama/CodeLlama-70b-hf",
+	  	prompt: prompt,
+	  	stream_tokens: false,
+		temperature: 0.7,
+		top_p: 0.7,
+		tokp_k: 50,
+		repetition_penalty: 1,
+		stop: ["</s>"]
+	};
+
+	try {
+		logger.channel()?.info(`call url: ${url}`)
+		const response = await fetch(url, {
+		  method: 'POST',
+		  headers,
+		  body: JSON.stringify(payload),
+		});
+		logger.channel()?.info(`return url`);
+	
+		if (response.ok) {
+		  const data = await response.json(); // 使用await解析JSON响应
+		  return [data.response];
+		} else {
+		  // 如果响应不是200 OK，处理错误情况
+		  console.error('Error response:', response.statusText);
+		  return null;
+		}
+	  } catch (error) {
+		// 处理请求过程中可能出现的错误
+		console.error('Request failed:', error);
+		return null;
+	}
+}
+
+async function code_completion_local(prompt: string): Promise<string[] | null> {
 	const url = 'http://192.168.1.138:11434/api/generate';
 	const headers = {
 	  'Content-Type': 'application/json',
@@ -389,7 +429,7 @@ async function code_completion(prompt: string): Promise<string[] | null> {
 	  console.error('Request failed:', error);
 	  return null;
 	}
-  }
+}
 
 // global flag var
 let gShowCompletion: boolean = false;
@@ -402,21 +442,28 @@ function registerCompletionCommand(context: vscode.ExtensionContext) {
 	});
 	context.subscriptions.push(disposable);
 }
+
+let editedFiles: any = [];
   
 class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {  
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {  
         logger.channel()?.info("start provideInlineCompletionItems");
 
         // 等待时间（单位：毫秒），可根据需要调整
-        const delayTime = 5000;
+        const delayTime = 2000;
 
-        // 创建一个新的Promise，用于实现等待逻辑
-        await new Promise((resolve) => {
-            const timer = setTimeout(resolve, delayTime);
+        // // 创建一个新的Promise，用于实现等待逻辑
+        // await new Promise((resolve) => {
+        //     const timer = setTimeout(resolve, delayTime);
             
-            // 如果请求在等待时间结束前被取消，则清除定时器
-            token.onCancellationRequested(() => clearTimeout(timer));
-        });
+        //     // 如果请求在等待时间结束前被取消，则清除定时器
+        //     token.onCancellationRequested(() => clearTimeout(timer));
+        // });
+		if (!gShowCompletion) {
+			logger.channel()?.info("not trigger by command: provideInlineCompletionItems");
+			return [];
+		}
+		gShowCompletion = false;
 		logger.channel()?.info("----->");
 
         // 如果请求已被取消，则直接返回null
@@ -434,10 +481,34 @@ class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
 		const prefix = documentText.substring(0, offsetPos);
 		const suffix = documentText.substring(offsetPos);
 
-		const prompt = "<fim_prefix>" + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+		// 获取剪贴板内存中数据
+		const clipboardText = await vscode.env.clipboard.readText();
+		const clipboardPrefix = `file: clipboard\n${clipboardText}`;
+
+		// 前边编辑文件信息
+		let editPrefix = "";
+		for (let [fsPath, text] of editedFiles) {
+			// 排除当前文档内容
+			if (fsPath === document.uri.fsPath) {
+				continue;
+			}
+			editPrefix += `file: ${fsPath}\n${text}\n`;
+		}
+
+		// ISSUE数据信息
+		const issueURL = "https://github.com/continuedev/continue/issues/919";
+		const issueTitle = "Write a funcion HttpClient to show http get in python";
+		const issueBody = "Write a HttpClient function to make a http get request to some site.";
+
+		const issuePrefix = `file: ${issueURL}\ntitle: ${issueTitle}\nbody: ${issueBody}`;
+
+		// 文件prefix
+		const curFilePrefix = `file: ${document.fileName}\n${prefix}`;
+
+		const prompt = "<fim_prefix>" + issuePrefix + "\n" + clipboardPrefix + "\n" + editPrefix + "\n" + curFilePrefix + "<fim_suffix>" + suffix + "<fim_middle>";
 
 		// call code_completion
-		const response = await code_completion(prompt);
+		const response = await code_completion_local(prompt);
 		if (!response) {
 			logger.channel()?.info("finish provideInlineCompletionItems");
 			return [];
@@ -463,6 +534,30 @@ async function activate(context: vscode.ExtensionContext) {
 	const provider = new InlineCompletionProvider();  
     const selector = { pattern: "**" }; // 指定在 JavaScript 文件中触发此提供器  
     context.subscriptions.push(vscode.languages.registerInlineCompletionItemProvider(selector, provider));  
+
+	let disposable = vscode.workspace.onDidChangeTextDocument((event) => {
+		const fsPath = event.document.uri.fsPath;
+        const activeEditor = vscode.window.activeTextEditor;
+
+        if (activeEditor && activeEditor.document === event.document) {
+            const firstVisibleRange = activeEditor.visibleRanges[0];
+            const entireTextInFirstVisibleRange = activeEditor.document.getText(firstVisibleRange);
+			// replace the old one
+			let hasExist = false;
+			for (let i = 0; i < editedFiles.length; i++) {
+				if (editedFiles[i][0] === fsPath) {
+					editedFiles[i][1] = entireTextInFirstVisibleRange;
+					hasExist = true;
+					return ;
+				}
+			}
+			if (!hasExist) {
+				editedFiles.push([fsPath, entireTextInFirstVisibleRange]);
+			}
+		}
+    });
+
+    context.subscriptions.push(disposable);
 
     regLanguageContext();
 
