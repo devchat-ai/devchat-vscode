@@ -1,404 +1,471 @@
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
 
 import {
-    registerOpenChatPanelCommand,
-    registerAddContextCommand,
-    registerAskForCodeCommand,
-    registerAskForFileCommand,
-    registerAccessKeySettingCommand,
-    regApplyDiffResultCommand,
-    registerStatusBarItemClickCommand,
-    regPythonPathCommand,
-	registerInstallCommandsCommand,
-	registerUpdateChatModelsCommand,
-	registerInstallCommandsPython,
-	registerDevChatChatCommand,
-	registerHandleUri,
-} from './contributes/commands';
-import { regLanguageContext } from './contributes/context';
-import { regDevChatView } from './contributes/views';
+  registerOpenChatPanelCommand,
+  registerAddContextCommand,
+  registerAskForCodeCommand,
+  registerAskForFileCommand,
+  registerAccessKeySettingCommand,
+  regApplyDiffResultCommand,
+  registerStatusBarItemClickCommand,
+  regPythonPathCommand,
+  registerInstallCommandsCommand,
+  registerUpdateChatModelsCommand,
+  registerInstallCommandsPython,
+  registerDevChatChatCommand,
+  registerHandleUri,
+  registerExplainCommand,
+  registerCodeLensRangeCommand,
+  registerCommentCommand,
+} from "./contributes/commands";
+import { regLanguageContext } from "./contributes/context";
+import { regDevChatView } from "./contributes/views";
 
-import { ExtensionContextHolder } from './util/extensionContext';
-import { logger } from './util/logger';
-import { LoggerChannelVscode } from './util/logger_vscode';
-import { createStatusBarItem } from './panel/statusBarView';
-import { UiUtilWrapper } from './util/uiUtil';
-import { UiUtilVscode } from './util/uiUtil_vscode';
-import { ApiKeyManager } from './util/apiKey';
-import { startRpcServer } from './ide_services/services';
-import { registerCodeLensProvider } from './panel/codeLens';
-import { stopDevChatBase } from './handler/sendMessageBase';
-import exp from 'constants';
+import { ExtensionContextHolder } from "./util/extensionContext";
+import { logger } from "./util/logger";
+import { LoggerChannelVscode } from "./util/logger_vscode";
+import { createStatusBarItem } from "./panel/statusBarView";
+import { UiUtilWrapper } from "./util/uiUtil";
+import { UiUtilVscode } from "./util/uiUtil_vscode";
+import { ApiKeyManager } from "./util/apiKey";
+import { startRpcServer } from "./ide_services/services";
+import { registerCodeLensProvider } from "./panel/codeLens";
+import { stopDevChatBase } from "./handler/sendMessageBase";
+import exp from "constants";
 
 /**
  * ABC isProviderHasSetted
- * @returns 
+ * @returns
  */
 async function isProviderHasSetted() {
-	try {
-		const providerProperty = "Provider.devchat";
-		const providerConfig: any = UiUtilWrapper.getConfiguration("devchat", providerProperty);
-		if (providerConfig && Object.keys(providerConfig).length > 0) {
-			return true;
-		}
+  try {
+    const providerProperty = "Provider.devchat";
+    const providerConfig: any = UiUtilWrapper.getConfiguration(
+      "devchat",
+      providerProperty
+    );
+    if (providerConfig && Object.keys(providerConfig).length > 0) {
+      return true;
+    }
 
-		const providerPropertyOpenAI = "Provider.openai";
-		const providerConfigOpenAI: any = UiUtilWrapper.getConfiguration("devchat", providerPropertyOpenAI);
-		if (providerConfigOpenAI && Object.keys(providerConfigOpenAI).length > 0) {
-			return true;
-		}
+    const providerPropertyOpenAI = "Provider.openai";
+    const providerConfigOpenAI: any = UiUtilWrapper.getConfiguration(
+      "devchat",
+      providerPropertyOpenAI
+    );
+    if (providerConfigOpenAI && Object.keys(providerConfigOpenAI).length > 0) {
+      return true;
+    }
 
-		const apiOpenaiKey = await ApiKeyManager.getProviderApiKey("openai");
-		if (apiOpenaiKey) {
-			return true;
-		}
-		const devchatKey = await ApiKeyManager.getProviderApiKey("devchat");
-		if (devchatKey) {
-			return true;
-		}
+    const apiOpenaiKey = await ApiKeyManager.getProviderApiKey("openai");
+    if (apiOpenaiKey) {
+      return true;
+    }
+    const devchatKey = await ApiKeyManager.getProviderApiKey("devchat");
+    if (devchatKey) {
+      return true;
+    }
 
-		return false;
-	} catch (error) {
-		return false;
-	}
-	
+    return false;
+  } catch (error) {
+    return false;
+  }
 }
 
-async function  configUpdateTo1115() {
-	const supportModels = [
-		"Model.gpt-3-5-1106",
-		"Model.gpt-4-turbo",
-	];
+async function configUpdateTo1115() {
+  const supportModels = ["Model.gpt-3-5-1106", "Model.gpt-4-turbo"];
 
-	for (const model of supportModels) {
-		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
-			let modelConfigNew = {};
-			modelConfigNew = {"provider": "devchat"};
-			if (model.startsWith("Model.gpt-")) {
-				modelConfigNew = {"provider": "openai"};
-			}
+  for (const model of supportModels) {
+    const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
+      let modelConfigNew = {};
+      modelConfigNew = { provider: "devchat" };
+      if (model.startsWith("Model.gpt-")) {
+        modelConfigNew = { provider: "openai" };
+      }
 
-			try {
-				await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
-			} catch (error) {
-				logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
-			}
-		}
-	}
+      try {
+        await vscode.workspace
+          .getConfiguration("devchat")
+          .update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+      } catch (error) {
+        logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+      }
+    }
+  }
 }
 
 async function configUpdateTo0924() {
-	if (await isProviderHasSetted()) {
-		return ;
-	}
-	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
-	
-	let devchatKey = UiUtilWrapper.getConfiguration('DevChat', 'Access_Key_DevChat');
-	let openaiKey = UiUtilWrapper.getConfiguration('DevChat', 'Api_Key_OpenAI');
-	const endpointKey = UiUtilWrapper.getConfiguration('DevChat', 'API_ENDPOINT');
-	
-	devchatKey = undefined;
-	openaiKey = undefined;
-	if (!devchatKey && !openaiKey) {
-		openaiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
-		devchatKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
-		await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", "");
-		await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", "");
-	}
-	if (!devchatKey && !openaiKey) {
-		openaiKey = process.env.OPENAI_API_KEY;
-	}
-	
-	let modelConfigNew = {};
-	let providerConfigNew = {};
-	if (openaiKey) {
-		providerConfigNew["access_key"] = openaiKey;
-		if (endpointKey) {
-			providerConfigNew["api_base"] = endpointKey;
-		}
-		
-		await vscode.workspace.getConfiguration("devchat").update("Provider.openai", providerConfigNew, vscode.ConfigurationTarget.Global);
-	}
+  if (await isProviderHasSetted()) {
+    return;
+  }
+  const defaultModel: any = UiUtilWrapper.getConfiguration(
+    "devchat",
+    "defaultModel"
+  );
 
-	if (devchatKey) {
-		providerConfigNew["access_key"] = devchatKey;
-		if (endpointKey) {
-			providerConfigNew["api_base"] = endpointKey;
-		}
-		
-		await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
-	}
-	
-	const supportModels = [
-		"Model.gpt-3-5",
-		"Model.gpt-3-5-1106",
-		"Model.gpt-3-5-16k",
-		"Model.gpt-4",
-		"Model.gpt-4-turbo",
-		"Model.claude-2",
-		"Model.xinghuo-2",
-		"Model.chatglm_pro",
-		"Model.ERNIE-Bot",
-		"Model.CodeLlama-34b-Instruct",
-		"Model.llama-2-70b-chat"
-	];
-	
-	for (const model of supportModels) {
-		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
-			modelConfigNew = {"provider": "devchat"};
-			if (model.startsWith("Model.gpt-")) {
-				modelConfigNew = {"provider": "openai"};
-			}
-			
-			await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
-		}
-	}
-	
-	if (!defaultModel) {
-		await vscode.workspace.getConfiguration("devchat").update("defaultModel", "claude-2.1", vscode.ConfigurationTarget.Global);
-	}
+  let devchatKey = UiUtilWrapper.getConfiguration(
+    "DevChat",
+    "Access_Key_DevChat"
+  );
+  let openaiKey = UiUtilWrapper.getConfiguration("DevChat", "Api_Key_OpenAI");
+  const endpointKey = UiUtilWrapper.getConfiguration("DevChat", "API_ENDPOINT");
+
+  devchatKey = undefined;
+  openaiKey = undefined;
+  if (!devchatKey && !openaiKey) {
+    openaiKey = await UiUtilWrapper.secretStorageGet("openai_OPENAI_API_KEY");
+    devchatKey = await UiUtilWrapper.secretStorageGet("devchat_OPENAI_API_KEY");
+    await UiUtilWrapper.storeSecret("openai_OPENAI_API_KEY", "");
+    await UiUtilWrapper.storeSecret("devchat_OPENAI_API_KEY", "");
+  }
+  if (!devchatKey && !openaiKey) {
+    openaiKey = process.env.OPENAI_API_KEY;
+  }
+
+  let modelConfigNew = {};
+  let providerConfigNew = {};
+  if (openaiKey) {
+    providerConfigNew["access_key"] = openaiKey;
+    if (endpointKey) {
+      providerConfigNew["api_base"] = endpointKey;
+    }
+
+    await vscode.workspace
+      .getConfiguration("devchat")
+      .update(
+        "Provider.openai",
+        providerConfigNew,
+        vscode.ConfigurationTarget.Global
+      );
+  }
+
+  if (devchatKey) {
+    providerConfigNew["access_key"] = devchatKey;
+    if (endpointKey) {
+      providerConfigNew["api_base"] = endpointKey;
+    }
+
+    await vscode.workspace
+      .getConfiguration("devchat")
+      .update(
+        "Provider.devchat",
+        providerConfigNew,
+        vscode.ConfigurationTarget.Global
+      );
+  }
+
+  const supportModels = [
+    "Model.gpt-3-5",
+    "Model.gpt-3-5-1106",
+    "Model.gpt-3-5-16k",
+    "Model.gpt-4",
+    "Model.gpt-4-turbo",
+    "Model.claude-2",
+    "Model.xinghuo-2",
+    "Model.chatglm_pro",
+    "Model.ERNIE-Bot",
+    "Model.CodeLlama-34b-Instruct",
+    "Model.llama-2-70b-chat",
+  ];
+
+  for (const model of supportModels) {
+    const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
+      modelConfigNew = { provider: "devchat" };
+      if (model.startsWith("Model.gpt-")) {
+        modelConfigNew = { provider: "openai" };
+      }
+
+      await vscode.workspace
+        .getConfiguration("devchat")
+        .update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+    }
+  }
+
+  if (!defaultModel) {
+    await vscode.workspace
+      .getConfiguration("devchat")
+      .update("defaultModel", "claude-2.1", vscode.ConfigurationTarget.Global);
+  }
 }
-
 
 async function configUpdate0912To0924() {
-	if (await isProviderHasSetted()) {
-		return ;
-	}
-	
-	const oldModels = [
-		"Model.gpt-3-5",
-		"Model.gpt-3-5-16k",
-		"Model.gpt-4",
-		"Model.claude-2"
-	];
+  if (await isProviderHasSetted()) {
+    return;
+  }
 
-	for (const model of oldModels) {
-		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig && Object.keys(modelConfig).length !== 0) {
-			let modelProperties: any = {};
-			for (const key of Object.keys(modelConfig || {})) {
-				const property = modelConfig![key];
-				modelProperties[key] = property;
-			}
+  const oldModels = [
+    "Model.gpt-3-5",
+    "Model.gpt-3-5-16k",
+    "Model.gpt-4",
+    "Model.claude-2",
+  ];
 
-			if (modelConfig["api_key"]) {
-				let providerConfigNew = {};
-				providerConfigNew["access_key"] = modelConfig["api_key"];
-				if (modelConfig["api_base"]) {
-					providerConfigNew["api_base"] = modelConfig["api_base"];
-				}
+  for (const model of oldModels) {
+    const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig && Object.keys(modelConfig).length !== 0) {
+      let modelProperties: any = {};
+      for (const key of Object.keys(modelConfig || {})) {
+        const property = modelConfig![key];
+        modelProperties[key] = property;
+      }
 
-				if (modelConfig["api_key"].startsWith("DC.")) {
-					modelProperties["provider"] = "devchat";
-					await vscode.workspace.getConfiguration("devchat").update("Provider.devchat", providerConfigNew, vscode.ConfigurationTarget.Global);
-				} else {
-					modelProperties["provider"] = "openai";
-					await vscode.workspace.getConfiguration("devchat").update("Provider.openai", providerConfigNew, vscode.ConfigurationTarget.Global);
-				}
-				
-				delete modelProperties["api_key"];
-				delete modelProperties["api_base"];
-				try {
-					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
-				} catch (error) {
-					logger.channel()?.error(`error: ${error}`);
-				}
-			} else {
-				if (!modelProperties["provider"]) {
-					delete modelProperties["api_base"];
-					modelProperties["provider"] = "devchat";
-					try {
-						await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
-					} catch (error) {
-						logger.channel()?.error(`error: ${error}`);
-					}
-				}
-			}
-		}
-	}
+      if (modelConfig["api_key"]) {
+        let providerConfigNew = {};
+        providerConfigNew["access_key"] = modelConfig["api_key"];
+        if (modelConfig["api_base"]) {
+          providerConfigNew["api_base"] = modelConfig["api_base"];
+        }
+
+        if (modelConfig["api_key"].startsWith("DC.")) {
+          modelProperties["provider"] = "devchat";
+          await vscode.workspace
+            .getConfiguration("devchat")
+            .update(
+              "Provider.devchat",
+              providerConfigNew,
+              vscode.ConfigurationTarget.Global
+            );
+        } else {
+          modelProperties["provider"] = "openai";
+          await vscode.workspace
+            .getConfiguration("devchat")
+            .update(
+              "Provider.openai",
+              providerConfigNew,
+              vscode.ConfigurationTarget.Global
+            );
+        }
+
+        delete modelProperties["api_key"];
+        delete modelProperties["api_base"];
+        try {
+          await vscode.workspace
+            .getConfiguration("devchat")
+            .update(model, modelProperties, vscode.ConfigurationTarget.Global);
+        } catch (error) {
+          logger.channel()?.error(`error: ${error}`);
+        }
+      } else {
+        if (!modelProperties["provider"]) {
+          delete modelProperties["api_base"];
+          modelProperties["provider"] = "devchat";
+          try {
+            await vscode.workspace
+              .getConfiguration("devchat")
+              .update(
+                model,
+                modelProperties,
+                vscode.ConfigurationTarget.Global
+              );
+          } catch (error) {
+            logger.channel()?.error(`error: ${error}`);
+          }
+        }
+      }
+    }
+  }
 }
-
 
 async function configUpdateto240205() {
-	// rename Model.CodeLlama-34b-Instruct to Model.CodeLlama-70b
-	// add new Model.Mixtral-8x7B
-	// add new Model.Minimax-abab6
-    const supportModels = [
-		"Model.CodeLlama-70b",
-		"Model.Mixtral-8x7B",
-		"Model.Minimax-abab6"
-	];
+  // rename Model.CodeLlama-34b-Instruct to Model.CodeLlama-70b
+  // add new Model.Mixtral-8x7B
+  // add new Model.Minimax-abab6
+  const supportModels = [
+    "Model.CodeLlama-70b",
+    "Model.Mixtral-8x7B",
+    "Model.Minimax-abab6",
+  ];
 
-	for (const model of supportModels) {
-		const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
-			let modelConfigNew = {};
-			modelConfigNew = {"provider": "devchat"};
-			try {
-				await vscode.workspace.getConfiguration("devchat").update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
-			} catch (error) {
-				logger.channel()?.error(`error: ${error}`);
-			}
-		}
-	}
+  for (const model of supportModels) {
+    const modelConfig1: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig1 && Object.keys(modelConfig1).length === 0) {
+      let modelConfigNew = {};
+      modelConfigNew = { provider: "devchat" };
+      try {
+        await vscode.workspace
+          .getConfiguration("devchat")
+          .update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
+      } catch (error) {
+        logger.channel()?.error(`error: ${error}`);
+      }
+    }
+  }
 }
 
-
 async function setLangDefaultValue() {
-	const lang = vscode.env.language;
-	if (!UiUtilWrapper.getConfiguration("DevChat", "Language")) {
-		if (lang.startsWith("zh-")) {
-			UiUtilWrapper.updateConfiguration("DevChat", "Language", "zh");
-		} else {
-			UiUtilWrapper.updateConfiguration("DevChat", "Language", "en");
-		}
-	}
+  const lang = vscode.env.language;
+  if (!UiUtilWrapper.getConfiguration("DevChat", "Language")) {
+    if (lang.startsWith("zh-")) {
+      UiUtilWrapper.updateConfiguration("DevChat", "Language", "zh");
+    } else {
+      UiUtilWrapper.updateConfiguration("DevChat", "Language", "en");
+    }
+  }
 }
 
 async function updateInvalidSettings() {
-	const oldModels = [
-		"Model.gpt-3-5",
-		"Model.gpt-3-5-16k",
-		"Model.gpt-4",
-		"Model.claude-2"
-	];
+  const oldModels = [
+    "Model.gpt-3-5",
+    "Model.gpt-3-5-16k",
+    "Model.gpt-4",
+    "Model.claude-2",
+  ];
 
-	for (const model of oldModels) {
-		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig && Object.keys(modelConfig).length !== 0) {
-			let modelProperties: any = {};
-			for (const key of Object.keys(modelConfig || {})) {
-				const property = modelConfig![key];
-				modelProperties[key] = property;
-			}
+  for (const model of oldModels) {
+    const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig && Object.keys(modelConfig).length !== 0) {
+      let modelProperties: any = {};
+      for (const key of Object.keys(modelConfig || {})) {
+        const property = modelConfig![key];
+        modelProperties[key] = property;
+      }
 
-			if (modelConfig["api_key"]) {
-				delete modelProperties["api_key"];
-				delete modelProperties["api_base"];
-				modelProperties["provider"] = "devchat";
-				try {
-					await vscode.workspace.getConfiguration("devchat").update(model, modelProperties, vscode.ConfigurationTarget.Global);
-				} catch (error) {
-					logger.channel()?.error(`error: ${error}`);
-				}
-			}
-		}
-	}
+      if (modelConfig["api_key"]) {
+        delete modelProperties["api_key"];
+        delete modelProperties["api_base"];
+        modelProperties["provider"] = "devchat";
+        try {
+          await vscode.workspace
+            .getConfiguration("devchat")
+            .update(model, modelProperties, vscode.ConfigurationTarget.Global);
+        } catch (error) {
+          logger.channel()?.error(`error: ${error}`);
+        }
+      }
+    }
+  }
 }
 
 async function updateInvalidDefaultModel() {
-	const defaultModel: any = UiUtilWrapper.getConfiguration("devchat", "defaultModel");
-	if (defaultModel === "gpt-3.5-turbo-1106" || defaultModel === "gpt-3.5-turbo-16k") {
-		try {
-			await vscode.workspace.getConfiguration("devchat").update("defaultModel", "gpt-3.5-turbo", vscode.ConfigurationTarget.Global);
-		} catch (error) {
-			logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
-		}
-	}
+  const defaultModel: any = UiUtilWrapper.getConfiguration(
+    "devchat",
+    "defaultModel"
+  );
+  if (
+    defaultModel === "gpt-3.5-turbo-1106" ||
+    defaultModel === "gpt-3.5-turbo-16k"
+  ) {
+    try {
+      await vscode.workspace
+        .getConfiguration("devchat")
+        .update(
+          "defaultModel",
+          "gpt-3.5-turbo",
+          vscode.ConfigurationTarget.Global
+        );
+    } catch (error) {
+      logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+    }
+  }
 }
 
 // "gpt-3.5-turbo-1106",
 // "gpt-3.5-turbo-16k",
 
 async function configSetModelDefaultParams() {
-	const modelParams = {
-		"Model.gpt-3-5": {
-			"max_input_tokens": 13000
-		},
-		"Model.gpt-4": {
-			"max_input_tokens": 6000
-		},
-		"Model.gpt-4-turbo": {
-			"max_input_tokens": 32000
-		},
-		"Model.claude-2": {
-			"max_input_tokens": 32000
-		},
-		"Model.xinghuo-2": {
-			"max_input_tokens": 6000
-		},
-		"Model.chatglm_pro": {
-			"max_input_tokens": 8000
-		},
-		"Model.ERNIE-Bot": {
-			"max_input_tokens": 8000
-		},
-		"Model.CodeLlama-70b": {
-			"max_input_tokens": 4000
-		},
-		"Model.Mixtral-8x7B": {
-			"max_input_tokens": 4000
-		},
-		"Model.Minimax-abab6": {
-			"max_input_tokens": 4000
-		},
-		"Model.llama-2-70b-chat": {
-			"max_input_tokens": 4000
-		}
-	};
+  const modelParams = {
+    "Model.gpt-3-5": {
+      max_input_tokens: 13000,
+    },
+    "Model.gpt-4": {
+      max_input_tokens: 6000,
+    },
+    "Model.gpt-4-turbo": {
+      max_input_tokens: 32000,
+    },
+    "Model.claude-2": {
+      max_input_tokens: 32000,
+    },
+    "Model.xinghuo-2": {
+      max_input_tokens: 6000,
+    },
+    "Model.chatglm_pro": {
+      max_input_tokens: 8000,
+    },
+    "Model.ERNIE-Bot": {
+      max_input_tokens: 8000,
+    },
+    "Model.CodeLlama-70b": {
+      max_input_tokens: 4000,
+    },
+    "Model.Mixtral-8x7B": {
+      max_input_tokens: 4000,
+    },
+    "Model.Minimax-abab6": {
+      max_input_tokens: 4000,
+    },
+    "Model.llama-2-70b-chat": {
+      max_input_tokens: 4000,
+    },
+  };
 
-	// set default params
-	for (const model of Object.keys(modelParams)) {
-		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (!modelConfig["max_input_tokens"]) {
-			modelConfig["max_input_tokens"] = modelParams[model]["max_input_tokens"];
-			try {
-				await vscode.workspace.getConfiguration("devchat").update(model, modelConfig, vscode.ConfigurationTarget.Global);
-			} catch (error) {
-				logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
-			}
-		}
-	}
+  // set default params
+  for (const model of Object.keys(modelParams)) {
+    const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (!modelConfig["max_input_tokens"]) {
+      modelConfig["max_input_tokens"] = modelParams[model]["max_input_tokens"];
+      try {
+        await vscode.workspace
+          .getConfiguration("devchat")
+          .update(model, modelConfig, vscode.ConfigurationTarget.Global);
+      } catch (error) {
+        logger.channel()?.error(`update Model.ERNIE-Bot error: ${error}`);
+      }
+    }
+  }
 }
 
 async function activate(context: vscode.ExtensionContext) {
-    ExtensionContextHolder.context = context;
+  ExtensionContextHolder.context = context;
 
-    logger.init(LoggerChannelVscode.getInstance());
-	UiUtilWrapper.init(new UiUtilVscode());
-	
-	await configUpdateTo0924();
-	await configUpdate0912To0924();
-	await configUpdateTo1115();
-	await setLangDefaultValue();
-	await updateInvalidSettings();
-	await updateInvalidDefaultModel();
-	await configUpdateto240205();
-	await configSetModelDefaultParams();
-	
-    regLanguageContext();
+  logger.init(LoggerChannelVscode.getInstance());
+  UiUtilWrapper.init(new UiUtilVscode());
 
-    regDevChatView(context);
+  await configUpdateTo0924();
+  await configUpdate0912To0924();
+  await configUpdateTo1115();
+  await setLangDefaultValue();
+  await updateInvalidSettings();
+  await updateInvalidDefaultModel();
+  await configUpdateto240205();
+  await configSetModelDefaultParams();
 
-    registerAccessKeySettingCommand(context);
-    registerOpenChatPanelCommand(context);
-    registerAddContextCommand(context);
-    registerAskForCodeCommand(context);
-    registerAskForFileCommand(context);
-    registerStatusBarItemClickCommand(context);
+  regLanguageContext();
 
-	registerInstallCommandsCommand(context);
-	registerUpdateChatModelsCommand(context);
-	registerInstallCommandsPython(context);
+  regDevChatView(context);
 
-    createStatusBarItem(context);
+  registerAccessKeySettingCommand(context);
+  registerOpenChatPanelCommand(context);
+  registerAddContextCommand(context);
+  registerAskForCodeCommand(context);
+  registerAskForFileCommand(context);
+  registerExplainCommand(context);
+  registerCommentCommand(context);
+  registerStatusBarItemClickCommand(context);
 
-    regApplyDiffResultCommand(context);
+  registerInstallCommandsCommand(context);
+  registerUpdateChatModelsCommand(context);
+  registerInstallCommandsPython(context);
 
-    regPythonPathCommand(context);
-	registerDevChatChatCommand(context);
-	registerCodeLensProvider(context);
+  createStatusBarItem(context);
 
-	startRpcServer();
-	logger.channel()?.info(`registerHandleUri:`);
-	registerHandleUri(context)
+  regApplyDiffResultCommand(context);
+
+  regPythonPathCommand(context);
+  registerDevChatChatCommand(context);
+  registerCodeLensRangeCommand(context);
+  registerCodeLensProvider(context);
+
+  startRpcServer();
+  logger.channel()?.info(`registerHandleUri:`);
+  registerHandleUri(context);
 }
 
 async function deactivate() {
-	// stop devchat
-	await stopDevChatBase({});
+  // stop devchat
+  await stopDevChatBase({});
 }
 exports.activate = activate;
 exports.deactivate = deactivate;
