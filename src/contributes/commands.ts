@@ -462,11 +462,9 @@ export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-export function registerCodeLensExplainCommand(
-  context: vscode.ExtensionContext
-) {
+export function registerCodeLensRangeCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-    "CodeLens.Explain",
+    "CodeLens.Range",
     async (message: string, pos: { start: number; end: number }) => {
       const editor = vscode.window.activeTextEditor;
       if (editor) {
@@ -550,10 +548,30 @@ function registerExplainCommand(context: vscode.ExtensionContext) {
   );
 }
 
+function registerCommentCommand(context: vscode.ExtensionContext) {
+  const callback = async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      if (!(await ensureChatPanel(context))) {
+        return;
+      }
+
+      chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/comments");
+    }
+  };
+  context.subscriptions.push(
+    vscode.commands.registerCommand("devchat.comments", callback)
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("devchat.comments_chinese", callback)
+  );
+}
+
 export {
   registerOpenChatPanelCommand,
   registerAddContextCommand,
   registerAskForCodeCommand,
   registerAskForFileCommand,
   registerExplainCommand,
+  registerCommentCommand,
 };

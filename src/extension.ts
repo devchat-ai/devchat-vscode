@@ -15,7 +15,8 @@ import {
   registerDevChatChatCommand,
   registerHandleUri,
   registerExplainCommand,
-  registerCodeLensExplainCommand,
+  registerCodeLensRangeCommand,
+  registerCommentCommand,
 } from "./contributes/commands";
 import { regLanguageContext } from "./contributes/context";
 import { regDevChatView } from "./contributes/views";
@@ -441,6 +442,7 @@ async function activate(context: vscode.ExtensionContext) {
   registerAskForCodeCommand(context);
   registerAskForFileCommand(context);
   registerExplainCommand(context);
+  registerCommentCommand(context);
   registerStatusBarItemClickCommand(context);
 
   registerInstallCommandsCommand(context);
@@ -453,7 +455,7 @@ async function activate(context: vscode.ExtensionContext) {
 
   regPythonPathCommand(context);
   registerDevChatChatCommand(context);
-  registerCodeLensExplainCommand(context);
+  registerCodeLensRangeCommand(context);
   registerCodeLensProvider(context);
 
   startRpcServer();

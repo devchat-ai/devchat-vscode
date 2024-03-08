@@ -671,11 +671,19 @@
       },
       {
         "command": "devchat.explain",
-        "title": "Explain"
+        "title": "Generate Explain"
       },
       {
         "command": "devchat.explain_chinese",
         "title": "代码解释"
+      },
+      {
+        "command": "devchat.comments",
+        "title": "Generate Comments"
+      },
+      {
+        "command": "devchat.comments_chinese",
+        "title": "生成注释"
       }
     ],
     "keybindings": [
@@ -767,6 +775,16 @@
         },
         {
           "command": "devchat.explain_chinese",
+          "when": "isChineseLocale && editorTextFocus && editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "devchat.comments",
+          "when": "!isChineseLocale && editorTextFocus && editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "devchat.comments_chinese",
           "when": "isChineseLocale && editorTextFocus && editorHasSelection",
           "group": "navigation"
         }

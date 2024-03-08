@@ -54,14 +54,19 @@ export class CodeLensManager {
     this.registrations = [
       {
         elementType: "function",
-        objectName: "Add unit tests",
+        objectName: "unit tests",
         promptGenerator:
           "/unit_tests {__filename__}:::{__functionName__}:::{__functionStartLine__}:::{__functionEndLine__}:::{__containerStartLine__}:::{__containerEndLine__}",
       },
       {
         elementType: "function",
-        objectName: "Explain",
+        objectName: "explain",
         promptGenerator: "/explain",
+      },
+      {
+        elementType: "function",
+        objectName: "docstring",
+        promptGenerator: "/docstring",
       },
       // {
       // 	elementType: 'function',
@@ -212,10 +217,13 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
               `${parentRange ? parentRange.end.line : -1}`
             )
             .replace(/{__functionCode__}/g, functionCode); // Fixed syntax to replace all occurrences
-          if (codelenRegister.objectName === "Explain") {
+          if (
+            codelenRegister.objectName === "explain" ||
+            codelenRegister.objectName === "docstring"
+          ) {
             const lens = new vscode.CodeLens(range, {
               title: codelenRegister.objectName,
-              command: "CodeLens.Explain",
+              command: "CodeLens.Range",
               // arguments: [document.uri.fsPath, range, funcDef.name] // Commented out as it's not used
               arguments: [
                 prompt,
