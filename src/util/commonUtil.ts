@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as yaml from 'yaml';
-import * as vscode from 'vscode';
+import * as util from 'util';
 import * as childProcess from 'child_process';
 
 import { parseArgsStringToArgv } from 'string-argv';
@@ -20,7 +20,8 @@ export async function saveModelSettings(): Promise<void> {
 		"Model.gpt-3-5": "gpt-3.5-turbo",
 		"Model.gpt-4": "gpt-4",
 		"Model.gpt-4-turbo": "gpt-4-turbo-preview",
-		"Model.claude-2": "claude-2.1",
+		"Model.claude-3-sonnet": "claude-3-sonnet",
+		"Model.claude-3-opus": "claude-3-opus",
 		"Model.xinghuo-2": "xinghuo-3.5",
 		"Model.chatglm_pro": "GLM-4",
 		"Model.ERNIE-Bot": "ERNIE-Bot-4.0",
@@ -69,11 +70,10 @@ async function createOpenAiKeyEnv() {
 		envs['OPENAI_API_KEY'] = llmModelData.api_key;
 	}
     
-    const openAiApiBase = llmModelData.api_base;
-    if (openAiApiBase) {
-        envs['OPENAI_API_BASE'] = openAiApiBase;
-		envs['OPENAI_BASE_URL'] = openAiApiBase;
-    }
+	if (llmModelData && llmModelData.api_base) {
+		envs['OPENAI_API_BASE'] = llmModelData.api_base;
+		envs['OPENAI_BASE_URL'] = llmModelData.api_base;
+	}
 
 	return envs;
 }
@@ -330,5 +330,18 @@ export function gitLsTree(withAbsolutePath: boolean = false): string[] {
 		return absolutePaths;
 	} else {
 		return lines;
+	}
+}
+
+export async function getFileContent(fileName: string): Promise<string | undefined> {
+	const readFile = util.promisify(fs.readFile);
+	try {
+		// Read file content from fileName
+		const fileContent = await readFile(fileName, 'utf-8');
+		// Return the whole text in the file with name fileName
+		return fileContent;
+	} catch (error) {
+		logger.channel()!.error(`Error reading the file ${fileName}:`, error);
+		return undefined;
 	}
 }
