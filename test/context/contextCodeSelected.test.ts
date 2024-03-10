@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { describe, it, afterEach, beforeEach } from 'mocha';
+// import { describe, it, afterEach, beforeEach } from 'mocha';
 import { handleCodeSelected } from '../../src/context/contextCodeSelected';
 import * as path from 'path';
 import { UiUtilWrapper } from '../../src/util/uiUtil';

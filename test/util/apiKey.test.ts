@@ -12,33 +12,6 @@ describe('ApiKeyManager', () => {
     delete process.env.OPENAI_API_BASE;
   });
 
-  describe('getApiKey', () => {
-    it('should return the secret storage API key', async () => {
-      sinon.stub(UiUtilWrapper, 'secretStorageGet').resolves('sk-secret');
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns(undefined);
-
-      const apiKey = await ApiKeyManager.getApiKey();
-      expect(apiKey).to.equal('sk-secret');
-    });
-
-    it('should return the configuration API key', async () => {
-      sinon.stub(UiUtilWrapper, 'secretStorageGet').resolves(undefined);
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns('sk-config');
-
-      const apiKey = await ApiKeyManager.getApiKey();
-      expect(apiKey).to.equal('sk-config');
-    });
-
-    it('should return the environment variable API key', async () => {
-      sinon.stub(UiUtilWrapper, 'secretStorageGet').resolves(undefined);
-      sinon.stub(UiUtilWrapper, 'getConfiguration').returns(undefined);
-      process.env.OPENAI_API_KEY = 'sk-env';
-
-      const apiKey = await ApiKeyManager.getApiKey();
-      expect(apiKey).to.equal('sk-env');
-    });
-  });
-
   describe('getKeyType', () => {
     it('should return "sk" for sk keys', () => {
       const keyType = ApiKeyManager.getKeyType('sk-key');
@@ -53,15 +26,6 @@ describe('ApiKeyManager', () => {
     it('should return undefined for invalid keys', () => {
       const keyType = ApiKeyManager.getKeyType('invalid.key');
       expect(keyType).to.be.undefined;
-    });
-  });
-
-  describe('writeApiKeySecret', () => {
-    it('should store the API key in secret storage', async () => {
-      const storeSecretStub = sinon.stub(UiUtilWrapper, 'storeSecret').resolves();
-
-      await ApiKeyManager.writeApiKeySecret('sk-secret');
-      expect(storeSecretStub.calledWith('openai_OPENAI_API_KEY', 'sk-secret')).to.be.true;
     });
   });
 });

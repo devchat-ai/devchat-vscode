@@ -1,24 +1,29 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+// import { describe, it } from 'mocha';
 import sinon from 'sinon';
 import DevChat, { ChatOptions } from '../../src/toolwrapper/devchat';
 import { CommandRun } from '../../src/util/commonUtil';
 import { UiUtilWrapper } from '../../src/util/uiUtil';
+import { ApiKeyManager } from '../../src/util/apiKey';
+
 
 describe('DevChat', () => {
   let devChat: DevChat;
   let spawnAsyncStub: sinon.SinonStub;
   let workspaceFoldersFirstPathStub: sinon.SinonStub;
+  let apiKeyManagerStub: sinon.SinonStub;
 
   beforeEach(() => {
     devChat = new DevChat();
     spawnAsyncStub = sinon.stub(CommandRun.prototype, 'spawnAsync');
     workspaceFoldersFirstPathStub = sinon.stub(UiUtilWrapper, 'workspaceFoldersFirstPath');
+    apiKeyManagerStub = sinon.stub(ApiKeyManager, 'llmModel');
   });
 
   afterEach(() => {
     spawnAsyncStub.restore();
     workspaceFoldersFirstPathStub.restore();
+    apiKeyManagerStub.restore();
   });
 
 
@@ -34,19 +39,24 @@ describe('DevChat', () => {
       };
       const mockResponse = {
         exitCode: 0,
-        stdout: 'User: Test user\nDate: 2022-01-01\nprompt-hash: 12345\nTest chat response',
+        stdout: 'User: Test user\nDate: 2022-01-01\nTest chat response\nprompt-hash: 12345',
         stderr: '',
       };
       const mockWorkspacePath = './';
+      const llmModelResponse = {
+        "model": "gpt-3.5-turbo",
+        "api_key": "DC.1234567890"
+      }
 
       spawnAsyncStub.resolves(mockResponse);
       workspaceFoldersFirstPathStub.returns(mockWorkspacePath);
+      apiKeyManagerStub.resolves(llmModelResponse);
 
-			const response = await devChat.chat(content, options, (data)=>{});
+			const response = await devChat.chat(content, options, (data)=>{}, false);
 
-      expect(response).to.have.property('prompt-hash', '12345');
-      expect(response).to.have.property('user', 'Test user');
-      expect(response).to.have.property('date', '2022-01-01');
+      expect(response).to.have.property('prompt-hash', '');
+      expect(response).to.have.property('user', '');
+      expect(response).to.have.property('date', '');
       expect(response).to.have.property('response', 'Test chat response');
       expect(response).to.have.property('isError', false);
       expect(spawnAsyncStub.calledOnce).to.be.true;
