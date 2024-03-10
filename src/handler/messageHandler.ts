@@ -4,9 +4,6 @@ import * as vscode from 'vscode';
 
 import '../context/loadContexts';
 import { logger } from '../util/logger';
-import { isWaitForApiKey } from './historyMessagesBase';
-import { onApiKey } from './historyMessagesHandler';
-import { ApiKeyManager } from '../util/apiKey';
 
 
 export class MessageHandler {
@@ -35,12 +32,6 @@ export class MessageHandler {
 					}
 				}
 			} catch (e) {
-			}
-		}
-		if (message.command === 'sendMessage') {
-			if (await isWaitForApiKey() && !await ApiKeyManager.getApiKey()) {
-				onApiKey(message.text, panel);
-				return;
 			}
 		}
 

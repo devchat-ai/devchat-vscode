@@ -25,8 +25,3 @@ export async function getHistoryMessages(message: {command: string, topicId: str
 	}
 }
 
-export async function onApiKey(apiKey: string, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	const resMessage = await onApiKeyBase(apiKey);
-	MessageHandler.sendMessage(panel, resMessage);
-}
-
