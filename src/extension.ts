@@ -528,8 +528,6 @@ async function activate(context: vscode.ExtensionContext) {
 
     logger.init(LoggerChannelVscode.getInstance());
 	UiUtilWrapper.init(new UiUtilVscode());
-	
-	await migrateConfig();
 
 	const provider = new InlineCompletionProvider();  
     const selector = { pattern: "**" }; // 指定在 JavaScript 文件中触发此提供器  
