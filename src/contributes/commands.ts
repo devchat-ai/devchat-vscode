@@ -470,7 +470,7 @@ export function registerCodeLensRangeCommand(context: vscode.ExtensionContext) {
       if (editor) {
         const range = new vscode.Range(
           new vscode.Position(pos.start, 0),
-          new vscode.Position(pos.end, 0)
+          new vscode.Position(pos.end+1, 0)
         );
         editor.selection = new vscode.Selection(range.start, range.end);
       }
