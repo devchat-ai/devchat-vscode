@@ -54,7 +54,7 @@ export class CodeLensManager {
     this.registrations = [
       {
         elementType: "function",
-        objectName: "unit tests",
+        objectName: "Devchat:unit tests",
         promptGenerator:
           "/unit_tests {__filename__}:::{__functionName__}:::{__functionStartLine__}:::{__functionEndLine__}:::{__containerStartLine__}:::{__containerEndLine__}",
       },

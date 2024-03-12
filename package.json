@@ -659,27 +659,27 @@
       },
       {
         "command": "devchat.addContext",
-        "title": "Add to DevChat"
+        "title": "Devchat:Add to DevChat"
       },
       {
         "command": "devchat.askForCode",
-        "title": "Add to DevChat"
+        "title": "Devchat:Add to DevChat"
       },
       {
         "command": "devchat.askForFile",
-        "title": "Add to DevChat"
+        "title": "Devchat:Add to DevChat"
       },
       {
         "command": "devchat.addConext_chinese",
-        "title": "添加到DevChat"
+        "title": "Devchat:添加到DevChat"
       },
       {
         "command": "devchat.askForCode_chinese",
-        "title": "添加到DevChat"
+        "title": "Devchat:添加到DevChat"
       },
       {
         "command": "devchat.askForFile_chinese",
-        "title": "添加到DevChat"
+        "title": "Devchat:添加到DevChat"
       },
       {
         "command": "DevChat.InstallCommands",
@@ -703,19 +703,27 @@
       },
       {
         "command": "devchat.explain",
-        "title": "Generate Explain"
+        "title": "Devchat:Generate Explain"
       },
       {
         "command": "devchat.explain_chinese",
-        "title": "代码解释"
+        "title": "Devchat:代码解释"
       },
       {
         "command": "devchat.comments",
-        "title": "Generate Comments"
+        "title": "Devchat:Generate Comments"
       },
       {
         "command": "devchat.comments_chinese",
-        "title": "生成注释"
+        "title": "Devchat:生成注释"
+      },
+      {
+        "command": "devchat.fix",
+        "title": "Devchat:Fix this"
+      },
+      {
+        "command": "devchat.fix_chinese",
+        "title": "Devchat:修复此"
       }
     ],
     "keybindings": [
@@ -817,6 +825,16 @@
         },
         {
           "command": "devchat.comments_chinese",
+          "when": "isChineseLocale && editorTextFocus && editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "devchat.fix",
+          "when": "!isChineseLocale && editorTextFocus && editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "devchat.fix_chinese",
           "when": "isChineseLocale && editorTextFocus && editorHasSelection",
           "group": "navigation"
         }

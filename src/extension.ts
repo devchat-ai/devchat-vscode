@@ -17,6 +17,7 @@ import {
   registerExplainCommand,
   registerCodeLensRangeCommand,
   registerCommentCommand,
+  registerFixCommand,
 } from "./contributes/commands";
 import { regLanguageContext } from "./contributes/context";
 import { regDevChatView } from "./contributes/views";
@@ -371,9 +372,9 @@ async function configSetModelDefaultParams() {
     "Model.claude-3-opus": {
       max_input_tokens: 32000,
     },
-	"Model.claude-3-sonnet": {
-		max_input_tokens: 32000,
-	},
+    "Model.claude-3-sonnet": {
+      max_input_tokens: 32000,
+    },
     "Model.xinghuo-2": {
       max_input_tokens: 6000,
     },
@@ -414,26 +415,23 @@ async function configSetModelDefaultParams() {
 }
 
 async function updateClaudePrivider() {
-	const claudeModels = [
-		"Model.claude-3-opus",
-		"Model.claude-3-sonnet",
-	];
+  const claudeModels = ["Model.claude-3-opus", "Model.claude-3-sonnet"];
 
-	for (const model of claudeModels) {
-		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
-		if (modelConfig && Object.keys(modelConfig).length === 0) {
-			const modelProperties: any = {
-				"provider": "devchat"
-			};
-			try {
-			await vscode.workspace
-				.getConfiguration("devchat")
-				.update(model, modelProperties, vscode.ConfigurationTarget.Global);
-			} catch (error) {
-				logger.channel()?.error(`update ${model} error: ${error}`);
-			}
-		}
-	}
+  for (const model of claudeModels) {
+    const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+    if (modelConfig && Object.keys(modelConfig).length === 0) {
+      const modelProperties: any = {
+        provider: "devchat",
+      };
+      try {
+        await vscode.workspace
+          .getConfiguration("devchat")
+          .update(model, modelProperties, vscode.ConfigurationTarget.Global);
+      } catch (error) {
+        logger.channel()?.error(`update ${model} error: ${error}`);
+      }
+    }
+  }
 }
 
 async function activate(context: vscode.ExtensionContext) {
@@ -462,6 +460,7 @@ async function activate(context: vscode.ExtensionContext) {
   registerAskForCodeCommand(context);
   registerAskForFileCommand(context);
   registerExplainCommand(context);
+  registerFixCommand(context);
   registerCommentCommand(context);
   registerStatusBarItemClickCommand(context);
 

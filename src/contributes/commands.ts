@@ -470,7 +470,7 @@ export function registerCodeLensRangeCommand(context: vscode.ExtensionContext) {
       if (editor) {
         const range = new vscode.Range(
           new vscode.Position(pos.start, 0),
-          new vscode.Position(pos.end+1, 0)
+          new vscode.Position(pos.end + 1, 0)
         );
         editor.selection = new vscode.Selection(range.start, range.end);
       }
@@ -567,11 +567,31 @@ function registerCommentCommand(context: vscode.ExtensionContext) {
   );
 }
 
+function registerFixCommand(context: vscode.ExtensionContext) {
+  const callback = async () => {
+    const editor = vscode.window.activeTextEditor;
+    if (editor) {
+      if (!(await ensureChatPanel(context))) {
+        return;
+      }
+
+      chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/fix");
+    }
+  };
+  context.subscriptions.push(
+    vscode.commands.registerCommand("devchat.fix", callback)
+  );
+  context.subscriptions.push(
+    vscode.commands.registerCommand("devchat.fix_chinese", callback)
+  );
+}
+
 export {
   registerOpenChatPanelCommand,
   registerAddContextCommand,
   registerAskForCodeCommand,
   registerAskForFileCommand,
   registerExplainCommand,
+  registerFixCommand,
   registerCommentCommand,
 };
