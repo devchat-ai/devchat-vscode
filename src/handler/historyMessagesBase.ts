@@ -4,7 +4,6 @@ import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
 import messageHistory from '../util/messageHistory';
 import { ApiKeyManager } from '../util/apiKey';
 
-let isApiSet: boolean | undefined = undefined;
 
 export interface LoadHistoryMessages {
 	command: string;
@@ -68,14 +67,6 @@ export function isValidApiKey(apiKey: string, llmType: string = "None") {
 	return true;
 }
 
-export async function isWaitForApiKey() {
-	if (isApiSet === undefined) {
-		const apiKey = await ApiKeyManager.getApiKey();
-		isApiSet = apiKey !== undefined;
-	}
-	return !isApiSet;
-}
-
 export async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
 	if (!topicId) {
 		return undefined;
@@ -131,22 +122,6 @@ export function loadTopicHistoryFromCurrentMessageHistory(skip: number, count: n
 		command: 'loadHistoryMessages',
 		entries: logEntriesFlat,
 	} as LoadHistoryMessages;
-}
-
-export async function apiKeyInvalidMessage(): Promise<LoadHistoryMessages | undefined> {
-	const apiKey = await ApiKeyManager.getApiKey();
-	isApiSet = true;
-	if (!apiKey) {
-		const startMessage = [apiKeyMissedMessage()];
-		isApiSet = false;
-
-		return {
-			command: 'loadHistoryMessages',
-			entries: startMessage,
-		} as LoadHistoryMessages;
-	} else {
-		return undefined;
-	}
 }
 
 export async function historyMessagesBase(topicId: string): Promise<LoadHistoryMessages | undefined> {

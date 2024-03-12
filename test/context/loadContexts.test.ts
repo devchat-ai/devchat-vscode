@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { describe, it } from 'mocha';
+// import { describe, it } from 'mocha';
 import '../../src/context/loadContexts';
 import { ChatContextManager } from '../../src/context/contextManager';
 import { gitDiffCachedContext } from '../../src/context/contextGitDiffCached';

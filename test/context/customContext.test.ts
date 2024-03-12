@@ -6,7 +6,7 @@ import path from 'path';
 describe('CustomContexts', () => {
     const workflowsDir = path.join(__dirname, 'test-workflows');
 
-    before(() => {
+    beforeEach(() => {
         // Create a test workflows directory with a sample _setting_.json file
         if (!fs.existsSync(workflowsDir)) {
             fs.mkdirSync(workflowsDir);
@@ -20,9 +20,9 @@ describe('CustomContexts', () => {
         }));
     });
 
-    after(() => {
+    afterEach(() => {
         // Clean up the test workflows directory
-        fs.rmdirSync(workflowsDir, { recursive: true });
+        fs.rmSync(workflowsDir, { recursive: true });
     });
 
     it('should parse custom contexts', () => {

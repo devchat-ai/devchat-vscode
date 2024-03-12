@@ -243,7 +243,7 @@
           "order": 6,
           "markdownDescription": "properties for gpt-4-turbo model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature)"
         },
-        "devchat.Model.claude-2": {
+        "devchat.Model.claude-3-sonnet": {
           "type": "object",
           "properties": {
             "provider": {
@@ -272,7 +272,38 @@
           },
           "additionalProperties": false,
           "order": 7,
-          "markdownDescription": "properties for claude-2 model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+          "markdownDescription": "properties for claude-3-Sonnet model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
+        },
+        "devchat.Model.claude-3-opus": {
+          "type": "object",
+          "properties": {
+            "provider": {
+              "type": "string",
+              "default": "devchat",
+              "enum": [
+                "devchat"
+              ],
+              "description": "[required*] which provider host this llm model"
+            },
+            "temperature": {
+              "type": "number",
+              "default": 0.3,
+              "description": "[optional*] What sampling temperature to use, between 0 and 2. Higher values like 0.8 will make the output more random, while lower values like 0.2 will make it more focused and deterministic."
+            },
+            "max_tokens": {
+              "type": "number",
+              "default": 1000,
+              "description": "[optional*] The maximum number of tokens to generate in the chat completion.\nThe total length of input tokens and generated tokens is limited by the model's context length. Example Python code for counting tokens."
+            },
+            "max_input_tokens": {
+              "type": "number",
+              "default": 32000,
+              "description": "[optional*] Maximum text length for input to AI."
+            }
+          },
+          "additionalProperties": false,
+          "order": 7,
+          "markdownDescription": "properties for claude-3-Opus model. Leave it blank if you won't use this llm model. [how to set?](https://platform.openai.com/docs/api-reference/chat/create#temperature) "
         },
         "devchat.Model.xinghuo-2": {
           "type": "object",
@@ -500,7 +531,8 @@
                 "gpt-3.5-turbo",
                 "gpt-4",
                 "gpt-4-turbo-preview",
-                "claude-2.1",
+                "claude-3-sonnet",
+                "claude-3-opus",
                 "xinghuo-3.5",
                 "GLM-4",
                 "ERNIE-Bot-4.0",

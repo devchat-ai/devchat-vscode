@@ -161,7 +161,6 @@ async function configUpdateTo0924() {
     "Model.gpt-3-5-16k",
     "Model.gpt-4",
     "Model.gpt-4-turbo",
-    "Model.claude-2",
     "Model.xinghuo-2",
     "Model.chatglm_pro",
     "Model.ERNIE-Bot",
@@ -181,12 +180,6 @@ async function configUpdateTo0924() {
         .getConfiguration("devchat")
         .update(model, modelConfigNew, vscode.ConfigurationTarget.Global);
     }
-  }
-
-  if (!defaultModel) {
-    await vscode.workspace
-      .getConfiguration("devchat")
-      .update("defaultModel", "claude-2.1", vscode.ConfigurationTarget.Global);
   }
 }
 
@@ -375,9 +368,12 @@ async function configSetModelDefaultParams() {
     "Model.gpt-4-turbo": {
       max_input_tokens: 32000,
     },
-    "Model.claude-2": {
+    "Model.claude-3-opus": {
       max_input_tokens: 32000,
     },
+	"Model.claude-3-sonnet": {
+		max_input_tokens: 32000,
+	},
     "Model.xinghuo-2": {
       max_input_tokens: 6000,
     },
@@ -417,6 +413,29 @@ async function configSetModelDefaultParams() {
   }
 }
 
+async function updateClaudePrivider() {
+	const claudeModels = [
+		"Model.claude-3-opus",
+		"Model.claude-3-sonnet",
+	];
+
+	for (const model of claudeModels) {
+		const modelConfig: any = UiUtilWrapper.getConfiguration("devchat", model);
+		if (modelConfig && Object.keys(modelConfig).length === 0) {
+			const modelProperties: any = {
+				"provider": "devchat"
+			};
+			try {
+			await vscode.workspace
+				.getConfiguration("devchat")
+				.update(model, modelProperties, vscode.ConfigurationTarget.Global);
+			} catch (error) {
+				logger.channel()?.error(`update ${model} error: ${error}`);
+			}
+		}
+	}
+}
+
 async function activate(context: vscode.ExtensionContext) {
   ExtensionContextHolder.context = context;
 
@@ -430,6 +449,7 @@ async function activate(context: vscode.ExtensionContext) {
   await updateInvalidSettings();
   await updateInvalidDefaultModel();
   await configUpdateto240205();
+  await updateClaudePrivider();
   await configSetModelDefaultParams();
 
   regLanguageContext();

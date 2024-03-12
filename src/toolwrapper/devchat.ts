@@ -6,7 +6,7 @@ import { CommandRun, saveModelSettings } from "../util/commonUtil";
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
 import { assertValue } from '../util/check';
-import { getFileContent } from '../handler/diffHandler';
+import { getFileContent } from '../util/commonUtil';
 
 
 const envPath = path.join(__dirname, '..', '.env');

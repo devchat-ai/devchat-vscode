@@ -1,7 +1,5 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import * as fs from 'fs';
-import * as util from 'util';
 
 import { createTempSubdirectory } from '../util/commonUtil';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
@@ -9,7 +7,7 @@ import { applyCodeChanges, isValidActionString } from '../util/appyDiff';
 import { logger } from '../util/logger';
 import { FilePairManager } from '../util/diffFilePairs';
 import { UiUtilWrapper } from '../util/uiUtil';
-
+import { getFileContent } from '../util/commonUtil';
 
 
 async function getDocumentText(): Promise<{ text: string; beforSelect: string; select: string, afterSelect: string } | undefined> {
@@ -70,19 +68,6 @@ export async function diffView(code: string, tarFile: string) {
 	// open diff view
 	FilePairManager.getInstance().addFilePair(curFile, tempFile);
 	vscode.commands.executeCommand('vscode.diff', vscode.Uri.file(curFile), vscode.Uri.file(tempFile), 'Diff View');
-}
-
-export async function getFileContent(fileName: string): Promise<string | undefined> {
-	const readFile = util.promisify(fs.readFile);
-	try {
-		// Read file content from fileName
-		const fileContent = await readFile(fileName, 'utf-8');
-		// Return the whole text in the file with name fileName
-		return fileContent;
-	} catch (error) {
-		logger.channel()!.error(`Error reading the file ${fileName}:`, error);
-		return undefined;
-	}
 }
 
 async function getNewCode(message: any): Promise<string | undefined> {

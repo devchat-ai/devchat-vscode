@@ -10,14 +10,6 @@ export class ApiKeyManager {
 		};
 		return providerNameMap[provider];
 	}
-	static async getApiKey(llmType: string = "OpenAI"): Promise<string | undefined> {
-		const llmModelT = await this.llmModel();
-		if (!llmModelT) {
-			return undefined;
-		}
-
-		return llmModelT.api_key;
-	}
 
 	static async getValidModels(): Promise<string[]> {
 		const modelProperties = async (modelPropertyName: string, modelName: string) => {
@@ -64,9 +56,13 @@ export class ApiKeyManager {
 		if (openaiModel4) {
 			modelList.push(openaiModel4.model);
 		}
-		const claudeModel = await modelProperties('Model.claude-2', "claude-2.1");
-		if (claudeModel) {
-			modelList.push(claudeModel.model);
+		const claude3sonnetModel = await modelProperties('Model.claude-3-sonnet', "claude-3-sonnet");
+		if (claude3sonnetModel) {
+			modelList.push(claude3sonnetModel.model);
+		}
+		const claude3opusModel = await modelProperties('Model.claude-3-opus', "claude-3-opus");
+		if (claude3opusModel) {
+			modelList.push(claude3opusModel.model);
 		}
 		const xinghuoModel = await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
 		if (xinghuoModel) {
@@ -101,17 +97,18 @@ export class ApiKeyManager {
 	}
 
 	static async llmModel() {
-		let llmModelT = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
-		if (!llmModelT) {
+		// inner function to update default model
+		const updateDefaultModelWithValidModels = async () => {
 			const validModels = await this.getValidModels();
 			if (validModels.length > 0) {
 				await UiUtilWrapper.updateConfiguration('devchat', 'defaultModel', validModels[0]);
-				llmModelT = validModels[0];
+				return validModels[0];
 			} else {
 				return undefined;
 			}
-		}
+		};
 
+		// inner function to get model properties
 		const modelProperties = async (modelPropertyName: string, modelName: string) => {
 			const modelConfig = UiUtilWrapper.getConfiguration("devchat", modelPropertyName);
 			if (!modelConfig) {
@@ -158,41 +155,61 @@ export class ApiKeyManager {
 			return modelProperties;
 		};
 
-		if (llmModelT === "gpt-3.5-turbo") {
-			return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
+		// inner function visit all models
+		const getModelPropertiesByName = async (modelName: string) => {
+			if (modelName === "gpt-3.5-turbo") {
+				return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
+			}
+			if (modelName === "gpt-4") {
+				return await modelProperties('Model.gpt-4', "gpt-4");
+			}
+			if (modelName === "gpt-4-turbo-preview") {
+				return await modelProperties('Model.gpt-4-turbo', "gpt-4-turbo-preview");
+			}
+			if (modelName === "claude-3-sonnet") {
+				return await modelProperties('Model.claude-3-sonnet', "claude-3-sonnet");
+			}
+			if (modelName === "claude-3-opus") {
+				return await modelProperties('Model.claude-3-opus', "claude-3-opus");
+			}
+			if (modelName === "xinghuo-3.5") {
+				return await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
+			}
+			if (modelName === "GLM-4") {
+				return await modelProperties('Model.chatglm_pro', "GLM-4");
+			}
+			if (modelName === "ERNIE-Bot-4.0") {
+				return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
+			}
+			if (modelName === "togetherai/codellama/CodeLlama-70b-Instruct-hf") {
+				return await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
+			}
+			if (modelName === "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1") {
+				return await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
+			}
+			if (modelName === "minimax/abab6-chat") {
+				return await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
+			}
+			if (modelName === "llama-2-70b-chat") {
+				return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
+			}
+			return undefined;
+		};
+
+		let llmModelT: string | undefined = UiUtilWrapper.getConfiguration('devchat', 'defaultModel');
+		if (llmModelT) {
+			const defaultModel = await getModelPropertiesByName(llmModelT);
+			if (defaultModel) {
+				return defaultModel;
+			}
 		}
-		if (llmModelT === "gpt-4") {
-			return await modelProperties('Model.gpt-4', "gpt-4");
+
+		// reset default model
+		llmModelT = await updateDefaultModelWithValidModels();
+		if (!llmModelT) {
+			return undefined;
 		}
-		if (llmModelT === "gpt-4-turbo-preview") {
-			return await modelProperties('Model.gpt-4-turbo', "gpt-4-turbo-preview");
-		}
-		if (llmModelT === "claude-2.1") {
-			return await modelProperties('Model.claude-2', "claude-2.1");
-		}
-		if (llmModelT === "xinghuo-3.5") {
-			return await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
-		}
-		if (llmModelT === "GLM-4") {
-			return await modelProperties('Model.chatglm_pro', "GLM-4");
-		}
-		if (llmModelT === "ERNIE-Bot-4.0") {
-			return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
-		}
-		if (llmModelT === "togetherai/codellama/CodeLlama-70b-Instruct-hf") {
-			return await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
-		}
-		if (llmModelT === "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1") {
-			return await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
-		}
-		if (llmModelT === "minimax/abab6-chat") {
-			return await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
-		}
-		if (llmModelT === "llama-2-70b-chat") {
-			return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
-		}
-		
-		return undefined;
+		return getModelPropertiesByName(llmModelT);
 	}
 
 	static getKeyType(apiKey: string): string | undefined {

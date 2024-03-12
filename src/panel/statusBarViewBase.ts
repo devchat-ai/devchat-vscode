@@ -65,19 +65,11 @@ export async function dependencyCheck(): Promise<[string, string]> {
 	// define subfunction to check api key
 	const getApiKeyStatus = async (): Promise<string> => {
 		if (apiKeyStatus === '' || apiKeyStatus === 'Click "DevChat" status icon to set key') {
-			const accessKey = await ApiKeyManager.getApiKey();
-			if (accessKey) {
+			const defaultModel = await ApiKeyManager.llmModel();
+			if (defaultModel) {
 				apiKeyStatus = 'has valid access key';
 				return apiKeyStatus;
 			} else {
-				// test whether valid model exists
-				const modelList = await ApiKeyManager.getValidModels();
-				if (modelList && modelList.length > 0) {
-					// update default llm model
-					await UiUtilWrapper.updateConfiguration('devchat', 'defaultModel', modelList[0]);
-					apiKeyStatus = 'has valid access key';
-					return apiKeyStatus;
-				}
 				apiKeyStatus = 'Click "DevChat" status icon to set key';
 				return apiKeyStatus;
 			}

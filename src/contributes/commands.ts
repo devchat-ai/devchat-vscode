@@ -164,8 +164,8 @@ function regAccessKeyCommand(
         await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
 
         // update default model
-        const accessKey = await ApiKeyManager.getApiKey();
-        if (!accessKey) {
+        const defaultModel = await ApiKeyManager.llmModel();
+        if (!defaultModel) {
           const modelList = await ApiKeyManager.getValidModels();
           if (modelList && modelList.length > 0) {
             // update default llm model
