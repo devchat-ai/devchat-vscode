@@ -15,6 +15,7 @@ import * as path from 'path';
 
 
 let _lastMessage: any = undefined;
+let _inSending: boolean = false;
 
 
 export function createTempFile(content: string): string {
@@ -75,6 +76,7 @@ regOutMessage({ command: 'receiveMessagePartial', text: 'xxxx', user: 'xxx', dat
 export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView, functionName: string|undefined = undefined): Promise<void> {
 	// check whether the message is a command
 	_lastMessage = message;
+    _inSending = true;
 
     // Add a new field to store the names of temporary files
     const tempFiles: string[] = writeContextInfoToTempFiles(message);
@@ -90,6 +92,7 @@ export async function sendMessage(message: any, panel: vscode.WebviewPanel|vscod
     for (let file of tempFiles) {
         deleteTempFiles(file);
     }
+    _inSending = false;
 }
 
 
@@ -104,7 +107,8 @@ export async function regeneration(message: any, panel: vscode.WebviewPanel|vsco
 
 regInMessage({command: 'stopDevChat'});
 export async function stopDevChat(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
-	stopDevChatBase(message);
+	await stopDevChatBase(message);
+    _inSending = false;
 }
 
 regInMessage({command: 'deleteChatMessage', hash: 'xxx'});
@@ -128,5 +132,6 @@ export async function deleteChatMessage(message: any, panel: vscode.WebviewPanel
 	}
 }
 
-
-
+export function isSending() {
+    return _inSending;
+}
