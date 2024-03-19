@@ -44,53 +44,9 @@ export class ApiKeyManager {
 		};
 	
 		let modelList : string[] = [];
-		const openaiModel = await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
-		if (openaiModel) {
-			modelList.push(openaiModel.model);
-		}
-		const openaiModel3 = await modelProperties('Model.gpt-4', "gpt-4");
-		if (openaiModel3) {
-			modelList.push(openaiModel3.model);
-		}
-		const openaiModel4 = await modelProperties('Model.gpt-4-turbo', "gpt-4-turbo-preview");
-		if (openaiModel4) {
-			modelList.push(openaiModel4.model);
-		}
-		const claude3sonnetModel = await modelProperties('Model.claude-3-sonnet', "claude-3-sonnet");
-		if (claude3sonnetModel) {
-			modelList.push(claude3sonnetModel.model);
-		}
-		const claude3opusModel = await modelProperties('Model.claude-3-opus', "claude-3-opus");
-		if (claude3opusModel) {
-			modelList.push(claude3opusModel.model);
-		}
-		const xinghuoModel = await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
-		if (xinghuoModel) {
-			modelList.push(xinghuoModel.model);
-		}
-		const glmModel = await modelProperties('Model.chatglm_pro', "GLM-4");
-		if (glmModel) {
-			modelList.push(glmModel.model);
-		}
-		const erniebotModel = await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
-		if (erniebotModel) {
-			modelList.push(erniebotModel.model);
-		}
-		const llamaCode2Model = await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
-		if (llamaCode2Model) {
-			modelList.push(llamaCode2Model.model);
-		}
-		const mixtralCode2Model = await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
+		const mixtralCode2Model = await modelProperties('Model.Mixtral-8x7B', "hzwxai/Mixtral-8x7B-Instruct-v0.1-GPTQ");
 		if (mixtralCode2Model) {
 			modelList.push(mixtralCode2Model.model);
-		}
-		const minimaxCode2Model = await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
-		if (minimaxCode2Model) {
-			modelList.push(minimaxCode2Model.model);
-		}
-		const llama70BModel = await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
-		if (llama70BModel) {
-			modelList.push(llama70BModel.model);
 		}
 	
 		return modelList;
@@ -157,41 +113,8 @@ export class ApiKeyManager {
 
 		// inner function visit all models
 		const getModelPropertiesByName = async (modelName: string) => {
-			if (modelName === "gpt-3.5-turbo") {
-				return await modelProperties('Model.gpt-3-5', "gpt-3.5-turbo");
-			}
-			if (modelName === "gpt-4") {
-				return await modelProperties('Model.gpt-4', "gpt-4");
-			}
-			if (modelName === "gpt-4-turbo-preview") {
-				return await modelProperties('Model.gpt-4-turbo', "gpt-4-turbo-preview");
-			}
-			if (modelName === "claude-3-sonnet") {
-				return await modelProperties('Model.claude-3-sonnet', "claude-3-sonnet");
-			}
-			if (modelName === "claude-3-opus") {
-				return await modelProperties('Model.claude-3-opus', "claude-3-opus");
-			}
-			if (modelName === "xinghuo-3.5") {
-				return await modelProperties('Model.xinghuo-2', "xinghuo-3.5");
-			}
-			if (modelName === "GLM-4") {
-				return await modelProperties('Model.chatglm_pro', "GLM-4");
-			}
-			if (modelName === "ERNIE-Bot-4.0") {
-				return await modelProperties('Model.ERNIE-Bot', "ERNIE-Bot-4.0");
-			}
-			if (modelName === "togetherai/codellama/CodeLlama-70b-Instruct-hf") {
-				return await modelProperties('Model.CodeLlama-70b', "togetherai/codellama/CodeLlama-70b-Instruct-hf");
-			}
-			if (modelName === "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1") {
-				return await modelProperties('Model.Mixtral-8x7B', "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1");
-			}
-			if (modelName === "minimax/abab6-chat") {
-				return await modelProperties('Model.Minimax-abab6', "minimax/abab6-chat");
-			}
-			if (modelName === "llama-2-70b-chat") {
-				return await modelProperties('Model.llama-2-70b-chat', "llama-2-70b-chat");
+			if (modelName === "hzwxai/Mixtral-8x7B-Instruct-v0.1-GPTQ") {
+				return await modelProperties('Model.Mixtral-8x7B', "hzwxai/Mixtral-8x7B-Instruct-v0.1-GPTQ");
 			}
 			return undefined;
 		};

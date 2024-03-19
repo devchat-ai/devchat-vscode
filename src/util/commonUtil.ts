@@ -17,18 +17,7 @@ var kill = require('tree-kill');
 export async function saveModelSettings(): Promise<void> {
 	// support models
 	const supportModels = {
-		"Model.gpt-3-5": "gpt-3.5-turbo",
-		"Model.gpt-4": "gpt-4",
-		"Model.gpt-4-turbo": "gpt-4-turbo-preview",
-		"Model.claude-3-sonnet": "claude-3-sonnet",
-		"Model.claude-3-opus": "claude-3-opus",
-		"Model.xinghuo-2": "xinghuo-3.5",
-		"Model.chatglm_pro": "GLM-4",
-		"Model.ERNIE-Bot": "ERNIE-Bot-4.0",
-		"Model.CodeLlama-70b": "togetherai/codellama/CodeLlama-70b-Instruct-hf",
-		"Model.Mixtral-8x7B": "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1",
-		"Model.Minimax-abab6": "minimax/abab6-chat",
-		"Model.llama-2-70b-chat": "llama-2-70b-chat"
+		"Model.Mixtral-8x7B": "hzwxai/Mixtral-8x7B-Instruct-v0.1-GPTQ"
 	};
 	// is enable stream
 	const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
@@ -49,7 +38,7 @@ export async function saveModelSettings(): Promise<void> {
 
 	let devchatModels = {
 		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"default_model": "gpt-3.5-turbo",
+		"default_model": "hzwxai/Mixtral-8x7B-Instruct-v0.1-GPTQ",
 		"models": devchatConfig
 	};
 		
