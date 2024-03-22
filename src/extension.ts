@@ -35,8 +35,9 @@ import { DevChatConfig } from './util/config';
 
 
 async function migrateConfig() {
+	const devchatConfig = new DevChatConfig();
 	const devchatProvider = "providers.devchat";
-	const devchatProviderConfig: any = new DevChatConfig().get(devchatProvider);
+	const devchatProviderConfig: any = devchatConfig.get(devchatProvider);
 	if (devchatProviderConfig) {
 		return ;
 	}
@@ -44,19 +45,19 @@ async function migrateConfig() {
 	const devchatVScodeProvider: any = vscode.workspace.getConfiguration("devchat").get("Provider.devchat");
 	if (devchatVScodeProvider && Object.keys(devchatVScodeProvider).length > 0) {
 		if (devchatVScodeProvider["access_key"]) {
-			new DevChatConfig().set("providers.devchat.api_key", devchatVScodeProvider["access_key"]);
+			devchatConfig.set("providers.devchat.api_key", devchatVScodeProvider["access_key"]);
 		}
 		if (devchatVScodeProvider["api_base"]) {
-			new DevChatConfig().set("providers.devchat.api_base", devchatVScodeProvider["api_base"]);
+			devchatConfig.set("providers.devchat.api_base", devchatVScodeProvider["api_base"]);
 		}
 	}
 	const openaiVScodeProvider: any = vscode.workspace.getConfiguration("devchat").get("Provider.openai");
 	if (openaiVScodeProvider && Object.keys(openaiVScodeProvider).length > 0) {
 		if (openaiVScodeProvider["access_key"]) {
-			new DevChatConfig().set("providers.openai.api_key", openaiVScodeProvider["access_key"]);
+			devchatConfig.set("providers.openai.api_key", openaiVScodeProvider["access_key"]);
 		}
 		if (openaiVScodeProvider["api_base"]) {
-			new DevChatConfig().set("providers.openai.api_base", openaiVScodeProvider["api_base"]);
+			devchatConfig.set("providers.openai.api_base", openaiVScodeProvider["api_base"]);
 		}
 	}
 
@@ -64,59 +65,59 @@ async function migrateConfig() {
 	const openaiSecretKey = await UiUtilWrapper.secretStorageGet(`Access_KEY_OpenAI`);
 
 	if (devchatSecretKey) {
-		new DevChatConfig().set("providers.devchat.api_key", devchatSecretKey);
+		devchatConfig.set("providers.devchat.api_key", devchatSecretKey);
 	}
 	if (openaiSecretKey) {
-		new DevChatConfig().set("providers.openai.api_key", openaiSecretKey);
+		devchatConfig.set("providers.openai.api_key", openaiSecretKey);
 	}
 
 	const enableFunctionCalling = vscode.workspace.getConfiguration("DevChat").get("EnableFunctionCalling");
 	if (enableFunctionCalling) {
-		new DevChatConfig().set("enable_function_calling", enableFunctionCalling);
+		devchatConfig.set("enable_function_calling", enableFunctionCalling);
 	} else {
-		new DevChatConfig().set("enable_function_calling", false);
+		devchatConfig.set("enable_function_calling", false);
 	}
 
 	const betaInvitationCode = vscode.workspace.getConfiguration("DevChat").get("betaInvitationCode");
 	if (betaInvitationCode) {
-		new DevChatConfig().set("beta_invitation_code", betaInvitationCode);
+		devchatConfig.set("beta_invitation_code", betaInvitationCode);
 	} else {
-		new DevChatConfig().set("beta_invitation_code", "");
+		devchatConfig.set("beta_invitation_code", "");
 	}
 
 	const maxLogCount = vscode.workspace.getConfiguration("DevChat").get("maxLogCount");
 	if (maxLogCount) {
-		new DevChatConfig().set("max_log_count", maxLogCount);
+		devchatConfig.set("max_log_count", maxLogCount);
 	} else {
-		new DevChatConfig().set("max_log_count", 20);
+		devchatConfig.set("max_log_count", 20);
 	}
 
 	const pythonForChat = vscode.workspace.getConfiguration("DevChat").get("PythonForChat");
 	if (pythonForChat) {
-		new DevChatConfig().set("python_for_chat", pythonForChat);
+		devchatConfig.set("python_for_chat", pythonForChat);
 	} else {
-		new DevChatConfig().set("python_for_chat", "");
+		devchatConfig.set("python_for_chat", "");
 	}
 
 	const pythonForCommands = vscode.workspace.getConfiguration("DevChat").get("PythonForCommands");
 	if (pythonForCommands) {
-		new DevChatConfig().set("python_for_commands", pythonForCommands);
+		devchatConfig.set("python_for_commands", pythonForCommands);
 	} else {
-		new DevChatConfig().set("python_for_commands", "");
+		devchatConfig.set("python_for_commands", "");
 	}
 
 	const language = vscode.workspace.getConfiguration("DevChat").get("Language");
 	if (language) {
-		new DevChatConfig().set("language", language);
+		devchatConfig.set("language", language);
 	} else {
-		new DevChatConfig().set("language", "en");
+		devchatConfig.set("language", "en");
 	}
 
 	const defaultModel = vscode.workspace.getConfiguration("devchat").get("defaultModel");
 	if (defaultModel) {
-		new DevChatConfig().set("default_model", defaultModel);
+		devchatConfig.set("default_model", defaultModel);
 	} else {
-		new DevChatConfig().set("default_model", "");
+		devchatConfig.set("default_model", "");
 	}
 }
 
