@@ -248,7 +248,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"OPENAI_API_KEY": llmModelData.api_key,
+				"OPENAI_API_KEY": llmModelData.api_key.trim(),
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				...llmModelData.api_base? { "OPENAI_API_BASE": llmModelData.api_base, "OPENAI_BASE_URL": llmModelData.api_base } : {}
 			};
