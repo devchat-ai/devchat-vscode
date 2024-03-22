@@ -13,7 +13,6 @@ import {
 	registerDevChatChatCommand,
 	registerHandleUri,
 	registerCodeLensRangeCommand,
-	registerUpdateChatModelsCommand,
 	registerCommentCommand,
 	registerFixCommand,
 	registerExplainCommand,
@@ -142,7 +141,6 @@ async function activate(context: vscode.ExtensionContext) {
   registerStatusBarItemClickCommand(context);
 
   registerInstallCommandsCommand(context);
-  registerUpdateChatModelsCommand(context);
   registerInstallCommandsPython(context);
 
   createStatusBarItem(context);
