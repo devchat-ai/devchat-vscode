@@ -14,54 +14,6 @@ import { UiUtilWrapper } from './uiUtil';
 import { ApiKeyManager } from './apiKey';
 var kill = require('tree-kill');
 
-export async function saveModelSettings(): Promise<void> {
-	// support models
-	const supportModels = {
-		"Model.gpt-3-5": "gpt-3.5-turbo",
-		"Model.gpt-4": "gpt-4",
-		"Model.gpt-4-turbo": "gpt-4-turbo-preview",
-		"Model.claude-3-sonnet": "claude-3-sonnet",
-		"Model.claude-3-opus": "claude-3-opus",
-		"Model.xinghuo-2": "xinghuo-3.5",
-		"Model.chatglm_pro": "GLM-4",
-		"Model.ERNIE-Bot": "ERNIE-Bot-4.0",
-		"Model.CodeLlama-70b": "togetherai/codellama/CodeLlama-70b-Instruct-hf",
-		"Model.Mixtral-8x7B": "togetherai/mistralai/Mixtral-8x7B-Instruct-v0.1",
-		"Model.Minimax-abab6": "minimax/abab6-chat",
-		"Model.llama-2-70b-chat": "llama-2-70b-chat"
-	};
-	// is enable stream
-	const openaiStream = UiUtilWrapper.getConfiguration('DevChat', 'OpenAI.stream');
-
-	let devchatConfig = {};
-	for (const model of Object.keys(supportModels)) {
-		const modelConfig = UiUtilWrapper.getConfiguration('devchat', model);
-		if (modelConfig) {
-			devchatConfig[supportModels[model]] = {
-				"stream": openaiStream
-			};
-			for (const key of Object.keys(modelConfig || {})) {
-				const property = modelConfig![key];
-				devchatConfig[supportModels[model]][key] = property;
-			}
-		}
-	}
-
-	let devchatModels = {
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		"default_model": "gpt-3.5-turbo",
-		"models": devchatConfig
-	};
-		
-	// write to config file
-	const os = process.platform;
-	const userHome = os === 'win32' ? fs.realpathSync(process.env.USERPROFILE || '') : process.env.HOME;
-
-	const configPath = path.join(userHome!, '.chat', 'config.yml');
-	// write devchatConfig to configPath
-	const yamlString = yaml.stringify(devchatModels);
-	fs.writeFileSync(configPath, yamlString);
-}
 
 async function createOpenAiKeyEnv() {
 	let envs = {...process.env};

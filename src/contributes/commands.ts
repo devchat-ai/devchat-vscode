@@ -24,6 +24,13 @@ import {
 import { installRequirements } from "../util/python_installer/package_install";
 import { chatWithDevChat } from "../handler/chatHandler";
 import { focusDevChatInput } from "../handler/focusHandler";
+import { sendCommandListByDevChatRun } from '../handler/workflowCommandHandler';
+import DevChat from "../toolwrapper/devchat";
+import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
+import { installRequirements } from '../util/python_installer/package_install';
+import { chatWithDevChat } from '../handler/chatHandler';
+import { focusDevChatInput } from '../handler/focusHandler';
+import { DevChatConfig } from '../util/config';
 
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
@@ -46,7 +53,7 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
   }
 }
 
-function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
+export function registerOpenChatPanelCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
     "devchat.openChatPanel",
     async () => {
@@ -64,7 +71,7 @@ async function ensureChatPanel(
   return true;
 }
 
-function registerAddContextCommand(context: vscode.ExtensionContext) {
+export function registerAddContextCommand(context: vscode.ExtensionContext) {
   const callback = async (uri: { fsPath: any }) => {
     if (!(await ensureChatPanel(context))) {
       return;
@@ -83,7 +90,7 @@ function registerAddContextCommand(context: vscode.ExtensionContext) {
   );
 }
 
-function registerAskForCodeCommand(context: vscode.ExtensionContext) {
+export function registerAskForCodeCommand(context: vscode.ExtensionContext) {
   const callback = async () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -108,7 +115,7 @@ function registerAskForCodeCommand(context: vscode.ExtensionContext) {
   );
 }
 
-function registerAskForFileCommand(context: vscode.ExtensionContext) {
+export function registerAskForFileCommand(context: vscode.ExtensionContext) {
   const callback = async () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -130,78 +137,6 @@ function registerAskForFileCommand(context: vscode.ExtensionContext) {
   );
 }
 
-function regAccessKeyCommand(
-  context: vscode.ExtensionContext,
-  provider: string
-) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand(
-      `DevChat.AccessKey.${provider}`,
-      async () => {
-        vscode.commands.executeCommand("devchat-view.focus");
-        const passwordInput: string | undefined =
-          (await vscode.window.showInputBox({
-            password: true,
-            title: `Set ${provider} Key`,
-            placeHolder: `Input your ${provider} key. (Leave blank to clear the stored key.)`,
-          })) ?? undefined;
-        if (passwordInput === undefined) {
-          return;
-        }
-        if (provider === "DevChat" && passwordInput.trim() !== "") {
-          if (!passwordInput.trim().startsWith("DC.")) {
-            UiUtilWrapper.showErrorMessage(
-              "Your key is invalid! DevChat Access Key is: DC.xxxxx"
-            );
-            return;
-          }
-        }
-
-        if (passwordInput.trim() !== "" && !isValidApiKey(passwordInput)) {
-          UiUtilWrapper.showErrorMessage("Your key is invalid!");
-          return;
-        }
-        await ApiKeyManager.writeApiKeySecret(passwordInput, provider);
-
-        // update default model
-        const defaultModel = await ApiKeyManager.llmModel();
-        if (!defaultModel) {
-          const modelList = await ApiKeyManager.getValidModels();
-          if (modelList && modelList.length > 0) {
-            // update default llm model
-            await UiUtilWrapper.updateConfiguration(
-              "devchat",
-              "defaultModel",
-              modelList[0]
-            );
-          }
-        }
-
-        // reload webview
-        ExtensionContextHolder.provider?.reloadWebview();
-      }
-    )
-  );
-}
-
-export function registerAccessKeySettingCommand(
-  context: vscode.ExtensionContext
-) {
-  regAccessKeyCommand(context, "OpenAI");
-  regAccessKeyCommand(context, "Cohere");
-  regAccessKeyCommand(context, "Anthropic");
-  regAccessKeyCommand(context, "Replicate");
-  regAccessKeyCommand(context, "HuggingFace");
-  regAccessKeyCommand(context, "TogetherAI");
-  regAccessKeyCommand(context, "OpenRouter");
-  regAccessKeyCommand(context, "VertexAI");
-  regAccessKeyCommand(context, "AI21");
-  regAccessKeyCommand(context, "BaseTen");
-  regAccessKeyCommand(context, "Azure");
-  regAccessKeyCommand(context, "SageMaker");
-  regAccessKeyCommand(context, "Bedrock");
-  regAccessKeyCommand(context, "DevChat");
-}
 
 export function registerStatusBarItemClickCommand(
   context: vscode.ExtensionContext
@@ -214,25 +149,18 @@ export function registerStatusBarItemClickCommand(
 }
 
 export function regPythonPathCommand(context: vscode.ExtensionContext) {
-  context.subscriptions.push(
-    vscode.commands.registerCommand("devchat.PythonPath", async () => {
-      const pythonPath =
-        (await vscode.window.showInputBox({
-          title: "Set Python Path",
-          placeHolder: "Set Python Path",
-        })) ?? "";
+  	context.subscriptions.push(
+		vscode.commands.registerCommand("devchat.PythonPath", async () => {
+			const pythonPath = (await vscode.window.showInputBox({
+														title: "Set Python Path",
+														placeHolder: "Set Python Path",
+								})) ?? "";
 
-      if (pythonPath) {
-        vscode.workspace
-          .getConfiguration("DevChat")
-          .update(
-            "PythonForChat",
-            pythonPath,
-            vscode.ConfigurationTarget.Global
-          );
-      }
-    })
-  );
+			if (pythonPath) {
+				new DevChatConfig().set("python_for_chat", pythonPath);
+			}
+		})
+	);
 }
 
 export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
@@ -438,8 +366,79 @@ export function registerInstallCommandsPython(
       // vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
     }
   );
+}
 
-  context.subscriptions.push(disposable);
+export function registerInstallCommandsPython(context: vscode.ExtensionContext) {
+	let disposable = vscode.commands.registerCommand('DevChat.InstallCommandPython', async () => {
+		// steps of install command python
+		// 1. install python >= 3.11
+		// 2. check requirements.txt in ~/.chat dir
+		// 3. install requirements.txt
+
+		// 1. install python >= 3.11
+		logger.channel()?.info(`create env for python ...`);
+		logger.channel()?.info(`try to create env by mamba ...`);
+		let pythonCommand = await createEnvByMamba("devchat-commands", "", "3.11.4");
+
+		if (!pythonCommand || pythonCommand === "") {
+			logger.channel()?.info(`create env by mamba failed, try to create env by conda ...`);
+			pythonCommand = await createEnvByConda("devchat-commands", "", "3.11.4");
+		}
+
+		if (!pythonCommand || pythonCommand === "") {
+			logger.channel()?.error(`create virtual python env failed, you need create it by yourself with command: "conda create -n devchat-commands python=3.11.4"`);
+			logger.channel()?.show();
+
+			return ;
+		}
+
+		// 2. check requirements.txt in ~/.chat dir
+		// ~/.chat/requirements.txt
+		const usrRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'usr', 'requirements.txt');
+		const orgRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'org', 'requirements.txt');
+		const sysRequirementsFile = path.join(os.homedir(), '.chat', 'workflows', 'sys', 'requirements.txt');
+		let requirementsFile = sysRequirementsFile;
+		if (fs.existsSync(orgRequirementsFile)) {
+			requirementsFile = orgRequirementsFile;
+		}
+		if (fs.existsSync(usrRequirementsFile)) {
+			requirementsFile = usrRequirementsFile;
+		}
+
+		if (!fs.existsSync(requirementsFile)) {
+			// logger.channel()?.warn(`requirements.txt not found in ~/.chat/workflows dir.`);
+			// logger.channel()?.show();
+			// vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
+			return ;
+		}
+
+		// 3. install requirements.txt
+		// run command: pip install -r {requirementsFile}
+		let isInstalled = false;
+		// try 3 times
+		for (let i = 0; i < 4; i++) {
+			let otherSource: string | undefined = undefined;
+			if (i>1) {
+				otherSource = 'https://pypi.tuna.tsinghua.edu.cn/simple/';
+			}
+			isInstalled = await installRequirements(pythonCommand, requirementsFile, otherSource);
+			if (isInstalled) {
+				break;
+			}
+			logger.channel()?.info(`Install packages failed, try again: ${i + 1}`);
+		}
+		if (!isInstalled) {
+			logger.channel()?.error(`Install packages failed, you can install it with command: "${pythonCommand} -m pip install -r ~/.chat/requirements.txt"`);
+			logger.channel()?.show();
+			vscode.window.showErrorMessage(`Error: see OUTPUT for more detail!`);
+			return '';
+		}
+		
+		new DevChatConfig().set("python_for_commands", pythonCommand.trim());
+		// vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
+	});
+
+	context.subscriptions.push(disposable);
 }
 
 export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
@@ -490,6 +489,7 @@ export function registerCodeLensRangeCommand(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
+
 export function registerHandleUri(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerUriHandler({
@@ -497,25 +497,7 @@ export function registerHandleUri(context: vscode.ExtensionContext) {
         // 解析 URI 并执行相应的操作
         if (uri.path.includes("accesskey")) {
           const accessKey = uri.path.split("/")[2];
-          const modelConfig: any = UiUtilWrapper.getConfiguration(
-            "devchat",
-            "Provider.devchat"
-          );
-          const providerConfigNew: any = {};
-          if (Object.keys(modelConfig).length !== 0) {
-            for (const key of Object.keys(modelConfig || {})) {
-              const property = modelConfig![key];
-              providerConfigNew[key] = property;
-            }
-          }
-          providerConfigNew.access_key = accessKey;
-          vscode.workspace
-            .getConfiguration("devchat")
-            .update(
-              "Provider.devchat",
-              providerConfigNew,
-              vscode.ConfigurationTarget.Global
-            );
+		  new DevChatConfig().set("provides.devchat.api_key", accessKey);
           ensureChatPanel(context);
           await new Promise((resolve, reject) => {
             setTimeout(() => {
@@ -529,7 +511,7 @@ export function registerHandleUri(context: vscode.ExtensionContext) {
   );
 }
 
-function registerExplainCommand(context: vscode.ExtensionContext) {
+export function registerExplainCommand(context: vscode.ExtensionContext) {
   const callback = async () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -548,7 +530,7 @@ function registerExplainCommand(context: vscode.ExtensionContext) {
   );
 }
 
-function registerCommentCommand(context: vscode.ExtensionContext) {
+export function registerCommentCommand(context: vscode.ExtensionContext) {
   const callback = async () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -567,7 +549,7 @@ function registerCommentCommand(context: vscode.ExtensionContext) {
   );
 }
 
-function registerFixCommand(context: vscode.ExtensionContext) {
+export function registerFixCommand(context: vscode.ExtensionContext) {
   const callback = async () => {
     const editor = vscode.window.activeTextEditor;
     if (editor) {
@@ -585,13 +567,3 @@ function registerFixCommand(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("devchat.fix_chinese", callback)
   );
 }
-
-export {
-  registerOpenChatPanelCommand,
-  registerAddContextCommand,
-  registerAskForCodeCommand,
-  registerAskForFileCommand,
-  registerExplainCommand,
-  registerFixCommand,
-  registerCommentCommand,
-};

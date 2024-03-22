@@ -137,9 +137,3 @@ export async function historyMessagesBase(topicId: string): Promise<LoadHistoryM
 		entries: logEntriesFlat.length > 0 ? logEntriesFlat : [],
 	} as LoadHistoryMessages;
 }
-
-export async function onApiKeyBase(apiKey: string): Promise<{ command: string, text: string, hash: string, user: string, date: string, isError: boolean }> {
-	return {
-		command: 'receiveMessage', text: `You need config access key for specified llmodel in setting view.`, hash: '', user: 'system', date: '', isError: false
-	};
-}
