@@ -2,7 +2,6 @@ import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
-import { promisify } from 'util';
 
 import { logger } from '../util/logger';
 import { CommandRun, saveModelSettings } from "../util/commonUtil";
@@ -12,7 +11,7 @@ import { assertValue } from '../util/check';
 import { getFileContent } from '../util/commonUtil';
 import * as toml from '@iarna/toml';
 
-const readFileAsync = promisify(fs.readFile);
+const readFileAsync = fs.promises.readFile;
 
 const envPath = path.join(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
