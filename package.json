@@ -900,6 +900,7 @@
     "webpack-dev-server": "^4.13.3"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "@tiptap/extension-link": "^2.0.3",
     "@tiptap/pm": "^2.0.0",
     "@tiptap/starter-kit": "^2.0.3",
