@@ -47,7 +47,7 @@ export interface CommandEntry {
 	name: string;
 	description: string;
 	path: string;
-	recommand: number;
+	recommend: number;
 }
 
 export interface TopicEntry {
@@ -420,7 +420,7 @@ class DevChat {
 		}
 	}
 
-	async loadRecommandCommands(): Promise<string[]> {
+	async loadRecommendCommands(): Promise<string[]> {
         try {
             // 获取用户的主目录
             const userHomeDir = os.homedir();
@@ -470,18 +470,18 @@ class DevChat {
 
 			let commands = JSON.parse(stdout.trim());
 
-			// 确保每个CommandEntry对象的recommand字段默认为-1
+			// 确保每个CommandEntry对象的recommend字段默认为-1
 			commands = commands.map((cmd: CommandEntry) => ({
 				...cmd,
-				recommand: cmd.recommand ?? -1,
+				recommend: cmd.recommend ?? -1,
 			}));
 
-			const recommandCommands = await this.loadRecommandCommands();
+			const recommendCommands = await this.loadRecommendCommands();
 			
-			recommandCommands.forEach((recommandName, index) => {
-				const foundIndex = commands.findIndex(cmd => cmd.name === recommandName);
+			recommendCommands.forEach((recommendName, index) => {
+				const foundIndex = commands.findIndex(cmd => cmd.name === recommendName);
 				if (foundIndex !== -1) {
-					commands[foundIndex].recommand = index;
+					commands[foundIndex].recommend = index;
 				}
 			});
 
