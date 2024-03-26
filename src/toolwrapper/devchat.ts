@@ -452,7 +452,7 @@ class DevChat {
                 return parsedData.recommend.workflows;
             }
         } catch (err) {
-            console.error('Error parsing TOML content:', err);
+			logger.channel()?.error(`Error parsing TOML content: ${err}`);
         }
         return [];
     }
