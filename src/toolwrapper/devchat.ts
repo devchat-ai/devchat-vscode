@@ -46,6 +46,7 @@ export interface CommandEntry {
 	name: string;
 	description: string;
 	path: string;
+	// default value is -1, which means not recommended
 	recommend: number;
 }
 
