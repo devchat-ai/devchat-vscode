@@ -467,7 +467,14 @@ class DevChat {
 				logger.channel()?.warn(`${stderr}`);
 			}
 
-			let commands = JSON.parse(stdout.trim());
+			let commands;
+			try {
+				commands = JSON.parse(stdout.trim());
+			} catch (error) {
+				logger.channel()?.error('Failed to parse commands JSON:', error);
+				return [];
+			}
+			
 
 			// 确保每个CommandEntry对象的recommend字段默认为-1
 			commands = commands.map((cmd: CommandEntry) => ({
