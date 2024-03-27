@@ -2,8 +2,6 @@
 export interface UiUtil {
 	languageId(uri: string): Promise<string>;
 	workspaceFoldersFirstPath(): string | undefined;
-	getConfiguration(key1: string, key2: string): string | undefined;
-	updateConfiguration(key1: string, key2: string, value: string): Promise<void>;
 	secretStorageGet(key: string): Promise<string | undefined>;
 	writeFile(uri: string, content: string): Promise<void>;
 	showInputBox(option: object): Promise<string | undefined>;
@@ -32,12 +30,6 @@ export class UiUtilWrapper {
 	}
 	public static workspaceFoldersFirstPath(): string | undefined {
 		return this._uiUtil?.workspaceFoldersFirstPath();
-	}
-	public static getConfiguration(key1: string, key2: string): string | undefined {
-		return this._uiUtil?.getConfiguration(key1, key2);
-	}
-	public static async updateConfiguration(key1: string, key2: string, value: string): Promise<void> {
-		return await this._uiUtil?.updateConfiguration(key1, key2, value);
 	}
 	public static async secretStorageGet(key: string): Promise<string | undefined> {
 		return await this._uiUtil?.secretStorageGet(key);

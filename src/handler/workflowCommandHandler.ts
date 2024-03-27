@@ -61,8 +61,3 @@ export async function sendCommandListByDevChatRun() {
 		await getWorkflowCommandList({}, existPannel!);
 	}
 }
-
-export async function updateChatModels() {
-	const modelList = await ApiKeyManager.getValidModels();
-	MessageHandler.sendMessage(existPannel!, { command: 'regModelList', result: modelList });
-}

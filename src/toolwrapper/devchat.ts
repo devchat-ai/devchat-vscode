@@ -4,12 +4,13 @@ import * as fs from 'fs';
 import * as os from 'os';
 
 import { logger } from '../util/logger';
-import { CommandRun, saveModelSettings } from "../util/commonUtil";
+import { CommandRun } from "../util/commonUtil";
 import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
 import { assertValue } from '../util/check';
 import { getFileContent } from '../util/commonUtil';
 import * as toml from '@iarna/toml';
+import { DevChatConfig } from '../util/config';
 
 const readFileAsync = fs.promises.readFile;
 
@@ -122,7 +123,7 @@ class DevChat {
 		assertValue(!llmModelData || !llmModelData.model, 'You must select a LLM model to use for conversations');
 		args.push("-m", llmModelData.model);
 
-		const functionCalling = UiUtilWrapper.getConfiguration('DevChat', 'EnableFunctionCalling');
+		const functionCalling = new DevChatConfig().get('enable_function_calling');
 		if (functionCalling) {
 			args.push("-a");
 		}
@@ -139,7 +140,7 @@ class DevChat {
 		if (options.maxCount) {
 			args.push('--max-count', `${options.maxCount}`);
 		} else {
-			const maxLogCount = UiUtilWrapper.getConfiguration('DevChat', 'maxLogCount');
+			const maxLogCount = new DevChatConfig().get('max_log_count');
 			args.push('--max-count', `${maxLogCount}`);
 		}
 
@@ -210,7 +211,7 @@ class DevChat {
 			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages"
 		};
 
-		const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
+		const pythonApp = new DevChatConfig().get('python_for_chat') || "python3";
 		
 		// run command
 		const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(
@@ -250,7 +251,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONUTF8": 1,
 				// eslint-disable-next-line @typescript-eslint/naming-convention
-				"command_python": UiUtilWrapper.getConfiguration('DevChat', 'PythonForCommands') || "",
+				"command_python": new DevChatConfig().get('python_for_commands') || "",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 				// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -266,9 +267,6 @@ class DevChat {
 				env: envs
 			};
 
-			// save llm model config
-			await saveModelSettings();
-
 			logger.channel()?.info(`api_key: ${llmModelData.api_key.replace(/^(.{4})(.*)(.{4})$/, (_, first, middle, last) => first + middle.replace(/./g, '*') + last)}`);
 			logger.channel()?.info(`api_base: ${llmModelData.api_base}`);
 
@@ -281,7 +279,7 @@ class DevChat {
 				onData(data);
 			};
 			//     run command
-			const pythonApp = UiUtilWrapper.getConfiguration("DevChat", "PythonForChat") || "python3";
+			const pythonApp = new DevChatConfig().get('python_for_chat') || "python3";
 			logger.channel()?.info(`Running devchat:${pythonApp} ${args.join(" ")}`);
 			const { exitCode: code, stdout, stderr } = await this.commandRun.spawnAsync(pythonApp, args, spawnAsyncOptions, onStdoutPartial, undefined, undefined, undefined);
 			//     handle result
