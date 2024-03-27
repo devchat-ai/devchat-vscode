@@ -489,7 +489,6 @@ export function registerCodeLensRangeCommand(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposable);
 }
 
-
 export function registerHandleUri(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.window.registerUriHandler({
