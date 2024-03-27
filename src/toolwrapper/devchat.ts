@@ -1,5 +1,7 @@
 import * as dotenv from 'dotenv';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
 
 import { logger } from '../util/logger';
 import { CommandRun, saveModelSettings } from "../util/commonUtil";
@@ -7,7 +9,9 @@ import { UiUtilWrapper } from '../util/uiUtil';
 import { ApiKeyManager } from '../util/apiKey';
 import { assertValue } from '../util/check';
 import { getFileContent } from '../util/commonUtil';
+import * as toml from '@iarna/toml';
 
+const readFileAsync = fs.promises.readFile;
 
 const envPath = path.join(__dirname, '..', '.env');
 dotenv.config({ path: envPath });
@@ -42,6 +46,8 @@ export interface CommandEntry {
 	name: string;
 	description: string;
 	path: string;
+	// default value is -1, which means not recommended
+	recommend: number;
 }
 
 export interface TopicEntry {
@@ -414,6 +420,43 @@ class DevChat {
 		}
 	}
 
+	async loadRecommendCommands(): Promise<string[]> {
+        try {
+            // 获取用户的主目录
+            const userHomeDir = os.homedir();
+            // 构建配置文件路径
+            const configFilePath = path.join(userHomeDir, '.chat', 'workflows', 'sys', 'configuration.toml');
+            
+            // 异步读取配置文件内容
+            const configFileContent = await readFileAsync(configFilePath, { encoding: 'utf8' });
+
+            // 解析TOML配置文件内容并返回命令列表
+            return this.parseConfigFile(configFileContent);
+        } catch (err) {
+            console.error('Failed to load recommend commands:', err);
+            return [];
+        }
+    }
+
+    // 解析TOML配置文件内容
+    private parseConfigFile(content: string): string[] {
+		interface Config {
+			recommend?: {
+			  workflows?: string[];
+			};
+		}
+
+        try {
+            const parsedData = toml.parse(content) as Config;
+            if (parsedData.recommend && parsedData.recommend.workflows) {
+                return parsedData.recommend.workflows;
+            }
+        } catch (err) {
+			logger.channel()?.error(`Error parsing TOML content: ${err}`);
+        }
+        return [];
+    }
+
 	async commands(): Promise<CommandEntry[]> {
 		try {
 			const args = ["-m", "devchat", "run", "--list"];
@@ -425,7 +468,21 @@ class DevChat {
 				logger.channel()?.warn(`${stderr}`);
 			}
 
-			const commands = JSON.parse(stdout.trim());
+			let commands;
+			try {
+				commands = JSON.parse(stdout.trim());
+			} catch (error) {
+				logger.channel()?.error('Failed to parse commands JSON:', error);
+				return [];
+			}
+			
+
+			// 确保每个CommandEntry对象的recommend字段默认为-1
+			const recommendCommands = await this.loadRecommendCommands();
+			commands = commands.map((cmd: CommandEntry) => ({
+				...cmd,
+				recommend: recommendCommands.indexOf(cmd.name),
+			}));
 
 			return commands;
 		} catch (error: any) {
