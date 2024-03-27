@@ -478,19 +478,11 @@ class DevChat {
 			
 
 			// 确保每个CommandEntry对象的recommend字段默认为-1
+			const recommendCommands = await this.loadRecommendCommands();
 			commands = commands.map((cmd: CommandEntry) => ({
 				...cmd,
-				recommend: cmd.recommend ?? -1,
+				recommend: recommendCommands.indexOf(cmd.name),
 			}));
-
-			const recommendCommands = await this.loadRecommendCommands();
-			
-			recommendCommands.forEach((recommendName, index) => {
-				const foundIndex = commands.findIndex(cmd => cmd.name === recommendName);
-				if (foundIndex !== -1) {
-					commands[foundIndex].recommend = index;
-				}
-			});
 
 			return commands;
 		} catch (error: any) {
