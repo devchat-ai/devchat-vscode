@@ -29,6 +29,9 @@ export class ApiKeyManager {
 				const property = defaultProvider[key];
 				defaultModelConfig[key] = property;
 			}
+			if (!defaultModelConfig["api_base"] && defaultProvider === "devchat") {
+				defaultModelConfig["api_base"] = "https://api.devchat.ai/v1";
+			}
 			return defaultModelConfig;
 		} else if (devchatProvider) {
 			for (const key of Object.keys(devchatProvider || {})) {
@@ -38,6 +41,9 @@ export class ApiKeyManager {
 			if (!defaultModelConfig["api_base"]) {
 				logger.channel()?.error("api_base is not set in devchat provider!!!");
 				logger.channel()?.show();
+			}
+			if (!defaultModelConfig["api_base"]) {
+				defaultModelConfig["api_base"] = "https://api.devchat.ai/v1";
 			}
 			return defaultModelConfig;
 		} else {
