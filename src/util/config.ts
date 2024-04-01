@@ -35,12 +35,26 @@ export class DevChatConfig {
         }
     }
 
-    public get(key: string): any {
-        return key.split('.').reduce((prev, curr) => prev ? prev[curr] : undefined, this.data);
+    public get(key: string | string[]): any {
+        let keys: string[] = [];
+
+        if (typeof key === 'string') {
+            keys = key.split('.');
+        } else {
+            keys = key;
+        }
+        return keys.reduce((prev, curr) => prev ? prev[curr] : undefined, this.data);
     }
 
-    public set(key: string, value: any): void {
-        let keys = key.split('.');
+    public set(key: string | string[], value: any): void {
+        let keys: string[] = [];
+
+        if (typeof key === 'string') {
+            keys = key.split('.');
+        } else {
+            keys = key;
+        }
+        
         let lastKey = keys.pop();
         let lastObj = keys.reduce((prev, k) => prev[k] = prev[k] || {}, this.data); // 这创建一个嵌套的对象结构，如果不存在的话
         if (lastKey) {

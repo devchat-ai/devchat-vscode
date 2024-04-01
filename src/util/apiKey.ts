@@ -7,22 +7,23 @@ import { logger } from './logger';
 
 export class ApiKeyManager {
 	static async llmModel() {
-		const defaultModel = new DevChatConfig().get('default_model');
+		const devchatConfig = new DevChatConfig();
+		const defaultModel = devchatConfig.get('default_model');
 		if (!defaultModel) {
 			return undefined;
 		}
 
 		// get model provider
-		const defaultModelProvider = new DevChatConfig().get(`models.${defaultModel}.provider`);
+		const defaultModelProvider = devchatConfig.get(['models', defaultModel, 'provider']);
 		if (!defaultModelProvider) {
 			return undefined;
 		}
 
 		// get provider config
-		const defaultProvider = new DevChatConfig().get(`providers.${defaultModelProvider}`);
-		const devchatProvider = new DevChatConfig().get(`providers.devchat`);
+		const defaultProvider = devchatConfig.get(['providers', defaultModelProvider]);
+		const devchatProvider = devchatConfig.get(`providers.devchat`);
 
-		let defaultModelConfig = new DevChatConfig().get(`models.${defaultModel}`);
+		let defaultModelConfig = devchatConfig.get(['models', defaultModel]);
 		defaultModelConfig["model"] = defaultModel;
 		if (defaultProvider) {
 			for (const key of Object.keys(defaultProvider || {})) {
