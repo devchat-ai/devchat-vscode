@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
+import { DevChatConfig } from '../config';
 
 const featureTogglesJson = `
 {
@@ -13,7 +14,7 @@ const featureToggles = JSON.parse(featureTogglesJson);
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function FT(feature: string): boolean {
-    const betaInvitationCode = vscode.workspace.getConfiguration('DevChat').get<string>('betaInvitationCode');
+    const betaInvitationCode = new DevChatConfig().get('beta_invitation_code');
     const expectedInvitationCode = 'WELCOMEADDTODEVCHAT';
 
     return betaInvitationCode === expectedInvitationCode || featureToggles[feature] === true;

@@ -3,6 +3,7 @@
 import { UiUtilWrapper } from "../util/uiUtil";
 import { runCommand } from "../util/commonUtil";
 import { logger } from "../util/logger";
+import { DevChatConfig } from "../util/config";
 
 let devchatStatus = '';
 
@@ -42,14 +43,15 @@ function getDefaultPythonCommand(): string | undefined {
 
 export function getValidPythonCommand(): string | undefined {
 	try {
-		const pythonCommand = UiUtilWrapper.getConfiguration('DevChat', 'PythonForChat');
+		const devchatConfig = new DevChatConfig();
+		const pythonCommand = devchatConfig.get('python_for_chat');
 		if (pythonCommand) {
 			return pythonCommand;
 		}
 
 		const defaultPythonCommand = getDefaultPythonCommand();
 		if (defaultPythonCommand) {
-			UiUtilWrapper.updateConfiguration('DevChat', 'PythonForChat', defaultPythonCommand);
+			devchatConfig.set('python_for_chat', defaultPythonCommand);
 		}
 
 		return defaultPythonCommand;

@@ -11,6 +11,7 @@ export interface Command {
 	description: string;
 	path: string;
 	args: number;
+	recommend: number;
 	handler: (commandName: string, userInput: string) => Promise<string>;
 }
 
@@ -26,6 +27,7 @@ async function getCommandListByDevChatRun(includeHide: boolean = false): Promise
 			pattern: command.name,
 			description: command.description,
 			path: command.path,
+			recommend: command.recommend,
 			args: 0,
 			handler: async (commandName: string, userInput: string) => { return ''; }
 		};
@@ -60,9 +62,4 @@ export async function sendCommandListByDevChatRun() {
 	if (existPannel) {
 		await getWorkflowCommandList({}, existPannel!);
 	}
-}
-
-export async function updateChatModels() {
-	const modelList = await ApiKeyManager.getValidModels();
-	MessageHandler.sendMessage(existPannel!, { command: 'regModelList', result: modelList });
 }

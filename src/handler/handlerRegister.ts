@@ -11,12 +11,11 @@ import { addConext } from './contextHandler';
 import { getContextDetail } from './contextHandler';
 import { listAllMessages } from './listMessages';
 import { doVscodeCommand } from './vscodeCommandHandler';
-import { getSetting, updateSetting } from './userSettingHandler';
 import { featureToggle, getFeatureToggles } from './featureToggleHandler';
-import { getUserAccessKey } from './accessKeyHandler';
-import { getValidLlmModelList } from './llmModelHandler';
 import { readFile, writeFile } from './fileHandler';
 import { getTopics, deleteTopic } from './topicHandler';
+import { readConfig, writeConfig } from './configHandler';
+import { getSetting, getUserAccessKey, getValidLlmModelList, updateSetting } from './removehandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -70,14 +69,8 @@ messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);
 // Response: none
 messageHandler.registerHandler('doCommand', doVscodeCommand);
 
-messageHandler.registerHandler('updateSetting', updateSetting);
-messageHandler.registerHandler('getSetting', getSetting);
 messageHandler.registerHandler('featureToggle', featureToggle);
 messageHandler.registerHandler('featureToggles', getFeatureToggles);
-
-messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
-
-messageHandler.registerHandler('regModelList', getValidLlmModelList);
 
 messageHandler.registerHandler('userInput', userInput);
 
@@ -87,3 +80,10 @@ messageHandler.registerHandler('writeFile', writeFile);
 messageHandler.registerHandler('getTopics', getTopics);
 messageHandler.registerHandler('deleteTopic', deleteTopic);
 
+messageHandler.registerHandler('readConfig', readConfig);
+messageHandler.registerHandler('writeConfig', writeConfig);
+
+messageHandler.registerHandler('regModelList', getValidLlmModelList);
+messageHandler.registerHandler('updateSetting', updateSetting);
+messageHandler.registerHandler('getSetting', getSetting);
+messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);
