@@ -7,22 +7,12 @@ import { ApiKeyManager } from '../util/apiKey';
 import { installDevchat } from '../util/python_installer/install_devchat';
 
 
-
-function getExtensionVersion(): string {
-	const packageJsonPath = path.join(UiUtilWrapper.extensionPath(), 'package.json');
-	const packageJsonContent = fs.readFileSync(packageJsonPath, 'utf8');
-	const packageJson = JSON.parse(packageJsonContent);
-
-	return packageJson.version;
-}
-
 let devchatStatus = '';
 let apiKeyStatus = '';
 
 let preDevchatStatus = '';
-let preApiKeyStatus = '';
 
-export async function dependencyCheck(): Promise<[string, string]> {
+export async function dependencyCheck(): Promise<string> {
 	// there are some different status of devchat:
 	// 0. not checked
 	// 1. has statisfied the dependency
@@ -62,33 +52,12 @@ export async function dependencyCheck(): Promise<[string, string]> {
 		return "";
 	};
 
-	// define subfunction to check api key
-	const getApiKeyStatus = async (): Promise<string> => {
-		if (apiKeyStatus === '' || apiKeyStatus === 'Click "DevChat" status icon to set key') {
-			const defaultModel = await ApiKeyManager.llmModel();
-			if (defaultModel) {
-				apiKeyStatus = 'has valid access key';
-				return apiKeyStatus;
-			} else {
-				apiKeyStatus = 'Click "DevChat" status icon to set key';
-				return apiKeyStatus;
-			}
-		} else {
-			return apiKeyStatus;
-		}
-	};
-
 	const devchatPackageStatus = await getDevChatStatus();
-	const apiAccessKeyStatus = await getApiKeyStatus();
 
 	if (devchatPackageStatus !== preDevchatStatus) {
 		logger.channel()?.info(`devchat status: ${devchatPackageStatus}`);
 		preDevchatStatus = devchatPackageStatus;
 	}
-	if (apiAccessKeyStatus !== preApiKeyStatus) {
-		logger.channel()?.info(`api key status: ${apiAccessKeyStatus}`);
-		preApiKeyStatus = apiAccessKeyStatus;
-	}
 
-	return [devchatPackageStatus, apiAccessKeyStatus];
+	return devchatPackageStatus;
 }

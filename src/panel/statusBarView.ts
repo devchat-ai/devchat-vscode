@@ -2,9 +2,8 @@ import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
 import { ProgressBar } from '../util/progressBar';
-import { ExtensionContextHolder } from '../util/extensionContext';
-import { UiUtilWrapper } from '../util/uiUtil';
 import { logger } from '../util/logger';
+import { DevChatConfig } from '../util/config';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
@@ -26,7 +25,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 	function checkDevChatCommandsStatus() {
 		const timerDevchatCommands = setInterval(async () => {
 			try {
-				const pythonCommand = UiUtilWrapper.getConfiguration("DevChat", "PythonForCommands");
+				const pythonCommand = new DevChatConfig().get('python_for_commands');
 				if (!pythonCommand) {
 					statusBarItem.text = `$(pass)DevChat$(warning)`;
 					statusBarItem.tooltip = `ready to chat, command functionality limited`;
@@ -48,7 +47,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 		try {
 			progressBar.update("Checking dependencies", 0);
 
-			const [devchatStatus, apiKeyStatus] = await dependencyCheck();
+			const devchatStatus = await dependencyCheck();
 			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
 				statusBarItem.text = `$(warning)DevChat`;
 				statusBarItem.tooltip = `${devchatStatus}`;
@@ -61,14 +60,6 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 				
 				// set statusBarItem warning color
 				progressBar.update(`Checking dependencies: ${devchatStatus}`, 0);
-				return;
-			}
-
-			if (apiKeyStatus !== 'has valid access key') {
-				statusBarItem.text = `$(warning)DevChat`;
-				statusBarItem.tooltip = `${apiKeyStatus}`;
-				statusBarItem.command = 'DevChat.AccessKey.DevChat';
-				progressBar.update(`Checking dependencies: ${apiKeyStatus}.`, 0);
 				return;
 			}
 
