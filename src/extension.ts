@@ -130,6 +130,12 @@ async function activate(context: vscode.ExtensionContext) {
 
     regLanguageContext();
     regDevChatView(context);
+	
+  const provider = new InlineCompletionProvider();  
+  const selector = { pattern: "**" }; 
+  context.subscriptions.push(vscode.languages.registerInlineCompletionItemProvider(selector, provider));  
+  registerCodeCompleteCallbackCommand(context);
+
 
   registerOpenChatPanelCommand(context);
   registerAddContextCommand(context);

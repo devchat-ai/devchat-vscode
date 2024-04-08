@@ -724,6 +724,16 @@
       {
         "command": "devchat.fix_chinese",
         "title": "Devchat:修复此"
+      },
+			{
+				"command": "DevChat.codecomplete",
+				"title": "Codecomplete",
+				"category": "DevChat"
+			},
+      {
+        "command": "DevChat.codecomplete_callback",
+        "title": "Codecomplete Callback",
+        "category": "DevChat"
       }
     ],
     "keybindings": [
@@ -731,7 +741,12 @@
         "command": "devchat.openChatPanel",
         "key": "ctrl+shift+/",
         "mac": "cmd+shift+/"
-      }
+      },
+      {
+				"command": "DevChat.codecomplete",
+				"key": "ctrl+shift+'",
+				"mac": "cmd+shift+'"
+			}
     ],
     "menus": {
       "editor/title": [
