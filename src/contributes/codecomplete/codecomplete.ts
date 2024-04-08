@@ -5,8 +5,10 @@ import Debouncer from './debouncer';
 import MemoryCacheManager from './cache';
 import { createPrompt } from './promptCreator';
 import { CodeCompleteResult, LLMStreamComplete } from './chunkFilter';
-import { nvidiaStarcoderComplete } from './llm';
 import { DevChatConfig } from '../../util/config';
+import { outputAst } from './astTest';
+import { getEndOfLine } from './ast/language';
+import { RecentEditsManager } from './recentEdits';
 
 
 export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionContext) {
@@ -31,12 +33,17 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     private debouncer: Debouncer;
     private cache: MemoryCacheManager;
     private devchatConfig: DevChatConfig;
+    private lastComplete: string;
+    private recentEditors: RecentEditsManager;
 
     constructor() {
         // TODO
         // Read delay time from config
         this.debouncer = new Debouncer(500);
         this.cache = new MemoryCacheManager();
+        this.devchatConfig = new DevChatConfig();
+        this.lastComplete = "";
+        this.recentEditors = new RecentEditsManager();
     }
 
     async logEventToServer(event: LogEventRequest) {
@@ -55,7 +62,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         try {
             const response = await fetch(apiUrl, requestOptions);
             if (!response.ok) {
-                if (this.devchatConfig.get("complete_debug")) {
+                if (process.env.COMPLETE_DEBUG) {
                     logger.channel()?.info("log event to server failed:", response.status);
                 }
             }
@@ -64,19 +71,60 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         }
     }
 
+    // check whether need to send code complete event
+    // async shouldSendCodeCompleteEvent(document: vscode.TextDocument, position: vscode.Position): Promise< boolean > {
+    //     // if complete_enable is false, then don't send code complete
+    //     if (!this.devchatConfig.get("complete_enable")) {
+    //         return false;
+    //     }
+
+    //     // if A|B, then don't send code complete
+    //     const preChar = document.getText(new vscode.Range(position.line, position.character - 1, position.line, position.character));
+    //     const postChar = document.getText(new vscode.Range(position.line, position.character, position.line, position.character + 1));
+    //     if (preChar !== ' ' && postChar !== ' ') {
+    //         return false;
+    //     }
+
+    //     const fsPath = document.uri.fsPath;
+    //     const fileContent = document.getText();
+    //     const lines = fileContent.split('\n');
+
+    //     // don't complete while stmt is end
+    //     const langEndofLine: string[] = await getEndOfLine(fsPath);
+    //     for (const endOfLine of langEndofLine) {
+    //         if (lines[position.line].endsWith(endOfLine) && position.character >= lines[position.line].length) {
+    //             return false;
+    //         }
+    //     }
+
+    //     return true;
+    // }
+
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
         // TODO
         // create prompt
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
-        const prompt = await createPrompt(fsPath, fileContent, position.line, position.character);
-        if (this.devchatConfig.get("complete_prompt_debug")) {
+        const posOffset = document.offsetAt(position);
+
+        if (process.env.COMPLETE_DEBUG) {
+            logger.channel()?.info(`cur position: ${position.line}: ${position.character}`);
+        }
+
+        const prompt = await createPrompt(fsPath, fileContent, position.line, position.character, posOffset, this.recentEditors.getEdits());
+        if (!prompt) {
+            return undefined;
+        }
+        if (process.env.COMPLETE_DEBUG) {
             logger.channel()?.info("prompt:", prompt);
         }
 
         // check cache
         const result = await this.cache.get(prompt);
         if (result) {
+            if (process.env.COMPLETE_DEBUG) {
+                logger.channel()?.info(`cache hited:\n${result.code}`);
+            }
             return result;
         }
 
@@ -85,9 +133,32 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const lines = fileContent.split('\n');
         let curlineIndent = lines[position.line].search(/\S/);
         if (curlineIndent === -1) {
-            curlineIndent = 0;
+            curlineIndent = lines[position.line].length;
         }
-        const completor = new LLMStreamComplete(token, curlineIndent);
+
+        const langEndofLine: string[] = await getEndOfLine(fsPath);
+        for (const endOfLine of langEndofLine) {
+            if (lines[position.line].endsWith(endOfLine) && position.character >= lines[position.line].length) {
+                return undefined;
+            }
+        }
+        if (this.lastComplete.endsWith(lines[position.line]) && this.lastComplete !== "" && lines[position.line].trim() !== "") {
+            return undefined;
+        }
+
+        let nextLine = lines[position.line].slice(position.character);
+        if (nextLine.trim().length === 0) {
+            for (let i = position.line + 1; i < lines.length; i++) {
+                if (lines[i].trim().length > 0) {
+                    nextLine = lines[i];
+                    break;
+                }
+            }
+        };
+
+        const curLine = lines[position.line];
+        const curColumn = position.character;
+        const completor = new LLMStreamComplete(token, curlineIndent, nextLine, curLine, curColumn);
         const response = await completor.llmStreamComplete(prompt);
         if (!response || response.code.length === 0) {
             return undefined;
@@ -107,6 +178,19 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (!result) {
             return [];
         }
+        if (context.selectedCompletionInfo) {
+            return [];
+        }
+        if (this.devchatConfig.get("complete_enable") !== true) {
+            return [];
+        }
+
+        // const filepath = document.uri.fsPath;
+        // const fileContent = document.getText();
+        // const posOffset = document.offsetAt(position);
+        // await outputAst(filepath, fileContent, posOffset);
+        // await testTreesitterQuery(filepath, fileContent);
+        // return [];
 
         const response: CodeCompleteResult | undefined = await this.codeComplete(document, position, context, token);
         if (!response) {
@@ -119,11 +203,11 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
-        if (this.devchatConfig.get("complete_debug")) {
+        if (process.env.COMPLETE_DEBUG) {
             logger.channel()?.info("code complete show.");
         }
         this.logEventToServer(
-            { 
+            {
                 completion_id: response.id,
                 type: "view",
                 lines: response.code.split('\n').length,
@@ -132,14 +216,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
-            if (this.devchatConfig.get("complete_debug")) {
+            if (process.env.COMPLETE_DEBUG) {
                 logger.channel()?.info("code complete not accept.");
             }
         }, 10_000);
 
         // 代码补全回调处理
         const callback = () => {
-            if (this.devchatConfig.get("complete_debug")) {
+            if (process.env.COMPLETE_DEBUG) {
                 logger.channel()?.info("accept:", response.id);
             }
             // delete cache
@@ -148,7 +232,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             clearTimeout(logRejectionTimeout);
             // log to server
             this.logEventToServer(
-                { 
+                {
                     completion_id: response.id,
                     type: "select",
                     lines: response.code.split('\n').length,
@@ -156,12 +240,13 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                 });
         };
 
+        this.lastComplete = response.code;
         return [
             new vscode.InlineCompletionItem(
                 response.code,
                 new vscode.Range(
                     position,
-                    position
+                    position.translate(0, response.code.length)
                 ),
                 {
                     title: "code complete accept",

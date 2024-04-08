@@ -29,5 +29,3 @@ export async function getContextDetail(message: any, panel: vscode.WebviewPanel 
 		logger.channel()?.error(`Error reading file ${message.file}: ${error}`);
 	}
 }
-
-

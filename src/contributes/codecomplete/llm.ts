@@ -41,7 +41,7 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
         "max_tokens": 1024,
         "seed": 42,
         "bad": null,
-        "stop": ["<file_sep>"],
+        "stop": ["<file_sep>", "```", "\n\n"],
         "stream": true
     };
 
@@ -76,6 +76,60 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
                     yield {
                         text: data.choices[0].delta,
                         id: data.id
+                    };
+                } catch (e: any) {
+                    logger.channel()?.info("receve:", chunkText);
+                    logger.channel()?.error("JSON Parsing Error:", e.message);
+                }
+            }
+        } else {
+            logger.channel()?.error("Error making request:", response.statusText);
+        }
+    } catch (error: any) {
+        logger.channel()?.error("Error making request:", error.message);
+    }
+}
+
+export async function * ollamaStarcoderComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
+    const url = 'http://192.168.1.138:11434/api/generate';
+	const headers = {
+	  'Content-Type': 'application/json',
+	};
+	const payload = {
+	  model: 'starcoder:7b',
+	  prompt: prompt,
+	  stream: true,
+	  options: {
+        stop: ["<|endoftext|>", "<file_sep>", "```", "\n\n"],
+		temperature: 0.2
+	  }
+	};
+
+    let idResponse = undefined;
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+    		headers,
+    		body: JSON.stringify(payload),
+        });
+
+        if (response.ok && response.body) {
+            const stream = response.body as any;
+            const decoder = new TextDecoder("utf-8");
+
+            for await (const chunk of stream) {
+                const chunkText = decoder.decode(chunk).trim();
+                // {"model":"starcoder:7b","created_at":"2024-04-04T08:33:50.624505431Z","response":"sort","done":false}
+                
+                try {
+                    const data = JSON.parse(chunkText.trim());
+                    if (!idResponse) {
+                        idResponse = data.created_at;
+                    }
+                    yield {
+                        text: data.response,
+                        id: idResponse!
                     };
                 } catch (e: any) {
                     logger.channel()?.info("receve:", chunkText);

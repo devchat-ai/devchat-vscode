@@ -8,10 +8,11 @@ type CacheItem = {
 };
 
 class MemoryCacheManager {
-    private static maxCapacity: number = 5;
+    private maxCapacity: number = 5;
     private cache: Map<string, CacheItem>;
 
-    constructor() {
+    constructor(maxCapacity: number = 5) {
+        this.maxCapacity = maxCapacity;
         this.cache = new Map<string, CacheItem>();
     }
 
@@ -24,7 +25,7 @@ class MemoryCacheManager {
             this.cache.set(key, { value, timestamp: Date.now() });
         } else {
             // 先确保缓存没有超出最大容量
-            if (this.cache.size >= MemoryCacheManager.maxCapacity) {
+            if (this.cache.size >= this.maxCapacity) {
                 this.evict();
             }
             this.cache.set(key, { value, timestamp: Date.now() });

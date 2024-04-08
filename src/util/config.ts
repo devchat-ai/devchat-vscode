@@ -7,10 +7,13 @@ import { logger } from './logger';
 export class DevChatConfig {
     private configFilePath: string;
     private data: any;
+    // last modify timestamp of the config file
+    private lastModifyTime: number;
 
     constructor() {
         // 视操作系统的差异，可能需要调整路径 ~/.chat/config.yml
         this.configFilePath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.chat', 'config.yml');
+        this.lastModifyTime = 0;
         this.readConfigFile();
     }
 
@@ -18,6 +21,7 @@ export class DevChatConfig {
         try {
             const fileContents = fs.readFileSync(this.configFilePath, 'utf8');
             this.data = yaml.parse(fileContents);
+            this.lastModifyTime = fs.statSync(this.configFilePath).mtimeMs;
         } catch (error) {
 			logger.channel()?.error(`Error reading the config file: ${error}`);
             logger.channel()?.show();
@@ -36,6 +40,12 @@ export class DevChatConfig {
     }
 
     public get(key: string | string[]): any {
+        // check if the config file has been modified
+        const currentModifyTime = fs.statSync(this.configFilePath).mtimeMs;
+        if (currentModifyTime > this.lastModifyTime) {
+            this.readConfigFile();
+        }
+
         let keys: string[] = [];
 
         if (typeof key === 'string') {
@@ -64,6 +74,12 @@ export class DevChatConfig {
     }
 
     public getAll(): any {
+        // check if the config file has been modified
+        const currentModifyTime = fs.statSync(this.configFilePath).mtimeMs;
+        if (currentModifyTime > this.lastModifyTime) {
+            this.readConfigFile();
+        }
+
         return this.data;
     }
 
