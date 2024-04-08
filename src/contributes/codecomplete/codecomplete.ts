@@ -110,45 +110,6 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     arguments: [callback],
                 }
             ),
-        ];
-
-        // // 等待时间（单位：毫秒），可根据需要调整
-        // const delayTime = 5000;
-
-        // // 创建一个新的Promise，用于实现等待逻辑
-        // await new Promise((resolve) => {
-        //     const timer = setTimeout(resolve, delayTime);
-            
-        //     // 如果请求在等待时间结束前被取消，则清除定时器
-        //     token.onCancellationRequested(() => clearTimeout(timer));
-        // });
-		// logger.channel()?.info("----->");
-
-        // // 如果请求已被取消，则直接返回null
-        // if (token.isCancellationRequested) {
-        //     logger.channel()?.info("request cancelled before completion");
-        //     return [];
-        // }
-
-		// // 根据文档和位置计算补全项（这里仅作示例，实际实现可能会有所不同） 
-		// // 获取position前文本
-		// const documentText = document.getText();
-		// const offsetPos = document.offsetAt(position);
-
-		// // 获取position前文本
-		// const prefix = documentText.substring(0, offsetPos);
-		// const suffix = documentText.substring(offsetPos);
-
-		// const prompt = "<fim_prefix>" + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
-
-		// // call code_completion
-		// const response = await code_completion(prompt);
-		// if (!response) {
-		// 	logger.channel()?.info("finish provideInlineCompletionItems");
-		// 	return [];
-		// }
-
-		// logger.channel()?.info("finish provideInlineCompletionItems");
-		// return [new vscode.InlineCompletionItem(response[0], new vscode.Range(position, position))];  
+        ]; 
     }  
 }
