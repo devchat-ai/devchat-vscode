@@ -6,6 +6,7 @@ import MemoryCacheManager from './cache';
 import { createPrompt } from './promptCreator';
 import { CodeCompleteResult, LLMStreamComplete } from './chunkFilter';
 import { nvidiaStarcoderComplete } from './llm';
+import { DevChatConfig } from '../../util/config';
 
 
 export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionContext) {
@@ -19,7 +20,13 @@ export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionCon
     context.subscriptions.push(disposable);
 }
 
-export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {  
+interface LogEventRequest {
+    completion_id: string;
+    type: string; // "view", "select"
+    length: number; // length of code completed
+}
+
+export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     private debouncer: Debouncer;
     private cache: MemoryCacheManager;
 
@@ -28,6 +35,30 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // Read delay time from config
         this.debouncer = new Debouncer(500);
         this.cache = new MemoryCacheManager();
+    }
+
+    async logEventToServer(event: LogEventRequest) {
+        const devchatConfig = new DevChatConfig();
+        const devchatToken = devchatConfig.get("providers.devchat.api_key");
+        const devchatEndpoint = devchatConfig.get("providers.devchat.api_base");
+        const apiUrl = `${devchatEndpoint}/events`;
+        const requestOptions: RequestInit = {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${devchatToken}`,
+            },
+            body: JSON.stringify(event),
+        };
+
+        try {
+            const response = await fetch(apiUrl, requestOptions);
+            if (!response.ok) {
+                logger.channel()?.info("log event to server failed:", response.status);
+            }
+        } catch (error) {
+            console.error('Error posting event to the server:', error);
+        }
     }
 
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
@@ -39,7 +70,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // check cache
         const result = await this.cache.get(prompt);
-        if(result) {
+        if (result) {
             return result;
         }
 
@@ -67,12 +98,12 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {
         const result = await this.debouncer.debounce();
-        if(!result) {
+        if (!result) {
             return [];
         }
 
         const response: CodeCompleteResult | undefined = await this.codeComplete(document, position, context, token);
-        if(!response) {
+        if (!response) {
             return [];
         }
 
@@ -83,6 +114,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
         logger.channel()?.info("code complete show.");
+        this.logEventToServer({ completion_id: response.id, type: "view", length: response.code.length });
+        // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
             logger.channel()?.info("code complete not accept.");
@@ -95,6 +128,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             this.cache.delete(response.prompt);
             // delete timer
             clearTimeout(logRejectionTimeout);
+            // log to server
+            this.logEventToServer({ completion_id: response.id, type: "select", length: response.code.length });
         };
 
         return [
@@ -110,6 +145,6 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     arguments: [callback],
                 }
             ),
-        ]; 
-    }  
+        ];
+    }
 }
