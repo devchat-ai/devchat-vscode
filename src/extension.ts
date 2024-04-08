@@ -31,6 +31,7 @@ import { startRpcServer } from './ide_services/services';
 import { registerCodeLensProvider } from './panel/codeLens';
 import { stopDevChatBase } from './handler/sendMessageBase';
 import { DevChatConfig } from './util/config';
+import { InlineCompletionProvider, registerCodeCompleteCallbackCommand } from "./contributes/codecomplete/codecomplete";
 
 
 async function migrateConfig() {
