@@ -6,6 +6,7 @@ import axios from 'axios';
 
 import { logger } from "../../util/logger";
 import { Chunk } from 'webpack';
+import { DevChatConfig } from '../../util/config';
 
 
 // 定义代码补全chunk结构内容
@@ -23,8 +24,12 @@ export async function* streamComplete(prompt: string): AsyncGenerator<CodeComple
 export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
     const invokeUrl = 'https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/6acada03-fe2f-4e4d-9e0a-e711b9fd1b59';
 
+    const nvidiaKey = new DevChatConfig().get("complete_key");
+    if (!nvidiaKey) {
+        return;
+    }
     const headers = {
-        "Authorization": "Bearer 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",
+        "Authorization": `Bearer ${nvidiaKey}`,
         "Accept": "text/event-stream",
         "Content-Type": "application/json",
     };

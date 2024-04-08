@@ -23,6 +23,7 @@ export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionCon
 interface LogEventRequest {
     completion_id: string;
     type: string; // "view", "select"
+    lines: number;
     length: number; // length of code completed
 }
 
@@ -41,7 +42,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const devchatConfig = new DevChatConfig();
         const devchatToken = devchatConfig.get("providers.devchat.api_key");
         const devchatEndpoint = devchatConfig.get("providers.devchat.api_base");
-        const apiUrl = `${devchatEndpoint}/events`;
+        const apiUrl = `${devchatEndpoint}/complete_events`;
         const requestOptions: RequestInit = {
             method: 'POST',
             headers: {
@@ -114,7 +115,13 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
         logger.channel()?.info("code complete show.");
-        this.logEventToServer({ completion_id: response.id, type: "view", length: response.code.length });
+        this.logEventToServer(
+            { 
+                completion_id: response.id,
+                type: "view",
+                lines: response.code.split('\n').length,
+                length: response.code.length
+            });
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
@@ -129,7 +136,13 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             // delete timer
             clearTimeout(logRejectionTimeout);
             // log to server
-            this.logEventToServer({ completion_id: response.id, type: "select", length: response.code.length });
+            this.logEventToServer(
+                { 
+                    completion_id: response.id,
+                    type: "select",
+                    lines: response.code.split('\n').length,
+                    length: response.code.length
+                });
         };
 
         return [
