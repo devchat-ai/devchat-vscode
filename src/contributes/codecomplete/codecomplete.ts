@@ -30,6 +30,7 @@ interface LogEventRequest {
 export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
     private debouncer: Debouncer;
     private cache: MemoryCacheManager;
+    private devchatConfig: DevChatConfig;
 
     constructor() {
         // TODO
@@ -39,9 +40,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     async logEventToServer(event: LogEventRequest) {
-        const devchatConfig = new DevChatConfig();
-        const devchatToken = devchatConfig.get("providers.devchat.api_key");
-        const devchatEndpoint = devchatConfig.get("providers.devchat.api_base");
+        const devchatToken = this.devchatConfig.get("providers.devchat.api_key");
+        const devchatEndpoint = this.devchatConfig.get("providers.devchat.api_base");
         const apiUrl = `${devchatEndpoint}/complete_events`;
         const requestOptions: RequestInit = {
             method: 'POST',
@@ -55,7 +55,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         try {
             const response = await fetch(apiUrl, requestOptions);
             if (!response.ok) {
-                logger.channel()?.info("log event to server failed:", response.status);
+                if (this.devchatConfig.get("complete_debug")) {
+                    logger.channel()?.info("log event to server failed:", response.status);
+                }
             }
         } catch (error) {
             console.error('Error posting event to the server:', error);
@@ -68,6 +70,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
         const prompt = await createPrompt(fsPath, fileContent, position.line, position.character);
+        if (this.devchatConfig.get("complete_prompt_debug")) {
+            logger.channel()?.info("prompt:", prompt);
+        }
 
         // check cache
         const result = await this.cache.get(prompt);
@@ -114,7 +119,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
-        logger.channel()?.info("code complete show.");
+        if (this.devchatConfig.get("complete_debug")) {
+            logger.channel()?.info("code complete show.");
+        }
         this.logEventToServer(
             { 
                 completion_id: response.id,
@@ -125,12 +132,16 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
-            logger.channel()?.info("code complete not accept.");
+            if (this.devchatConfig.get("complete_debug")) {
+                logger.channel()?.info("code complete not accept.");
+            }
         }, 10_000);
 
         // 代码补全回调处理
         const callback = () => {
-            logger.channel()?.info("accept:", response.id);
+            if (this.devchatConfig.get("complete_debug")) {
+                logger.channel()?.info("accept:", response.id);
+            }
             // delete cache
             this.cache.delete(response.prompt);
             // delete timer
