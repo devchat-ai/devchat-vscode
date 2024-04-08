@@ -99,6 +99,9 @@ export async function collapseCodeBlock(functions: FunctionRange[], filepath: st
         if (funcBody.start === funcBody.end) {
             continue;
         }
+        if (func.name === "__init__" || func.name === "constructor") {
+            continue;
+        }
 
         let bodyStartLine = funcBody.start.row;
         let bodyEndLine = funcBody.end.row;
@@ -269,8 +272,12 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
 
         const functions = await findFunctionRanges(filePath, ast.rootNode);
         // remove function that contain line, column
-        const filteredFunctions = functions.filter(f => {
+        let filteredFunctions = functions.filter(f => {
             return!(f.define.start.row <= line && f.define.end.row >= line);
+        });
+        // remove function with name __init__ and constructor
+        filteredFunctions = filteredFunctions.filter(f => {
+            return f.name!== '__init__' && f.name!== 'constructor';
         });
 
         // collect matched ast nodes
@@ -425,8 +432,6 @@ export async function createContextCallDefine( filepath: string, fileContent: st
 
 export async function createPrompt(filePath: string, fileContent: string, line: number, column: number, posoffset: number, recentEdits: RecentEdit[]) {
     const commentPrefix = await getCommentPrefix(filePath);
-    let recentEditContext = await createRecentEditContext(recentEdits, filePath);
-    const symbolDefines: { filepath: string, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
 
     let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
 
@@ -455,23 +460,32 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
 
     let symbolContext = "";
-    for (const symbolDefine of symbolDefines ) {
-        const countSymboleToken = countTokens(symbolDefine.codeblock);
-        if (tokenCount + countSymboleToken > CONTEXT_LIMITED_SIZE) {
-            break;
+    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+        const symbolDefines: { filepath: string, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
+        for (const symbolDefine of symbolDefines ) {
+            const countSymboleToken = countTokens(symbolDefine.codeblock);
+            if (tokenCount + countSymboleToken > CONTEXT_LIMITED_SIZE) {
+                break;
+            }
+
+            tokenCount += countSymboleToken;
+            symbolContext += `${commentPrefix}${symbolDefine.filepath}\n\n`;
+            symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
         }
-
-        tokenCount += countSymboleToken;
-        symbolContext += `${commentPrefix}${symbolDefine.filepath}\n\n`;
-        symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
     }
 
-    const countRecentToken = countTokens(recentEditContext);
-    if (tokenCount + countRecentToken < CONTEXT_LIMITED_SIZE) {
-        tokenCount += countRecentToken;
-    } else {
-        recentEditContext = "";
+    let recentEditContext = "";
+    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+        recentEditContext = await createRecentEditContext(recentEdits, filePath);
+
+        const countRecentToken = countTokens(recentEditContext);
+        if (tokenCount + countRecentToken < CONTEXT_LIMITED_SIZE) {
+            tokenCount += countRecentToken;
+        } else {
+            recentEditContext = "";
+        }
     }
+    
     logger.channel()?.info("Complete token:", tokenCount);
     
     const prompt = "<fim_prefix>" + recentEditContext + symbolContext + callDefContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";

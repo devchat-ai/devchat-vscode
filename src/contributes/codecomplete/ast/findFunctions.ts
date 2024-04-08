@@ -20,7 +20,8 @@ export interface FunctionRange {
     body: {
         start: { row: number, column: number },
         end: { row: number, column: number }
-    }
+    },
+    name: string
 }
  
 export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNode): Promise<FunctionRange[]> {
@@ -41,7 +42,7 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
             // find functionNode through tag name
             const functionNode = match.captures.find((capture) => capture.name === "function")?.node;
             const bodyNode = match.captures.find((capture) => capture.name === "function.body")?.node;
-            // const nameNode = match.captures.find((capture) => capture.name === "function.name")?.node;
+            const nameNode = match.captures.find((capture) => capture.name === "function.name")?.node;
             if (!functionNode ||!bodyNode) {
                 return [];
             }
@@ -66,7 +67,8 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
                         row: bodyNode.endPosition.row,
                         column: bodyNode.endPosition.column,
                     },
-                }
+                },
+                name: nameNode?.text?? "",
             };
             return results;
         }) ?? []

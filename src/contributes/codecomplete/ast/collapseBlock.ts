@@ -37,6 +37,9 @@ export async function collapseFile(
         if (funcBody.start === funcBody.end) {
             continue;
         }
+        if (func.name === "__init__" || func.name === "constructor") {
+            continue;
+        }
  
         let bodyStartLine = funcBody.start.row;
         let bodyEndLine = funcBody.end.row;
