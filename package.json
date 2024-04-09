@@ -2,7 +2,7 @@
   "name": "devchat",
   "displayName": "DevChat",
   "description": "Write prompts, not code",
-  "version": "0.1.65",
+  "version": "0.1.74",
   "icon": "assets/devchat.png",
   "publisher": "merico",
   "engines": {
@@ -724,6 +724,16 @@
       {
         "command": "devchat.fix_chinese",
         "title": "Devchat:修复此"
+      },
+      {
+        "command": "DevChat.codecomplete",
+        "title": "Codecomplete",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.codecomplete_callback",
+        "title": "Codecomplete Callback",
+        "category": "DevChat"
       }
     ],
     "keybindings": [
@@ -731,6 +741,11 @@
         "command": "devchat.openChatPanel",
         "key": "ctrl+shift+/",
         "mac": "cmd+shift+/"
+      },
+      {
+        "command": "DevChat.codecomplete",
+        "key": "ctrl+shift+'",
+        "mac": "cmd+shift+'"
       }
     ],
     "menus": {
@@ -909,6 +924,7 @@
     "dayjs": "^1.11.10",
     "dotenv": "^16.0.3",
     "js-yaml": "^4.1.0",
+    "llama-tokenizer-js": "^1.2.1",
     "mdast": "^3.0.0",
     "mobx": "^6.12.0",
     "ncp": "^2.0.0",
@@ -919,9 +935,11 @@
     "shell-escape": "^0.2.0",
     "string-argv": "^0.3.2",
     "tree-kill": "^1.2.2",
+    "tree-sitter-wasms": "^0.1.7",
     "unified": "^11.0.3",
     "unist-util-visit": "^5.0.0",
     "uuid": "^9.0.0",
+    "web-tree-sitter": "^0.22.2",
     "yaml": "^2.3.2"
   }
 }
