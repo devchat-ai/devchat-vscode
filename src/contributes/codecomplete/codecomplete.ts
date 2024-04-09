@@ -22,6 +22,24 @@ export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionCon
     context.subscriptions.push(disposable);
 }
 
+function isSubsequence(sub: string, source: string): boolean {
+    let subIndex = 0; // 子序列字符串的索引
+    let srcIndex = 0; // 源字符串的索引
+  
+    // 当子序列和源字符串索引都未超出自身长度时循环
+    while (subIndex < sub.length && srcIndex < source.length) {
+      // 如果找到一个匹配的字符，则移动子序列的索引
+      if (sub[subIndex] === source[srcIndex]) {
+        subIndex++;
+      }
+      // 无论是否找到匹配，源字符串索引始终移动
+      srcIndex++;
+    }
+  
+    // 如果子序列索引等于子序列长度，说明子序列的所有字符都按顺序在源字符串中找到了
+    return subIndex === sub.length;
+  }
+
 interface LogEventRequest {
     completion_id: string;
     type: string; // "view", "select"
@@ -240,13 +258,21 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                 });
         };
 
+        // 获取当前行中光标之后的文本内容
+        const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
+        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
+        let rangeEndPosition = position.translate(0, response.code.length);
+        if (!isIncludeLineSuffix) {
+            rangeEndPosition = position;
+        }
+
         this.lastComplete = response.code;
         return [
             new vscode.InlineCompletionItem(
                 response.code,
                 new vscode.Range(
                     position,
-                    position.translate(0, response.code.length)
+                    rangeEndPosition
                 ),
                 {
                     title: "code complete accept",
