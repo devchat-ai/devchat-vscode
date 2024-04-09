@@ -5,12 +5,15 @@
  通过AST获取相对完整的信息，可能会增加提示的准确度，但也会增加代码提示的复杂度。
  */
 
- import { logger } from "../../../util/logger";
- import { getAst, getTreePathAtCursor, RangeInFileWithContents } from "./ast";
- import Parser from "web-tree-sitter";
- import { getCommentPrefix, getLangageFunctionConfig, LanguageFunctionsConfig } from "./language";
+import { logger } from "../../../util/logger";
+import * as vscode from "vscode";
+import { getAst, getTreePathAtCursor, RangeInFileWithContents } from "./ast";
+import Parser from "web-tree-sitter";
+import { getCommentPrefix, getLangageFunctionConfig, LanguageFunctionsConfig } from "./language";
 import { getLanguageForFile, getQueryFunctionsSource } from "./treeSitter";
- 
+import MemoryCacheManager from "../cache";
+
+const functionCache: MemoryCacheManager = new MemoryCacheManager(4);
  
 export interface FunctionRange {
     define: {
@@ -34,7 +37,13 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
     if (!querySource) {
         return [];
     }
-    const query = lang?.query(querySource);
+    
+    const extension = filepath.split('.').pop() || '';
+    let query: Parser.Query | undefined = functionCache.get(extension);
+    if (!query) {
+        query = lang?.query(querySource);
+        functionCache.set(extension, query);
+    }
     const matches = query?.matches(node);
 
     return (

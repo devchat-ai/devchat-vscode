@@ -18,12 +18,13 @@ import { RangeInFile, readFileByVSCode, readRangeInFile, readRangesInFile, Range
 import { collapseFile } from "./ast/collapseBlock";
 import { UiUtilWrapper } from "../../util/uiUtil";
 import { countTokens } from "./llm/countTokens";
+import MemoryCacheManager from "./cache";
 
 
-const PREFIX_MAX_SIZE: number = 600;
-const SUFFIX_MAX_SIZE: number = 400;
 const CONTEXT_LIMITED_SIZE: number = 6000;
 
+const variableCache: MemoryCacheManager = new MemoryCacheManager(4);
+let symbleCollapsedDefine: Map<string, string> = new Map<string, string>();
 
 export async function currentFileContext(
     filepath: string,
@@ -43,7 +44,7 @@ export async function currentFileContext(
 
     const functionRanges = await findFunctionRanges(filepath, ast.rootNode);
     return await collapseCodeBlock(functionRanges, filepath, contents, curRow, curColumn);
-}
+    }
 
 
 export async function collapseCodeBlock(functions: FunctionRange[], filepath: string, contents: string, curRow: number, curColumn: number) {
@@ -264,7 +265,12 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
     }
 
     try {
-        const query = lang?.query(querySource);
+        const extension = filePath.split('.').pop() || '';
+        let query: Parser.Query | undefined = variableCache.get(extension);
+        if (!query) {
+            query = lang?.query(querySource);
+            variableCache.set(extension, query);
+        }
         const matches = query?.matches(ast.rootNode);
         if (!matches) {
             return [];
@@ -353,16 +359,29 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
                 continue;
             }
 
-            const refAst = await getAst(filepath, refContents);
-            if (!refAst) {
-                continue;
-            }
+            let refAst : Parser.Tree | undefined = undefined;
 
             const refLines = refContents.split('\n');
 
             let contents: string[] = [];
             let visitedBlockContents: string[] = [];
             for (const range of codeblockRangesByFile[filepath]) {
+                const mapKey = `${filepath}-${refLines[range.range.start.line]}-${range.range.start.line}-${range.range.start.character}`;
+                if (symbleCollapsedDefine.has(mapKey)) {
+                    const collapsedDefine = symbleCollapsedDefine.get(mapKey);
+                    if (collapsedDefine) {
+                        contents.push(collapsedDefine);
+                        continue;
+                    }
+                }
+
+                if (!refAst) {
+                    refAst = await getAst(filepath, refContents);
+                    if (!refAst) {
+                        break;
+                    }
+                }
+
                 const blockNode = await getAstNodeByRange(refAst, range.range.start.line, range.range.start.character);
                 if (!blockNode) {
                     continue;
@@ -373,6 +392,7 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
                     continue;
                 }
                 visitedBlockContents.push(blockText);
+                symbleCollapsedDefine.set(mapKey, blockText);
 
                 contents.push(blockText);
             }
@@ -419,6 +439,16 @@ export async function createContextCallDefine( filepath: string, fileContent: st
         return r.filepath.indexOf(path.join(workspacePath, 'node_modules'))!== 0;
     });
 
+    // remove codeblock same as current file
+    defs = defs.filter(r => {
+        return r.filepath !== filepath;
+    });
+
+    // remove contents only oneline
+    defs = defs.filter(r => {
+        return r.range.start.line !== r.range.end.line;
+    });
+
     let codeblocks: { filepath: string, codeblock: string }[] = [];
     for (const cdef of defs) {
         const collapseContent = await collapseFile(filepath, cdef.contents);
@@ -434,7 +464,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     const commentPrefix = await getCommentPrefix(filePath);
 
     let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
-
+    
     let tokenCount = countTokens(prefix);
 
     const suffixTokenCount = countTokens(suffix);

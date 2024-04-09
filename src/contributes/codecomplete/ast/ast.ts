@@ -29,9 +29,9 @@ export async function getAst(
     hash.update(fileContents);
     const cacheKey = hash.digest('hex');
 
-    const cachedAst = astCache.get(cacheKey);
-    if (cachedAst) {
-        return cachedAst;
+    const cachedAst: {ast: Parser.Tree, hash: string} = astCache.get(filepath);
+    if (cachedAst && cachedAst.hash === cacheKey) {
+        return cachedAst.ast;
     }
 
     const parser = await getParserForFile(filepath);
@@ -42,7 +42,7 @@ export async function getAst(
     try {
         const ast = parser.parse(fileContents);
         if (cacheEnable) {
-            astCache.set(cacheKey, ast);
+            astCache.set(filepath, {ast, hash: cacheKey});
         }
         return ast;
     } catch (e) {
