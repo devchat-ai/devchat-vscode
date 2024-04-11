@@ -38,7 +38,7 @@ export class CodeLensManager {
   }
 
   private loadConfig(): void {
-    if (fs.existsSync(this.configFilePath)) {
+    if (!fs.existsSync(this.configFilePath)) {
       this.initializeConfig();
     } else {
       const data = fs.readFileSync(this.configFilePath, "utf-8");
