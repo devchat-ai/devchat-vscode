@@ -70,7 +70,6 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
                     return;
                 }
 
-                
                 try {
                     const data = JSON.parse(chunkText.substring(5).trim());
                     yield {

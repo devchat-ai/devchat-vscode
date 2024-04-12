@@ -36,7 +36,7 @@ export const supportedLanguages: { [key: string]: string } = {
     jsx: "javascript", // tree-sitter-javascript.wasm
     mjs: "javascript", // tree-sitter-javascript.wasm
     cjs: "javascript", // tree-sitter-javascript.wasm
-    json: "json",      // tree-sitter-json.wasm
+    // json: "json",      // tree-sitter-json.wasm
     kt: "kotlin",      // tree-sitter-kotlin.wasm
     lua: "lua",        // tree-sitter-lua.wasm
                     // tree-sitter-objc.wasm
@@ -63,7 +63,7 @@ export const supportedLanguages: { [key: string]: string } = {
     scala: "scala",    // tree-sitter-scala.wasm
     swift: "swift",    // tree-sitter-swift.wasm
     rdl: "systemrdl",  // tree-sitter-systemrdl.wasm
-    toml: "toml",      // tree-sitter-toml.wasm
+    // toml: "toml",      // tree-sitter-toml.wasm
     tsx: "tsx",        // tree-sitter-tsx.wasm
     vue: "vue",        // tree-sitter-vue.wasm
 };

@@ -42,9 +42,13 @@ export async function getParserForFile(filepath: string) {
                 return filename;
             }
         });
-        const parser = new Parser();
 
         const language = await getLanguageForFile(filepath);
+        if (!language) {
+            return undefined;
+        }
+
+        const parser = new Parser();
         parser.setLanguage(language);
 
         parserCache.set(extension, parser);
@@ -76,6 +80,10 @@ export async function getLanguageForFile(
             "tree-sitter-wasms",
             `tree-sitter-${supportedLanguages[extension]}.wasm`,
         );
+        if (!fs.existsSync(wasmPath)) {
+            return undefined;
+        }
+
         const language = await Parser.Language.load(wasmPath);
 
         langCache.set(extension, language);

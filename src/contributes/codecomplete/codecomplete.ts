@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { logger } from '../../util/logger';
 import Debouncer from './debouncer';
 import MemoryCacheManager from './cache';
-import { createPrompt } from './promptCreator';
+import { createPrompt, findSimilarCodeBlock } from './promptCreator';
 import { CodeCompleteResult, LLMStreamComplete } from './chunkFilter';
 import { DevChatConfig } from '../../util/config';
 import { outputAst } from './astTest';
@@ -207,8 +207,12 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // const fileContent = document.getText();
         // const posOffset = document.offsetAt(position);
         // await outputAst(filepath, fileContent, posOffset);
-        // await testTreesitterQuery(filepath, fileContent);
-        // return [];
+        // // await testTreesitterQuery(filepath, fileContent);
+        // const result2 = await findSimilarCodeBlock(filepath, fileContent, position.line, position.character);
+        // logger.channel()?.info("Result:", result2);
+        // if (1) {
+        //     return [];
+        // }
 
         const response: CodeCompleteResult | undefined = await this.codeComplete(document, position, context, token);
         if (!response) {

@@ -5,7 +5,8 @@
  通过AST获取相对完整的信息，可能会增加提示的准确度，但也会增加代码提示的复杂度。
  */
 
-import * as path from "path";
+import * as fs from 'fs/promises';
+import * as path from 'path';
 import { logger } from "../../util/logger";
 import { getAst, getAstNodeByRange, getTreePathAtCursor, RangeInFileWithContents } from "./ast/ast";
 import Parser from "web-tree-sitter";
@@ -19,9 +20,11 @@ import { collapseFile } from "./ast/collapseBlock";
 import { UiUtilWrapper } from "../../util/uiUtil";
 import { countTokens } from "./llm/countTokens";
 import MemoryCacheManager from "./cache";
+import { searchSimilarBlock } from "./astIndex";
 
 
 const CONTEXT_LIMITED_SIZE: number = 6000;
+const CONTEXT_SIMILAR_LIMITED_SIZE: number = 400;
 
 const variableCache: MemoryCacheManager = new MemoryCacheManager(4);
 let symbleCollapsedDefine: Map<string, string> = new Map<string, string>();
@@ -33,7 +36,7 @@ export async function currentFileContext(
     curColumn: number
 ) : Promise< { prefix: string, suffix: string } > {
     const contentTokens = countTokens(contents);
-    if (contentTokens < CONTEXT_LIMITED_SIZE*0.5) {
+    if (contentTokens < CONTEXT_LIMITED_SIZE*0.35) {
         return curfilePrompt(filepath, contents, curRow, curColumn);
     }
 
@@ -179,7 +182,7 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
         }
 
         const lineTokenCount = countTokens(lineText);
-        if (prefixTokenCount + lineTokenCount > CONTEXT_LIMITED_SIZE*0.7*0.5) {
+        if (prefixTokenCount + lineTokenCount >  CONTEXT_LIMITED_SIZE*0.7*0.35) {
             break;
         }
 
@@ -188,6 +191,7 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
     }
 
     // 从光标所在行下一行开始，向下构建后缀
+    const suffixMaxToken = CONTEXT_LIMITED_SIZE*0.35 - prefixTokenCount;
     for (let i = line; i < lines.length; i++) {
         let lineText = lines[i] + '\n';
         if (i === line) {
@@ -195,7 +199,7 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
         }
 
         const lineTokenCount = countTokens(lineText);
-        if (suffixTokenCount + lineTokenCount > CONTEXT_LIMITED_SIZE*0.3*0.5) {
+        if (suffixTokenCount + lineTokenCount > suffixMaxToken) {
             break;
         }
 
@@ -460,6 +464,49 @@ export async function createContextCallDefine( filepath: string, fileContent: st
     return codeblocks;
 }
 
+export async function findSimilarCodeBlock(filePath: string, fileContent: string, line: number, column: number) : Promise< {file: string, text: string}[] > {
+    return await searchSimilarBlock(filePath, fileContent, line, 2);
+}
+
+export async function findNeighborFileContext(filePath: string, fileContent: string, line: number, column: number): Promise<{ file: string; text: string }[]> {
+    const dir = path.dirname(filePath);
+    const files = await fs.readdir(dir);
+    
+    let smallestFile = { path: "", size: Infinity };
+    
+    for (const file of files) {
+        const fullPath = path.join(dir, file);
+        if (file === path.basename(filePath)) {
+            continue;
+        }
+
+        try {
+            const stats = await fs.stat(fullPath);
+            // 在遍历过程中直接更新最小文件的信息
+            if (stats.isFile() && stats.size < smallestFile.size) {
+                smallestFile = { path: fullPath, size: stats.size };
+            }
+        } catch (error) {
+            return [];
+        }
+    }
+    
+    if (smallestFile.size === Infinity) {
+        // 如果没有找到任何文件，返回空数组
+        return [];
+    }
+    
+    // 读取最小文件的内容
+    try {
+        const smallestFileContent = await fs.readFile(smallestFile.path, { encoding: 'utf8' });
+        // 返回包含最小文件路径和内容的对象
+        return [{ file: smallestFile.path, text: smallestFileContent }];
+    } catch (error) {
+        console.error(`Error reading file ${smallestFile.path}:`, error);
+        return [];
+    }
+}
+
 export async function createPrompt(filePath: string, fileContent: string, line: number, column: number, posoffset: number, recentEdits: RecentEdit[]) {
     const commentPrefix = await getCommentPrefix(filePath);
 
@@ -489,6 +536,27 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         }
     }
 
+    let similarBlockContext = "";
+    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+        let similarTokens = 0;
+        const similarContexts: {file: string, text: string}[] = await findSimilarCodeBlock(filePath, fileContent, line, column);
+
+        for (const similarContext of similarContexts) {
+            const blockToken = countTokens(similarContext.text);
+            if (tokenCount + blockToken > CONTEXT_LIMITED_SIZE) {
+                continue;
+            }
+            similarTokens += blockToken;
+            if (similarTokens > CONTEXT_SIMILAR_LIMITED_SIZE) {
+                continue;
+            }
+
+            tokenCount += blockToken;
+            similarBlockContext += `${commentPrefix}${similarContext.file}\n\n`;
+            similarBlockContext += `${similarContext.text}\n\n\n\n`;
+        }
+    }
+
     let symbolContext = "";
     if (tokenCount < CONTEXT_LIMITED_SIZE) {
         const symbolDefines: { filepath: string, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
@@ -515,10 +583,23 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             recentEditContext = "";
         }
     }
+
+    let neighborFileContext = "";
+    if (tokenCount < 200) {
+        const neighborFiles = await findNeighborFileContext(filePath, fileContent, line, column);
+        if (neighborFiles.length > 0) {
+            const countFileToken = countTokens(neighborFiles[0].text);
+            if (tokenCount + countFileToken < CONTEXT_LIMITED_SIZE) {
+                tokenCount += countFileToken;
+                neighborFileContext += `${commentPrefix}${neighborFiles[0].file}\n\n`;
+                neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
+            }
+        }
+    }
     
     logger.channel()?.info("Complete token:", tokenCount);
     
-    const prompt = "<fim_prefix>" + recentEditContext + symbolContext + callDefContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    const prompt = "<fim_prefix>" + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
     return prompt;
 }
 
