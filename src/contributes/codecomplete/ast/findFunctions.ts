@@ -83,3 +83,33 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
         }) ?? []
     );
 }
+
+export async function findFunctionNodes(filepath: string, node: Parser.SyntaxNode): Promise<Parser.SyntaxNode[]> {
+    const lang = await getLanguageForFile(filepath);
+    if (!lang) {
+        return [];
+    }
+
+    const querySource = await getQueryFunctionsSource(filepath);
+    if (!querySource) {
+        return [];
+    }
+    
+    const extension = filepath.split('.').pop() || '';
+    let query: Parser.Query | undefined = functionCache.get(extension);
+    if (!query) {
+        query = lang?.query(querySource);
+        functionCache.set(extension, query);
+    }
+    const matches = query?.matches(node);
+    let functionNodes: Parser.SyntaxNode[] = [];
+    for (const match of matches?? []) {
+        // find functionNode through tag name
+        const functionNode = match.captures.find((capture) => capture.name === "function")?.node;
+        if (functionNode) {
+            functionNodes.push(functionNode);
+        }
+    }
+    
+    return functionNodes;
+}
