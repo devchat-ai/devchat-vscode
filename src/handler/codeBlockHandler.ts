@@ -104,3 +104,11 @@ regInMessage({command: 'code_file_apply', content: '', fileName: ''});
 export async function replaceCodeBlockToFile(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
 	await applyCodeFile(message.content, message.fileName);
 }
+
+export async function createAndOpenFile(message: any) {
+	const document =await vscode.workspace.openTextDocument({
+		language:message.language,
+		content: message.content
+	});        
+	await vscode.window.showTextDocument(document);
+}
