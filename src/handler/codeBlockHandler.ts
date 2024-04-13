@@ -112,11 +112,13 @@ export async function replaceCodeBlockToFile(message: any, panel: vscode.Webview
  * - content: 文件的内容
  */
 export async function createAndOpenFile(message: any) {
-        // 根据提供的语言和内容创建一个新的文档对象
-    const document =await vscode.workspace.openTextDocument({
-        language:message.language, // 设置新文档的语言
-        content: message.content // 设置新文档的内容
-    });        
-    // 在编辑器中打开并显示这个新创建的文档
-    await vscode.window.showTextDocument(document);
+	try {
+		const document = await vscode.workspace.openTextDocument({
+			language: message.language,
+			content: message.content
+		});
+		await vscode.window.showTextDocument(document);
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error creating or opening file: ${error}`);
+	} 
 }
