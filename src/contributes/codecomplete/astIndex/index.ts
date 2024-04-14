@@ -111,7 +111,6 @@ export async function indexDir(dir: string) {
 
 
 export async function searchSimilarBlock(filepath: string, contents: string, line: number, limit: number) {
-    const startTime = performance.now();
     if (devchatConfig.get("complete_index_enable") !== true) {
         return [];
     }
@@ -120,11 +119,8 @@ export async function searchSimilarBlock(filepath: string, contents: string, lin
     }
 
     const lineBlock: string = await getFileBlock(filepath, contents, line);
-    const startTimer2 = performance.now();
     const identifiers = await createIdentifierSetByQuery(filepath, lineBlock);
     const similarBlocks: SimilarBlock[] = await indexStore.search(identifiers, limit+5);
-    const endTimer2 = performance.now();
-    logger.channel()?.info(`searchSimilarBlock2:  ${endTimer2 - startTimer2}ms`);
     
     // 过滤掉当前文件
     let similarBlocksFiltered = similarBlocks.filter(block => block.block.file !== filepath);
@@ -148,8 +144,6 @@ export async function searchSimilarBlock(filepath: string, contents: string, lin
             break;
         }
     }
-    const endTime = performance.now();
-    logger.channel()?.info(`searchSimilarBlock:  ${endTime - startTime}ms`);
 
     return blocksText;
 }
