@@ -12,11 +12,19 @@ import { findIdentifiers } from "../ast/findIdentifiers";
 export async function createFileBlockInfo(file: string): Promise<FileBlockInfo | undefined> {
     // 读取文件内容
     const contents = fs.readFileSync(file, 'utf-8');
+    const fileBlocInfok: FileBlockInfo = {
+        path: file,
+        // 记录文件的最后修改时间
+        lastTime: fs.statSync(file).mtimeMs,
+        // 根据文件内容计算唯一的hashKey，类似sha
+        hashKey: await createHashKey(contents),
+        blocks: [],
+    };
 
     // 对文件进行AST解析
     const ast: Parser.Tree | undefined = await getAst(file, contents, false);
     if (!ast) {
-        return ;
+        return fileBlocInfok;
     }
 
     // 获取函数范围
@@ -57,14 +65,6 @@ export async function createFileBlockInfo(file: string): Promise<FileBlockInfo |
     }
 
     // 遍历每个block，将其中的identifiers转化为BlockInfo
-    const fileBlocInfok: FileBlockInfo = {
-        path: file,
-        // 记录文件的最后修改时间
-        lastTime: fs.statSync(file).mtimeMs,
-        // 根据文件内容计算唯一的hashKey，类似sha
-        hashKey: await createHashKey(contents),
-        blocks: [],
-    };
     for (const [blockIndex, identifiers] of blockIdentifiers) {
         const block = blocks[blockIndex];
         const blockInfo: BlockInfo = {
