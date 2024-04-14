@@ -14,7 +14,7 @@ import { createFileBlockInfo, createIdentifierSetByQuery } from './createIdentif
 let indexStore: IndexStore | undefined = undefined;
 const devchatConfig = new DevChatConfig();
 
-const BLACK_LIST_DIRS = [
+export const BLACK_LIST_DIRS = [
     "node_modules",
     ".git",
     ".vscode",

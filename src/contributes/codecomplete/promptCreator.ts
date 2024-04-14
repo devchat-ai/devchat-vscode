@@ -22,6 +22,7 @@ import { UiUtilWrapper } from "../../util/uiUtil";
 import { countTokens } from "./llm/countTokens";
 import MemoryCacheManager from "./cache";
 import { searchSimilarBlock } from "./astIndex";
+import { GitDiffWatcher } from "./gitDiffWatcher";
 
 
 const CONTEXT_LIMITED_SIZE: number = 6000;
@@ -217,23 +218,27 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
 
 async function createRecentEditContext(recentEdits: RecentEdit[], curFile: string) {
     // read last 3 edits in reverse order
+    const recentEditFiles: RecentEdit[] = [...recentEdits, ...GitDiffWatcher.getInstance().getGitAddedFiles() as RecentEdit[]];
     let edits: RecentEdit[] = [];
-    for (let i = recentEdits.length - 1; i >= 0 && edits.length < 3; i--) {
-        if (recentEdits[i].fileName === curFile) {
+    for (let i = recentEditFiles.length - 1; i >= 0 && edits.length < 6; i--) {
+        if (recentEditFiles[i].fileName === curFile) {
             continue;
         }
-        if (recentEdits[i].collapseContent === "") {
+        if (edits.find( (edit) => edit.fileName === recentEditFiles[i].fileName)) {
+            continue;
+        }
+        if (recentEditFiles[i].collapseContent === "") {
             continue;
         }
 
-        const lines = recentEdits[i].collapseContent.split("\n");
+        const lines = recentEditFiles[i].collapseContent.split("\n");
         // 判断不为空的代码行是否超过50行
         const filterEmptyLines = lines.filter(line => line.trim() !== "");
         if (filterEmptyLines.length > 50) {
             continue;
         }
 
-        edits.push(recentEdits[i]);
+        edits.push(recentEditFiles[i]);
     }
 
     let context = "";
@@ -568,6 +573,17 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         }
     }
 
+    let gitDiffContext = GitDiffWatcher.getInstance().getGitDiffResult();
+    if (tokenCount < CONTEXT_LIMITED_SIZE && gitDiffContext.length > 0) {
+        const gitDiffContextToken = countTokens(gitDiffContext);
+        if (tokenCount + gitDiffContextToken < CONTEXT_LIMITED_SIZE) {
+            tokenCount += gitDiffContextToken;
+            gitDiffContext = "<git_diff_start>" + gitDiffContext + "<git_diff_end>\n\n\n\n";
+        } else {
+            gitDiffContext = "";
+        }
+    }
+
     let callDefContext = "";
     if (tokenCount < CONTEXT_LIMITED_SIZE) {
         const callCodeBlocks = await createContextCallDefine(filePath, fileContent, posoffset);
@@ -646,7 +662,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     
     logger.channel()?.info("Complete token:", tokenCount);
     
-    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
     return prompt;
 }
 
