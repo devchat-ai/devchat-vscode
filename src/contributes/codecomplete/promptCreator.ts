@@ -6,6 +6,7 @@
  */
 
 import * as fs from 'fs/promises';
+import * as fsF from 'fs';
 import * as path from 'path';
 import { logger } from "../../util/logger";
 import { getAst, getAstNodeByRange, getTreePathAtCursor, RangeInFileWithContents } from "./ast/ast";
@@ -507,8 +508,34 @@ export async function findNeighborFileContext(filePath: string, fileContent: str
     }
 }
 
+// create code task description as code completion context
+export async function createTaskDescriptionContext() {
+    // task description is store in <WORKSPACEDIR>/.chat/complete.config, this config file 
+    // is store as JSON format, and task description is store in "taskDescription" field as string
+    const workspacePath = UiUtilWrapper.workspaceFoldersFirstPath();
+    if (!workspacePath) {
+        return "";
+    }
+
+    const completeConfigPath = path.join(workspacePath, '.chat', 'complete.config');
+    if (!fsF.existsSync(completeConfigPath)) {
+        return "";
+    }
+
+    const completeConfig = JSON.parse(fsF.readFileSync(completeConfigPath, { encoding: 'utf8' }));
+    if (!completeConfig.taskDescription) {
+        return "";
+    }
+
+    return completeConfig.taskDescription;
+}
+
 export async function createPrompt(filePath: string, fileContent: string, line: number, column: number, posoffset: number, recentEdits: RecentEdit[]) {
     const commentPrefix = await getCommentPrefix(filePath);
+
+    const taskDescriptionContext = await createTaskDescriptionContext();
+    // taskDescriptionContext is multi lines description, so we need add commentPrefix before each line
+    
 
     let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
     
@@ -519,6 +546,26 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         tokenCount += suffixTokenCount;
     } else {
         suffix = "";
+    }
+
+    let taskDescriptionContextWithCommentPrefix = "";
+    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+        const taskDescriptionContext = await createTaskDescriptionContext();
+        // taskDescriptionContext is multi lines description, so we need add commentPrefix before each line
+        if (taskDescriptionContext) {
+            taskDescriptionContext.split("\n").forEach(line => {
+                taskDescriptionContextWithCommentPrefix += `${commentPrefix}${line}\n`;
+            });
+
+            taskDescriptionContextWithCommentPrefix += "\n\n\n\n";
+        }
+
+        const taskDescriptionContextToken = countTokens(taskDescriptionContextWithCommentPrefix);
+        if (tokenCount + taskDescriptionContextToken < CONTEXT_LIMITED_SIZE) {
+            tokenCount += taskDescriptionContextToken;
+        } else {
+            taskDescriptionContextWithCommentPrefix = "";
+        }
     }
 
     let callDefContext = "";
@@ -599,7 +646,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     
     logger.channel()?.info("Complete token:", tokenCount);
     
-    const prompt = "<fim_prefix>" + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
     return prompt;
 }
 
