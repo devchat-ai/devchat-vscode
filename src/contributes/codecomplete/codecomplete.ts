@@ -80,7 +80,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         try {
             const response = await fetch(apiUrl, requestOptions);
             if (!response.ok) {
-                if (process.env.COMPLETE_DEBUG) {
+                if (this.devchatConfig.get("complete_debug")) {
                     logger.channel()?.info("log event to server failed:", response.status);
                 }
             }
@@ -120,13 +120,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
         GitDiffWatcher.getInstance().tryRun();
+        const completeDebug = this.devchatConfig.get("complete_debug");
 
         // create prompt
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
         const posOffset = document.offsetAt(position);
 
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info(`cur position: ${position.line}: ${position.character}`);
         }
 
@@ -134,14 +135,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (!prompt) {
             return undefined;
         }
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info("prompt:", prompt);
         }
 
         // check cache
         const result = await this.cache.get(prompt);
         if (result) {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info(`cache hited:\n${result.code}`);
             }
             return result;
@@ -193,6 +194,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {
+        const completeDebug = this.devchatConfig.get("complete_debug");
+
         const result = await this.debouncer.debounce();
         if (!result) {
             return [];
@@ -226,7 +229,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info("code complete show.");
         }
         this.logEventToServer(
@@ -239,14 +242,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info("code complete not accept.");
             }
         }, 10_000);
 
         // 代码补全回调处理
         const callback = () => {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info("accept:", response.id);
             }
             // delete cache
