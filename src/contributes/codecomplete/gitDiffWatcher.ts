@@ -103,34 +103,39 @@ export class GitDiffWatcher {
 
     public async onDidChange() {
         // 执行git diff命令，获取变化的文件列表
-        try {
-            this.gitDiffResult = await this.runGitDiffCommand();
-            const gitAddedFiles = await this.getNewlyAddedFiles();
-            for (const file of gitAddedFiles) {
-                // 获取文件的最后修改时间，判断是否已经再次发生了变化
-                const lastModifiedTime = fs.statSync(file).mtimeMs;
-                // 查找文件是否已经存在于gitAddedFilesCollapseContext中
-                const existingFile = this.gitAddedFilesCollapseContext.find(f => f.file === file);
-                if (existingFile && existingFile.lastModifiedTime === lastModifiedTime) {
-                    // 文件已经存在于gitAddedFilesCollapseContext中，并且没有发生变化，则跳过
-                    continue;
-                }
+        // TODO
+        // 根据观察，添加diff数据后会有不稳定的输出补全结果出现，
+        // 猜测可能是因为diff信息没有出现在训练数据中。
+        // 因此，暂时先不使用diff信息。
+        return;
+        // try {
+        //     this.gitDiffResult = await this.runGitDiffCommand();
+        //     const gitAddedFiles = await this.getNewlyAddedFiles();
+        //     for (const file of gitAddedFiles) {
+        //         // 获取文件的最后修改时间，判断是否已经再次发生了变化
+        //         const lastModifiedTime = fs.statSync(file).mtimeMs;
+        //         // 查找文件是否已经存在于gitAddedFilesCollapseContext中
+        //         const existingFile = this.gitAddedFilesCollapseContext.find(f => f.file === file);
+        //         if (existingFile && existingFile.lastModifiedTime === lastModifiedTime) {
+        //             // 文件已经存在于gitAddedFilesCollapseContext中，并且没有发生变化，则跳过
+        //             continue;
+        //         }
 
-                const fileContent = await fs.promises.readFile(file, 'utf8');
-                const collapseContext = await collapseFile(file, fileContent);
+        //         const fileContent = await fs.promises.readFile(file, 'utf8');
+        //         const collapseContext = await collapseFile(file, fileContent);
 
-                // 将文件信息添加到gitAddedFilesCollapseContext中
-                this.gitAddedFilesCollapseContext.push({ file, lastModifiedTime, collapseContext });
-            }
+        //         // 将文件信息添加到gitAddedFilesCollapseContext中
+        //         this.gitAddedFilesCollapseContext.push({ file, lastModifiedTime, collapseContext });
+        //     }
 
-            // 移除已经不在git diff结果中的文件
-            this.gitAddedFilesCollapseContext = this.gitAddedFilesCollapseContext.filter(f => {
-                // 判断文件是否在gitAddedFiles中
-                return gitAddedFiles.includes(f.file);
-            });
-        } catch (error) {
-            logger.channel()?.info(`Failed to run git diff command: ${error}`);
-        }
+        //     // 移除已经不在git diff结果中的文件
+        //     this.gitAddedFilesCollapseContext = this.gitAddedFilesCollapseContext.filter(f => {
+        //         // 判断文件是否在gitAddedFiles中
+        //         return gitAddedFiles.includes(f.file);
+        //     });
+        // } catch (error) {
+        //     logger.channel()?.info(`Failed to run git diff command: ${error}`);
+        // }
     }
 
     public async tryRun() {

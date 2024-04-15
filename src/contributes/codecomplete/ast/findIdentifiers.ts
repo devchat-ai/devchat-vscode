@@ -15,20 +15,42 @@ import MemoryCacheManager from "../cache";
 
 const identifierQueryCache: MemoryCacheManager = new MemoryCacheManager(4);
 
-export async function visitAstNode(node: Parser.SyntaxNode, identifiers: Parser.SyntaxNode[]) {
+export async function visitAstNode(node: Parser.SyntaxNode, identifiers: Parser.SyntaxNode[], startLine: number | undefined = undefined, endLine: number | undefined = undefined) {
     const regex = /^[a-zA-Z_][0-9a-zA-Z_]*$/;
     // visit children of node
     for (let child of node.children) {
         // visit children, if child has children nodes
         if (child.childCount > 0) {
-            visitAstNode(child, identifiers);
+            if (startLine !== undefined && endLine !== undefined) {
+                if (child.startPosition.row > endLine || child.endPosition.row < startLine) {
+                    continue;
+                }
+                visitAstNode(child, identifiers, startLine, endLine);
+            } else {
+                visitAstNode(child, identifiers, startLine, endLine);
+            }
         } else {
             const isIdentifier = regex.test(child.text);
-            if (isIdentifier && child.text.length >= 3) {
-                identifiers.push(child);
+
+            if (startLine !== undefined && endLine!== undefined) {
+                if (child.startPosition.row >= startLine && child.endPosition.row <= endLine) {
+                    if (isIdentifier && child.text.length >= 3) {
+                        identifiers.push(child);
+                    }
+                }
+            } else {
+                if (isIdentifier && child.text.length >= 3) {
+                    identifiers.push(child);
+                }
             }
         }
     }
+}
+
+export async function findIdentifiersInAstNodeRange(node: Parser.SyntaxNode, startLine: number, endLine: number): Promise<Parser.SyntaxNode[]> {
+    const identifiers: Parser.SyntaxNode[] = [];
+    await visitAstNode(node, identifiers, startLine, endLine);
+    return identifiers;
 }
 
 export async function findIdentifiers(filepath: string, node: Parser.SyntaxNode): Promise<Parser.SyntaxNode[]> {

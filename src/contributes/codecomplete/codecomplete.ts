@@ -80,7 +80,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         try {
             const response = await fetch(apiUrl, requestOptions);
             if (!response.ok) {
-                if (process.env.COMPLETE_DEBUG) {
+                if (this.devchatConfig.get("complete_debug")) {
                     logger.channel()?.info("log event to server failed:", response.status);
                 }
             }
@@ -120,13 +120,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
         GitDiffWatcher.getInstance().tryRun();
+        const completeDebug = this.devchatConfig.get("complete_debug");
 
         // create prompt
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
         const posOffset = document.offsetAt(position);
 
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info(`cur position: ${position.line}: ${position.character}`);
         }
 
@@ -134,27 +135,20 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (!prompt) {
             return undefined;
         }
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info("prompt:", prompt);
         }
 
         // check cache
         const result = await this.cache.get(prompt);
         if (result) {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info(`cache hited:\n${result.code}`);
             }
             return result;
         }
 
-        // TODO
-        // call code_completion
         const lines = fileContent.split('\n');
-        let curlineIndent = lines[position.line].search(/\S/);
-        if (curlineIndent === -1) {
-            curlineIndent = lines[position.line].length;
-        }
-
         const langEndofLine: string[] = await getEndOfLine(fsPath);
         for (const endOfLine of langEndofLine) {
             if (lines[position.line].endsWith(endOfLine) && position.character >= lines[position.line].length) {
@@ -165,19 +159,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return undefined;
         }
 
-        let nextLine = lines[position.line].slice(position.character);
-        if (nextLine.trim().length === 0) {
-            for (let i = position.line + 1; i < lines.length; i++) {
-                if (lines[i].trim().length > 0) {
-                    nextLine = lines[i];
-                    break;
-                }
-            }
-        };
-
-        const curLine = lines[position.line];
-        const curColumn = position.character;
-        const completor = new LLMStreamComplete(token, curlineIndent, nextLine, curLine, curColumn);
+        const completor = new LLMStreamComplete(token, lines, position.line, position.character);
         const response = await completor.llmStreamComplete(prompt);
         if (!response || response.code.length === 0) {
             return undefined;
@@ -193,6 +175,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {
+        const completeDebug = this.devchatConfig.get("complete_debug");
+
         const result = await this.debouncer.debounce();
         if (!result) {
             return [];
@@ -224,9 +208,22 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return [];
         }
 
+        // 获取当前行中光标之后的文本内容
+        const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
+        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
+        let rangeEndPosition = position.translate(0, response.code.length);
+        if (!isIncludeLineSuffix) {
+            if (!response.receiveNewLine) {
+                rangeEndPosition = position;
+            } else {
+                // result will not be shown
+                return [];
+            }
+        }
+
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
-        if (process.env.COMPLETE_DEBUG) {
+        if (completeDebug) {
             logger.channel()?.info("code complete show.");
         }
         this.logEventToServer(
@@ -239,14 +236,14 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info("code complete not accept.");
             }
         }, 10_000);
 
         // 代码补全回调处理
         const callback = () => {
-            if (process.env.COMPLETE_DEBUG) {
+            if (completeDebug) {
                 logger.channel()?.info("accept:", response.id);
             }
             // delete cache
@@ -262,14 +259,6 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     length: response.code.length
                 });
         };
-
-        // 获取当前行中光标之后的文本内容
-        const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
-        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
-        let rangeEndPosition = position.translate(0, response.code.length);
-        if (!isIncludeLineSuffix) {
-            rangeEndPosition = position;
-        }
 
         this.lastComplete = response.code;
         return [

@@ -12,16 +12,38 @@ export interface CodeCompleteResult {
     prompt: string;
     code: string;
     id: string;
+    receiveNewLine: boolean;
 }
 
 
 export class LLMStreamComplete {
     private token: vscode.CancellationToken;
+    private contentLines: string[] = [];
     private curlineIndent: number = 0;
     private nextLine: string = "";
     private curLine: string = "";
+    private curLineNum: number = 0;
     private curColumn: number = 0;
-    constructor(token: vscode.CancellationToken, curlineIndent: number, nextLine: string, curLine: string, curColumn: number) {
+    constructor(token: vscode.CancellationToken, contentLines: string[], curLineNum: number, curColumn: number) {
+        this.contentLines = contentLines;
+        this.curLineNum = curLineNum;
+        let curlineIndent = this.contentLines[curLineNum].search(/\S/);
+        if (curlineIndent === -1) {
+            curlineIndent = this.contentLines[curLineNum].length;
+        }
+
+        let nextLine = this.contentLines[curLineNum].slice(curColumn);
+        if (nextLine.trim().length === 0) {
+            for (let i = curLineNum + 1; i < this.contentLines.length; i++) {
+                if (this.contentLines[i].trim().length > 0) {
+                    nextLine = this.contentLines[i];
+                    break;
+                }
+            }
+        };
+
+        const curLine = this.contentLines[curLineNum];
+
         this.token = token;
         this.curlineIndent = curlineIndent;
         this.nextLine = nextLine;
@@ -55,7 +77,7 @@ export class LLMStreamComplete {
     }
 
     // 当前chunk中字符串不是以行为单位，需要重新整合为以行为单位。
-    async * toLines(chunks: AsyncIterable<CodeCompletionChunk>) {
+    async * toLines(chunks: AsyncIterable<CodeCompletionChunk>, receiveNewLineConfig: {"newLine": boolean}) {
         let line = "";
         let id = "";
         for await (const chunk of chunks) {
@@ -65,6 +87,7 @@ export class LLMStreamComplete {
 
             line += chunk.text;
             while (line.indexOf("\n") !== -1) {
+                receiveNewLineConfig.newLine = true;
                 const index = line.indexOf("\n");
                 yield {
                     text: line.slice(0, index + 1),
@@ -149,7 +172,6 @@ export class LLMStreamComplete {
         let index = 0;
         let preIndent = -1;
         let hasIndentBigger = false;
-        let sameIndentTimes = 0;
         for await (const chunk of chunks) {
             let lineIndent = chunk.text.search(/\S/);
             if (lineIndent === -1) {
@@ -166,15 +188,7 @@ export class LLMStreamComplete {
                 break;
             }
             if (index > 0 && hasIndentBigger && lineIndent === this.curlineIndent && chunk.text.trim().length > 3) {
-                break;
-            }
-            if (index > 0 && preIndent === lineIndent) {
-                sameIndentTimes += 1;
-            } else {
-                sameIndentTimes = 0;
-            }
-
-            if (sameIndentTimes > 1) {
+                yield chunk;
                 break;
             }
             if (lineIndent > this.curlineIndent) {
@@ -197,6 +211,39 @@ export class LLMStreamComplete {
             lines[lines.length - 1] = lines[lines.length - 1].slice(0, -1);
         }
 
+        return lines;
+    }
+
+    // whether lines are repeated some block before
+    async removeRepeatBlock(lines: string[]): Promise< string[] > {
+        if (lines.length === 0) {
+            return [];
+        }
+
+        // find first match line in before 50 lines
+        let firstMatchLine = -1;
+        for (let i = this.curLineNum - 1; i >= 0 && i >= this.curLineNum - 50; i--) {
+            if (this.contentLines[i].trim() === lines[0].trim()) {
+                firstMatchLine = i;
+                break;
+            }
+        }
+
+        if (firstMatchLine === -1) {
+            return lines;
+        }
+
+        let isAllMatch = true;
+        for (let i = 0; i < lines.length; i++) {
+            if (this.contentLines[firstMatchLine + i].trim() !== lines[i].trim()) {
+                isAllMatch = false;
+                break;
+            }
+        }
+        
+        if (isAllMatch) {
+            return [];
+        }
         return lines;
     }
 
@@ -229,10 +276,11 @@ export class LLMStreamComplete {
     async llmStreamComplete(prompt: string) : Promise<CodeCompleteResult | undefined> {
         // TODO
         // 对LLM的异常进行捕获，避免中断代码补全
+        let receiveNewLineConfig: {"newLine": boolean} = {"newLine": false};
 
         const chunks = streamComplete(prompt);
         const chunks2 = this.chunkStopCanceled(chunks);
-        const chunks3 = this.toLines(chunks2);
+        const chunks3 = this.toLines(chunks2, receiveNewLineConfig);
         const chunks4 = this.stopAtFirstBrace(chunks3);
         const chunks5 = this.stopFirstLineWhenInMiddleLine(chunks4);
         const chunks6 = this.stopWhenSameWithNext(chunks5);
@@ -248,10 +296,11 @@ export class LLMStreamComplete {
         }
 
         const line2 = await this.removeEmptyEndlines(lines);
+        const line3 = await this.removeRepeatBlock(line2);
 
-        const completionCode = line2.join("");
+        const completionCode = line3.join("");
 
         logger.channel()?.info("code:", completionCode);
-        return { prompt, code: completionCode, id };
+        return { prompt, code: completionCode, id, receiveNewLine: receiveNewLineConfig.newLine };
     }
 }
