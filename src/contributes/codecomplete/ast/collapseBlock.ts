@@ -64,7 +64,7 @@ export async function collapseFile(
             indent = lines[bodyStartLine].length;
         }
         const indentStr = " ".repeat(indent);
-        lines.splice(bodyStartLine, bodyEndLine - bodyStartLine + 1, `${indentStr}${commentPrefix}...`);
+        lines.splice(bodyStartLine, bodyEndLine - bodyStartLine + 1, `${indentStr}${commentPrefix}Code omitted...`);
     }
 
     return lines.join("\n");

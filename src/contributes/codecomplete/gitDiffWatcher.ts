@@ -103,6 +103,11 @@ export class GitDiffWatcher {
 
     public async onDidChange() {
         // 执行git diff命令，获取变化的文件列表
+        // TODO
+        // 根据观察，添加diff数据后会有不稳定的输出补全结果出现，
+        // 猜测可能是因为diff信息没有出现在训练数据中。
+        // 因此，暂时先不使用diff信息。
+        return;
         try {
             this.gitDiffResult = await this.runGitDiffCommand();
             const gitAddedFiles = await this.getNewlyAddedFiles();

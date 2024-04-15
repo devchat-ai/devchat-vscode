@@ -23,6 +23,7 @@ import { countTokens } from "./llm/countTokens";
 import MemoryCacheManager from "./cache";
 import { searchSimilarBlock } from "./astIndex";
 import { GitDiffWatcher } from "./gitDiffWatcher";
+import { findIdentifiersInAstNodeRange } from './ast/findIdentifiers';
 
 
 const CONTEXT_LIMITED_SIZE: number = 6000;
@@ -146,7 +147,7 @@ export async function collapseCodeBlock(functions: FunctionRange[], filepath: st
             indent = lines[bodyStartLine].length;
         }
         const indentStr = " ".repeat(indent);
-        lines.splice(bodyStartLine, bodyEndLine - bodyStartLine + 1, `${indentStr}${commentPrefix}...`);
+        lines.splice(bodyStartLine, bodyEndLine - bodyStartLine + 1, `${indentStr}${commentPrefix}Code omitted...`);
 
         // 更新光标位置
         if (curRow > bodyEndLine) {
@@ -244,7 +245,7 @@ async function createRecentEditContext(recentEdits: RecentEdit[], curFile: strin
     let context = "";
     for (const edit of edits) {
         const commentPrefix = await getCommentPrefix(edit.fileName);
-        context += `${commentPrefix}${edit.fileName}\n\n`;
+        context += `${commentPrefix}<filename>${edit.fileName}\n\n`;
         context += `${edit.collapseContent}\n\n\n\n`;
     }
 
@@ -252,7 +253,7 @@ async function createRecentEditContext(recentEdits: RecentEdit[], curFile: strin
 }
 
 // find all related symbol defines
-export async function symbolDefinesContext(filePath: string, fileContent: string, line: number, column: number) : Promise < { filepath: string, codeblock: string }[] > {
+export async function symbolDefinesContext(filePath: string, fileContent: string, line: number, column: number) : Promise < { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] > {
     const workspacePath = UiUtilWrapper.workspaceFoldersFirstPath();
     if (!workspacePath) {
         return [];
@@ -310,6 +311,10 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
             }
         });
 
+        // add identifiers in lines [curline - 3: curline]
+        const fromLine = line - 3 >= 0 ? line - 3 : 0;
+        variableNodes.push(...await findIdentifiersInAstNodeRange(ast.rootNode, fromLine, line));
+
         // remove matched nodes in functions
         const filteredImportTypeNodes = importTypeNodes.filter(n => {
             return!filteredFunctions.some(f => {
@@ -322,14 +327,25 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
             });
         });
 
-        let codeblocks: { filepath: string, codeblock: string }[] = [];
+        let codeblocks: { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] = [];
 
-        let codeblockRanges: RangeInFile[] = [];
+        let codeblockRanges: { filepath: string; range: AstRange, node: Parser.SyntaxNode }[] = [];
         // for (const node of filteredImportTypeNodes) {
         //     codeblockRanges.push( ...await getDefinitions(node.startPosition.row, node.startPosition.column, filePath));
         // }
         for (const node of filteredVariableNodes) {
-            codeblockRanges.push( ...await getTypeDefinitions(node.startPosition.row, node.startPosition.column, filePath));
+            const defs = await getTypeDefinitions(node.startPosition.row, node.startPosition.column, filePath);
+            if (defs.length === 0) {
+                continue;
+            }
+            // add node to defs
+            for (const defV of defs) {
+                codeblockRanges.push({
+                    filepath: defV.filepath,
+                    range: defV.range,
+                    node: node
+                });
+            }
         }
 
         // remove codeblock ranges that not in workspacePath
@@ -337,20 +353,13 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
             return r.filepath.indexOf(workspacePath) === 0;
         });
 
-        // remove codeblock ranges that in node_modules
+        // remove codeblock defined in node_modules
         codeblockRanges = codeblockRanges.filter(r => {
-            return r.filepath.indexOf(path.join(workspacePath, 'node_modules'))!== 0;
-        });
-
-        // remove repeated codeblock ranges
-        codeblockRanges = codeblockRanges.filter((r, i) => {
-            return codeblockRanges.findIndex(r2 => {
-                return r2.filepath === r.filepath && r2.range.start.line === r.range.start.line && r2.range.start.character === r.range.start.character;
-            }) === i;
+            return r.filepath.indexOf('node_modules') === -1;
         });
 
         // 按文件对codeblockRanges分组
-        const codeblockRangesByFile: { [key: string]: RangeInFile[] } = {};
+        const codeblockRangesByFile: { [key: string]: { filepath: string; range: AstRange, node: Parser.SyntaxNode }[] } = {};
         for (const range of codeblockRanges) {
             if (!codeblockRangesByFile[range.filepath]) {
                 codeblockRangesByFile[range.filepath] = [];
@@ -373,22 +382,23 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
 
             const refLines = refContents.split('\n');
 
-            let contents: string[] = [];
+            let contents: {node: Parser.SyntaxNode, text: string}[] = [];
             let visitedBlockContents: string[] = [];
             for (const range of codeblockRangesByFile[filepath]) {
-                const mapKey = `${filepath}-${refLines[range.range.start.line]}-${range.range.start.line}-${range.range.start.character}`;
-                if (symbleCollapsedDefine.has(mapKey)) {
-                    const collapsedDefine = symbleCollapsedDefine.get(mapKey);
-                    if (collapsedDefine) {
-                        contents.push(collapsedDefine);
-                        continue;
-                    }
-                }
-
                 if (!refAst) {
                     refAst = await getAst(filepath, refContents);
                     if (!refAst) {
                         break;
+                    }
+                }
+
+                const mapKey = `${filepath}-${refLines[range.range.start.line]}-${range.range.start.line}-${range.range.start.character}`;
+                if (symbleCollapsedDefine.has(mapKey)) {
+                    const collapsedDefine = symbleCollapsedDefine.get(mapKey);
+                    if (collapsedDefine && !visitedBlockContents.includes(collapsedDefine)) {
+                        visitedBlockContents.push(collapsedDefine);
+                        contents.push({node: range.node, text: collapsedDefine});
+                        continue;
                     }
                 }
 
@@ -404,18 +414,18 @@ export async function symbolDefinesContext(filePath: string, fileContent: string
                 visitedBlockContents.push(blockText);
                 symbleCollapsedDefine.set(mapKey, blockText);
 
-                contents.push(blockText);
+                contents.push({node: range.node, text: blockText});
             }
             
             for (const content of contents) {
                 // parse content and make collapse
-                if (content.trim().split("\n").length === 1) {
+                if (content.text.trim().split("\n").length === 1) {
                     continue;
                 }
 
-                const collapseContent = await collapseFile(filepath, content);
+                const collapseContent = await collapseFile(filepath, content.text);
                 if (collapseContent) {
-                    codeblocks.push({ filepath, codeblock: collapseContent });
+                    codeblocks.push({ filepath, node:content.node, codeblock: collapseContent });
                 }
             }
         }
@@ -559,7 +569,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         // taskDescriptionContext is multi lines description, so we need add commentPrefix before each line
         if (taskDescriptionContext) {
             taskDescriptionContext.split("\n").forEach(line => {
-                taskDescriptionContextWithCommentPrefix += `${commentPrefix}${line}\n`;
+                taskDescriptionContextWithCommentPrefix += `${commentPrefix}<filename>${line}\n`;
             });
 
             taskDescriptionContextWithCommentPrefix += "\n\n\n\n";
@@ -573,16 +583,17 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         }
     }
 
-    let gitDiffContext = GitDiffWatcher.getInstance().getGitDiffResult();
-    if (tokenCount < CONTEXT_LIMITED_SIZE && gitDiffContext.length > 0) {
-        const gitDiffContextToken = countTokens(gitDiffContext);
-        if (tokenCount + gitDiffContextToken < CONTEXT_LIMITED_SIZE) {
-            tokenCount += gitDiffContextToken;
-            gitDiffContext = "<git_diff_start>" + gitDiffContext + "<git_diff_end>\n\n\n\n";
-        } else {
-            gitDiffContext = "";
-        }
-    }
+    // let gitDiffContext = GitDiffWatcher.getInstance().getGitDiffResult();
+    // if (tokenCount < CONTEXT_LIMITED_SIZE && gitDiffContext.length > 0) {
+    //     const gitDiffContextToken = countTokens(gitDiffContext);
+    //     if (tokenCount + gitDiffContextToken < CONTEXT_LIMITED_SIZE) {
+    //         tokenCount += gitDiffContextToken;
+    //         gitDiffContext = "<git_diff_start>" + gitDiffContext + "<git_diff_end>\n\n\n\n";
+    //     } else {
+    //         gitDiffContext = "";
+    //     }
+    // }
+    let gitDiffContext = "";
 
     let callDefContext = "";
     if (tokenCount < CONTEXT_LIMITED_SIZE) {
@@ -594,7 +605,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += callBlockToken;
-            callDefContext += `${commentPrefix}${callCodeBlock.filepath}\n\n`;
+            callDefContext += `${commentPrefix}<filename>${callCodeBlock.filepath}\n\n`;
             callDefContext += `${callCodeBlock.codeblock}\n\n\n\n`;
         }
     }
@@ -615,14 +626,14 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += blockToken;
-            similarBlockContext += `${commentPrefix}${similarContext.file}\n\n`;
+            similarBlockContext += `${commentPrefix}<filename>${similarContext.file}\n\n`;
             similarBlockContext += `${similarContext.text}\n\n\n\n`;
         }
     }
 
     let symbolContext = "";
     if (tokenCount < CONTEXT_LIMITED_SIZE) {
-        const symbolDefines: { filepath: string, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
+        const symbolDefines: { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
         for (const symbolDefine of symbolDefines ) {
             const countSymboleToken = countTokens(symbolDefine.codeblock);
             if (tokenCount + countSymboleToken > CONTEXT_LIMITED_SIZE) {
@@ -630,7 +641,8 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += countSymboleToken;
-            symbolContext += `${commentPrefix}${symbolDefine.filepath}\n\n`;
+            symbolContext += `${commentPrefix}<filename>${symbolDefine.filepath}\n\n`;
+            symbolContext += `${commentPrefix}this is type of variable: ${symbolDefine.node.text}\n\n`;
             symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
         }
     }
@@ -654,7 +666,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             const countFileToken = countTokens(neighborFiles[0].text);
             if (tokenCount + countFileToken < CONTEXT_LIMITED_SIZE) {
                 tokenCount += countFileToken;
-                neighborFileContext += `${commentPrefix}${neighborFiles[0].file}\n\n`;
+                neighborFileContext += `${commentPrefix}<filename>${neighborFiles[0].file}\n\n`;
                 neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
             }
         }
@@ -662,7 +674,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     
     logger.channel()?.info("Complete token:", tokenCount);
     
-    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
     return prompt;
 }
 

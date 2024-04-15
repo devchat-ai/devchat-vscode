@@ -148,14 +148,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return result;
         }
 
-        // TODO
-        // call code_completion
         const lines = fileContent.split('\n');
-        let curlineIndent = lines[position.line].search(/\S/);
-        if (curlineIndent === -1) {
-            curlineIndent = lines[position.line].length;
-        }
-
         const langEndofLine: string[] = await getEndOfLine(fsPath);
         for (const endOfLine of langEndofLine) {
             if (lines[position.line].endsWith(endOfLine) && position.character >= lines[position.line].length) {
@@ -166,19 +159,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return undefined;
         }
 
-        let nextLine = lines[position.line].slice(position.character);
-        if (nextLine.trim().length === 0) {
-            for (let i = position.line + 1; i < lines.length; i++) {
-                if (lines[i].trim().length > 0) {
-                    nextLine = lines[i];
-                    break;
-                }
-            }
-        };
-
-        const curLine = lines[position.line];
-        const curColumn = position.character;
-        const completor = new LLMStreamComplete(token, curlineIndent, nextLine, curLine, curColumn);
+        const completor = new LLMStreamComplete(token, lines, position.line, position.character);
         const response = await completor.llmStreamComplete(prompt);
         if (!response || response.code.length === 0) {
             return undefined;
@@ -227,6 +208,19 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return [];
         }
 
+        // 获取当前行中光标之后的文本内容
+        const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
+        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
+        let rangeEndPosition = position.translate(0, response.code.length);
+        if (!isIncludeLineSuffix) {
+            if (!response.receiveNewLine) {
+                rangeEndPosition = position;
+            } else {
+                // result will not be shown
+                return [];
+            }
+        }
+
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
         if (completeDebug) {
@@ -265,14 +259,6 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     length: response.code.length
                 });
         };
-
-        // 获取当前行中光标之后的文本内容
-        const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
-        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
-        let rangeEndPosition = position.translate(0, response.code.length);
-        if (!isIncludeLineSuffix) {
-            rangeEndPosition = position;
-        }
 
         this.lastComplete = response.code;
         return [
