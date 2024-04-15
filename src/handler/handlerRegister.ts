@@ -9,6 +9,7 @@ import { sendMessage, stopDevChat, regeneration, deleteChatMessage, userInput } 
 import { applyCodeWithDiff } from './diffHandler';
 import { addConext } from './contextHandler';
 import { getContextDetail } from './contextHandler';
+import {createAndOpenFile} from './codeBlockHandler';
 import { listAllMessages } from './listMessages';
 import { doVscodeCommand } from './vscodeCommandHandler';
 import { featureToggle, getFeatureToggles } from './featureToggleHandler';
@@ -27,6 +28,8 @@ messageHandler.registerHandler('code_apply', insertCodeBlockToFile);
 // Apply the code block replied by AI to the currently active view, replacing the current file content
 // Response: none
 messageHandler.registerHandler('code_file_apply', replaceCodeBlockToFile);
+// Apply the code block to a new file
+messageHandler.registerHandler('code_new_file', createAndOpenFile);
 // Perform commit operation
 // Response: none
 messageHandler.registerHandler('doCommit', doCommit);
