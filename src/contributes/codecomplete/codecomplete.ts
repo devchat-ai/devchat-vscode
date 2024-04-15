@@ -9,7 +9,7 @@ import { DevChatConfig } from '../../util/config';
 import { outputAst } from './astTest';
 import { getEndOfLine } from './ast/language';
 import { RecentEditsManager } from './recentEdits';
-
+import { GitDiffWatcher } from './gitDiffWatcher';
 
 export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand(
@@ -119,7 +119,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     // }
 
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
-        // TODO
+        GitDiffWatcher.getInstance().tryRun();
+
         // create prompt
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
