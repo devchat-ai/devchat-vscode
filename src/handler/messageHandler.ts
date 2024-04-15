@@ -16,25 +16,9 @@ export class MessageHandler {
 		this.handlers[command] = handler;
 	}
 
-	
-
 	async handleMessage(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
 		try {
-			let isNeedSendResponse = false;
-			if (message.command === 'sendMessage') {
-				try {
-					const messageText = message.text;
-					const messageObject = JSON.parse(messageText);
-					if (messageObject && messageObject.user && messageObject.user === 'merico-devchat') {
-						message = messageObject;
-						isNeedSendResponse = true;
-						if (messageObject.hasResponse) {
-							isNeedSendResponse = false;
-						}
-					}
-				} catch (e) {
-				}
-			}
+			let isNeedSendResponse = this.shouldSendResponse(message);
 
 			const handler = this.handlers[message.command];
 			if (handler) {
@@ -54,6 +38,21 @@ export class MessageHandler {
 			logger.channel()?.show();
 		
 		}
+	}
+
+	private shouldSendResponse(message: any): boolean {
+		if (message.command === 'sendMessage') {
+			try {
+				const messageObject = JSON.parse(message.text);
+				if (messageObject && messageObject.user && messageObject.user === 'merico-devchat') {
+					message = messageObject; // Update the message reference
+					return !messageObject.hasResponse;
+				}
+			} catch (e) {
+				// Silence JSON parse error, log if necessary
+			}
+		}
+		return false;
 	}
 
 	public static sendMessage(panel: vscode.WebviewPanel|vscode.WebviewView, message : any, log: boolean = true): void {
