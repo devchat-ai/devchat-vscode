@@ -104,3 +104,21 @@ regInMessage({command: 'code_file_apply', content: '', fileName: ''});
 export async function replaceCodeBlockToFile(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
 	await applyCodeFile(message.content, message.fileName);
 }
+
+/**
+ * 创建并打开一个新文件
+ * @param message 包含要创建文件的语言和内容的对象
+ * - language: 文件的语言
+ * - content: 文件的内容
+ */
+export async function createAndOpenFile(message: any) {
+	try {
+		const document = await vscode.workspace.openTextDocument({
+			language: message.language,
+			content: message.content
+		});
+		await vscode.window.showTextDocument(document);
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error creating or opening file: ${error}`);
+	} 
+}
