@@ -187,8 +187,7 @@ export class LLMStreamComplete {
             if (index > 0 && preIndent === 0 && lineIndent === 0) {
                 break;
             }
-            if (index > 0 && hasIndentBigger && lineIndent === this.curlineIndent && chunk.text.trim().length > 3) {
-                yield chunk;
+            if (index > 0 && hasIndentBigger && lineIndent === this.curlineIndent && chunk.text.trim().length > 0 && ![')',']', '}'].includes(chunk.text.trim()[0])) {
                 break;
             }
             if (lineIndent > this.curlineIndent) {
