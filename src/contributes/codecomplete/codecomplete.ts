@@ -183,9 +183,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (!result) {
             return [];
         }
-        if (context.selectedCompletionInfo) {
-            return [];
-        }
+        // if (context.selectedCompletionInfo) {
+        //     return [];
+        // }
         if (this.devchatConfig.get("complete_enable") !== true) {
             return [];
         }
@@ -281,6 +281,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         this.lastComplete = response.code;
         this.previousCodeComplete = response;
         this.previousPrefix = linePrefix;
+
         return [
             new vscode.InlineCompletionItem(
                 response.code,
