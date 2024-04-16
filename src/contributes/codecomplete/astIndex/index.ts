@@ -12,7 +12,7 @@ import { createFileBlockInfo, createIdentifierSetByQuery } from './createIdentif
 
 
 let indexStore: IndexStore | undefined = undefined;
-const devchatConfig = new DevChatConfig();
+const devchatConfig = DevChatConfig.getInstance();
 
 export const BLACK_LIST_DIRS = [
     "node_modules",

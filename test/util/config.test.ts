@@ -41,12 +41,12 @@ describe('DevChatConfig', () => {
   });
 
   it('should read config file and get the correct value for a given key', () => {
-    const config = new DevChatConfig();
+    const config = DevChatConfig.getInstance();
     expect(config.get('username')).to.equal('DevUser');
   });
 
   it('should set a new key-value pair and write to the config file', () => {
-    const config = new DevChatConfig();
+    const config = DevChatConfig.getInstance();
     const newKey = 'notifications.enabled';
     const newValue = true;
 
@@ -61,7 +61,7 @@ describe('DevChatConfig', () => {
     readFileStub.throws(new Error('Failed to read file'));
 
     // Constructing the config will attempt to read the file and log an error
-    const config = new DevChatConfig();
+    const config = DevChatConfig.getInstance();
 
     // Check if the error was logged
     sinon.assert.called(loggerStub);

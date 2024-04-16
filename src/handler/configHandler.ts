@@ -11,10 +11,10 @@ regInMessage({command: 'readConfig', key: ['A','B']}); // when key is "", it wil
 regOutMessage({command: 'readConfig', key: ['A', 'B'], value: 'any'});
 export async function readConfig(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
     if (message.key === '' || message.key === '*' || message.key.length === 0 || message.key[1] === '*') {
-        const config = new DevChatConfig().getAll();
+        const config = DevChatConfig.getInstance().getAll();
         MessageHandler.sendMessage(panel, {command: 'readConfig', key: message.key, value: config});
     } else {
-        const config = new DevChatConfig().get(message.key);
+        const config = DevChatConfig.getInstance().get(message.key);
         MessageHandler.sendMessage(panel, {command: 'readConfig', key: message.key, value: config});
     }
 }
@@ -22,8 +22,8 @@ export async function readConfig(message: any, panel: vscode.WebviewPanel|vscode
 regInMessage({command: 'writeConfig', key: ['A', 'B'], value: 'any'}); // when key is "", it will rewrite all config values
 export async function writeConfig(message: any, panel: vscode.WebviewPanel|vscode.WebviewView): Promise<void> {
     if (message.key === '' || message.key === '*' || message.key.length === 0 || message.key[1] === '*') {
-        new DevChatConfig().setAll(message.value);
+        DevChatConfig.getInstance().setAll(message.value);
     } else {
-        new DevChatConfig().set(message.key, message.value);
+        DevChatConfig.getInstance().set(message.key, message.value);
     }
 }

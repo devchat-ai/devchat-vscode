@@ -45,7 +45,7 @@ export async function installDevchat(): Promise<string> {
 			fs.writeFileSync(pythonPathFile, content);
 
 			// update DevChat.PythonForChat configration
-			await new DevChatConfig().set("python_for_chat", pythonApp);
+			await DevChatConfig.getInstance().set("python_for_chat", pythonApp);
 			return pythonApp;
 		} else {
 			// if current os is not windows, we need to get default python path
@@ -70,7 +70,7 @@ export async function installDevchat(): Promise<string> {
 			}
 			logger.channel()?.info(`Create env success: ${pythonCommand}`);
 
-			await new DevChatConfig().set("python_for_chat", pythonCommand);
+			await DevChatConfig.getInstance().set("python_for_chat", pythonCommand);
 			return pythonCommand;
 		}
 	} catch (error) {

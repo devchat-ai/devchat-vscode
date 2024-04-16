@@ -43,7 +43,7 @@ function getDefaultPythonCommand(): string | undefined {
 
 export function getValidPythonCommand(): string | undefined {
 	try {
-		const devchatConfig = new DevChatConfig();
+		const devchatConfig = DevChatConfig.getInstance();
 		const pythonCommand = devchatConfig.get('python_for_chat');
 		if (pythonCommand) {
 			return pythonCommand;

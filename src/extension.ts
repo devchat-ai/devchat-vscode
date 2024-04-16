@@ -36,7 +36,7 @@ import { indexDir } from "./contributes/codecomplete/astIndex";
 
 
 async function migrateConfig() {
-	const devchatConfig = new DevChatConfig();
+	const devchatConfig = DevChatConfig.getInstance();
 	const devchatProvider = "providers.devchat";
 	const devchatProviderConfig: any = devchatConfig.get(devchatProvider);
 	if (devchatProviderConfig) {
