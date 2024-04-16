@@ -53,6 +53,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     private devchatConfig: DevChatConfig;
     private lastComplete: string;
     private recentEditors: RecentEditsManager;
+    private previousCodeComplete: CodeCompleteResult | undefined;
+    private previousPrefix: string | undefined;
 
     constructor() {
         // TODO
@@ -199,7 +201,23 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         //     return [];
         // }
 
-        const response: CodeCompleteResult | undefined = await this.codeComplete(document, position, context, token);
+        let response: CodeCompleteResult | undefined = undefined;
+
+        // 获取当前行光标之前的文本内容
+        const linePrefix = document.lineAt(position.line).text.slice(0, position.character);
+        // 如果this.previousPrefix + this.previousCodeComplete包含“当前行光标之前内容”，且index为0，那么不需要执行代码补全
+        if (this.previousPrefix && this.previousCodeComplete && this.previousCodeComplete.code.length > 0) {
+            const index = (this.previousPrefix + this.previousCodeComplete.code).indexOf(linePrefix);
+            if (index !== -1) {
+                response = JSON.parse(JSON.stringify(this.previousCodeComplete));
+                if (response) {
+                    response.code = (this.previousPrefix + this.previousCodeComplete.code).slice(index + linePrefix.length);
+                }
+            }
+        }
+        if (!response) {
+            response = await this.codeComplete(document, position, context, token);
+        }
         if (!response) {
             return [];
         }
@@ -244,23 +262,25 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // 代码补全回调处理
         const callback = () => {
             if (completeDebug) {
-                logger.channel()?.info("accept:", response.id);
+                logger.channel()?.info("accept:", response!.id);
             }
             // delete cache
-            this.cache.delete(response.prompt);
+            this.cache.delete(response!.prompt);
             // delete timer
             clearTimeout(logRejectionTimeout);
             // log to server
             this.logEventToServer(
                 {
-                    completion_id: response.id,
+                    completion_id: response!.id,
                     type: "select",
-                    lines: response.code.split('\n').length,
-                    length: response.code.length
+                    lines: response!.code.split('\n').length,
+                    length: response!.code.length
                 });
         };
 
         this.lastComplete = response.code;
+        this.previousCodeComplete = response;
+        this.previousPrefix = linePrefix;
         return [
             new vscode.InlineCompletionItem(
                 response.code,
