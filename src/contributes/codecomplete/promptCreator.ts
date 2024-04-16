@@ -24,6 +24,7 @@ import MemoryCacheManager from "./cache";
 import { searchSimilarBlock } from "./astIndex";
 import { GitDiffWatcher } from "./gitDiffWatcher";
 import { findIdentifiersInAstNodeRange } from './ast/findIdentifiers';
+import { DevChatConfig } from '../../util/config';
 
 
 const CONTEXT_LIMITED_SIZE: number = 6000;
@@ -674,7 +675,14 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     
     logger.channel()?.info("Complete token:", tokenCount);
     
-    const prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    let prompt = "";
+    const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
+    if (ollamaApiBase) {
+        prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
+    } else {
+        prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    }
+    
     return prompt;
 }
 

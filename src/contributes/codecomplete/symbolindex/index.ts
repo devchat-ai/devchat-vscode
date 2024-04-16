@@ -25,7 +25,7 @@ import { DevChatConfig } from '../../../util/config';
 
 // 记录文件的最后修改时间
 const lastModified = new Map<string, number>();
-const devchatConfig = new DevChatConfig();
+const devchatConfig = DevChatConfig.getInstance();
 
 const BLACK_LIST_DIRS = [
     "node_modules",

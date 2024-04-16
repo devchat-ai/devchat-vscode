@@ -61,7 +61,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // Read delay time from config
         this.debouncer = new Debouncer(500);
         this.cache = new MemoryCacheManager();
-        this.devchatConfig = new DevChatConfig();
+        this.devchatConfig = DevChatConfig.getInstance();
         this.lastComplete = "";
         this.recentEditors = new RecentEditsManager();
     }

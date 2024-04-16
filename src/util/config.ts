@@ -5,16 +5,25 @@ import { logger } from './logger';
 
 
 export class DevChatConfig {
+    private static instance: DevChatConfig;
+    // 配置文件路径，根据操作系统的差异，可能需要调整
     private configFilePath: string;
     private data: any;
     // last modify timestamp of the config file
     private lastModifyTime: number;
 
-    constructor() {
+    private constructor() {
         // 视操作系统的差异，可能需要调整路径 ~/.chat/config.yml
         this.configFilePath = path.join(process.env.HOME || process.env.USERPROFILE || '', '.chat', 'config.yml');
         this.lastModifyTime = 0;
         this.readConfigFile();
+    }
+
+    public static getInstance(): DevChatConfig {
+        if (!DevChatConfig.instance) {
+            DevChatConfig.instance = new DevChatConfig();
+        }
+        return DevChatConfig.instance;
     }
 
     private readConfigFile() {

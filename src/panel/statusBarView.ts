@@ -25,7 +25,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 	function checkDevChatCommandsStatus() {
 		const timerDevchatCommands = setInterval(async () => {
 			try {
-				const pythonCommand = new DevChatConfig().get('python_for_commands');
+				const pythonCommand = DevChatConfig.getInstance().get('python_for_commands');
 				if (!pythonCommand) {
 					statusBarItem.text = `$(pass)DevChat$(warning)`;
 					statusBarItem.tooltip = `ready to chat, command functionality limited`;

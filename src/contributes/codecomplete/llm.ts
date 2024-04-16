@@ -16,15 +16,23 @@ export interface CodeCompletionChunk {
 }
 
 export async function* streamComplete(prompt: string): AsyncGenerator<CodeCompletionChunk> {
-    for await (const chunk of nvidiaStarcoderComplete(prompt)) {
-        yield chunk;
+    const nvidiaKey = DevChatConfig.getInstance().get("complete_key");
+    const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
+    if (ollamaApiBase) {
+        for await (const chunk of ollamaDeepseekComplete(prompt)) {
+            yield chunk;
+        }
+    } else if (nvidiaKey) {
+        for await (const chunk of nvidiaStarcoderComplete(prompt)) {
+            yield chunk;
+        }
     }
 }
 
 export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
     const invokeUrl = 'https://api.nvcf.nvidia.com/v2/nvcf/pexec/functions/6acada03-fe2f-4e4d-9e0a-e711b9fd1b59';
 
-    const nvidiaKey = new DevChatConfig().get("complete_key");
+    const nvidiaKey = DevChatConfig.getInstance().get("complete_key");
     if (!nvidiaKey) {
         return;
     }
@@ -89,17 +97,24 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
     }
 }
 
-export async function * ollamaStarcoderComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
-    const url = 'http://192.168.1.138:11434/api/generate';
+export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
+    const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
+    if (!ollamaApiBase) {
+        return;
+    }
+
+    const urlBase = ollamaApiBase.trim().endsWith('/') ? ollamaApiBase : ollamaApiBase + '/';
+    const url = urlBase + 'api/generate';
+
 	const headers = {
 	  'Content-Type': 'application/json',
 	};
 	const payload = {
-	  model: 'starcoder:7b',
+	  model: 'deepseek-coder:6.7b-base',
 	  prompt: prompt,
 	  stream: true,
 	  options: {
-        stop: ["<|endoftext|>", "<file_sep>", "```", "\n\n"],
+        stop: ["<|endoftext|>", "<|EOT|>", "<file_sep>", "```", "/", "\n\n"],
 		temperature: 0.2
 	  }
 	};
@@ -131,8 +146,8 @@ export async function * ollamaStarcoderComplete(prompt: string) : AsyncGenerator
                         id: idResponse!
                     };
                 } catch (e: any) {
-                    logger.channel()?.info("receve:", chunkText);
-                    logger.channel()?.error("JSON Parsing Error:", e.message);
+                    // logger.channel()?.info("receive:", chunkText);
+                    logger.channel()?.warn("JSON Parsing fail:", e.message);
                 }
             }
         } else {

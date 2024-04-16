@@ -7,7 +7,7 @@ import { logger } from './logger';
 
 export class ApiKeyManager {
 	static async llmModel() {
-		const devchatConfig = new DevChatConfig();
+		const devchatConfig = DevChatConfig.getInstance();
 		const defaultModel = devchatConfig.get('default_model');
 		if (!defaultModel) {
 			return undefined;

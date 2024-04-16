@@ -145,7 +145,7 @@ export function regPythonPathCommand(context: vscode.ExtensionContext) {
 								})) ?? "";
 
 			if (pythonPath) {
-				new DevChatConfig().set("python_for_chat", pythonPath);
+				DevChatConfig.getInstance().set("python_for_chat", pythonPath);
 			}
 		})
 	);
@@ -290,7 +290,7 @@ export function registerInstallCommandsPython(context: vscode.ExtensionContext) 
 			return '';
 		}
 		
-		new DevChatConfig().set("python_for_commands", pythonCommand.trim());
+		DevChatConfig.getInstance().set("python_for_commands", pythonCommand.trim());
 		// vscode.window.showInformationMessage(`All slash Commands are ready to use! Please input / to try workflow commands!`);
 	});
 
@@ -352,7 +352,7 @@ export function registerHandleUri(context: vscode.ExtensionContext) {
         // 解析 URI 并执行相应的操作
         if (uri.path.includes("accesskey")) {
           const accessKey = uri.path.split("/")[2];
-		  new DevChatConfig().set("provides.devchat.api_key", accessKey);
+		  DevChatConfig.getInstance().set("provides.devchat.api_key", accessKey);
           ensureChatPanel(context);
           await new Promise((resolve, reject) => {
             setTimeout(() => {
