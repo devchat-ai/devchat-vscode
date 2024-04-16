@@ -12,6 +12,8 @@ import { getFileContent } from '../util/commonUtil';
 import * as toml from '@iarna/toml';
 import { DevChatConfig } from '../util/config';
 
+import { getMicromambaUrl } from '../util/python_installer/conda_url';
+
 const readFileAsync = fs.promises.readFile;
 
 const envPath = path.join(__dirname, '..', '.env');
@@ -208,7 +210,9 @@ class DevChat {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"PYTHONUTF8":1,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages"
+			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			"MAMBA_BIN_PATH": getMicromambaUrl(), // TODO: important! jetbrains should set this value too.
 		};
 
 		const pythonApp = DevChatConfig.getInstance().get('python_for_chat') || "python3";
@@ -260,6 +264,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				...llmModelData.api_base? { "OPENAI_API_BASE": llmModelData.api_base, "OPENAI_BASE_URL": llmModelData.api_base } : {},
 				"DEVCHAT_PROXY": DevChatConfig.getInstance().get('DEVCHAT_PROXY') || "",
+				"MAMBA_BIN_PATH": getMicromambaUrl(), // TODO: important! jetbrains should set this value too.
 			};
 
 			// build process options
