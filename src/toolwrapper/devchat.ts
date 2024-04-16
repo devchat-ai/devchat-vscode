@@ -516,6 +516,26 @@ class DevChat {
 			return "";
 		}
 	}
+	async tryWF(): Promise<string> {
+		try {
+			const args = ["-m", "devchat", "workflow", "env", "remove", "--all"];
+			// const args = ["-m", "mamba", "--version"];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
+
+			logger.channel()?.info(`${stdout}`);
+			return stdout;
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return "";
+		}
+	}
 
 	async topics(): Promise<TopicEntry[]> {
 		try {

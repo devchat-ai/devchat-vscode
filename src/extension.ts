@@ -16,6 +16,8 @@ import {
 	registerFixCommand,
 	registerExplainCommand,
 	registerQuickFixCommand,
+	
+	registerTryWF,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView } from './contributes/views';
@@ -150,6 +152,7 @@ async function activate(context: vscode.ExtensionContext) {
 
   registerInstallCommandsCommand(context);
 
+  registerTryWF(context);
   createStatusBarItem(context);
 
   regApplyDiffResultCommand(context);

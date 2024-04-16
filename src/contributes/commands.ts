@@ -223,6 +223,21 @@ export function registerInstallCommandsCommand(
   context.subscriptions.push(disposable);
 }
 
+export function registerTryWF(
+  context: vscode.ExtensionContext
+) {
+  let disposable = vscode.commands.registerCommand(
+    "DevChat.TryWF",
+    async () => {
+
+      const devchat = new DevChat();
+
+      await devchat.tryWF();
+    }
+  );
+
+  context.subscriptions.push(disposable);
+}
 
 export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(

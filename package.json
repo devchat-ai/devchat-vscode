@@ -687,6 +687,11 @@
         "category": "DevChat"
       },
       {
+        "command": "DevChat.TryWF",
+        "title": "Run workflow cli",
+        "category": "DevChat"
+      },
+      {
         "command": "DevChat.UpdataChatModels",
         "title": "Update Chat Models",
         "category": "DevChat"
