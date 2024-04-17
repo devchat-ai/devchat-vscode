@@ -422,3 +422,25 @@ export function registerFixCommand(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand("devchat.fix_chinese", callback)
   );
 }
+
+export function registerQuickFixCommand(context: vscode.ExtensionContext) {
+  let disposable = vscode.commands.registerCommand(
+      "DevChat.quickFix",
+      async (diagnosticMessage: string, code: string, surroundingCode: string) => {
+          ensureChatPanel(context);
+          if (!ExtensionContextHolder.provider?.view()) {
+              // wait 2 seconds
+              await new Promise((resolve, reject) => {
+                  setTimeout(() => {
+                      resolve(true);
+                  }, 2000);
+              });
+          }
+
+          const prompt = `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}`;
+          chatWithDevChat(ExtensionContextHolder.provider?.view()!, prompt);
+      }
+  );
+
+  context.subscriptions.push(disposable);
+}

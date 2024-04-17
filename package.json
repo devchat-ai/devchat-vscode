@@ -734,6 +734,11 @@
         "command": "DevChat.codecomplete_callback",
         "title": "Codecomplete Callback",
         "category": "DevChat"
+      },
+      {
+        "command": "DevChat.quickFix",
+        "title": "DevChat Quick Fix",
+        "category": "DevChat"
       }
     ],
     "keybindings": [
@@ -787,6 +792,10 @@
         },
         {
           "command": "DevChat.Chat",
+          "when": "false"
+        },
+        {
+          "command": "DevChat.quickFix",
           "when": "false"
         }
       ],

@@ -16,7 +16,7 @@ import {
 	registerCommentCommand,
 	registerFixCommand,
 	registerExplainCommand,
-
+	registerQuickFixCommand,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView } from './contributes/views';
@@ -33,6 +33,7 @@ import { stopDevChatBase } from './handler/sendMessageBase';
 import { DevChatConfig } from './util/config';
 import { InlineCompletionProvider, registerCodeCompleteCallbackCommand } from "./contributes/codecomplete/codecomplete";
 import { indexDir } from "./contributes/codecomplete/astIndex";
+import registerQuickFixProvider from "./contributes/quickFixProvider";
 
 
 async function migrateConfig() {
@@ -159,10 +160,12 @@ async function activate(context: vscode.ExtensionContext) {
   registerDevChatChatCommand(context);
   registerCodeLensRangeCommand(context);
   registerCodeLensProvider(context);
+  registerQuickFixCommand(context);
 
   startRpcServer();
   logger.channel()?.info(`registerHandleUri:`);
   registerHandleUri(context);
+  registerQuickFixProvider();
 
   const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
   if (workspaceDir) {
