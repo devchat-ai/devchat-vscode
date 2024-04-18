@@ -429,18 +429,26 @@ export function registerQuickFixCommand(context: vscode.ExtensionContext) {
       async (diagnosticMessage: string, code: string, surroundingCode: string) => {
           ensureChatPanel(context);
           if (!ExtensionContextHolder.provider?.view()) {
-              // wait 2 seconds
-              await new Promise((resolve, reject) => {
-                  setTimeout(() => {
-                      resolve(true);
-                  }, 2000);
-              });
+              await waitForPanelActivation();
           }
 
-          const prompt = `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}`;
+          const language = DevChatConfig.getInstance().get('language');
+          const prompt = generatePrompt(code, surroundingCode, diagnosticMessage, language);
           chatWithDevChat(ExtensionContextHolder.provider?.view()!, prompt);
       }
   );
 
   context.subscriptions.push(disposable);
+}
+
+async function waitForPanelActivation() {
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve(true);
+        }, 2000);
+    });
+}
+
+function generatePrompt(code: string, surroundingCode: string, diagnosticMessage: string, language: string) {
+    return `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}, please output steps to fix it. ${language === "zh" ? "结果输出请使用中文。" : ""} `;
 }
