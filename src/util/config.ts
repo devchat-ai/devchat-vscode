@@ -28,8 +28,14 @@ export class DevChatConfig {
 
     private readConfigFile() {
         try {
+            // if config file not exist, create a empty file
+            if (!fs.existsSync(this.configFilePath)) {
+                fs.mkdirSync(path.dirname(this.configFilePath), { recursive: true });
+                fs.writeFileSync(this.configFilePath, '', 'utf8');
+            }
+
             const fileContents = fs.readFileSync(this.configFilePath, 'utf8');
-            this.data = yaml.parse(fileContents);
+            this.data = yaml.parse(fileContents) ?? {};
             this.lastModifyTime = fs.statSync(this.configFilePath).mtimeMs;
         } catch (error) {
 			logger.channel()?.error(`Error reading the config file: ${error}`);
@@ -75,7 +81,12 @@ export class DevChatConfig {
         }
         
         let lastKey = keys.pop();
-        let lastObj = keys.reduce((prev, k) => prev[k] = prev[k] || {}, this.data); // 这创建一个嵌套的对象结构，如果不存在的话
+        let lastObj = keys.reduce((prev, k) => {
+            if (!prev[k]) {
+                prev[k] = {};
+            }
+            return prev[k];
+        }, this.data); // 这创建一个嵌套的对象结构，如果不存在的话
         if (lastKey) {
             lastObj[lastKey] = value; // 设置值
         }
