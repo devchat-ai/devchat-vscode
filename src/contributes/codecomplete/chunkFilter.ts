@@ -5,6 +5,7 @@ import * as vscode from 'vscode';
 
 import { logger } from '../../util/logger';
 import { CodeCompletionChunk, streamComplete } from './llm';
+import { getCommentPrefix } from './ast/language';
 
 
 // 代码补全返回结果定义
@@ -57,6 +58,28 @@ export class LLMStreamComplete {
                 break;
             }
             yield chunk;
+        }
+    }
+
+    async *stopOnFilenameComment(chunks: AsyncIterable<CodeCompletionChunk>, filePath: string): AsyncIterable<CodeCompletionChunk> {
+        const commentPrefix = await getCommentPrefix(filePath);
+        for await (const chunk of chunks) {
+          // 如果遇到特定的注释标记，则停止生成过程
+          if(chunk.text.includes(`${commentPrefix}<filename>`)) {
+            return; // 直接退出生成器函数
+          }
+          yield chunk;
+        }
+    }
+
+    async *stopOnOmittedCodeComment(chunks: AsyncIterable<CodeCompletionChunk>, filePath: string): AsyncIterable<CodeCompletionChunk> {
+        const commentPrefix = await getCommentPrefix(filePath);
+        for await (const chunk of chunks) {
+          // 如果遇到特定的注释标记，则停止生成过程
+          if(chunk.text.includes(`//Code omitted...`)) {
+            return; // 直接退出生成器函数
+          }
+          yield chunk;
         }
     }
 
@@ -140,7 +163,7 @@ export class LLMStreamComplete {
                 firstChunk = false;
             }
 
-            if (chunk.text.trim() === this.nextLine.trim() && this.nextLine.trim().length > 5) {
+            if (chunk.text.trim() === this.nextLine.trim() && this.nextLine.trim().length > 1) {
                 break;
             }
 
@@ -284,10 +307,12 @@ export class LLMStreamComplete {
         const chunks5 = this.stopFirstLineWhenInMiddleLine(chunks4);
         const chunks6 = this.stopWhenSameWithNext(chunks5);
         const chunks7 = this.stopAtSameBlock(chunks6);
-
+        const chunks8 = this.stopOnFilenameComment(chunks7, vscode.window.activeTextEditor?.document.fileName!);
+        const chunks9 = this.stopOnOmittedCodeComment(chunks8, vscode.window.activeTextEditor?.document.fileName!);
+        
         let id = "";
         let lines: string[] = [];
-        for await (const chunk of chunks7) {
+        for await (const chunk of chunks9) {
             lines.push(chunk.text);
             if (chunk.id) {
                 id = chunk.id;

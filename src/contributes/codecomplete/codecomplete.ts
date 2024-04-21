@@ -203,8 +203,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         let response: CodeCompleteResult | undefined = undefined;
 
-        // 获取当前行光标之前的文本内容
-        const linePrefix = document.lineAt(position.line).text.slice(0, position.character);
+        // 获取当前光标前三行代码
+        const linePrefix = document.getText(new vscode.Range(position.line - 4, 0, position.line, position.character));
+        
         // 如果this.previousPrefix + this.previousCodeComplete包含“当前行光标之前内容”，且index为0，那么不需要执行代码补全
         if (this.previousPrefix && this.previousCodeComplete && this.previousCodeComplete.code.length > 0) {
             const index = (this.previousPrefix + this.previousCodeComplete.code).indexOf(linePrefix);
