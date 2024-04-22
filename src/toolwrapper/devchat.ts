@@ -518,7 +518,7 @@ class DevChat {
 	}
 	async tryWF(): Promise<string> {
 		try {
-			const args = ["-m", "devchat", "workflow", "env", "remove", "--all"];
+			const args = ["-m", "devchat", "workflow", "update"];
 			// const args = ["-m", "mamba", "--version"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
