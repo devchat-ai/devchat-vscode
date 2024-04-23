@@ -18,7 +18,14 @@ export interface CodeCompletionChunk {
 export async function* streamComplete(prompt: string): AsyncGenerator<CodeCompletionChunk> {
     const nvidiaKey = DevChatConfig.getInstance().get("complete_key");
     const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
-    if (ollamaApiBase) {
+    const devchatApiBase = DevChatConfig.getInstance().get("complete_devchat_api_base");
+
+    if (devchatApiBase) {
+        for await (const chunk of devchatComplete(prompt)) {
+            yield chunk;
+        }
+    }
+    else if (ollamaApiBase) {
         for await (const chunk of ollamaDeepseekComplete(prompt)) {
             yield chunk;
         }
@@ -106,11 +113,16 @@ export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<
     const urlBase = ollamaApiBase.trim().endsWith('/') ? ollamaApiBase : ollamaApiBase + '/';
     const url = urlBase + 'api/generate';
 
+    let model = DevChatConfig.getInstance().get("complete_model");
+    if (!model) {
+        model = "starcoder2:15b";
+    }
+
 	const headers = {
 	  'Content-Type': 'application/json',
 	};
 	const payload = {
-	  model: 'deepseek-coder:6.7b-base',
+	  model: model,
 	  prompt: prompt,
 	  stream: true,
 	  options: {
@@ -148,6 +160,86 @@ export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<
                 } catch (e: any) {
                     // logger.channel()?.info("receive:", chunkText);
                     logger.channel()?.warn("JSON Parsing fail:", e.message);
+                }
+            }
+        } else {
+            logger.channel()?.error("Error making request:", response.statusText);
+        }
+    } catch (error: any) {
+        logger.channel()?.error("Error making request:", error.message);
+    }
+}
+
+
+export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
+    const devchatApiBase = DevChatConfig.getInstance().get("complete_devchat_api_base");
+    const completionApiBase = devchatApiBase + "/completions";
+
+    let model = DevChatConfig.getInstance().get("complete_model");
+    if (!model) {
+        model = "ollama/deepseek-coder:6.7b-base";
+    }
+
+	const headers = {
+	    'Content-Type': 'application/json'
+	};
+	const payload = {
+	    model: DevChatConfig.getInstance().get("complete_model"),
+	    prompt: prompt,
+	    stream: true,
+	    stop: ["<|endoftext|>", "<|EOT|>", "<file_sep>", "```", "/", "\n\n"],
+	    temperature: 0.2
+	};
+
+    let idResponse = undefined;
+
+    try {
+        const response = await fetch(completionApiBase, {
+            method: 'POST',
+    		headers,
+    		body: JSON.stringify(payload),
+        });
+
+        if (response.ok && response.body) {
+            const stream = response.body as any;
+            const decoder = new TextDecoder("utf-8");
+
+            for await (const chunk of stream) {
+                const chunkDataText = decoder.decode(chunk).trim();
+                // split chunkText by "data: ", for example:
+                // data: 123 data: 456 will split to ["", "data: 123 ", "data: 456"]
+                const chunkTexts = chunkDataText.split("data: ");
+                for (const chunkTextSplit of chunkTexts) {
+                    if (chunkTextSplit.trim().length === 0) {
+                        continue;
+                    }
+                    
+                    const chunkText = "data: " + chunkTextSplit.trim();
+                    
+                    // logger.channel()?.info("receve chunk:", chunkText);
+                    // data: {"id": "cmpl-1713846153", "created": 1713846160.292709, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": "\n});"}]}
+                    // data: {"id": "cmpl-1713846153", "created": 1713846160.366049, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": ""}], "usage": {"prompt_tokens": 413, "completion_tokens": 16}}
+                    if (!chunkText.startsWith("data:")) {
+                        // log unexpected data
+                        logger.channel()?.info("Unexpected data: " + chunkText);
+                        return;
+                    }
+
+                    const jsonData = chunkText.substring(5).trim();
+                    if (jsonData === "[DONE]") {
+                        return;
+                    }
+
+                    try {
+                        const data = JSON.parse(chunkText.substring(5).trim());
+                        yield {
+                            text: data.choices[0].text,
+                            id: data.id
+                        };
+                    } catch (e: any) {
+                        logger.channel()?.info("receve:", chunkText);
+                        logger.channel()?.error("JSON Parsing Error:", e.message);
+                    }
                 }
             }
         } else {

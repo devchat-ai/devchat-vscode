@@ -676,8 +676,8 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     logger.channel()?.info("Complete token:", tokenCount);
     
     let prompt = "";
-    const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
-    if (ollamaApiBase) {
+    const completeModel: string = DevChatConfig.getInstance().get("complete_model");
+    if (completeModel.indexOf("deepseek") > -1) {
         prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
     } else {
         prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
