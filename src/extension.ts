@@ -9,7 +9,6 @@ import {
     registerStatusBarItemClickCommand,
     regPythonPathCommand,
 	registerInstallCommandsCommand,
-	registerInstallCommandsPython,
 	registerDevChatChatCommand,
 	registerHandleUri,
 	registerCodeLensRangeCommand,
@@ -150,7 +149,6 @@ async function activate(context: vscode.ExtensionContext) {
   registerStatusBarItemClickCommand(context);
 
   registerInstallCommandsCommand(context);
-  registerInstallCommandsPython(context);
 
   createStatusBarItem(context);
 
