@@ -55,6 +55,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     private recentEditors: RecentEditsManager;
     private previousCodeComplete: CodeCompleteResult | undefined;
     private previousPrefix: string | undefined;
+    private preCompletionItem: vscode.InlineCompletionItem | undefined;
 
     constructor() {
         // TODO
@@ -210,10 +211,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (this.previousPrefix && this.previousCodeComplete && this.previousCodeComplete.code.length > 0) {
             const index = (this.previousPrefix + this.previousCodeComplete.code).indexOf(linePrefix);
             if (index !== -1) {
-                response = JSON.parse(JSON.stringify(this.previousCodeComplete));
-                if (response) {
-                    response.code = (this.previousPrefix + this.previousCodeComplete.code).slice(index + linePrefix.length);
-                }
+                return [this.preCompletionItem!];
             }
         }
         if (!response) {
@@ -283,19 +281,24 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         this.previousCodeComplete = response;
         this.previousPrefix = linePrefix;
 
-        return [
-            new vscode.InlineCompletionItem(
-                response.code,
-                new vscode.Range(
-                    position,
-                    rangeEndPosition
-                ),
-                {
-                    title: "code complete accept",
-                    command: "DevChat.codecomplete_callback",
-                    arguments: [callback],
-                }
+        const currentLinePrefix = document.lineAt(position.line).text.slice(0, position.character);
+        const codeCompleted = currentLinePrefix + response.code;
+        const rangeStartPosition = new vscode.Position(position.line, 0);
+
+        this.preCompletionItem = new vscode.InlineCompletionItem(
+            codeCompleted,
+            new vscode.Range(
+                rangeStartPosition,
+                rangeEndPosition
             ),
+            {
+                title: "code complete accept",
+                command: "DevChat.codecomplete_callback",
+                arguments: [callback],
+            }
+        );
+        return [
+            this.preCompletionItem
         ];
     }
 }
