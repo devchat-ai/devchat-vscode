@@ -113,11 +113,15 @@ export async function replaceCodeBlockToFile(message: any, panel: vscode.Webview
  */
 export async function createAndOpenFile(message: any) {
 	try {
+		if (!message || !message.language || !message.content) {
+			vscode.window.showErrorMessage('Invalid message received');
+			return;
+		}
 		const document = await vscode.workspace.openTextDocument({
 			language: message.language,
 			content: message.content
 		});
-		await vscode.window.showTextDocument(document);
+		await vscode.window.showTextDocument(document, { preview: false });
 	} catch (error) {
 		vscode.window.showErrorMessage(`Error creating or opening file: ${error}`);
 	} 
