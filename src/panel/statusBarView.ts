@@ -22,27 +22,6 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 	progressBar.update("Checking dependencies", 0);
 	let hasInstallCommands = false;
 
-	function checkDevChatCommandsStatus() {
-		const timerDevchatCommands = setInterval(async () => {
-			try {
-				const pythonCommand = DevChatConfig.getInstance().get('python_for_commands');
-				if (!pythonCommand) {
-					statusBarItem.text = `$(pass)DevChat$(warning)`;
-					statusBarItem.tooltip = `ready to chat, command functionality limited`;
-					statusBarItem.command = 'devcaht.onStatusBarClick';
-				} else {
-					statusBarItem.text = `$(pass)DevChat$(pass)`;
-					statusBarItem.tooltip = `chat and all commands fully operational`;
-					statusBarItem.command = 'devcaht.onStatusBarClick';
-					clearInterval(timerDevchatCommands);
-				}
-			} catch (error) {
-				logger.channel()?.error(`Error: ${error}`);
-				logger.channel()?.show();
-			}
-		}, 1000);
-	}
-
 	const timer = setInterval(async () => {
 		try {
 			progressBar.update("Checking dependencies", 0);
@@ -77,7 +56,6 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			}
 			
 			clearInterval(timer);
-			checkDevChatCommandsStatus();
 		} catch (error) {
 			statusBarItem.text = `$(warning)DevChat`;
 			statusBarItem.tooltip = `Error: ${error}`;
