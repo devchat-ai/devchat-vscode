@@ -18,19 +18,19 @@ export interface CodeCompletionChunk {
 export async function* streamComplete(prompt: string): AsyncGenerator<CodeCompletionChunk> {
     const nvidiaKey = DevChatConfig.getInstance().get("complete_key");
     const ollamaApiBase = DevChatConfig.getInstance().get("complete_ollama_api_base");
-    const devchatApiBase = DevChatConfig.getInstance().get("complete_devchat_api_base");
+    const devchatToken = DevChatConfig.getInstance().get("providers.devchat.api_key");
+    const devchatEndpoint = DevChatConfig.getInstance().get("providers.devchat.api_base");
 
-    if (devchatApiBase) {
-        for await (const chunk of devchatComplete(prompt)) {
-            yield chunk;
-        }
-    }
-    else if (ollamaApiBase) {
+    if (ollamaApiBase) {
         for await (const chunk of ollamaDeepseekComplete(prompt)) {
             yield chunk;
         }
     } else if (nvidiaKey) {
         for await (const chunk of nvidiaStarcoderComplete(prompt)) {
+            yield chunk;
+        }
+    } else if (devchatToken && devchatEndpoint) {
+        for await (const chunk of devchatComplete(prompt)) {
             yield chunk;
         }
     }
@@ -172,8 +172,8 @@ export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<
 
 
 export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
-    const devchatApiBase = DevChatConfig.getInstance().get("complete_devchat_api_base");
-    const completionApiBase = devchatApiBase + "/completions";
+    const devchatEndpoint = DevChatConfig.getInstance().get("providers.devchat.api_base");
+    const completionApiBase = devchatEndpoint + "/completions";
 
     let model = DevChatConfig.getInstance().get("complete_model");
     if (!model) {
