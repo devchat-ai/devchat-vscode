@@ -72,28 +72,41 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
             const decoder = new TextDecoder("utf-8");
 
             for await (const chunk of stream) {
-                const chunkText = decoder.decode(chunk).trim();
-                // data: {"id":"5d3376e0-2abc-4230-b796-c6fc9ae91cd4","choices":[{"index":0,"delta":"-","finish_reason":null}]}\n\n
-                if (!chunkText.startsWith("data:")) {
-                    // log unexpected data
-                    logger.channel()?.info("Unexpected data: " + chunkText);
-                    return;
-                }
+                const chunkDataText = decoder.decode(chunk).trim();
+                // split chunkText by "data: ", for example:
+                // data: 123 data: 456 will split to ["", "data: 123 ", "data: 456"]
+                const chunkTexts = chunkDataText.split("data: ");
+                for (const chunkTextSplit of chunkTexts) {
+                    if (chunkTextSplit.trim().length === 0) {
+                        continue;
+                    }
+                    
+                    const chunkText = "data: " + chunkTextSplit.trim();
+                    
+                    // logger.channel()?.info("receve chunk:", chunkText);
+                    // data: {"id": "cmpl-1713846153", "created": 1713846160.292709, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": "\n});"}]}
+                    // data: {"id": "cmpl-1713846153", "created": 1713846160.366049, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": ""}], "usage": {"prompt_tokens": 413, "completion_tokens": 16}}
+                    if (!chunkText.startsWith("data:")) {
+                        // log unexpected data
+                        logger.channel()?.info("Unexpected data: " + chunkText);
+                        return;
+                    }
 
-                const jsonData = chunkText.substring(5).trim();
-                if (jsonData === "[DONE]") {
-                    return;
-                }
+                    const jsonData = chunkText.substring(5).trim();
+                    if (jsonData === "[DONE]") {
+                        return;
+                    }
 
-                try {
-                    const data = JSON.parse(chunkText.substring(5).trim());
-                    yield {
-                        text: data.choices[0].delta,
-                        id: data.id
-                    };
-                } catch (e: any) {
-                    logger.channel()?.info("receve:", chunkText);
-                    logger.channel()?.error("JSON Parsing Error:", e.message);
+                    try {
+                        const data = JSON.parse(chunkText.substring(5).trim());
+                        yield {
+                            text: data.choices[0].delta,
+                            id: data.id
+                        };
+                    } catch (e: any) {
+                        logger.channel()?.info("receve:", chunkText);
+                        logger.channel()?.error("JSON Parsing Error:", e.message);
+                    }
                 }
             }
         } else {
