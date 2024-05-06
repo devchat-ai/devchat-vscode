@@ -190,14 +190,14 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
 
     let model = DevChatConfig.getInstance().get("complete_model");
     if (!model) {
-        model = "ollama/deepseek-coder:6.7b-base";
+        model = "ollama/starcoder2:15b";
     }
 
 	const headers = {
 	    'Content-Type': 'application/json'
 	};
 	const payload = {
-	    model: DevChatConfig.getInstance().get("complete_model"),
+	    model: model,
 	    prompt: prompt,
 	    stream: true,
 	    stop: ["<|endoftext|>", "<|EOT|>", "<file_sep>", "```", "/", "\n\n"],
