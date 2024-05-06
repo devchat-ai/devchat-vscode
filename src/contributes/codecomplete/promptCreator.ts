@@ -246,7 +246,7 @@ async function createRecentEditContext(recentEdits: RecentEdit[], curFile: strin
     let context = "";
     for (const edit of edits) {
         const commentPrefix = await getCommentPrefix(edit.fileName);
-        context += `${commentPrefix}<filename>${edit.fileName}\n\n`;
+        context += `${commentPrefix}<filename>recent edit documents:\n\n ${edit.fileName}\n\n`;
         context += `${edit.collapseContent}\n\n\n\n`;
     }
 
@@ -549,10 +549,6 @@ export async function createTaskDescriptionContext() {
 export async function createPrompt(filePath: string, fileContent: string, line: number, column: number, posoffset: number, recentEdits: RecentEdit[]) {
     const commentPrefix = await getCommentPrefix(filePath);
 
-    const taskDescriptionContext = await createTaskDescriptionContext();
-    // taskDescriptionContext is multi lines description, so we need add commentPrefix before each line
-    
-
     let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
     
     let tokenCount = countTokens(prefix);
@@ -567,10 +563,9 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     let taskDescriptionContextWithCommentPrefix = "";
     if (tokenCount < CONTEXT_LIMITED_SIZE) {
         const taskDescriptionContext = await createTaskDescriptionContext();
-        // taskDescriptionContext is multi lines description, so we need add commentPrefix before each line
         if (taskDescriptionContext) {
             taskDescriptionContext.split("\n").forEach(line => {
-                taskDescriptionContextWithCommentPrefix += `${commentPrefix}<filename>${line}\n`;
+                taskDescriptionContextWithCommentPrefix += `${commentPrefix}<filename>task: ${line}\n`;
             });
 
             taskDescriptionContextWithCommentPrefix += "\n\n\n\n";
@@ -606,7 +601,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += callBlockToken;
-            callDefContext += `${commentPrefix}<filename>${callCodeBlock.filepath}\n\n`;
+            callDefContext += `${commentPrefix}<filename>call function define:\n\n ${callCodeBlock.filepath}\n\n`;
             callDefContext += `${callCodeBlock.codeblock}\n\n\n\n`;
         }
     }
@@ -627,7 +622,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += blockToken;
-            similarBlockContext += `${commentPrefix}<filename>${similarContext.file}\n\n`;
+            similarBlockContext += `${commentPrefix}<filename>similar blocks:\n\n ${similarContext.file}\n\n`;
             similarBlockContext += `${similarContext.text}\n\n\n\n`;
         }
     }
@@ -642,7 +637,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             }
 
             tokenCount += countSymboleToken;
-            symbolContext += `${commentPrefix}<filename>${symbolDefine.filepath}\n\n`;
+            symbolContext += `${commentPrefix}<filename>symbol defines:\n\n ${symbolDefine.filepath}\n\n`;
             symbolContext += `${commentPrefix}this is type of variable: ${symbolDefine.node.text}\n\n`;
             symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
         }
@@ -667,7 +662,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
             const countFileToken = countTokens(neighborFiles[0].text);
             if (tokenCount + countFileToken < CONTEXT_LIMITED_SIZE) {
                 tokenCount += countFileToken;
-                neighborFileContext += `${commentPrefix}<filename>${neighborFiles[0].file}\n\n`;
+                neighborFileContext += `${commentPrefix}<filename>neighbor files:\n\n ${neighborFiles[0].file}\n\n`;
                 neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
             }
         }
@@ -676,7 +671,10 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     logger.channel()?.info("Complete token:", tokenCount);
     
     let prompt = "";
-    const completeModel: string = DevChatConfig.getInstance().get("complete_model");
+    let completeModel: string = DevChatConfig.getInstance().get("complete_model");
+    if (!completeModel) {
+        completeModel = "nvidia/starcoder2:15b";
+    }
     if (completeModel.indexOf("deepseek") > -1) {
         prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
     } else {
