@@ -692,11 +692,6 @@
         "category": "DevChat"
       },
       {
-        "command": "DevChat.InstallCommandPython",
-        "title": "Install Python for Commands",
-        "category": "DevChat"
-      },
-      {
         "command": "DevChat.Chat",
         "title": "Chat with DevChat",
         "category": "DevChat"
