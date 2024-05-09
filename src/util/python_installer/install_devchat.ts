@@ -39,7 +39,7 @@ export async function installDevchat(): Promise<string> {
 			
 			const userHomeDir = os.homedir();
 			// TODO: temperary workflow base dir name, need to change
-			const WORKFLOWS_BASE_NAME = "new_wf";
+			const WORKFLOWS_BASE_NAME = "scripts";
             const workflow_base_path = path.join(userHomeDir, ".chat", WORKFLOWS_BASE_NAME);
 
 			const new_python_path = [workflow_base_path, sitepackagesPath].join("\n");
