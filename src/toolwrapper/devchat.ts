@@ -212,6 +212,7 @@ class DevChat {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 			// eslint-disable-next-line @typescript-eslint/naming-convention
+			"DEVCHAT_PROXY": DevChatConfig.getInstance().get('DEVCHAT_PROXY') || "",
 			"MAMBA_BIN_PATH": getMicromambaUrl(), // TODO: important! jetbrains should set this value too.
 		};
 
