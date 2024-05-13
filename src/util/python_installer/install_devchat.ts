@@ -36,11 +36,17 @@ export async function installDevchat(): Promise<string> {
 			const pythonApp = path.join(pythonTargetPath, "python.exe");
 			const pythonPathFile = path.join(pythonTargetPath, "python311._pth");
 			const sitepackagesPath = path.join(UiUtilWrapper.extensionPath(), "tools", "site-packages");
+			
+			const userHomeDir = os.homedir();
+			const WORKFLOWS_BASE_NAME = "scripts";
+            const workflow_base_path = path.join(userHomeDir, ".chat", WORKFLOWS_BASE_NAME);
+
+			const new_python_path = [workflow_base_path, sitepackagesPath].join("\n");
 
 			// read content in pythonPathFile
 			let content = fs.readFileSync(pythonPathFile, { encoding: 'utf-8' });
 			// replace %PYTHONPATH% with sitepackagesPath
-			content = content.replace(/%PYTHONPATH%/g, sitepackagesPath);
+			content = content.replace(/%PYTHONPATH%/g, new_python_path);
 			// write content to pythonPathFile
 			fs.writeFileSync(pythonPathFile, content);
 

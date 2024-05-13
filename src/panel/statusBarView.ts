@@ -48,7 +48,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			progressBar.update(`Checking dependencies: Success`, 0);
 			progressBar.end();
 	
-			// download workflows from github or gitlab
+			// install devchat workflow commands
 			if (!hasInstallCommands) {
 				hasInstallCommands = true;
 				await vscode.commands.executeCommand('DevChat.InstallCommands');
