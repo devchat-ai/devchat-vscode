@@ -453,7 +453,7 @@ class DevChat {
 		}
     }
 
-	async commands(): Promise<CommandEntry[]> {
+	async commands(): Promise<any[]> {
 		try {
 			const args = ["-m", "devchat", "workflow", "list", "--json"];
 
@@ -475,9 +475,7 @@ class DevChat {
 			// 确保每个CommandEntry对象的recommend字段默认为-1
 			const recommendCommands = await this.loadRecommendCommands();
 			commands = commands.map((cmd: any) => ({
-				name: cmd.name,
-				description: cmd.command_conf.description,
-				path: cmd.namespace,
+				...cmd,
 				recommend: recommendCommands.indexOf(cmd.name),
 			}));
 
