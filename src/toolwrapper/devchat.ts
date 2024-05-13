@@ -427,44 +427,34 @@ class DevChat {
 
 	async loadRecommendCommands(): Promise<string[]> {
         try {
-            // 获取用户的主目录
-            const userHomeDir = os.homedir();
-            // 构建配置文件路径
-            const configFilePath = path.join(userHomeDir, '.chat', 'workflows', 'sys', 'configuration.toml');
-            
-            // 异步读取配置文件内容
-            const configFileContent = await readFileAsync(configFilePath, { encoding: 'utf8' });
+			const args = ["-m", "devchat", "workflow", "config", "--json"];
 
-            // 解析TOML配置文件内容并返回命令列表
-            return this.parseConfigFile(configFileContent);
-        } catch (err) {
-            console.error('Failed to load recommend commands:', err);
-            return [];
-        }
-    }
+			const {code, stdout, stderr} = await this.runCommand(args);
 
-    // 解析TOML配置文件内容
-    private parseConfigFile(content: string): string[] {
-		interface Config {
-			recommend?: {
-			  workflows?: string[];
-			};
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
+
+			let workflowConfig;
+			try {
+				workflowConfig = JSON.parse(stdout.trim());
+			} catch (error) {
+				logger.channel()?.error('Failed to parse commands JSON:', error);
+				return [];
+			}
+			
+			return workflowConfig.recommend?.workflows || [];
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return [];
 		}
-
-        try {
-            const parsedData = toml.parse(content) as Config;
-            if (parsedData.recommend && parsedData.recommend.workflows) {
-                return parsedData.recommend.workflows;
-            }
-        } catch (err) {
-			logger.channel()?.error(`Error parsing TOML content: ${err}`);
-        }
-        return [];
     }
 
 	async commands(): Promise<CommandEntry[]> {
 		try {
-			const args = ["-m", "devchat", "run", "--list"];
+			const args = ["-m", "devchat", "workflow", "list", "--json"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
@@ -480,12 +470,13 @@ class DevChat {
 				logger.channel()?.error('Failed to parse commands JSON:', error);
 				return [];
 			}
-			
 
 			// 确保每个CommandEntry对象的recommend字段默认为-1
 			const recommendCommands = await this.loadRecommendCommands();
-			commands = commands.map((cmd: CommandEntry) => ({
-				...cmd,
+			commands = commands.map((cmd: any) => ({
+				name: cmd.name,
+				description: cmd.command_conf.description,
+				path: cmd.namespace,
 				recommend: recommendCommands.indexOf(cmd.name),
 			}));
 
@@ -499,28 +490,7 @@ class DevChat {
 
 	async updateSysCommand(): Promise<string> {
 		try {
-			const args = ["-m", "devchat", "run", "--update-sys"];
-
-			const {code, stdout, stderr} = await this.runCommand(args);
-
-			assertValue(code !== 0, stderr || `Command exited with ${code}`);
-			if (stderr.trim() !== "") {
-				logger.channel()?.warn(`${stderr}`);
-			}
-
-			logger.channel()?.info(`${stdout}`);
-			return stdout;
-		} catch (error: any) {
-			logger.channel()?.error(`Error: ${error.message}`);
-			logger.channel()?.show();
-			return "";
-		}
-	}
-	async tryWF(): Promise<string> {
-		try {
 			const args = ["-m", "devchat", "workflow", "update"];
-			// const args = ["-m", "devchat", "workflow", "config", "--json"];
-			// const args = ["-m", "mamba", "--version"];
 
 			const {code, stdout, stderr} = await this.runCommand(args);
 
