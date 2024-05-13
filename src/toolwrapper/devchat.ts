@@ -213,7 +213,7 @@ class DevChat {
 			"PYTHONPATH": UiUtilWrapper.extensionPath() + "/tools/site-packages",
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			"DEVCHAT_PROXY": DevChatConfig.getInstance().get('DEVCHAT_PROXY') || "",
-			"MAMBA_BIN_PATH": getMicromambaUrl(), // TODO: important! jetbrains should set this value too.
+			"MAMBA_BIN_PATH": getMicromambaUrl(),
 		};
 
 		const pythonApp = DevChatConfig.getInstance().get('python_for_chat') || "python3";
@@ -265,7 +265,7 @@ class DevChat {
 				// eslint-disable-next-line @typescript-eslint/naming-convention
 				...llmModelData.api_base? { "OPENAI_API_BASE": llmModelData.api_base, "OPENAI_BASE_URL": llmModelData.api_base } : {},
 				"DEVCHAT_PROXY": DevChatConfig.getInstance().get('DEVCHAT_PROXY') || "",
-				"MAMBA_BIN_PATH": getMicromambaUrl(), // TODO: important! jetbrains should set this value too.
+				"MAMBA_BIN_PATH": getMicromambaUrl(),
 			};
 
 			// build process options
