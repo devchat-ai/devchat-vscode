@@ -192,7 +192,7 @@ export function registerInstallCommandsCommand(
     "DevChat.InstallCommands",
     async () => {
       const homePath = process.env.HOME || process.env.USERPROFILE || "";
-      const sysDirPath = path.join(homePath, ".chat", "workflows", "sys");
+      const sysDirPath = path.join(homePath, ".chat", "scripts");
       const pluginDirPath = path.join(
         UiUtilWrapper.extensionPath(),
         "workflowsCommands"
@@ -204,7 +204,7 @@ export function registerInstallCommandsCommand(
         await copyDirectory(pluginDirPath, sysDirPath);
       }
 
-      // Check if ~/.chat/workflows/sys directory exists
+      // Check if ~/.chat/scripts directory exists
       if (!fs.existsSync(sysDirPath)) {
         // Directory does not exist, wait for updateSysCommand to finish
         await devchat.updateSysCommand();
@@ -223,21 +223,6 @@ export function registerInstallCommandsCommand(
   context.subscriptions.push(disposable);
 }
 
-export function registerTryWF(
-  context: vscode.ExtensionContext
-) {
-  let disposable = vscode.commands.registerCommand(
-    "DevChat.TryWF",
-    async () => {
-
-      const devchat = new DevChat();
-
-      await devchat.tryWF();
-    }
-  );
-
-  context.subscriptions.push(disposable);
-}
 
 export function registerDevChatChatCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
