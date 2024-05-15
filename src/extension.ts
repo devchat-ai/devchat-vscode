@@ -122,6 +122,16 @@ async function migrateConfig() {
 	}
 }
 
+// fix devchat api base is "custom"
+export async function fixDevChatApiBase() {
+	const devchatConfig = DevChatConfig.getInstance();
+	const devchatProvider = "providers.devchat";
+	const devchatProviderConfig: any = devchatConfig.get(devchatProvider);
+	if (!devchatProviderConfig || devchatProviderConfig["api_base"] === "custom") {
+		devchatConfig.set("providers.devchat.api_base", "https://api.devchat.ai/v1");
+	}
+}
+
 async function activate(context: vscode.ExtensionContext) {
   ExtensionContextHolder.context = context;
 
@@ -164,6 +174,8 @@ async function activate(context: vscode.ExtensionContext) {
   logger.channel()?.info(`registerHandleUri:`);
   registerHandleUri(context);
   registerQuickFixProvider();
+
+  fixDevChatApiBase();
 
   const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
   if (workspaceDir) {
