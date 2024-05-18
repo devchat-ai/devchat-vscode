@@ -62,7 +62,12 @@ export class CommandRun {
 
     public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
         return new Promise((resolve, reject) => {
-            logger.channel()?.debug(`Running command: ${command} ${args.join(' ')}`);
+			const maxLength = 150;
+			const commandAndArgs = `${command} ${args.join(' ')}`;
+			const truncatedCommandAndArgs = commandAndArgs.length > maxLength ? commandAndArgs.substring(0, maxLength) + '...' : commandAndArgs;
+			logger.channel()?.debug(`Running command: ${truncatedCommandAndArgs}`);
+			logger.channel()?.trace(`Running command: ${command} ${args.join(' ')}`);
+
             this._input = "";
             const argsNew: string[] = args.map((arg) => {
                 if (arg.trim()[0] === '$') {
