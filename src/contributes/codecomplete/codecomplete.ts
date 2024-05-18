@@ -120,9 +120,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     // }
 
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
+        const startTime = process.hrtime();
         GitDiffWatcher.getInstance().tryRun();
-        const completeDebug = this.devchatConfig.get("complete_debug");
-
+        
         // create prompt
         const fsPath = document.uri.fsPath;
         const fileContent = document.getText();
@@ -154,11 +154,20 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             return undefined;
         }
 
+        const endTime = process.hrtime(startTime);
+        const duration = endTime[0] + endTime[1] / 1e9;
+        logger.channel()?.debug(`Make prompt took ${duration} seconds`);
+        const startTimeLLM = process.hrtime();
+
         const completor = new LLMStreamComplete(token, lines, position.line, position.character);
         const response = await completor.llmStreamComplete(prompt);
         if (!response || response.code.length === 0) {
             return undefined;
         }
+
+        const endTimeLLM = process.hrtime(startTimeLLM);
+        const durationLLM = endTimeLLM[0] + endTimeLLM[1] / 1e9;
+        logger.channel()?.debug(`LLMStreamComplete took ${durationLLM} seconds`);
 
         if (token.isCancellationRequested) {
             return undefined;
@@ -170,8 +179,6 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {
-        const completeDebug = this.devchatConfig.get("complete_debug");
-
         const result = await this.debouncer.debounce();
         if (!result) {
             return [];
