@@ -54,7 +54,7 @@ export async function getParserForFile(filepath: string) {
         parserCache.set(extension, parser);
         return parser;
     } catch (e) {
-        logger.channel()?.error("Unable to load language for file", filepath, e);
+        logger.channel()?.warn("Unable to load language for file", filepath, e);
         return undefined;
     }
 }
@@ -89,7 +89,7 @@ export async function getLanguageForFile(
         langCache.set(extension, language);
         return language;
     } catch (e) {
-        logger.channel()?.error("Unable to load language for file:", filepath, e);
+        logger.channel()?.warn("Unable to load language for file:", filepath, e);
         return undefined;
     }
 }

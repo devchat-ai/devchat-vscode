@@ -4,6 +4,7 @@ export interface LogChannel {
 	warn(message: string, ...args: any[]): void;
 	error(message: string | Error, ...args: any[]): void;
 	debug(message: string, ...args: any[]): void;
+	trace(message: string, ...args: any[]): void;
 	show(): void;
 }
 

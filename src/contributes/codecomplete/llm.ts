@@ -88,7 +88,7 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
                     // data: {"id": "cmpl-1713846153", "created": 1713846160.366049, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": ""}], "usage": {"prompt_tokens": 413, "completion_tokens": 16}}
                     if (!chunkText.startsWith("data:")) {
                         // log unexpected data
-                        logger.channel()?.info("Unexpected data: " + chunkText);
+                        logger.channel()?.warn("Unexpected data: " + chunkText);
                         return;
                     }
 
@@ -105,7 +105,7 @@ export async function * nvidiaStarcoderComplete(prompt: string) : AsyncGenerator
                         };
                     } catch (e: any) {
                         logger.channel()?.info("receve:", chunkText);
-                        logger.channel()?.error("JSON Parsing Error:", e.message);
+                        logger.channel()?.warn("JSON Parsing Error:", e.message);
                     }
                 }
             }
@@ -234,7 +234,7 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
                     // data: {"id": "cmpl-1713846153", "created": 1713846160.366049, "object": "completion.chunk", "model": "ollama/starcoder2:7b", "choices": [{"index": 0, "finish_reason": "stop", "text": ""}], "usage": {"prompt_tokens": 413, "completion_tokens": 16}}
                     if (!chunkText.startsWith("data:")) {
                         // log unexpected data
-                        logger.channel()?.info("Unexpected data: " + chunkText);
+                        logger.channel()?.warn("Unexpected data: " + chunkText);
                         return;
                     }
 
@@ -251,7 +251,7 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
                         };
                     } catch (e: any) {
                         logger.channel()?.info("receve:", chunkText);
-                        logger.channel()?.error("JSON Parsing Error:", e.message);
+                        logger.channel()?.warn("JSON Parsing Error:", e.message);
                     }
                 }
             }

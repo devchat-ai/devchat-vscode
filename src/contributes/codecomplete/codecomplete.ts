@@ -83,9 +83,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         try {
             const response = await fetch(apiUrl, requestOptions);
             if (!response.ok) {
-                if (this.devchatConfig.get("complete_debug")) {
-                    logger.channel()?.info("log event to server failed:", response.status);
-                }
+                logger.channel()?.info("log event to server failed:", response.status);
             }
         } catch (error) {
             console.error('Error posting event to the server:', error);
@@ -130,24 +128,18 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const fileContent = document.getText();
         const posOffset = document.offsetAt(position);
 
-        if (completeDebug) {
-            logger.channel()?.info(`cur position: ${position.line}: ${position.character}`);
-        }
+        logger.channel()?.debug(`cur position: ${position.line}: ${position.character}`);
 
         const prompt = await createPrompt(fsPath, fileContent, position.line, position.character, posOffset, this.recentEditors.getEdits());
         if (!prompt) {
             return undefined;
         }
-        if (completeDebug) {
-            logger.channel()?.info("prompt:", prompt);
-        }
+        logger.channel()?.trace("prompt:", prompt);
 
         // check cache
         const result = await this.cache.get(prompt);
         if (result) {
-            if (completeDebug) {
-                logger.channel()?.info(`cache hited:\n${result.code}`);
-            }
+            logger.channel()?.debug(`cache hited:\n${result.code}`);
             return result;
         }
 
@@ -240,9 +232,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
-        if (completeDebug) {
-            logger.channel()?.info("code complete show.");
-        }
+        logger.channel()?.trace("code complete show.");
         this.logEventToServer(
             {
                 completion_id: response.id,
@@ -253,16 +243,12 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // log to server
 
         const logRejectionTimeout: NodeJS.Timeout = setTimeout(() => {
-            if (completeDebug) {
-                logger.channel()?.info("code complete not accept.");
-            }
+            logger.channel()?.trace("code complete not accept.");
         }, 10_000);
 
         // 代码补全回调处理
         const callback = () => {
-            if (completeDebug) {
-                logger.channel()?.info("accept:", response!.id);
-            }
+            logger.channel()?.trace("accept:", response!.id);
             // delete cache
             this.cache.delete(response!.prompt);
             // delete timer

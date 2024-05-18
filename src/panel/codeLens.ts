@@ -249,7 +249,7 @@ class FunctionTestCodeLensProvider implements vscode.CodeLensProvider {
     // log info find how many functionDefinitions, innerFunctionDefinitions, lenses
     logger
       .channel()
-      ?.info(
+      ?.trace(
         `found ${functionDefinitions.length} functions, ${innerFunctionDefinitions.length} inner functions, ${lenses.length} registered codeLenses in document: ${document.fileName}`
       );
     return lenses;

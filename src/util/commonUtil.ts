@@ -60,85 +60,91 @@ export class CommandRun {
 		this.childProcess = null;
 	}
 
-	public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
-		return new Promise((resolve, reject) => {
-			logger.channel()?.info(`Running command: ${command} ${args.join(' ')}`);
-			this._input = "";
-			const argsNew: string[] = args.map((arg) => {
-				if (arg.trim()[0] === '$') {
-					// get rest string except '$'
-					const restStr = arg.trim().slice(1);
-					if (process.env[restStr]) {
-						return process.env[restStr]!;
-					} else {
-						return arg;
-					}
-				} else {
-					return arg;
-				}
-			});
+    public async spawnAsync(command: string, args: string[], options: object, onData: ((data: string) => void) | undefined, onError: ((data: string) => void) | undefined, onOutputFile: ((command: string, stdout: string, stderr: string) => string) | undefined, outputFile: string | undefined): Promise<CommandResult> {
+        return new Promise((resolve, reject) => {
+            logger.channel()?.debug(`Running command: ${command} ${args.join(' ')}`);
+            this._input = "";
+            const argsNew: string[] = args.map((arg) => {
+                if (arg.trim()[0] === '$') {
+                    const restStr = arg.trim().slice(1);
+                    if (process.env[restStr]) {
+                        return process.env[restStr]!;
+                    } else {
+                        return arg;
+                    }
+                } else {
+                    return arg;
+                }
+            });
 
-			this.childProcess = spawn(command, argsNew, options);
+            this.childProcess = spawn(command, argsNew, options);
 
-			let stdout = '';
-			let stderr = '';
+            let stdout = '';
+            let stderr = '';
 
-			this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
-				const dataStr = this._input + data.toString();
-				this._input = "";
-				if (onData) {
-					onData(dataStr);
-				}
-				stdout += dataStr;
-			});
+            // Record process start time
+            const startTime = process.hrtime();
 
-			this.childProcess.stderr.on('data', (data: string) => {
-				const dataStr = data.toString();
-				if (onError) {
-					onError(dataStr);
-				}
-				stderr += dataStr;
-			});
+            this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
+                const dataStr = this._input + data.toString();
+                this._input = "";
+                if (onData) {
+                    onData(dataStr);
+                }
+                stdout += dataStr;
+            });
 
-			this.childProcess.on('close', (code: number) => {
-				let outputData = stdout;
-				if (onOutputFile) {
-					outputData = onOutputFile(command + " " + args.join(" "), stdout, stderr);
-				}
+            this.childProcess.stderr.on('data', (data: string) => {
+                const dataStr = data.toString();
+                if (onError) {
+                    onError(dataStr);
+                }
+                stderr += dataStr;
+            });
 
-				if (outputFile) {
-					fs.writeFileSync(outputFile, outputData);
-				}
+            this.childProcess.on('close', (code: number) => {
+                let outputData = stdout;
+                if (onOutputFile) {
+                    outputData = onOutputFile(command + " " + args.join(" "), stdout, stderr);
+                }
 
-				if (stderr && !onError) {
-					logger.channel()?.error(stderr);
-					logger.channel()?.show();
-				}
+                if (outputFile) {
+                    fs.writeFileSync(outputFile, outputData);
+                }
 
-				this.childProcess = null;
-				if (code === 0) {
-					resolve({ exitCode: code, stdout, stderr });
-				} else {
-					resolve({ exitCode: code, stdout, stderr });
-				}
-			});
+                if (stderr && !onError) {
+                    logger.channel()?.error(stderr);
+                    logger.channel()?.show();
+                }
 
-			// Add error event listener to handle command not found exception
-			this.childProcess.on('error', (error: any) => {
-				this.childProcess = null;
-				let errorMessage = error.message;
-				if (error.code === 'ENOENT') {
-					errorMessage = `Command not found: ${command}`;
-					logger.channel()?.error(`Command "${command}" not found`);
-					logger.channel()?.show();
-				} else {
-					logger.channel()?.error(`Error: ${error.message}`);
-					logger.channel()?.show();
-				}
-				resolve({ exitCode: error.code, stdout: "", stderr: errorMessage });
-			});
-		});
-	};
+                this.childProcess = null;
+                if (code === 0) {
+                    resolve({ exitCode: code, stdout, stderr });
+                } else {
+                    resolve({ exitCode: code, stdout, stderr });
+                }
+
+                // Record process end time and calculate duration
+                const endTime = process.hrtime(startTime);
+                const duration = endTime[0] + endTime[1] / 1e9;
+                logger.channel()?.debug(`Process took ${duration} seconds`);
+            });
+
+            this.childProcess.on('error', (error: any) => {
+                this.childProcess = null;
+                let errorMessage = error.message;
+                if (error.code === 'ENOENT') {
+                    errorMessage = `Command not found: ${command}`;
+                    logger.channel()?.error(`Command "${command}" not found`);
+                    logger.channel()?.show();
+                } else {
+                    logger.channel()?.error(`Error: ${error.message}`);
+                    logger.channel()?.show();
+                }
+                resolve({ exitCode: error.code, stdout: "", stderr: errorMessage });
+            });
+        });
+    };
 
 	public write(input: string) {
 		if (this.childProcess) {

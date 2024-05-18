@@ -30,5 +30,5 @@ export async function outputAst(
 
     // output ast
     const treeText = "\n" + printTree(ast.rootNode, 0);
-    logger.channel()?.info(treeText);
+    logger.channel()?.trace(treeText);
 }

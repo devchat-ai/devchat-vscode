@@ -33,6 +33,10 @@ export class LoggerChannelVscode implements LogChannel {
     this._channel.debug(message, ...args);
   }
 
+  trace(message: string, ...args: any[]): void {
+    this._channel.trace(message, ...args);
+  }
+
   show(): void {
     this._channel.show();
   }

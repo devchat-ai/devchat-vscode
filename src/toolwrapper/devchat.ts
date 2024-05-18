@@ -498,7 +498,7 @@ class DevChat {
 				logger.channel()?.warn(`${stderr}`);
 			}
 
-			logger.channel()?.info(`${stdout}`);
+			logger.channel()?.trace(`${stdout}`);
 			return stdout;
 		} catch (error: any) {
 			logger.channel()?.error(`Error: ${error.message}`);
