@@ -91,7 +91,7 @@ let server: http.Server | null = null;
 export async function startRpcServer() {
     server = http.createServer((req, res) => {
         const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
-        logger.channel()?.info(`request: ${parsedUrl}`);
+        logger.channel()?.trace(`request: ${parsedUrl}`);
         if (parsedUrl.pathname === "/favicon.ico") {
             res.writeHead(204);
             res.end();
@@ -166,7 +166,7 @@ export async function startRpcServer() {
 							responseResult["result"] = res;
 						}
 					} catch (error) {
-						logger.channel()?.warn(`Error: ${error}`);
+						logger.channel()?.warn(`warning: ${error}`);
 						responseResult["result"] = res;
 					}
                     

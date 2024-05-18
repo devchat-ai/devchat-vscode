@@ -668,7 +668,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         }
     }
     
-    logger.channel()?.info("Complete token:", tokenCount);
+    logger.channel()?.debug("Complete token:", tokenCount);
     
     let prompt = "";
     let completeModel: string = DevChatConfig.getInstance().get("complete_model");

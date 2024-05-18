@@ -22,11 +22,11 @@ export class MessageHandler {
 
 			const handler = this.handlers[message.command];
 			if (handler) {
-				logger.channel()?.info(`Handling the command "${message.command}"`);
+				logger.channel()?.trace(`Handling the command "${message.command}"`);
 				await handler(message, panel);
-				logger.channel()?.info(`Handling the command "${message.command}" done`);
+				logger.channel()?.trace(`Handling the command "${message.command}" done`);
 			} else {
-				logger.channel()?.error(`No handler found for the command "${message.command}"`);
+				logger.channel()?.warn(`No handler found for the command "${message.command}"`);
 				logger.channel()?.show();
 			}
 
@@ -34,9 +34,8 @@ export class MessageHandler {
 				MessageHandler.sendMessage(panel, { command: 'receiveMessage', text: 'finish', hash: '', user: '', date: 1, isError: false });
 			}
 		} catch (e) {
-			logger.channel()?.error(`Error handling the message: "${JSON.stringify(message)}"`);
+			logger.channel()?.warn(`Error handling the message: "${JSON.stringify(message)}"`);
 			logger.channel()?.show();
-		
 		}
 	}
 
@@ -57,7 +56,7 @@ export class MessageHandler {
 
 	public static sendMessage(panel: vscode.WebviewPanel|vscode.WebviewView, message : any, log: boolean = true): void {
 		if (log) {
-			logger.channel()?.info(`Sending message: "${JSON.stringify(message)}"`);
+			logger.channel()?.trace(`Message to GUI: "${JSON.stringify(message)}"`);
 		}
 		
 		panel.webview.postMessage(message);

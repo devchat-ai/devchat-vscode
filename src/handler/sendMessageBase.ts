@@ -166,7 +166,7 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 		
 		// parse context and others from message
 		const [parsedMessage, chatOptions] = await parseMessageAndSetOptions(message);
-		logger.channel()?.info(`parent hash: ${chatOptions.parent}`);
+		logger.channel()?.trace(`parent hash: ${chatOptions.parent}`);
 
 		// call devchat chat
 		const chatResponse = await devChat.chat(

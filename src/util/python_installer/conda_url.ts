@@ -11,7 +11,7 @@ import path from 'path';
  function getDownloadFileName(): string {
 	const platform = os.platform();
 	const arch = os.arch();
-	logger.channel()?.info(`Platform: ${platform}, Arch: ${arch}`);
+	logger.channel()?.debug(`Platform: ${platform}, Arch: ${arch}`);
 
 	if (platform === "win32") {
 	  if (arch === "x64") {
@@ -55,7 +55,7 @@ import path from 'path';
 export function getMicromambaUrl(): string {
 	const platform = os.platform();
 	const arch = os.arch();
-	logger.channel()?.info(`Platform: ${platform}, Arch: ${arch}`);
+	logger.channel()?.debug(`Platform: ${platform}, Arch: ${arch}`);
 
 	let micromambaUrl = '';
 	if (platform === "win32") {

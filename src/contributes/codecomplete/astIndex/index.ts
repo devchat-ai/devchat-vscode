@@ -83,14 +83,14 @@ export async function indexDir(dir: string) {
             }
 
             try {
-                logger.channel()?.info(`Indexing ${file}`);
+                logger.channel()?.trace(`Indexing ${file}`);
                 const newFileBlockInfo = await createFileBlockInfo(file);
                 if (newFileBlockInfo) {
                     await indexStore!.add(newFileBlockInfo);
                     indexUpdated = true;
                 }
             } catch (err) {
-                logger.channel()?.error(`${err}`);
+                logger.channel()?.warn(`${err}`);
             }
         }
 
@@ -98,7 +98,7 @@ export async function indexDir(dir: string) {
             try {
                 await indexStore!.save();
             } catch (err) {
-                logger.channel()?.error(`${err}`);
+                logger.channel()?.warn(`${err}`);
             }
         }
     };

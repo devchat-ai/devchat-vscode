@@ -171,7 +171,6 @@ async function activate(context: vscode.ExtensionContext) {
   registerQuickFixCommand(context);
 
   startRpcServer();
-  logger.channel()?.info(`registerHandleUri:`);
   registerHandleUri(context);
   registerQuickFixProvider();
 

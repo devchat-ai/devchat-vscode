@@ -133,7 +133,7 @@ export async function embeddingBlocks(file: string): Promise< {vector: number[],
                 vector[symbolMap.get(symbol)! - 1] = 1;
             } else {
                 if (symbolMap.size >= 5000) {
-                    logger.channel()?.error(`symbolMap size is too large, symbol: ${symbol}`);
+                    logger.channel()?.warn(`symbolMap size is too large, symbol: ${symbol}`);
                     continue;
                 }
                 symbolMapUpdated = true;
