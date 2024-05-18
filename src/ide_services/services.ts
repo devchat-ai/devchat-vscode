@@ -166,7 +166,7 @@ export async function startRpcServer() {
 							responseResult["result"] = res;
 						}
 					} catch (error) {
-						logger.channel()?.warn(`warning: ${error}`);
+						logger.channel()?.debug(`warning: ${error}`);
 						responseResult["result"] = res;
 					}
                     
