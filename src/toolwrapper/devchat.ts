@@ -356,9 +356,17 @@ class DevChat {
 				"response_tokens": 1,
 				...parent? {"parent": parent} : {}
 			};
+			const insertValue = JSON.stringify(logData);
+			let insertValueOrFile = insertValue;
+			if (insertValue.length > 4 * 1024) {
+				const tempDir = os.tmpdir();
+				const tempFile = path.join(tempDir, 'devchat_log_insert.json');
+				await fs.promises.writeFile(tempFile, insertValue);
+				insertValueOrFile = tempFile;
+			}
 
 			// build args for log insert
-			const args = ["-m", "devchat", "log", "--insert", JSON.stringify(logData)];
+			const args = ["-m", "devchat", "log", "--insert", insertValueOrFile];
 			
 			const {code, stdout, stderr} = await this.runCommand(args);
 
