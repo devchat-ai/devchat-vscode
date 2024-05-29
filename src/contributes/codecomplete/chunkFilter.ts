@@ -28,7 +28,17 @@ export class LLMStreamComplete {
     constructor(token: vscode.CancellationToken, contentLines: string[], curLineNum: number, curColumn: number) {
         this.contentLines = contentLines;
         this.curLineNum = curLineNum;
-        let curlineIndent = this.contentLines[curLineNum].search(/\S/);
+        let curlineIndent = 0;
+        for (let i = 0; i < this.contentLines[curLineNum].length; i++) {
+            if (this.contentLines[curLineNum][i] === ' ') {
+                curlineIndent += 1;
+            } else if (this.contentLines[curLineNum][i] === '\t') {
+                curlineIndent += 4;
+            } else {
+                break;
+            }
+        }
+
         if (curlineIndent === -1) {
             curlineIndent = this.contentLines[curLineNum].length;
         }
@@ -55,6 +65,7 @@ export class LLMStreamComplete {
     async * chunkStopCanceled(chunks: AsyncIterable<CodeCompletionChunk>) {
         for await (const chunk of chunks) {
             if (this.token.isCancellationRequested) {
+                logger.channel()?.trace("stop on canceled");
                 break;
             }
             yield chunk;
@@ -66,6 +77,7 @@ export class LLMStreamComplete {
         for await (const chunk of chunks) {
           // 如果遇到特定的注释标记，则停止生成过程
           if(chunk.text.includes(`${commentPrefix}<filename>`)) {
+            logger.channel()?.trace(`stopOnFilenameComment: ${chunk.text}`);
             return; // 直接退出生成器函数
           }
           yield chunk;
@@ -77,6 +89,7 @@ export class LLMStreamComplete {
         for await (const chunk of chunks) {
           // 如果遇到特定的注释标记，则停止生成过程
           if(chunk.text.includes(`//Code omitted...`)) {
+            logger.channel()?.trace(`stopOnOmittedCodeComment: ${chunk.text}`);
             return; // 直接退出生成器函数
           }
           yield chunk;
@@ -92,6 +105,7 @@ export class LLMStreamComplete {
             }
 
             if (isFirst && chunk.text[0] === "\n") {
+                logger.channel()?.trace("stopWhenFirstCharIsNewLine");
                 break;
             }
             isFirst = false;
@@ -139,16 +153,17 @@ export class LLMStreamComplete {
     async * stopAtFirstBrace(chunks: AsyncIterable<CodeCompletionChunk>) {
         let firstChunk = true;
         for await (const chunk of chunks) {
+            yield chunk;
+
             if (firstChunk) {
                 if (["}", "]", ")"].includes(chunk.text.trim())) {
+                    logger.channel()?.trace("stopAtFirstBrace: stop at first brace");
                     break;
                 }
                 if (chunk.text.trim().length > 0) {
                     firstChunk = false;
                 }
             }
-
-            yield chunk;
         }
     }
 
@@ -158,12 +173,14 @@ export class LLMStreamComplete {
             if (firstChunk) {
                 const curlineText = this.curLine + chunk.text;
                 if (curlineText.trim() === this.nextLine.trim() && this.nextLine.trim().length > 5) {
+                    logger.channel()?.trace("stopAtFirstBrace: same with next line");
                     break;
                 }
                 firstChunk = false;
             }
 
             if (chunk.text.trim() === this.nextLine.trim() && this.nextLine.trim().length > 1) {
+                logger.channel()?.trace("stopAtFirstBrace: same with next line");
                 break;
             }
 
@@ -184,33 +201,55 @@ export class LLMStreamComplete {
 
             if (firstChunk) {
                 firstChunk = false;
-                if (inMiddleLine) {
+                const chunkText = chunk.text.trim();
+                let isBrace = false;
+                
+                if (chunkText.length > 0 && ["{", "(", "["].includes(chunkText.slice(-1))) {
+                    isBrace = true;
+                }
+                if (inMiddleLine && !isBrace) {
+                    logger.channel()?.trace("stopAtFirstBrace: inMiddleLine");
                     break;
                 }
             }
         }
     }
 
+    
+
     async * stopAtSameBlock(chunks: AsyncIterable<CodeCompletionChunk>) {
         let index = 0;
         let preIndent = -1;
         let hasIndentBigger = false;
+        let firstChunk = true;
+
         for await (const chunk of chunks) {
-            let lineIndent = chunk.text.search(/\S/);
-            if (lineIndent === -1) {
-                lineIndent = this.curlineIndent;
+            let lineIndent = 0;
+            for (let i=0; i<chunk.text.length; i++) {
+                if (chunk.text[i] === " ") {
+                    lineIndent += 1;
+                } else if (chunk.text[i] === "\t") {
+                    lineIndent += 4;
+                } else {
+                    break;
+                }
             }
-            if (index === 0) {
+            if (firstChunk) {
                 lineIndent = this.curlineIndent;
+                firstChunk = false;
+            } else {
             }
 
             if (index > 0 && chunk.text.trim().length > 0 && lineIndent < this.curlineIndent ) {
+                logger.channel()?.trace(`stopAtSameBlock1: ${chunk.text} ${lineIndent} ${this.curlineIndent}`);
                 break;
             }
             if (index > 0 && preIndent === 0 && lineIndent === 0) {
+                logger.channel()?.trace(`stopAtSameBlock2: ${chunk.text}`);
                 break;
             }
             if (index > 0 && hasIndentBigger && lineIndent === this.curlineIndent && chunk.text.trim().length > 0 && ![')',']', '}'].includes(chunk.text.trim()[0])) {
+                logger.channel()?.trace(`stopAtSameBlock3: ${chunk.text}`);
                 break;
             }
             if (lineIndent > this.curlineIndent) {
@@ -263,7 +302,7 @@ export class LLMStreamComplete {
             }
         }
         
-        if (isAllMatch) {
+        if (isAllMatch && firstMatchLine + lines.length >= this.curLineNum) {
             return [];
         }
         return lines;
