@@ -186,7 +186,11 @@ export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<
 
 export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
     const devchatEndpoint = DevChatConfig.getInstance().get("providers.devchat.api_base");
-    const completionApiBase = devchatEndpoint + "/completions";
+    const llmApiBase = DevChatConfig.getInstance().get("complete_api_base");
+    let completionApiBase = devchatEndpoint + "/completions";
+    if (llmApiBase) {
+        completionApiBase = llmApiBase + "/completions";
+    }
 
     let model = DevChatConfig.getInstance().get("complete_model");
     if (!model) {
@@ -221,10 +225,17 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
 
             const endTimeLLM = process.hrtime(startTimeLLM);
             const durationLLM = endTimeLLM[0] + endTimeLLM[1] / 1e9;
-            logger.channel()?.debug(`LLM first chunk took ${durationLLM} seconds`);
+            logger.channel()?.debug(`LLM api post took ${durationLLM} seconds`);
 
             let hasFirstLine = false;
+            let hasFirstChunk = false;
             for await (const chunk of stream) {
+                if (!hasFirstChunk) {
+                    hasFirstChunk = true;
+                    const endTimeFirstChunk = process.hrtime(startTimeLLM);
+                    const durationFirstChunk = endTimeFirstChunk[0] + endTimeFirstChunk[1] / 1e9;
+                    logger.channel()?.debug(`LLM first chunk took ${durationFirstChunk} seconds`);
+                }
                 const chunkDataText = decoder.decode(chunk).trim();
                 // split chunkText by "data: ", for example:
                 // data: 123 data: 456 will split to ["", "data: 123 ", "data: 456"]
