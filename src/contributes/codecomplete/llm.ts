@@ -186,12 +186,18 @@ export async function * ollamaDeepseekComplete(prompt: string) : AsyncGenerator<
 
 export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCompletionChunk> {
     const devchatEndpoint = DevChatConfig.getInstance().get("providers.devchat.api_base");
-    const completionApiBase = devchatEndpoint + "/completions";
+    const llmApiBase = DevChatConfig.getInstance().get("complete_api_base");
+    let completionApiBase = devchatEndpoint + "/completions";
+    if (llmApiBase) {
+        completionApiBase = llmApiBase + "/completions";
+    }
 
     let model = DevChatConfig.getInstance().get("complete_model");
     if (!model) {
         model = "ollama/starcoder2:15b";
     }
+
+    const startTimeLLM = process.hrtime();
 
 	const headers = {
 	    'Content-Type': 'application/json'
@@ -217,7 +223,19 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
             const stream = response.body as any;
             const decoder = new TextDecoder("utf-8");
 
+            const endTimeLLM = process.hrtime(startTimeLLM);
+            const durationLLM = endTimeLLM[0] + endTimeLLM[1] / 1e9;
+            logger.channel()?.debug(`LLM api post took ${durationLLM} seconds`);
+
+            let hasFirstLine = false;
+            let hasFirstChunk = false;
             for await (const chunk of stream) {
+                if (!hasFirstChunk) {
+                    hasFirstChunk = true;
+                    const endTimeFirstChunk = process.hrtime(startTimeLLM);
+                    const durationFirstChunk = endTimeFirstChunk[0] + endTimeFirstChunk[1] / 1e9;
+                    logger.channel()?.debug(`LLM first chunk took ${durationFirstChunk} seconds`);
+                }
                 const chunkDataText = decoder.decode(chunk).trim();
                 // split chunkText by "data: ", for example:
                 // data: 123 data: 456 will split to ["", "data: 123 ", "data: 456"]
@@ -245,6 +263,12 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
 
                     try {
                         const data = JSON.parse(chunkText.substring(5).trim());
+                        if (!hasFirstLine && data.choices[0].text.indexOf("\n") !== -1) {
+                            hasFirstLine = true;
+                            const endTimeLine = process.hrtime(startTimeLLM);
+                            const durationLine = endTimeLine[0] + endTimeLine[1] / 1e9;
+                            logger.channel()?.debug(`LLM first line took ${durationLine} seconds`);
+                        }
                         yield {
                             text: data.choices[0].text,
                             id: data.id

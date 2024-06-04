@@ -677,6 +677,10 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
     if (completeModel.indexOf("deepseek") > -1) {
         prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
+    } else if (completeModel.indexOf("starcoder") > -1) {
+        prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+    } else if (completeModel.indexOf("codestral") > -1) {
+        prompt = "<s>[SUFFIX]" + suffix + "[PREFIX]" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix;
     } else {
         prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
     }
