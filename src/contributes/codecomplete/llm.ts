@@ -193,6 +193,8 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
         model = "ollama/starcoder2:15b";
     }
 
+    const startTimeLLM = process.hrtime();
+
 	const headers = {
 	    'Content-Type': 'application/json'
 	};
@@ -217,6 +219,11 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
             const stream = response.body as any;
             const decoder = new TextDecoder("utf-8");
 
+            const endTimeLLM = process.hrtime(startTimeLLM);
+            const durationLLM = endTimeLLM[0] + endTimeLLM[1] / 1e9;
+            logger.channel()?.debug(`LLM first chunk took ${durationLLM} seconds`);
+
+            let hasFirstLine = false;
             for await (const chunk of stream) {
                 const chunkDataText = decoder.decode(chunk).trim();
                 // split chunkText by "data: ", for example:
@@ -245,6 +252,12 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
 
                     try {
                         const data = JSON.parse(chunkText.substring(5).trim());
+                        if (!hasFirstLine && data.choices[0].text.indexOf("\n") !== -1) {
+                            hasFirstLine = true;
+                            const endTimeLine = process.hrtime(startTimeLLM);
+                            const durationLine = endTimeLine[0] + endTimeLine[1] / 1e9;
+                            logger.channel()?.debug(`LLM first line took ${durationLine} seconds`);
+                        }
                         yield {
                             text: data.choices[0].text,
                             id: data.id
