@@ -27,7 +27,6 @@ import { findIdentifiersInAstNodeRange } from './ast/findIdentifiers';
 import { DevChatConfig } from '../../util/config';
 
 
-const CONTEXT_LIMITED_SIZE: number = 6000;
 const CONTEXT_SIMILAR_LIMITED_SIZE: number = 400;
 
 const variableCache: MemoryCacheManager = new MemoryCacheManager(4);
@@ -40,7 +39,7 @@ export async function currentFileContext(
     curColumn: number
 ) : Promise< { prefix: string, suffix: string } > {
     const contentTokens = countTokens(contents);
-    if (contentTokens < CONTEXT_LIMITED_SIZE*0.35) {
+    if (contentTokens < DevChatConfig.getInstance().get("complete_context_limit", 3000)*0.5) {
         return curfilePrompt(filepath, contents, curRow, curColumn);
     }
 
@@ -51,7 +50,7 @@ export async function currentFileContext(
 
     const functionRanges = await findFunctionRanges(filepath, ast.rootNode);
     return await collapseCodeBlock(functionRanges, filepath, contents, curRow, curColumn);
-    }
+}
 
 
 export async function collapseCodeBlock(functions: FunctionRange[], filepath: string, contents: string, curRow: number, curColumn: number) {
@@ -186,7 +185,7 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
         }
 
         const lineTokenCount = countTokens(lineText);
-        if (prefixTokenCount + lineTokenCount >  CONTEXT_LIMITED_SIZE*0.7*0.35) {
+        if (prefixTokenCount + lineTokenCount >  DevChatConfig.getInstance().get("complete_context_limit", 3000)*0.7*0.35) {
             break;
         }
 
@@ -195,7 +194,7 @@ async function curfilePrompt(filePath: string, fileContent: string, line: number
     }
 
     // 从光标所在行下一行开始，向下构建后缀
-    const suffixMaxToken = CONTEXT_LIMITED_SIZE*0.35 - prefixTokenCount;
+    const suffixMaxToken = DevChatConfig.getInstance().get("complete_context_limit", 3000)*0.35 - prefixTokenCount;
     for (let i = line; i < lines.length; i++) {
         let lineText = lines[i] + '\n';
         if (i === line) {
@@ -551,17 +550,10 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
 
     let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
     
-    let tokenCount = countTokens(prefix);
-
-    const suffixTokenCount = countTokens(suffix);
-    if (tokenCount + suffixTokenCount < CONTEXT_LIMITED_SIZE) {
-        tokenCount += suffixTokenCount;
-    } else {
-        suffix = "";
-    }
+    let tokenCount = countTokens(prefix) + countTokens(suffix);
 
     let taskDescriptionContextWithCommentPrefix = "";
-    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
         const taskDescriptionContext = await createTaskDescriptionContext();
         if (taskDescriptionContext) {
             taskDescriptionContext.split("\n").forEach(line => {
@@ -572,7 +564,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         }
 
         const taskDescriptionContextToken = countTokens(taskDescriptionContextWithCommentPrefix);
-        if (tokenCount + taskDescriptionContextToken < CONTEXT_LIMITED_SIZE) {
+        if (tokenCount + taskDescriptionContextToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
             tokenCount += taskDescriptionContextToken;
         } else {
             taskDescriptionContextWithCommentPrefix = "";
@@ -580,9 +572,9 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
 
     // let gitDiffContext = GitDiffWatcher.getInstance().getGitDiffResult();
-    // if (tokenCount < CONTEXT_LIMITED_SIZE && gitDiffContext.length > 0) {
+    // if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000) && gitDiffContext.length > 0) {
     //     const gitDiffContextToken = countTokens(gitDiffContext);
-    //     if (tokenCount + gitDiffContextToken < CONTEXT_LIMITED_SIZE) {
+    //     if (tokenCount + gitDiffContextToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
     //         tokenCount += gitDiffContextToken;
     //         gitDiffContext = "<git_diff_start>" + gitDiffContext + "<git_diff_end>\n\n\n\n";
     //     } else {
@@ -592,11 +584,11 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     let gitDiffContext = "";
 
     let callDefContext = "";
-    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
         const callCodeBlocks = await createContextCallDefine(filePath, fileContent, posoffset);
         for (const callCodeBlock of callCodeBlocks) {
             const callBlockToken = countTokens(callCodeBlock.codeblock);
-            if (tokenCount + callBlockToken > CONTEXT_LIMITED_SIZE) {
+            if (tokenCount + callBlockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
                 break;
             }
 
@@ -607,18 +599,18 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
 
     let similarBlockContext = "";
-    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
         let similarTokens = 0;
         const similarContexts: {file: string, text: string}[] = await findSimilarCodeBlock(filePath, fileContent, line, column);
 
         for (const similarContext of similarContexts) {
             const blockToken = countTokens(similarContext.text);
-            if (tokenCount + blockToken > CONTEXT_LIMITED_SIZE) {
+            if (tokenCount + blockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
                 continue;
             }
             similarTokens += blockToken;
-            if (similarTokens > CONTEXT_SIMILAR_LIMITED_SIZE) {
-                continue;
+             if (similarTokens > CONTEXT_SIMILAR_LIMITED_SIZE) {
+                 continue;
             }
 
             tokenCount += blockToken;
@@ -628,11 +620,11 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
 
     let symbolContext = "";
-    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
         const symbolDefines: { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
         for (const symbolDefine of symbolDefines ) {
             const countSymboleToken = countTokens(symbolDefine.codeblock);
-            if (tokenCount + countSymboleToken > CONTEXT_LIMITED_SIZE) {
+            if (tokenCount + countSymboleToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
                 break;
             }
 
@@ -644,11 +636,11 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
     }
 
     let recentEditContext = "";
-    if (tokenCount < CONTEXT_LIMITED_SIZE) {
+    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
         recentEditContext = await createRecentEditContext(recentEdits, filePath);
 
         const countRecentToken = countTokens(recentEditContext);
-        if (tokenCount + countRecentToken < CONTEXT_LIMITED_SIZE) {
+        if (tokenCount + countRecentToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
             tokenCount += countRecentToken;
         } else {
             recentEditContext = "";
@@ -660,7 +652,7 @@ export async function createPrompt(filePath: string, fileContent: string, line: 
         const neighborFiles = await findNeighborFileContext(filePath, fileContent, line, column);
         if (neighborFiles.length > 0) {
             const countFileToken = countTokens(neighborFiles[0].text);
-            if (tokenCount + countFileToken < CONTEXT_LIMITED_SIZE) {
+            if (tokenCount + countFileToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
                 tokenCount += countFileToken;
                 neighborFileContext += `${commentPrefix}<filename>neighbor files:\n\n ${neighborFiles[0].file}\n\n`;
                 neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
