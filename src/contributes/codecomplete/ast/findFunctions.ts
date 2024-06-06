@@ -37,7 +37,7 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
     if (!querySource) {
         return [];
     }
-    
+
     const extension = filepath.split('.').pop() || '';
     let query: Parser.Query | undefined = functionCache.get(extension);
     if (!query) {
@@ -46,17 +46,18 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
     }
     const matches = query?.matches(node);
 
-    return (
-        matches?.flatMap((match) => {
+    const functionRanges: FunctionRange[] = [];
+    if (matches) {
+        for (const match of matches) {
             // find functionNode through tag name
             const functionNode = match.captures.find((capture) => capture.name === "function")?.node;
             const bodyNode = match.captures.find((capture) => capture.name === "function.body")?.node;
             const nameNode = match.captures.find((capture) => capture.name === "function.name")?.node;
-            if (!functionNode ||!bodyNode) {
-                return [];
+            if (!functionNode || !bodyNode) {
+                continue;
             }
 
-            const results = {
+            const functionRange: FunctionRange = {
                 define: {
                     start: {
                         row: functionNode.startPosition.row,
@@ -77,11 +78,26 @@ export async function findFunctionRanges(filepath: string, node: Parser.SyntaxNo
                         column: bodyNode.endPosition.column,
                     },
                 },
-                name: nameNode?.text?? "",
+                name: nameNode?.text ?? "",
             };
-            return results;
-        }) ?? []
-    );
+
+            // Check if this function range is not fully contained within another function range
+            const isContained = functionRanges.some(range => {
+                return (
+                    range.define.start.row <= functionRange.define.start.row &&
+                    range.define.end.row >= functionRange.define.end.row &&
+                    range.body.start.row <= functionRange.body.start.row &&
+                    range.body.end.row >= functionRange.body.end.row
+                );
+            });
+
+            if (!isContained) {
+                functionRanges.push(functionRange);
+            }
+        }
+    }
+
+    return functionRanges;
 }
 
 export async function findFunctionNodes(filepath: string, node: Parser.SyntaxNode): Promise<Parser.SyntaxNode[]> {

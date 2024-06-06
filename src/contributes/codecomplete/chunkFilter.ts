@@ -208,7 +208,7 @@ export class LLMStreamComplete {
                     isBrace = true;
                 }
                 if (inMiddleLine && !isBrace) {
-                    logger.channel()?.trace("stopAtFirstBrace: inMiddleLine");
+                    logger.channel()?.trace("stopAtFirstBrace: inMiddleLine, receive chunk: " + chunkText);
                     break;
                 }
             }
@@ -303,6 +303,7 @@ export class LLMStreamComplete {
         }
         
         if (isAllMatch && firstMatchLine + lines.length >= this.curLineNum) {
+            logger.channel()?.trace(`All lines are repeated in before 50 lines, remove them.`);
             return [];
         }
         return lines;
