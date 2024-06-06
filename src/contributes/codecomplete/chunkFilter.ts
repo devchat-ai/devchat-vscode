@@ -277,8 +277,8 @@ export class LLMStreamComplete {
 
     // whether lines are repeated some block before
     async removeRepeatBlock(lines: string[]): Promise< string[] > {
-        if (lines.length === 0) {
-            return [];
+        if (lines.length <= 1) {
+            return lines;
         }
 
         // find first match line in before 50 lines
