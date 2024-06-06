@@ -206,7 +206,7 @@ export async function * devchatComplete(prompt: string) : AsyncGenerator<CodeCom
 	    model: model,
 	    prompt: prompt,
 	    stream: true,
-	    stop: ["<|endoftext|>", "<|EOT|>", "<file_sep>", "```", "/", "\n\n"],
+	    stop: ["<|endoftext|>", "<|EOT|>", "<file_sep>", "```", "//", "\n\n"],
 	    temperature: 0.2
 	};
 
