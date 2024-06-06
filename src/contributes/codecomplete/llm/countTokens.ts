@@ -42,16 +42,17 @@ function countTokens(
   // defaults to llama2 because the tokenizer tends to produce more tokens
   modelName: string = "llama2",
 ): number {
-  const encoding = encodingForModel(modelName);
-  if (Array.isArray(content)) {
-    return content.reduce((acc, part) => {
-      return acc + part.type === "imageUrl"
-        ? countImageTokens(part)
-        : encoding.encode(part.text ?? "", "all", []).length;
-    }, 0);
-  } else {
-    return encoding.encode(content, "all", []).length;
-  }
+  return content.length;
+  // const encoding = encodingForModel(modelName);
+  // if (Array.isArray(content)) {
+  //   return content.reduce((acc, part) => {
+  //     return acc + part.type === "imageUrl"
+  //       ? countImageTokens(part)
+  //       : encoding.encode(part.text ?? "", "all", []).length;
+  //   }, 0);
+  // } else {
+  //   return encoding.encode(content, "all", []).length;
+  // }
 }
 
 function flattenMessages(msgs: ChatMessage[]): ChatMessage[] {
