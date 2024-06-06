@@ -54,7 +54,7 @@ export class DevChatConfig {
         }
     }
 
-    public get(key: string | string[]): any {
+    public get(key: string | string[], defaultValue: any = undefined): any {
         // check if the config file has been modified
         const currentModifyTime = fs.statSync(this.configFilePath).mtimeMs;
         if (currentModifyTime > this.lastModifyTime) {
@@ -68,7 +68,18 @@ export class DevChatConfig {
         } else {
             keys = key;
         }
-        return keys.reduce((prev, curr) => prev ? prev[curr] : undefined, this.data);
+
+        let value = this.data;
+        for (const k of keys) {
+            if (value && typeof value === 'object' && k in value) {
+                value = value[k];
+            } else {
+                // If the key is not found or value is not an object, return the default value
+                return defaultValue || undefined;
+            }
+        }
+
+        return value;
     }
 
     public set(key: string | string[], value: any): void {
