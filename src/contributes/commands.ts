@@ -19,6 +19,7 @@ import { installRequirements } from '../util/python_installer/package_install';
 import { chatWithDevChat } from '../handler/chatHandler';
 import { focusDevChatInput } from '../handler/focusHandler';
 import { DevChatConfig } from '../util/config';
+import { MessageHandler } from "../handler/messageHandler";
 
 const readdir = util.promisify(fs.readdir);
 const stat = util.promisify(fs.stat);
@@ -178,6 +179,10 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
 
         // 保存左边文档
         await leftDoc.save();
+        MessageHandler.sendMessage(
+          ExtensionContextHolder.provider?.view()!,
+          { command: 'codeDiffApply', 'value': {} }
+        );
       } else {
         vscode.window.showErrorMessage("No file to apply diff result.");
       }
