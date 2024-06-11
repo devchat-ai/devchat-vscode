@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 import { logger } from '../../util/logger';
 import Debouncer from './debouncer';
@@ -45,6 +46,8 @@ interface LogEventRequest {
     type: string; // "view", "select"
     lines: number;
     length: number; // length of code completed
+    ide: string; 
+    language: string;
 }
 
 export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
@@ -245,7 +248,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                 completion_id: response.id,
                 type: "view",
                 lines: response.code.split('\n').length,
-                length: response.code.length
+                length: response.code.length,
+                ide: "vscode",
+                language: path.extname(document.uri.fsPath).toLowerCase().slice(1)
             });
         // log to server
 
@@ -266,7 +271,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     completion_id: response!.id,
                     type: "select",
                     lines: response!.code.split('\n').length,
-                    length: response!.code.length
+                    length: response!.code.length,
+                    ide: "vscode",
+                    language: path.extname(document.uri.fsPath).toLowerCase().slice(1)
                 });
         };
 
