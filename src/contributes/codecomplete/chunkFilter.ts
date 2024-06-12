@@ -16,6 +16,13 @@ export interface CodeCompleteResult {
     receiveNewLine: boolean;
 }
 
+export interface CodeCompleteResultWithMeta {
+    result: CodeCompleteResult;
+    cacheHit: boolean;
+    promptBuildTime: number;
+    llmComputeTime: number;
+}
+
 
 export class LLMStreamComplete {
     private token: vscode.CancellationToken;
