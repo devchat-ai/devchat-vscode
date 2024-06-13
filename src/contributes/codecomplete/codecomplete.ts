@@ -5,7 +5,7 @@ import { logger } from '../../util/logger';
 import Debouncer from './debouncer';
 import MemoryCacheManager from './cache';
 import { createPrompt, findSimilarCodeBlock } from './promptCreator';
-import { CodeCompleteResult, LLMStreamComplete } from './chunkFilter';
+import { CodeCompleteResult, CodeCompleteResultWithMeta, LLMStreamComplete } from './chunkFilter';
 import { DevChatConfig } from '../../util/config';
 import { outputAst } from './astTest';
 import { getEndOfLine } from './ast/language';
@@ -48,6 +48,9 @@ interface LogEventRequest {
     length: number; // length of code completed
     ide: string; 
     language: string;
+    cache_hit: boolean;
+    prompt_time: number;
+    llm_time: number;
 }
 
 export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
@@ -122,7 +125,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     //     return true;
     // }
 
-    async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResult | undefined> {
+    async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResultWithMeta | undefined> {
         const startTime = process.hrtime();
         GitDiffWatcher.getInstance().tryRun();
         
@@ -143,7 +146,12 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         const result = await this.cache.get(prompt);
         if (result) {
             logger.channel()?.debug(`cache hited:\n${result.code}`);
-            return result;
+            return {
+                "result": result,
+                "cacheHit": true,
+                "promptBuildTime": 0,
+                "llmComputeTime": 0,
+            };
         }
 
         const lines = fileContent.split('\n');
@@ -178,7 +186,12 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // cache result
         this.cache.set(prompt, response);
-        return response;
+        return {
+            "result": response,
+            "cacheHit": false,
+            "promptBuildTime": Math.floor(duration*1000),
+            "llmComputeTime": Math.floor(durationLLM*1000),
+        };
     }
 
     async provideInlineCompletionItems(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<vscode.InlineCompletionItem[] | null> {
@@ -204,7 +217,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         //     return [];
         // }
 
-        let response: CodeCompleteResult | undefined = undefined;
+        let response: CodeCompleteResultWithMeta | undefined = undefined;
 
         // 获取当前光标前三行代码
         const linePrefix = document.getText(new vscode.Range(position.line - 4, 0, position.line, position.character));
@@ -229,10 +242,10 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // 获取当前行中光标之后的文本内容
         const lineSuffix = document.lineAt(position.line).text.slice(position.character).trim();
-        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.code.split("\n")[0]);
-        let rangeEndPosition = position.translate(0, response.code.length);
+        const isIncludeLineSuffix = isSubsequence(lineSuffix, response.result.code.split("\n")[0]);
+        let rangeEndPosition = position.translate(0, response.result.code.length);
         if (!isIncludeLineSuffix) {
-            if (!response.receiveNewLine) {
+            if (!response.result.receiveNewLine) {
                 rangeEndPosition = position;
             } else {
                 // result will not be shown
@@ -245,12 +258,15 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         logger.channel()?.trace("code complete show.");
         this.logEventToServer(
             {
-                completion_id: response.id,
+                completion_id: response.result.id,
                 type: "view",
-                lines: response.code.split('\n').length,
-                length: response.code.length,
+                lines: response.result.code.split('\n').length,
+                length: response.result.code.length,
                 ide: "vscode",
-                language: path.extname(document.uri.fsPath).toLowerCase().slice(1)
+                language: path.extname(document.uri.fsPath).toLowerCase().slice(1),
+                cache_hit: response.cacheHit,
+                prompt_time: response.promptBuildTime,
+                llm_time: response.llmComputeTime
             });
         // log to server
 
@@ -260,29 +276,32 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         // 代码补全回调处理
         const callback = () => {
-            logger.channel()?.trace("accept:", response!.id);
+            logger.channel()?.trace("accept:", response!.result.id);
             // delete cache
-            this.cache.delete(response!.prompt);
+            this.cache.delete(response!.result.prompt);
             // delete timer
             clearTimeout(logRejectionTimeout);
             // log to server
             this.logEventToServer(
                 {
-                    completion_id: response!.id,
+                    completion_id: response!.result.id,
                     type: "select",
-                    lines: response!.code.split('\n').length,
-                    length: response!.code.length,
+                    lines: response!.result.code.split('\n').length,
+                    length: response!.result.code.length,
                     ide: "vscode",
-                    language: path.extname(document.uri.fsPath).toLowerCase().slice(1)
+                    language: path.extname(document.uri.fsPath).toLowerCase().slice(1),
+                    cache_hit: response!.cacheHit,
+                    prompt_time: response!.promptBuildTime,
+                    llm_time: response!.llmComputeTime
                 });
         };
 
-        this.lastComplete = response.code;
-        this.previousCodeComplete = response;
+        this.lastComplete = response.result.code;
+        this.previousCodeComplete = response.result;
         this.previousPrefix = linePrefix;
 
         const currentLinePrefix = document.lineAt(position.line).text.slice(0, position.character);
-        const codeCompleted = currentLinePrefix + response.code;
+        const codeCompleted = currentLinePrefix + response.result.code;
         const rangeStartPosition = new vscode.Position(position.line, 0);
 
         this.preCompletionItem = new vscode.InlineCompletionItem(
