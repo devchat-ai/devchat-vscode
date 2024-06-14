@@ -15,7 +15,7 @@ import { doVscodeCommand } from './vscodeCommandHandler';
 import { featureToggle, getFeatureToggles } from './featureToggleHandler';
 import { readFile, writeFile } from './fileHandler';
 import { getTopics, deleteTopic } from './topicHandler';
-import { readConfig, writeConfig } from './configHandler';
+import { readConfig, writeConfig, readServerConfigBase, writeServerConfigBase } from './configHandler';
 import { getSetting, getUserAccessKey, getValidLlmModelList, updateSetting } from './removehandler';
 
 
@@ -85,6 +85,10 @@ messageHandler.registerHandler('deleteTopic', deleteTopic);
 
 messageHandler.registerHandler('readConfig', readConfig);
 messageHandler.registerHandler('writeConfig', writeConfig);
+
+messageHandler.registerHandler('readServerConfigBase', readServerConfigBase);
+messageHandler.registerHandler('writeServerConfigBase', writeServerConfigBase);
+
 
 messageHandler.registerHandler('regModelList', getValidLlmModelList);
 messageHandler.registerHandler('updateSetting', updateSetting);
