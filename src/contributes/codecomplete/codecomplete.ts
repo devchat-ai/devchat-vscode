@@ -51,6 +51,7 @@ interface LogEventRequest {
     cache_hit: boolean;
     prompt_time: number;
     llm_time: number;
+    model: string;
 }
 
 export class InlineCompletionProvider implements vscode.InlineCompletionItemProvider {
@@ -266,7 +267,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                 language: path.extname(document.uri.fsPath).toLowerCase().slice(1),
                 cache_hit: response.cacheHit,
                 prompt_time: response.promptBuildTime,
-                llm_time: response.llmComputeTime
+                llm_time: response.llmComputeTime,
+                model: DevChatConfig.getInstance().get("complete_model") ?? "unknow",
             });
         // log to server
 
@@ -292,7 +294,8 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
                     language: path.extname(document.uri.fsPath).toLowerCase().slice(1),
                     cache_hit: response!.cacheHit,
                     prompt_time: response!.promptBuildTime,
-                    llm_time: response!.llmComputeTime
+                    llm_time: response!.llmComputeTime,
+                    model: DevChatConfig.getInstance().get("complete_model") ?? "unknow",
                 });
         };
 
