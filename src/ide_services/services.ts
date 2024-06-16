@@ -13,6 +13,7 @@ import { UnofficialEndpoints } from "./endpoints/unofficial";
 import { getDocumentSymbols } from "./endpoints/getDocumentSymbols";
 import { findTypeDefinitionLocations } from "./endpoints/findTypeDefs";
 import { findDefinitionLocations } from "./endpoints/findDefs";
+import { getCurrentFileInfo } from "./endpoints/getCurrentFileInfo";
 
 const functionRegistry: any = {
     /**
@@ -85,6 +86,10 @@ const functionRegistry: any = {
 		keys: ["code"],
 		handler: UnofficialEndpoints.runCode,
 	},
+    "/getCurrentFileInfo": {
+        keys: [],
+        handler: getCurrentFileInfo,
+    }
 };
 
 let server: http.Server | null = null;

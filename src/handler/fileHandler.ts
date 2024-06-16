@@ -30,3 +30,30 @@ export async function readFile(message: any, panel: vscode.WebviewPanel | vscode
         logger.channel()?.error(`Error reading file ${message.file}: ${error}`);
     }
 }
+
+regInMessage({ command: 'getCurrentFileInfo'});
+regOutMessage({ command: 'getCurrentFileInfo', result: '' });
+// Read content from specified file and return it
+export async function getCurrentFileInfo(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+    try {
+        // 获取当前文件的绝对路径
+        const fileUri = vscode.window.activeTextEditor?.document.uri;
+        const filePath = fileUri?.fsPath;
+        MessageHandler.sendMessage(panel, { command: 'getCurrentFileInfo', result: filePath ?? "" });
+    } catch (error) {
+        logger.channel()?.error(`Error getting current file info: ${error}`);
+    }
+}
+
+regInMessage({ command: 'getIDEServicePort'});
+regOutMessage({ command: 'getIDEServicePort', result: 8090 });
+// Read content from specified file and return it
+export async function getIDEServicePort(message: any, panel: vscode.WebviewPanel | vscode.WebviewView): Promise<void> {
+    try {
+        // Get IDE service port
+        const port = process.env.DEVCHAT_IDE_SERVICE_PORT;
+        MessageHandler.sendMessage(panel, { command: 'getIDEServicePort', result: port ?? 0 });
+    } catch (error) {
+        logger.channel()?.error(`Error getting IDE service port: ${error}`);
+    }
+}
