@@ -13,7 +13,7 @@ import {createAndOpenFile} from './codeBlockHandler';
 import { listAllMessages } from './listMessages';
 import { doVscodeCommand } from './vscodeCommandHandler';
 import { featureToggle, getFeatureToggles } from './featureToggleHandler';
-import { readFile, writeFile } from './fileHandler';
+import { readFile, writeFile, getIDEServicePort, getCurrentFileInfo } from './fileHandler';
 import { getTopics, deleteTopic } from './topicHandler';
 import { readConfig, writeConfig, readServerConfigBase, writeServerConfigBase } from './configHandler';
 import { getSetting, getUserAccessKey, getValidLlmModelList, updateSetting } from './removehandler';
@@ -85,6 +85,9 @@ messageHandler.registerHandler('deleteTopic', deleteTopic);
 
 messageHandler.registerHandler('readConfig', readConfig);
 messageHandler.registerHandler('writeConfig', writeConfig);
+
+messageHandler.registerHandler('getCurrentFileInfo', getCurrentFileInfo);
+messageHandler.registerHandler('getIDEServicePort', getIDEServicePort);
 
 messageHandler.registerHandler('readServerConfigBase', readServerConfigBase);
 messageHandler.registerHandler('writeServerConfigBase', writeServerConfigBase);
