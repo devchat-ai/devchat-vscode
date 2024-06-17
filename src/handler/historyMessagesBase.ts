@@ -46,27 +46,6 @@ OPENAI_API_KEY is missing from your environment or settings. Kindly input your O
 	} as LogEntry;
 }
 
-export function isValidApiKey(apiKey: string, llmType: string = "None") {
-	let apiKeyStrim = apiKey.trim();
-	const apiKeyType = ApiKeyManager.getKeyType(apiKeyStrim);
-	if (apiKeyType === undefined) {
-		return false;
-	}
-	if (llmType === "OpenAI") {
-		if (apiKeyType === "sk") {
-			return true;
-		}
-		return false;
-	}
-	if (llmType === "DevChat") {
-		if (apiKeyType === "DC") {
-			return true;
-		}
-		return false;
-	}
-	return true;
-}
-
 export async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
 	if (!topicId) {
 		return undefined;
