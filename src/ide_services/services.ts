@@ -86,7 +86,7 @@ const functionRegistry: any = {
 		keys: ["code"],
 		handler: UnofficialEndpoints.runCode,
 	},
-    "/getCurrentFileInfo": {
+    "/current_file_info": {
         keys: [],
         handler: getCurrentFileInfo,
     }
@@ -97,6 +97,12 @@ export async function startRpcServer() {
     server = http.createServer((req, res) => {
         const parsedUrl = new URL(req.url!, `http://${req.headers.host}`);
         logger.channel()?.trace(`request: ${parsedUrl}`);
+
+        // 添加 CORS 头
+        res.setHeader('Access-Control-Allow-Origin', '*'); // 允许所有源，或者指定一个具体的源
+        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS'); // 允许的 HTTP 方法
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type'); // 允许的请求头
+
         if (parsedUrl.pathname === "/favicon.ico") {
             res.writeHead(204);
             res.end();
