@@ -113,13 +113,6 @@ async function migrateConfig() {
 	} else {
 		devchatConfig.set("language", "en");
 	}
-
-	const defaultModel = vscode.workspace.getConfiguration("devchat").get("defaultModel");
-	if (defaultModel) {
-		devchatConfig.set("default_model", defaultModel);
-	} else {
-		devchatConfig.set("default_model", "");
-	}
 }
 
 // fix devchat api base is "custom"
