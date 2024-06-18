@@ -349,7 +349,7 @@ export function registerFixCommand(context: vscode.ExtensionContext) {
   );
 }
 
-export function registerQuickFixCommand(context: vscode.ExtensionContext) {
+export async function registerQuickFixCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
       "DevChat.quickFix",
       async (diagnosticMessage: string, code: string, surroundingCode: string) => {
@@ -359,7 +359,7 @@ export function registerQuickFixCommand(context: vscode.ExtensionContext) {
           }
 
           const language = DevChatConfig.getInstance().get('language');
-          const prompt = generatePrompt(code, surroundingCode, diagnosticMessage, language);
+          const prompt = await generatePrompt(code, surroundingCode, diagnosticMessage, language);
           chatWithDevChat(ExtensionContextHolder.provider?.view()!, prompt);
       }
   );
@@ -375,6 +375,19 @@ async function waitForPanelActivation() {
     });
 }
 
-function generatePrompt(code: string, surroundingCode: string, diagnosticMessage: string, language: string) {
-    return `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}, please output steps to fix it. ${language === "zh" ? "结果输出请使用中文。" : ""} `;
+async function generatePrompt(code: string, surroundingCode: string, diagnosticMessage: string, language: string) {
+  const editor = vscode.window.activeTextEditor;
+  if (editor) {
+    const selectedText = editor.document.getText(editor.selection);
+    await sendCodeSelectMessage(
+      ExtensionContextHolder.provider?.view()!,
+      editor.document.fileName,
+      code,
+      0
+    );
+    // wait 1 second
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    return `Context code is current edit file.\n\nThere is an error in the context code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}, please output steps to fix it. ${language === "zh" ? "结果输出请使用中文。" : ""} `;
+  }
+  return `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}, please output steps to fix it. ${language === "zh" ? "结果输出请使用中文。" : ""} `;
 }
