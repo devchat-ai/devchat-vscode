@@ -1,9 +1,4 @@
-
-
 import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
-import messageHistory from '../util/messageHistory';
-import { ApiKeyManager } from '../util/apiKey';
-
 
 export interface LoadHistoryMessages {
 	command: string;
@@ -62,57 +57,19 @@ export async function loadTopicHistoryLogs(topicId: string | undefined): Promise
 	return logEntries;
 }
 
-export function updateCurrentMessageHistory(topicId: string, logEntries: Array<LogEntry>): void {
-	messageHistory.clear();
-	messageHistory.setTopic(topicId);
 
-	for (let i = 0; i < logEntries.length; i++) {
-		let entryOld = logEntries[i];
-		let entryNew = {
-			date: entryOld.date,
-			hash: entryOld.hash,
-			request: entryOld.request,
-			text: entryOld.response,
-			user: entryOld.user,
-			parentHash: entryOld.parent,
-			context: entryOld.context,
-		};
-		messageHistory.add(entryNew);
-
-	}
-}
-
-export function loadTopicHistoryFromCurrentMessageHistory(skip: number, count: number): LoadHistoryMessages {
-	const logEntries = messageHistory.getList();
-	const newEntries = logEntries.map((entry) => {
+export async function loadTopicHistoryFromCurrentMessageHistory(topicId: string, skip: number, count: number): Promise< LoadHistoryMessages > {
+	const logEntries = await loadTopicHistoryLogs(topicId);
+	if (!logEntries) {
 		return {
-			hash: entry.hash,
-			parent: entry.parentHash,
-			user: entry.user,
-			date: entry.date,
-			request: entry.request,
-			response: entry.text,
-			context: entry.context,
-		} as LogEntry;
-	});
+			command: 'loadHistoryMessages',
+			entries: [],
+		} as LoadHistoryMessages;
+	}
 
-	const logEntriesFlat = newEntries.reverse().slice(skip, skip + count).reverse();
+	const logEntriesFlat = logEntries.reverse().slice(skip, skip + count).reverse();
 	return {
 		command: 'loadHistoryMessages',
 		entries: logEntriesFlat,
-	} as LoadHistoryMessages;
-}
-
-export async function historyMessagesBase(topicId: string): Promise<LoadHistoryMessages | undefined> {
-	const logEntriesFlat = await loadTopicHistoryLogs(topicId);
-	if (!logEntriesFlat) {
-		return undefined;
-	}
-
-	updateCurrentMessageHistory(topicId, logEntriesFlat);
-
-	return {
-		command: 'loadHistoryMessages',
-		entries: logEntriesFlat.length > 0 ? logEntriesFlat : [],
 	} as LoadHistoryMessages;
 }
