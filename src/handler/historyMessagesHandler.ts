@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import { MessageHandler } from './messageHandler';
 import { regInMessage, regOutMessage } from '../util/reg_messages';
-import { historyMessagesBase, LoadHistoryMessages, loadTopicHistoryFromCurrentMessageHistory } from './historyMessagesBase';
-import { UiUtilWrapper } from '../util/uiUtil';
+import { loadTopicHistoryFromCurrentMessageHistory } from './historyMessagesBase';
 import { DevChatConfig } from '../util/config';
 
 
@@ -15,12 +14,7 @@ export async function getHistoryMessages(message: {command: string, topicId: str
 	const skip = maxCount * (message.page ? message.page : 0);
 	const topicId = message.topicId;
 
-	const historyMessageAll = await historyMessagesBase(topicId);
-	if (!historyMessageAll?.entries.length || historyMessageAll?.entries.length < maxCount) {
-		MessageHandler.sendMessage(panel, historyMessageAll!);
-	}
-
-	const historyMessage = loadTopicHistoryFromCurrentMessageHistory(skip, maxCount);
+	const historyMessage = await loadTopicHistoryFromCurrentMessageHistory(topicId, skip, maxCount);
 	if (historyMessage) {
 		MessageHandler.sendMessage(panel, historyMessage);
 	}

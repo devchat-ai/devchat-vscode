@@ -1,6 +1,5 @@
 import DevChat, { ChatOptions, ChatResponse } from '../toolwrapper/devchat';
 import { logger } from '../util/logger';
-import messageHistory from '../util/messageHistory';
 import { assertValue } from '../util/check';
 
 
@@ -120,25 +119,6 @@ export async function parseMessageAndSetOptions(message: any): Promise<[{ contex
 }
 
 /**
- * Adds a message to the message history.
- *
- * @param {any} message - The message object.
- * @param {ChatResponse} chatResponse - The chat response object.
- * @param {string | undefined} parentHash - The hash of the parent message, if any.
- * @returns {void}
- */
-export async function addMessageToHistory(message: any, chatResponse: ChatResponse, parentHash: string | undefined): Promise<void> {
-	messageHistory.add({ 
-		request: message.text, 
-		text: chatResponse.response, 
-		parentHash, 
-		hash: chatResponse['prompt-hash'], 
-		user: chatResponse.user, 
-		date: chatResponse.date 
-	});
-}
-
-/**
  * Processes the chat response by replacing certain patterns in the response text.
  *
  * @param {ChatResponse} chatResponse - The chat response object.
@@ -178,8 +158,6 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 			});
 
 		assertValue(UserStopHandler.isUserInteractionStopped(), "User Stopped");
-		
-		await addMessageToHistory(message, chatResponse, message.parent_hash);
 		
 		return {
 			command: 'receiveMessage',
@@ -221,8 +199,6 @@ export async function stopDevChatBase(message: any): Promise<void> {
 export async function deleteChatMessageBase(message:{'hash': string}): Promise<boolean> {
 	try {
 		assertValue(!message.hash, 'Message hash is required');
-		// delete the message from messageHistory
-		messageHistory.delete(message.hash);
 
 		// delete the message by devchat
 		const bSuccess = await devChat.delete(message.hash);
