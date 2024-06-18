@@ -4,7 +4,6 @@ import { replaceCodeBlockToFile } from './codeBlockHandler';
 import { doCommit } from './commitHandler';
 import { getHistoryMessages } from './historyMessagesHandler';
 import { getWorkflowCommandList } from './workflowCommandHandler';
-import { getWorkflowContextList } from './workflowContextHandler';
 import { sendMessage, stopDevChat, regeneration, deleteChatMessage, userInput } from './sendMessage';
 import { applyCodeWithDiff } from './diffHandler';
 import { addConext } from './contextHandler';
@@ -12,11 +11,9 @@ import { getContextDetail } from './contextHandler';
 import {createAndOpenFile} from './codeBlockHandler';
 import { listAllMessages } from './listMessages';
 import { doVscodeCommand } from './vscodeCommandHandler';
-import { featureToggle, getFeatureToggles } from './featureToggleHandler';
 import { readFile, writeFile, getIDEServicePort, getCurrentFileInfo } from './fileHandler';
 import { getTopics, deleteTopic } from './topicHandler';
 import { readConfig, writeConfig, readServerConfigBase, writeServerConfigBase } from './configHandler';
-import { getSetting, getUserAccessKey, getValidLlmModelList, updateSetting } from './removehandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -40,9 +37,6 @@ messageHandler.registerHandler('historyMessages', getHistoryMessages);
 // Register the command list
 // Response: { command: 'regCommandList', result: <command list> }
 messageHandler.registerHandler('regCommandList', getWorkflowCommandList);
-// Register the context list
-// Response: { command: 'regContextList', result: <context list> }
-messageHandler.registerHandler('regContextList', getWorkflowContextList);
 // Send a message, send the message entered by the user to AI
 // Response:
 //    { command: 'receiveMessagePartial', text: <response message text>, user: <user>, date: <date> }
@@ -72,9 +66,6 @@ messageHandler.registerHandler('deleteChatMessage', deleteChatMessage);
 // Response: none
 messageHandler.registerHandler('doCommand', doVscodeCommand);
 
-messageHandler.registerHandler('featureToggle', featureToggle);
-messageHandler.registerHandler('featureToggles', getFeatureToggles);
-
 messageHandler.registerHandler('userInput', userInput);
 
 messageHandler.registerHandler('readFile', readFile);
@@ -91,9 +82,3 @@ messageHandler.registerHandler('getIDEServicePort', getIDEServicePort);
 
 messageHandler.registerHandler('readServerConfigBase', readServerConfigBase);
 messageHandler.registerHandler('writeServerConfigBase', writeServerConfigBase);
-
-
-messageHandler.registerHandler('regModelList', getValidLlmModelList);
-messageHandler.registerHandler('updateSetting', updateSetting);
-messageHandler.registerHandler('getSetting', getSetting);
-messageHandler.registerHandler('getUserAccessKey', getUserAccessKey);

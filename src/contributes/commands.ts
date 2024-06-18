@@ -1,31 +1,24 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import * as util from "util";
 import { sendFileSelectMessage, sendCodeSelectMessage } from "./util";
 import { ExtensionContextHolder } from "../util/extensionContext";
 import { FilePairManager } from "../util/diffFilePairs";
-import { ApiKeyManager } from "../util/apiKey";
 import { UiUtilWrapper } from "../util/uiUtil";
-import { isValidApiKey } from "../handler/historyMessagesBase";
-
-import { logger } from "../util/logger";
 
 import { sendCommandListByDevChatRun } from '../handler/workflowCommandHandler';
 import DevChat from "../toolwrapper/devchat";
-import { createEnvByConda, createEnvByMamba } from '../util/python_installer/app_install';
-import { installRequirements } from '../util/python_installer/package_install';
 import { chatWithDevChat } from '../handler/chatHandler';
 import { focusDevChatInput } from '../handler/focusHandler';
 import { DevChatConfig } from '../util/config';
 import { MessageHandler } from "../handler/messageHandler";
 
 const readdir = util.promisify(fs.readdir);
-const stat = util.promisify(fs.stat);
 const mkdir = util.promisify(fs.mkdir);
 const copyFile = util.promisify(fs.copyFile);
 
+// It is used to copy workflow commands to user directory.
 async function copyDirectory(src: string, dest: string): Promise<void> {
   await mkdir(dest, { recursive: true });
   const entries = await readdir(src, { withFileTypes: true });
@@ -284,7 +277,8 @@ export function registerHandleUri(context: vscode.ExtensionContext) {
         // 解析 URI 并执行相应的操作
         if (uri.path.includes("accesskey")) {
           const accessKey = uri.path.split("/")[2];
-		  DevChatConfig.getInstance().set("provides.devchat.api_key", accessKey);
+		      DevChatConfig.getInstance().set("provides.devchat.api_key", accessKey);
+          DevChatConfig.getInstance().set("provides.devchat.api_base", "https://api.devchat.ai/v1");
           ensureChatPanel(context);
           await new Promise((resolve, reject) => {
             setTimeout(() => {

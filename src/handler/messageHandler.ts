@@ -2,7 +2,6 @@
 
 import * as vscode from 'vscode';
 
-import '../context/loadContexts';
 import { logger } from '../util/logger';
 
 
