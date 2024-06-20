@@ -49,7 +49,25 @@ export async function currentFileContext(
     }
 
     const functionRanges = await findFunctionRanges(filepath, ast.rootNode);
-    return await collapseCodeBlock(functionRanges, filepath, contents, curRow, curColumn);
+    const result: {prefix: string, suffix: string} = await collapseCodeBlock(functionRanges, filepath, contents, curRow, curColumn);
+
+    const completeContextLimit = DevChatConfig.getInstance().get("complete_context_limit", 3000);
+    const prefixMaxLength = Math.min(completeContextLimit * 0.7, result.prefix.length);
+    const suffixMaxLength = completeContextLimit - prefixMaxLength;
+
+    let prefix = result.prefix;
+    let suffix = result.suffix;
+
+    if (prefix.length + suffix.length > completeContextLimit) {
+        if (prefix.length > prefixMaxLength) {
+        prefix = prefix.slice(-prefixMaxLength);
+        }
+        if (suffix.length > suffixMaxLength) {
+        suffix = suffix.slice(0, suffixMaxLength);
+        }
+    }
+
+    return { prefix, suffix };
 }
 
 
