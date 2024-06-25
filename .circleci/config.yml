@@ -9,7 +9,7 @@ jobs:
     steps:
       - checkout
       - run: git submodule sync
-      - run: git submodule update --init
+      - run: git submodule update --init --recursive
       - run: npm install
       - run: npm run build
       - persist_to_workspace:
