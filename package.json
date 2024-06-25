@@ -88,6 +88,36 @@
     },
     "commands": [
       {
+        "command": "DevChat.cliDev",
+        "title": "Dev cli command",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.serviceDev",
+        "title": "Dev service trigger",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.serviceDev2",
+        "title": "Dev service trigger 2",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.serviceDev3",
+        "title": "Dev service trigger 3",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.serviceDev4",
+        "title": "Dev service trigger 4",
+        "category": "DevChat"
+      },
+      {
+        "command": "DevChat.serviceDev5",
+        "title": "Dev service trigger 5",
+        "category": "DevChat"
+      },
+      {
         "command": "devchat.applyDiffResult",
         "title": "Apply Diff",
         "icon": "assets/devchat_apply.svg"
@@ -398,6 +428,7 @@
     "quote": "^0.4.0",
     "rehype-raw": "^6.1.1",
     "shell-escape": "^0.2.0",
+    "socket.io-client": "^4.7.5",
     "string-argv": "^0.3.2",
     "tree-kill": "^1.2.2",
     "tree-sitter-wasms": "^0.1.7",

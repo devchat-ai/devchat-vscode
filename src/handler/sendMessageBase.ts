@@ -1,7 +1,8 @@
 import DevChat, { ChatOptions, ChatResponse } from '../toolwrapper/devchat';
 import { logger } from '../util/logger';
 import { assertValue } from '../util/check';
-
+import { DevChatClient, ChatRequest, buildRoleContextsFromFiles, LogData } from '../toolwrapper/devchatClient';
+import { ApiKeyManager } from '../util/apiKey';
 
 /**
  * Class to handle user interaction stop events.
@@ -124,6 +125,7 @@ export async function parseMessageAndSetOptions(message: any): Promise<[{ contex
  * @param {ChatResponse} chatResponse - The chat response object.
  * @returns {string} - The processed response text.
  */
+// TODO: tmp why?
 export function processChatResponse(chatResponse: ChatResponse) : string {
 	let responseText = chatResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
 	return responseText;
@@ -131,6 +133,7 @@ export function processChatResponse(chatResponse: ChatResponse) : string {
 
 
 const devChat = new DevChat();
+const dcClient = new DevChatClient();
 
 /**
  * Sends a message to the DevChat and handles the response.
@@ -148,14 +151,103 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 		const [parsedMessage, chatOptions] = await parseMessageAndSetOptions(message);
 		logger.channel()?.trace(`parent hash: ${chatOptions.parent}`);
 
-		// call devchat chat
-		const chatResponse = await devChat.chat(
-			parsedMessage.text,
-			chatOptions,
-			(partialResponse: ChatResponse) => {
-				const partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
-				handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
-			});
+		// // call devchat chat
+		// const chatResponse = await devChat.chat(
+		// 	parsedMessage.text,
+		// 	chatOptions,
+		// 	(partialResponse: ChatResponse) => {
+		// 		const partialDataText = partialResponse.response.replace(/```\ncommitmsg/g, "```commitmsg");
+		// 		handlePartialData({ command: 'receiveMessagePartial', text: partialDataText!, user: partialResponse.user, date: partialResponse.date });
+		// 	});
+
+		//---------------- send message ------------------------------
+		
+		const llmModelData = await ApiKeyManager.llmModel();
+		assertValue(!llmModelData || !llmModelData.model, 'You must select a LLM model to use for conversations');
+		const chatReq: ChatRequest = {
+            content: parsedMessage.text,
+            model_name: llmModelData.model,
+            parent: chatOptions.parent,
+            context: chatOptions.context,
+        };
+        let chatResponse = await dcClient.message(
+            chatReq,
+            (partialRes: ChatResponse) => {
+				// TODO: tmp 这是在干嘛 = =
+                // const partialDataText = partialResponse.response.replace(
+                //     /```\ncommitmsg/g,
+                //     "```commitmsg"
+                // );
+				const text = partialRes.response;
+                handlePartialData({
+                    command: "receiveMessagePartial",
+                    text: text!,
+                    user: partialRes.user,
+                    date: partialRes.date,
+                });
+            }
+        );
+
+		let workflowRes: ChatResponse | undefined = undefined;
+
+		if (chatResponse.finish_reason === "should_run_workflow") {
+			// run and interact with workflow via socket
+			const workflowName = chatResponse.extra!["workflow_name"];
+			const workflowInput = chatResponse.extra!["workflow_input"];
+			logger.channel()?.info(`\nwill run workflow: ${workflowName}, input: ${workflowInput}`);
+			workflowRes = await dcClient.workflow(
+				chatResponse.user,
+				chatResponse.date,
+				workflowName,
+				workflowInput,
+				(partialRes: ChatResponse) => {
+					const text = partialRes.response;
+					handlePartialData({
+						command: "receiveMessagePartial",
+						text: text!,
+						user: partialRes.user,
+						date: partialRes.date,
+					});
+				}
+			);
+
+			logger.channel()?.info(`\nworkflowRes: ${JSON.stringify(workflowRes)}`);
+
+			chatResponse = workflowRes;
+		}
+
+		//---------------- insert log ------------------------------
+		const roleContexts = await buildRoleContextsFromFiles(chatOptions.context);
+		const messages = [
+			{
+				role: "user",
+				content: chatReq.content,
+			},
+			{
+				role: "assistant",
+				content: chatResponse.response,
+			},
+			...roleContexts
+		];
+		
+		const logData: LogData = {
+			model: llmModelData.model,
+			messages: messages,
+			parent: chatOptions.parent,
+			timestamp: Math.floor(Date.now()/1000),
+			// TODO: 1 or real value?
+			request_tokens: 1,
+			response_tokens: 1,
+		};
+		const logRes = await dcClient.insertLog(logData);
+
+		logger.channel()?.info(`\nlogRes: ${JSON.stringify(logRes)}`);
+		if (logRes.hash) {
+			chatResponse["prompt-hash"] = logRes.hash;
+		}
+
+
+		// -------------------------------------------------------
 
 		assertValue(UserStopHandler.isUserInteractionStopped(), "User Stopped");
 		
@@ -185,6 +277,7 @@ export async function stopDevChatBase(message: any): Promise<void> {
 	logger.channel()?.info(`Stopping devchat`);
 	UserStopHandler.stopUserInteraction();
 	devChat.stop();
+	dcClient.stopAllRequest();
 }
 
 /**
@@ -219,5 +312,9 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
  * @returns {Promise<void>} - A Promise that resolves when the message has been sent.
  */
 export async function sendTextToDevChat(text: string): Promise<void> {
-	return devChat.input(text);
+	// return devChat.input(text);
+	devChat.input(text);
+	logger.channel()?.info(`\n---- sendTextToDevChat: ${text}`);
+	await dcClient.sendWorkflowProcessInput({"text": text});
+	return;
 }

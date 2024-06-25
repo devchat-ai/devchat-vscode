@@ -540,6 +540,42 @@ class DevChat {
 			return [];
 		}
 	}
+
+	async cliDev(): Promise<any[]> {
+		try {
+			const args = ["-m", "devchat", "workflow", "list", "--json"];
+
+			const {code, stdout, stderr} = await this.runCommand(args);
+
+			assertValue(code !== 0, stderr || `Command exited with ${code}`);
+			if (stderr.trim() !== "") {
+				logger.channel()?.warn(`${stderr}`);
+			}
+
+			let commands;
+			try {
+				commands = JSON.parse(stdout.trim());
+			} catch (error) {
+				logger.channel()?.error('Failed to parse commands JSON:', error);
+				return [];
+			}
+
+			// // 确保每个CommandEntry对象的recommend字段默认为-1
+			// const recommendCommands = await this.loadRecommendCommands();
+			// commands = commands.map((cmd: any) => ({
+			// 	...cmd,
+			// 	recommend: recommendCommands.indexOf(cmd.name),
+			// }));
+
+			logger.channel()?.info(`commands: ${JSON.stringify(commands)}`);
+
+			return commands;
+		} catch (error: any) {
+			logger.channel()?.error(`Error: ${error.message}`);
+			logger.channel()?.show();
+			return [];
+		}
+	}
 }
 
 export default DevChat;

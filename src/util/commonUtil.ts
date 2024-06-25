@@ -82,13 +82,14 @@ export class CommandRun {
                 }
             });
 
+            const startTime = process.hrtime();
+
             this.childProcess = spawn(command, argsNew, options);
 
             let stdout = '';
             let stderr = '';
 
             // Record process start time
-            const startTime = process.hrtime();
 
             this.childProcess.stdout.on('data', (data: { toString: () => any; }) => {
                 const dataStr = this._input + data.toString();

@@ -16,6 +16,12 @@ import {
 	registerFixCommand,
 	registerExplainCommand,
 	registerQuickFixCommand,
+	registerCliDev,
+	registerServiceDev,
+	registerServiceDev2,
+	registerServiceDev3,
+	registerServiceDev4,
+	registerServiceDev5,
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView } from './contributes/views';
@@ -163,6 +169,13 @@ async function activate(context: vscode.ExtensionContext) {
   registerCodeLensProvider(context);
   registerQuickFixCommand(context);
 
+  registerCliDev(context);
+  registerServiceDev(context);
+  registerServiceDev2(context);
+  registerServiceDev3(context);
+  registerServiceDev4(context);
+  registerServiceDev5(context);
+
   startRpcServer();
   registerHandleUri(context);
   registerQuickFixProvider();
@@ -178,6 +191,8 @@ async function activate(context: vscode.ExtensionContext) {
 async function deactivate() {
   // stop devchat
   await stopDevChatBase({});
+//   TODO: Stop DevChat Client & Server
+
 }
 exports.activate = activate;
 exports.deactivate = deactivate;

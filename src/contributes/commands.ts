@@ -391,3 +391,153 @@ async function generatePrompt(code: string, surroundingCode: string, diagnosticM
   }
   return `current edit file is:\n\`\`\`\n${code}\n\`\`\`\n\nThere is an error in the above code:\n\`\`\`\n${surroundingCode}\n\`\`\`\n\nHow do I fix this problem in the above code?: ${diagnosticMessage}, please output steps to fix it. ${language === "zh" ? "结果输出请使用中文。" : ""} `;
 }
+
+// ----------------- TMP DEV BELOW
+
+export function registerCliDev(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.cliDev",
+        async () => {
+            const devchat = new DevChat();
+            await devchat.cliDev();
+        }
+    );
+
+    context.subscriptions.push(disposable);
+}
+
+
+import { logger } from "../util/logger";
+import { DevChatClient } from "../toolwrapper/devchatClient";
+import {
+    startSocketConn,
+    closeSocketConn,
+    devchatSocket,
+} from "../toolwrapper/socketClient";
+import { start } from "repl";
+
+const mockMsg = {
+    content: "一句话介绍Rust语言",
+    model_name: "gpt-4",
+};
+
+let currentProcessId = null;
+let finalOutput = "";
+
+export function registerServiceDev(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.serviceDev",
+        async () => {
+            // const client = new DevChatClient();
+            // // await client.getWorkflowList();
+            // // await client.sSample();
+            // await client.message(mockMsg, (data) => {
+
+            // });
+
+            startSocketConn();
+
+            devchatSocket?.on("process_started", (data) => {
+                logger
+                    .channel()
+                    ?.debug(`Recv process_started :\n${data}`);
+                logger
+                    .channel()
+                    ?.debug(
+                        `Recv process_started stringify:\n${JSON.stringify(
+                            data
+                        )}`
+                    );
+                const pid = data["pid"];
+                currentProcessId = pid;
+                finalOutput = "";
+            });
+
+            devchatSocket?.on("process_output", (data) => {
+                logger
+                    .channel()
+                    ?.debug(
+                        `Recv process_output stringify:\n${JSON.stringify(
+                            data
+                        )}`
+                    );
+                const output = data["output"];
+                logger.channel()?.debug(`output: ${output}`);
+                finalOutput += output;
+            });
+
+            devchatSocket?.on("process_finished", (data) => {
+                logger
+                    .channel()
+                    ?.debug(
+                        `Recv process_finished stringify:\n${JSON.stringify(
+                            data
+                        )}`
+                    );
+
+                logger.channel()?.debug(`finalOutput: ${finalOutput}`);
+            });
+        }
+    );
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerServiceDev2(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.serviceDev2",
+        async () => {
+            devchatSocket?.emit("start_process", { "script": "hello.py" });
+        }
+    );
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerServiceDev3(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.serviceDev3",
+        async () => {
+            // devchatSocket?.emit("start_process", { "script": "repeat.py" });
+
+
+            const client = new DevChatClient();
+            await client.getWorkflowList();
+            // await client.sSample();
+            // await client.message(mockMsg, (data) => {});
+        }
+    );
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerServiceDev4(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.serviceDev4",
+        async () => {
+          if (!currentProcessId) {
+              logger.channel()?.error("currentProcessId is null");
+              return;
+          }
+          logger.channel()?.debug(`currentProcessId: ${currentProcessId}`);
+
+          const inputText = `Hello from vscode, now is ${new Date().toLocaleString()}`;
+          const data = { pid: currentProcessId, input: inputText };
+          devchatSocket?.emit("process_input", data);
+          logger.channel()?.debug(`sent process_input`);
+      }
+    );
+
+    context.subscriptions.push(disposable);
+}
+
+export function registerServiceDev5(context: vscode.ExtensionContext) {
+    let disposable = vscode.commands.registerCommand(
+        "DevChat.serviceDev5",
+        async () => {
+            closeSocketConn();
+        }
+    );
+
+    context.subscriptions.push(disposable);
+}

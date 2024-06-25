@@ -18,7 +18,8 @@
 			"@/*": [
 				"./src/*"
 			]
-		}
+		},
+		"experimentalDecorators": true
 	},
 	"exclude": [
 		"test","gui","tools"
