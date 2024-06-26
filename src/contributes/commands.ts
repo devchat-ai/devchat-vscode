@@ -352,15 +352,17 @@ export function registerFixCommand(context: vscode.ExtensionContext) {
 export async function registerQuickFixCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
       "DevChat.quickFix",
-      async (diagnosticMessage: string, code: string, surroundingCode: string) => {
+      async (document: vscode.TextDocument, range: vscode.Range | vscode.Selection, diagnostic: vscode.Diagnostic) => {
           ensureChatPanel(context);
           if (!ExtensionContextHolder.provider?.view()) {
               await waitForPanelActivation();
           }
 
-          const language = DevChatConfig.getInstance().get('language');
-          const prompt = await generatePrompt(code, surroundingCode, diagnosticMessage, language);
-          chatWithDevChat(ExtensionContextHolder.provider?.view()!, prompt);
+          // select the code
+          const editor = vscode.window.activeTextEditor;
+          editor!.selection = new vscode.Selection(range.start, range.end);
+
+          chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/fix_issue ");
       }
   );
 
