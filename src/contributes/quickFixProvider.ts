@@ -24,22 +24,13 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
         quickFix.isPreferred = false;
 
         return new Promise(async (resolve) => {
-            const code = await collapseFileExculdeSelectRange(document.uri.fsPath, document.getText(), range.start.line, range.end.line);
-
-            const surroundingRange = new vscode.Range(
-                Math.max(0, range.start.line - 3),
-                0,
-                Math.min(document.lineCount, range.end.line + 3),
-                0,
-            );
-
             quickFix.command = {
                 command: "DevChat.quickFix",
                 title: "DevChat Quick Fix",
                 arguments: [
-                    diagnostic.message,
-                    code,
-                    document.getText(surroundingRange)
+                    document,
+                    range,
+                    diagnostic,
                 ],
             };
 

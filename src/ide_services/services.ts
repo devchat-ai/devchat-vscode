@@ -14,6 +14,9 @@ import { getDocumentSymbols } from "./endpoints/getDocumentSymbols";
 import { findTypeDefinitionLocations } from "./endpoints/findTypeDefs";
 import { findDefinitionLocations } from "./endpoints/findDefs";
 import { getCurrentFileInfo } from "./endpoints/getCurrentFileInfo";
+import { getDiagnosticsInRange } from "./endpoints/documentRangeDiagnostics";
+import { getExtensionToolsPath } from "./endpoints/getToolsPath";
+import { getCollapsedCode } from "./endpoints/getCollapsedCode";
 
 const functionRegistry: any = {
     /**
@@ -89,6 +92,18 @@ const functionRegistry: any = {
     "/current_file_info": {
         keys: [],
         handler: getCurrentFileInfo,
+    },
+    "/get_diagnostics_in_range": {
+        keys: ["fileName", "startLine", "endLine"],
+        handler: getDiagnosticsInRange,
+    },
+    "/get_extension_tools_path": {
+        keys: [],
+        handler: getExtensionToolsPath,
+    },
+    "/get_collapsed_code": {
+        keys: ["fileName", "startLine", "endLine"],
+        handler: getCollapsedCode,
     }
 };
 
