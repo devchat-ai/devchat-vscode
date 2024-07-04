@@ -1,11 +1,15 @@
 import * as vscode from "vscode";
-import { applyCodeWithDiff } from "../../handler/diffHandler";
+import { applyCodeWithDiff, applyEditCodeWithDiff } from "../../handler/diffHandler";
 import { getSymbolDefines } from "../../context/contextRefDefs";
 
 
 export namespace UnofficialEndpoints {
-    export async function diffApply(filepath: string, content: string) {
-        applyCodeWithDiff({ fileName: filepath, content: content }, undefined);
+    export async function diffApply(filepath: string, content: string, autoedit: boolean = false) {
+        if (autoedit) {
+            applyEditCodeWithDiff({ fileName: filepath, content: content }, undefined)
+        } else {
+            applyCodeWithDiff({ fileName: filepath, content: content }, undefined);
+        }
         return true;
     }
 
