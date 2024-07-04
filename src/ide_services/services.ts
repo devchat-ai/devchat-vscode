@@ -59,7 +59,7 @@ const functionRegistry: any = {
         handler: () => "vscode",
     },
     "/diff_apply": {
-        keys: ["filepath", "content"],
+        keys: ["filepath", "content", "autoedit"],
         handler: UnofficialEndpoints.diffApply,
     },
 
@@ -125,6 +125,12 @@ export async function startRpcServer() {
         }
 
         let params: any = {};
+
+        if (req.method === 'OPTIONS') {
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({"status": "ok"}));
+            return;
+        }        
 
         if (req.method === "POST") {
             let body = "";
