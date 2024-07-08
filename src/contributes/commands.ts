@@ -8,7 +8,7 @@ import { FilePairManager } from "../util/diffFilePairs";
 import { UiUtilWrapper } from "../util/uiUtil";
 
 import { sendCommandListByDevChatRun } from '../handler/workflowCommandHandler';
-import DevChat from "../toolwrapper/devchat";
+import { DevChatClient } from "../toolwrapper/devchatClient";
 import { chatWithDevChat } from '../handler/chatHandler';
 import { focusDevChatInput } from '../handler/focusHandler';
 import { DevChatConfig } from '../util/config';
@@ -196,7 +196,7 @@ export function registerInstallCommandsCommand(
         "workflowsCommands"
       ); // Adjust this path as needed
 
-      const devchat = new DevChat();
+      const dcClient = new DevChatClient();
 
       if (!fs.existsSync(sysDirPath)) {
         await copyDirectory(pluginDirPath, sysDirPath);
@@ -204,15 +204,15 @@ export function registerInstallCommandsCommand(
 
       // Check if ~/.chat/scripts directory exists
       if (!fs.existsSync(sysDirPath)) {
-        // Directory does not exist, wait for updateSysCommand to finish
-        await devchat.updateSysCommand();
+        // Directory does not exist, wait for updateWorkflows to finish
+        await dcClient.updateWorkflows();
         sendCommandListByDevChatRun();
       } else {
         // Directory exists, execute sendCommandListByDevChatRun immediately
         await sendCommandListByDevChatRun();
 
-        // Then asynchronously execute updateSysCommand
-        await devchat.updateSysCommand();
+        // Then asynchronously execute updateWorkflows
+        await dcClient.updateWorkflows();
         await sendCommandListByDevChatRun();
       }
     }

@@ -143,6 +143,18 @@ export class DevChatClient {
 
 
     @timeThis
+    async updateWorkflows(): Promise<void> {
+        const response = await this._post("/workflow/update");
+        logger
+            .channel()
+            ?.debug(
+                `updateWorkflows response data: \n${JSON.stringify(
+                    response.data
+                )}`
+            );
+    }
+
+    @timeThis
     async message(
         message: ChatRequest,
         onData: (data: ChatResponse) => void
