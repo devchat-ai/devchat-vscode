@@ -317,6 +317,42 @@ export class DevChatClient {
         return logs;
     }
 
+    @timeThis
+    async getTopics(limit:number, offset:number): Promise<any[]> {
+        const data = {
+            limit: limit,
+            offset: offset,
+            workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
+        };
+        const response = await axios.get(`${this.baseURL}/topics`, {
+            params: data,
+        });
+
+        const topics: any[] = response.data;
+        topics.reverse();
+
+        logger
+            .channel()
+            ?.debug(`getTopics response data: ${JSON.stringify(topics)}`);
+
+        return topics;
+    }
+
+    @timeThis
+    async deleteTopic(topicRootHash:string): Promise<void> {
+        const data = {
+            topic_hash: topicRootHash,
+            workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
+        };
+        
+        const response = await this._post("/topics/delete", data);
+
+        logger
+            .channel()
+            ?.debug(`deleteTopic response data: ${JSON.stringify(response.data)}`);
+
+        return;
+    }
 
     stopAllRequest(): void {
         this.cancelMessage();
