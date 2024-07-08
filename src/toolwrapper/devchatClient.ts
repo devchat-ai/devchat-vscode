@@ -141,6 +141,31 @@ export class DevChatClient {
         }
     }
 
+    @timeThis
+    async getWorkflowList(): Promise<any> {
+        const response = await this._get("/workflow/list");
+        logger
+            .channel()
+            ?.debug(
+                `getWorkflowList response data: \n${JSON.stringify(
+                    response.data
+                )}`
+            );
+        return response.data;
+    }
+
+    @timeThis
+    async getWorkflowConfig(): Promise<any> {
+        const response = await this._get("/workflow/config");
+        logger
+            .channel()
+            ?.debug(
+                `getWorkflowConfig response data: \n${JSON.stringify(
+                    response.data
+                )}`
+            );
+        return response.data;
+    }
 
     @timeThis
     async updateWorkflows(): Promise<void> {
