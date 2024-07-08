@@ -289,6 +289,35 @@ export class DevChatClient {
         return res;
     }
 
+    @timeThis
+    async getTopicLogs(
+        topicRootHash: string,
+        limit: number,
+        offset: number
+    ): Promise<ShortLog[]> {
+        const data = {
+            limit: limit,
+            offset: offset,
+            workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
+        };
+        const response = await axios.get(
+            `${this.baseURL}/topics/${topicRootHash}/logs`,
+            {
+                params: data,
+            }
+        );
+
+        const logs: ShortLog[] = response.data;
+        logs.reverse();
+
+        logger
+            .channel()
+            ?.debug(`getTopicLogs response data: ${JSON.stringify(logs)}`);
+
+        return logs;
+    }
+
+
     stopAllRequest(): void {
         this.cancelMessage();
         // add other requests here if needed
