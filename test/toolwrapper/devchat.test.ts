@@ -6,7 +6,8 @@ import { CommandRun } from '../../src/util/commonUtil';
 import { UiUtilWrapper } from '../../src/util/uiUtil';
 import { ApiKeyManager } from '../../src/util/apiKey';
 
-
+// TODO: 删除devchat.js时，删除此测试文件
+// TODO: 同时为 DevChatCLI & DevChatClient 添加测试
 describe('DevChat', () => {
   let devChat: DevChat;
   let spawnAsyncStub: sinon.SinonStub;

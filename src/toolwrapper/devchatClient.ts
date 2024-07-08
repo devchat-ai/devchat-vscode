@@ -107,6 +107,11 @@ export async function buildRoleContextsFromFiles(
     return contexts;
 }
 
+// TODO: 在插件启动为每个vscode窗口启动一个devchat local service
+// 1. 分配单独的端口号，该窗口的所有请求都通过该端口号发送 (22222仅为作为开发默认端口号，不应用于生产)
+// 2. 启动local service时要配置多个worker，以便处理并发请求
+// TODO: 在插件关闭时，关闭其对应的devchat local service
+
 export class DevChatClient {
     private baseURL: string;
 
@@ -114,6 +119,10 @@ export class DevChatClient {
 
     static readonly logRawDataSizeLimit = 10; //4 * 1024;
 
+    // TODO: init devchat client with a port number
+    // TODO: the default 22222 is for dev only, should not be used in production
+    constructor(port: number = 22222) {
+        this.baseURL = `http://localhost:${port}`;
     }
 
     async _get(path: string): Promise<AxiosResponse> {
@@ -217,33 +226,21 @@ export class DevChatClient {
                         chatRes.date = chunkData["date"];
                     }
                     chatRes.finish_reason = chunkData["finish_reason"];
-                    // TODO: tmp string literal 临时字面量
                     if (chatRes.finish_reason === "should_run_workflow") {
                         chatRes.extra = chunkData["extra"];
                         logger
                             .channel()
-                            ?.debug(
-                                "res on data: should_run_workflow. do nothing now."
-                            );
-                        logger
-                            .channel()
-                            ?.debug(
-                                `chatRes.extra: ${JSON.stringify(
-                                    chatRes.extra
-                                )}`
-                            );
+                            ?.debug("should run workflow via cli.");
                         return;
                     }
 
                     chatRes.isError = chunkData["isError"];
 
                     chatRes.response += chunkData["content"];
-                    logger.channel()?.debug(`${chunkData["content"]}`);
                     onData(chatRes);
                 });
 
                 response.data.on("end", () => {
-                    logger.channel()?.debug("\nStreaming ended");
                     resolve(chatRes); // Resolve the promise with chatRes when the stream ends
                 });
 
@@ -372,7 +369,7 @@ export class DevChatClient {
     }
 
     @timeThis
-    async getTopics(limit:number, offset:number): Promise<any[]> {
+    async getTopics(limit: number, offset: number): Promise<any[]> {
         const data = {
             limit: limit,
             offset: offset,
@@ -393,17 +390,19 @@ export class DevChatClient {
     }
 
     @timeThis
-    async deleteTopic(topicRootHash:string): Promise<void> {
+    async deleteTopic(topicRootHash: string): Promise<void> {
         const data = {
             topic_hash: topicRootHash,
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
         };
-        
+
         const response = await this._post("/topics/delete", data);
 
         logger
             .channel()
-            ?.debug(`deleteTopic response data: ${JSON.stringify(response.data)}`);
+            ?.debug(
+                `deleteTopic response data: ${JSON.stringify(response.data)}`
+            );
 
         return;
     }
@@ -412,4 +411,4 @@ export class DevChatClient {
         this.cancelMessage();
         // add other requests here if needed
     }
-    }
+}

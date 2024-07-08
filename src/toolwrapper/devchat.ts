@@ -1,3 +1,6 @@
+
+// TODO: 确认所有DevChat()实例被替换后（contextRefDefs.js里），删除此文件
+
 import * as dotenv from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';

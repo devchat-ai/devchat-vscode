@@ -31,6 +31,7 @@ async function getFullText(activeEditor: vscode.TextEditor): Promise<string> {
 	return document.getText();
 }
 
+// TODO: 这里还有用吗？如果没用，就把这里以及相关代码删除；如果有用就用DevChatClient替换这里对DevChat的使用
 async function getUndefinedSymbols(content: string): Promise<string[] | undefined> {
 	// run devchat prompt command
 	const devChat = new DevChat();
