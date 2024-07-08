@@ -71,6 +71,23 @@ export interface LogInsertRes {
     error?: string;
 }
 
+export interface LogDeleteRes {
+    success?: boolean;
+    error?: string;
+}
+
+export interface ShortLog {
+    hash: string;
+    parent: string | null;
+    user: string;
+    date: string;
+    request: string;
+    responses: string[];
+    context: Array<{
+        content: string;
+        role: string;
+    }>;
+}
 
 export async function buildRoleContextsFromFiles(
     files: string[] | undefined
@@ -249,6 +266,29 @@ export class DevChatClient {
         };
         return res;
     }
+
+    @timeThis
+    async deleteLog(logHash: string): Promise<LogDeleteRes> {
+        const data = {
+            workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
+            hash: logHash,
+        };
+        const response = await this._post("/logs/delete", data);
+        logger
+            .channel()
+            ?.debug(
+                `deleteLog response data: ${JSON.stringify(
+                    response.data
+                )}, ${typeof response.data}}`
+            );
+
+        const res: LogDeleteRes = {
+            success: response.data["success"],
+            error: response.data["error"],
+        };
+        return res;
+    }
+
     stopAllRequest(): void {
         this.cancelMessage();
         // add other requests here if needed

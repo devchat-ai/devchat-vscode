@@ -1,4 +1,3 @@
-// import DevChat, { ChatOptions, ChatResponse } from '../toolwrapper/devchat';
 import { logger } from '../util/logger';
 import { assertValue } from '../util/check';
 import { DevChatClient, ChatRequest, ChatResponse, buildRoleContextsFromFiles, LogData } from '../toolwrapper/devchatClient';
@@ -191,9 +190,9 @@ export async function sendMessageBase(message: any, handlePartialData: (data: { 
 		if (chatResponse.finish_reason === "should_run_workflow") {
             // invoke workflow via cli
             workflowRes = await dcCLI.runWorkflow(
-			parsedMessage.text,
-			chatOptions,
-			(partialResponse: ChatResponse) => {
+                parsedMessage.text,
+                chatOptions,
+                (partialResponse: ChatResponse) => {
                     const partialDataText = partialResponse.response;
                     handlePartialData({
                         command: "receiveMessagePartial",
@@ -280,9 +279,10 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
 	try {
 		assertValue(!message.hash, 'Message hash is required');
 
-		// delete the message by devchat
-		const bSuccess = await devChat.delete(message.hash);
-		assertValue(!bSuccess, "Failed to delete message from devchat");
+		// delete the message by devchatClient
+		const res = await dcClient.deleteLog(message.hash);
+		assertValue(!res.success, res.error || "Failed to delete message from devchat client");
+
 		return true;
 	} catch (error: any) {
 		logger.channel()?.error(`Error: ${error.message}`);
@@ -300,5 +300,5 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
  */
 export async function sendTextToDevChat(text: string): Promise<void> {
 	dcCLI.input(text);
-return;
+	return;
 }
