@@ -1,16 +1,12 @@
 import axios, { AxiosResponse, CancelTokenSource } from "axios";
+import * as path from "path";
+import * as fs from "fs";
+import * as os from "os";
 
 import { logger } from "../util/logger";
 import { getFileContent } from "../util/commonUtil";
-import {
-    devchatSocket,
-    startSocketConn,
-    closeSocketConn,
-} from "./socketClient";
 
 import { UiUtilWrapper } from "../util/uiUtil";
-import { workspace } from "vscode";
-import { deleteTopic } from "@/handler/topicHandler";
 
 function timeThis(
     target: Object,
@@ -116,9 +112,8 @@ export class DevChatClient {
 
     private _cancelMessageToken: CancelTokenSource | null = null;
 
-    constructor() {
-        // TODO: tmp dev
-        this.baseURL = "http://localhost:22222";
+    static readonly logRawDataSizeLimit = 10; //4 * 1024;
+
     }
 
     async _get(path: string): Promise<AxiosResponse> {
@@ -281,13 +276,27 @@ export class DevChatClient {
      */
     @timeThis
     async insertLog(logData: LogData): Promise<LogInsertRes> {
-        // TODO: 处理当jsondata太大时，写入临时文件
-        const data = {
+        let body = {
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
-            // workspace: undefined,
-            jsondata: JSON.stringify(logData),
         };
-        const response = await this._post("/logs/insert", data);
+
+        const jsondata = JSON.stringify(logData);
+        let filepath = "";
+
+        if (jsondata.length <= DevChatClient.logRawDataSizeLimit) {
+            // Use json data directly
+            body["jsondata"] = jsondata;
+            
+        } else {
+            // Write json data to a temp file
+            const tempDir = os.tmpdir();
+            const tempFile = path.join(tempDir, "devchat_log_insert.json");
+            await fs.promises.writeFile(tempFile, jsondata);
+            filepath = tempFile;
+            body["filepath"] = filepath;
+        }
+
+        const response = await this._post("/logs/insert", body);
         logger
             .channel()
             ?.debug(
@@ -295,7 +304,15 @@ export class DevChatClient {
                     response.data
                 )}, ${typeof response.data}}`
             );
-        // TODO: handle error
+        
+        // Clean up temp file
+        if (filepath) {
+            try {
+                await fs.promises.unlink(filepath);
+            } catch (error) {
+                logger.channel()?.error(`Failed to delete temp file ${filepath}: ${error}`);
+            }
+        }
 
         const res: LogInsertRes = {
             hash: response.data["hash"],
