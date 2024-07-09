@@ -148,7 +148,7 @@ export class DevChatClient {
 
     @timeThis
     async getWorkflowList(): Promise<any> {
-        const response = await this._get("/workflow/list");
+        const response = await this._get("/workflows/list");
         logger
             .channel()
             ?.debug(
@@ -161,7 +161,7 @@ export class DevChatClient {
 
     @timeThis
     async getWorkflowConfig(): Promise<any> {
-        const response = await this._get("/workflow/config");
+        const response = await this._get("/workflows/config");
         logger
             .channel()
             ?.debug(
@@ -174,7 +174,7 @@ export class DevChatClient {
 
     @timeThis
     async updateWorkflows(): Promise<void> {
-        const response = await this._post("/workflow/update");
+        const response = await this._post("/workflows/update");
         logger
             .channel()
             ?.debug(
