@@ -21,12 +21,10 @@ export async function getWorkflowCommandList(
 
     // All workflows registered in DevChat
     const workflows = await dcClient.getWorkflowList();
-    logger.channel()?.debug(`\n\n----- workflows: ${JSON.stringify(workflows)}`);
 
     // Get recommends from config
     const workflowsConfig = await dcClient.getWorkflowConfig();
     const recommends = workflowsConfig.recommend?.workflows || [];
-    logger.channel()?.debug(`\n\n----- recommends: ${JSON.stringify(recommends)}`);
 
     // Filter active workflows and add recommend info
     const commandList = workflows

@@ -117,7 +117,7 @@ export class DevChatClient {
 
     private _cancelMessageToken: CancelTokenSource | null = null;
 
-    static readonly logRawDataSizeLimit = 10; //4 * 1024;
+    static readonly logRawDataSizeLimit = 4 * 1024;
 
     // TODO: init devchat client with a port number
     // TODO: the default 22222 is for dev only, should not be used in production
@@ -125,10 +125,10 @@ export class DevChatClient {
         this.baseURL = `http://localhost:${port}`;
     }
 
-    async _get(path: string): Promise<AxiosResponse> {
+    async _get(path: string, config?: any): Promise<AxiosResponse> {
         try {
             logger.channel()?.debug(`GET request to ${this.baseURL}${path}`);
-            const response = await axios.get(`${this.baseURL}${path}`);
+            const response = await axios.get(`${this.baseURL}${path}`, config);
             return response;
         } catch (error) {
             console.error(error);
@@ -137,6 +137,7 @@ export class DevChatClient {
     }
     async _post(path: string, data: any = undefined): Promise<AxiosResponse> {
         try {
+            logger.channel()?.debug(`POST request to ${this.baseURL}${path}`);
             const response = await axios.post(`${this.baseURL}${path}`, data);
             return response;
         } catch (error) {
@@ -246,11 +247,11 @@ export class DevChatClient {
 
                 response.data.on("error", (error) => {
                     logger.channel()?.error("Streaming error:", error);
-                    // TODO: handle error
+                    // TODO: handle error?
                     reject(error); // Reject the promise on error
                 });
             } catch (error) {
-                // TODO: handle error
+                // TODO: handle error?
                 reject(error); // Reject the promise if the request fails
             }
         });
@@ -351,8 +352,8 @@ export class DevChatClient {
             offset: offset,
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
         };
-        const response = await axios.get(
-            `${this.baseURL}/topics/${topicRootHash}/logs`,
+        const response = await this._get(
+            `/topics/${topicRootHash}/logs`,
             {
                 params: data,
             }
@@ -375,7 +376,7 @@ export class DevChatClient {
             offset: offset,
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
         };
-        const response = await axios.get(`${this.baseURL}/topics`, {
+        const response = await this._get(`/topics`, {
             params: data,
         });
 
