@@ -32,6 +32,27 @@ function timeThis(
     return descriptor;
 }
 
+function catchAndReturn(defaultReturn: any) {
+    return function (
+        target: Object,
+        propertyKey: string,
+        descriptor: TypedPropertyDescriptor<any>
+    ) {
+        const originalMethod = descriptor.value;
+
+        descriptor.value = async function (...args: any[]) {
+            try {
+                return await originalMethod.apply(this, args);
+            } catch (error) {
+                logger.channel()?.error(`Error in [${propertyKey}]: ${error}`);
+                return defaultReturn;
+            }
+        };
+
+        return descriptor;
+    };
+}
+
 export interface ChatRequest {
     content: string;
     model_name: string;
@@ -145,7 +166,8 @@ export class DevChatClient {
     }
 
     @timeThis
-    async getWorkflowList(): Promise<any> {
+    @catchAndReturn([])
+    async getWorkflowList(): Promise<any[]> {
         const response = await this._get("/workflows/list");
         logger
             .channel()
@@ -158,6 +180,7 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn({})
     async getWorkflowConfig(): Promise<any> {
         const response = await this._get("/workflows/config");
         logger
@@ -171,6 +194,7 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn(undefined)
     async updateWorkflows(): Promise<void> {
         const response = await this._post("/workflows/update");
         logger
@@ -227,9 +251,7 @@ export class DevChatClient {
                     chatRes.finish_reason = chunkData["finish_reason"];
                     if (chatRes.finish_reason === "should_run_workflow") {
                         chatRes.extra = chunkData["extra"];
-                        logger
-                            .channel()
-                            ?.debug("should run workflow via cli.");
+                        logger.channel()?.debug("should run workflow via cli.");
                         return;
                     }
 
@@ -245,12 +267,20 @@ export class DevChatClient {
 
                 response.data.on("error", (error) => {
                     logger.channel()?.error("Streaming error:", error);
-                    // TODO: handle error?
-                    reject(error); // Reject the promise on error
+                    chatRes.isError = true;
+                    chatRes.response += `\n${error}`;
+                    resolve(chatRes); // handle error by resolving the promise 
                 });
             } catch (error) {
-                // TODO: handle error?
-                reject(error); // Reject the promise if the request fails
+                const errorRes: ChatResponse = {
+                    "prompt-hash": "",
+                    user: "",
+                    date: "",
+                    response: `${error}`,
+                    finish_reason: "",
+                    isError: true,
+                };
+                resolve(errorRes); // handle error by resolving the promise using an errorRes
             }
         });
     }
@@ -271,6 +301,7 @@ export class DevChatClient {
      * @returns A tuple of inserted hash and error message.
      */
     @timeThis
+    @catchAndReturn({ hash: "" })
     async insertLog(logData: LogData): Promise<LogInsertRes> {
         let body = {
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
@@ -282,7 +313,6 @@ export class DevChatClient {
         if (jsondata.length <= DevChatClient.logRawDataSizeLimit) {
             // Use json data directly
             body["jsondata"] = jsondata;
-            
         } else {
             // Write json data to a temp file
             const tempDir = os.tmpdir();
@@ -300,13 +330,15 @@ export class DevChatClient {
                     response.data
                 )}, ${typeof response.data}}`
             );
-        
+
         // Clean up temp file
         if (filepath) {
             try {
                 await fs.promises.unlink(filepath);
             } catch (error) {
-                logger.channel()?.error(`Failed to delete temp file ${filepath}: ${error}`);
+                logger
+                    .channel()
+                    ?.error(`Failed to delete temp file ${filepath}: ${error}`);
             }
         }
 
@@ -317,6 +349,7 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn({ success: false })
     async deleteLog(logHash: string): Promise<LogDeleteRes> {
         const data = {
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
@@ -330,14 +363,15 @@ export class DevChatClient {
                     response.data
                 )}, ${typeof response.data}}`
             );
-        
+
         const res: LogDeleteRes = {
             success: response.data["success"],
         };
         return res;
-}
+    }
 
     @timeThis
+    @catchAndReturn([])
     async getTopicLogs(
         topicRootHash: string,
         limit: number,
@@ -348,12 +382,9 @@ export class DevChatClient {
             offset: offset,
             workspace: UiUtilWrapper.workspaceFoldersFirstPath(),
         };
-        const response = await this._get(
-            `/topics/${topicRootHash}/logs`,
-            {
-                params: data,
-            }
-        );
+        const response = await this._get(`/topics/${topicRootHash}/logs`, {
+            params: data,
+        });
 
         const logs: ShortLog[] = response.data;
         logs.reverse();
@@ -366,6 +397,7 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn([])
     async getTopics(limit: number, offset: number): Promise<any[]> {
         const data = {
             limit: limit,
@@ -387,6 +419,7 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn(undefined)
     async deleteTopic(topicRootHash: string): Promise<void> {
         const data = {
             topic_hash: topicRootHash,
