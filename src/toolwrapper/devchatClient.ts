@@ -64,12 +64,10 @@ export interface LogData {
 
 export interface LogInsertRes {
     hash?: string;
-    error?: string;
 }
 
 export interface LogDeleteRes {
     success?: boolean;
-    error?: string;
 }
 
 export interface ShortLog {
@@ -314,7 +312,6 @@ export class DevChatClient {
 
         const res: LogInsertRes = {
             hash: response.data["hash"],
-            error: response.data["error"],
         };
         return res;
     }
@@ -333,13 +330,12 @@ export class DevChatClient {
                     response.data
                 )}, ${typeof response.data}}`
             );
-
+        
         const res: LogDeleteRes = {
             success: response.data["success"],
-            error: response.data["error"],
         };
         return res;
-    }
+}
 
     @timeThis
     async getTopicLogs(

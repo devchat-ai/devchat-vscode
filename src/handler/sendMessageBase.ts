@@ -281,7 +281,7 @@ export async function deleteChatMessageBase(message:{'hash': string}): Promise<b
 
 		// delete the message by devchatClient
 		const res = await dcClient.deleteLog(message.hash);
-		assertValue(!res.success, res.error || "Failed to delete message from devchat client");
+		assertValue(!res.success, "Failed to delete message from devchat client");
 
 		return true;
 	} catch (error: any) {
