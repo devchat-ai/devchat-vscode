@@ -149,7 +149,7 @@ export class DevChatClient {
         const response = await this._get("/workflows/list");
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `getWorkflowList response data: \n${JSON.stringify(
                     response.data
                 )}`
@@ -162,7 +162,7 @@ export class DevChatClient {
         const response = await this._get("/workflows/config");
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `getWorkflowConfig response data: \n${JSON.stringify(
                     response.data
                 )}`
@@ -175,7 +175,7 @@ export class DevChatClient {
         const response = await this._post("/workflows/update");
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `updateWorkflows response data: \n${JSON.stringify(
                     response.data
                 )}`
@@ -207,7 +207,7 @@ export class DevChatClient {
                     }
                 );
                 const chatRes: ChatResponse = {
-                    "prompt-hash": "", // TODO: prompt-hash is not in chatting response
+                    "prompt-hash": "", // prompt-hash is not in chatting response, it is created in the later insertLog()
                     user: "",
                     date: "",
                     response: "",
@@ -295,7 +295,7 @@ export class DevChatClient {
         const response = await this._post("/logs/insert", body);
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `insertLog response data: ${JSON.stringify(
                     response.data
                 )}, ${typeof response.data}}`
@@ -325,7 +325,7 @@ export class DevChatClient {
         const response = await this._post("/logs/delete", data);
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `deleteLog response data: ${JSON.stringify(
                     response.data
                 )}, ${typeof response.data}}`
@@ -360,7 +360,7 @@ export class DevChatClient {
 
         logger
             .channel()
-            ?.debug(`getTopicLogs response data: ${JSON.stringify(logs)}`);
+            ?.trace(`getTopicLogs response data: ${JSON.stringify(logs)}`);
 
         return logs;
     }
@@ -381,7 +381,7 @@ export class DevChatClient {
 
         logger
             .channel()
-            ?.debug(`getTopics response data: ${JSON.stringify(topics)}`);
+            ?.trace(`getTopics response data: ${JSON.stringify(topics)}`);
 
         return topics;
     }
@@ -397,7 +397,7 @@ export class DevChatClient {
 
         logger
             .channel()
-            ?.debug(
+            ?.trace(
                 `deleteTopic response data: ${JSON.stringify(response.data)}`
             );
 
