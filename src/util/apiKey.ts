@@ -1,7 +1,5 @@
 // src/apiKey.ts
 
-import DevChat from '@/toolwrapper/devchat';
-import { UiUtilWrapper } from './uiUtil';
 import { DevChatConfig } from './config';
 import { logger } from './logger';
 

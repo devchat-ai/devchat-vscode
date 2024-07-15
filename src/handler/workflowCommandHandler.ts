@@ -12,11 +12,17 @@ regOutMessage({
     command: "regCommandList",
     result: [{ name: "", pattern: "", description: "" }],
 });
-export async function getWorkflowCommandList(
+export async function handleRegCommandList(
     message: any,
     panel: vscode.WebviewPanel | vscode.WebviewView
 ): Promise<void> {
     existPannel = panel;
+}
+
+export async function getWorkflowCommandList(
+    message: any,
+    panel: vscode.WebviewPanel | vscode.WebviewView
+): Promise<void> {
     const dcClient = new DevChatClient();
 
     // All workflows registered in DevChat
@@ -34,10 +40,12 @@ export async function getWorkflowCommandList(
             recommend: recommends.indexOf(workflow.name),
         }));
 
-    MessageHandler.sendMessage(panel, {
-        command: "regCommandList",
-        result: commandList,
-    });
+    if (commandList.length > 0) {
+        MessageHandler.sendMessage(panel, {
+            command: "regCommandList",
+            result: commandList,
+        });
+    }
 
     return;
 }

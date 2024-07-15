@@ -13,6 +13,8 @@ import { chatWithDevChat } from '../handler/chatHandler';
 import { focusDevChatInput } from '../handler/focusHandler';
 import { DevChatConfig } from '../util/config';
 import { MessageHandler } from "../handler/messageHandler";
+import { startLocalService } from '../util/localService';
+import { logger } from "../util/logger";
 
 const readdir = util.promisify(fs.readdir);
 const mkdir = util.promisify(fs.mkdir);
@@ -214,6 +216,28 @@ export function registerInstallCommandsCommand(
         // Then asynchronously execute updateWorkflows
         await dcClient.updateWorkflows();
         await sendCommandListByDevChatRun();
+      }
+    }
+  );
+
+  context.subscriptions.push(disposable);
+}
+
+
+export function registerStartLocalServiceCommand(
+  context: vscode.ExtensionContext
+) {
+  let disposable = vscode.commands.registerCommand(
+    "DevChat.StartLocalService",
+    async () => {
+      try {
+        const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath() ?? '';
+        logger.channel()?.debug(`extensionPath: ${context.extensionPath}`);
+        logger.channel()?.debug(`workspacePath: ${workspaceDir}`);
+        const port = await startLocalService(context.extensionPath, workspaceDir);
+        logger.channel()?.debug(`Local service started on port ${port}`);
+      } catch (error) {
+        logger.channel()?.error('Failed to start local service:', error);
       }
     }
   );

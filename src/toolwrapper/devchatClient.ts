@@ -8,6 +8,14 @@ import { getFileContent } from "../util/commonUtil";
 
 import { UiUtilWrapper } from "../util/uiUtil";
 
+
+class DCLocalServicePortNotSetError extends Error {
+    constructor() {
+        super("DC_LOCALSERVICE_PORT is not set");
+        this.name = "DCLocalServicePortNotSetError";
+    }
+}
+
 function timeThis(
     target: Object,
     propertyKey: string,
@@ -44,6 +52,11 @@ function catchAndReturn(defaultReturn: any) {
             try {
                 return await originalMethod.apply(this, args);
             } catch (error) {
+                if (error instanceof DCLocalServicePortNotSetError) {
+                    logger.channel()?.warn(`DC_LOCALSERVICE_PORT is not set in [${propertyKey}]`);
+                    return defaultReturn;
+                }
+                
                 logger.channel()?.error(`Error in [${propertyKey}]: ${error}`);
                 return defaultReturn;
             }
@@ -126,25 +139,26 @@ export async function buildRoleContextsFromFiles(
     return contexts;
 }
 
-// TODO: 在插件启动为每个vscode窗口启动一个devchat local service
-// 1. 分配单独的端口号，该窗口的所有请求都通过该端口号发送 (22222仅为作为开发默认端口号，不应用于生产)
-// 2. 启动local service时要配置多个worker，以便处理并发请求
-// TODO: 在插件关闭时，关闭其对应的devchat local service
-
 export class DevChatClient {
-    private baseURL: string;
+    private baseURL: string | undefined;
 
     private _cancelMessageToken: CancelTokenSource | null = null;
 
     static readonly logRawDataSizeLimit = 4 * 1024;
 
-    // TODO: init devchat client with a port number
-    // TODO: the default 22222 is for dev only, should not be used in production
-    constructor(port: number = 22222) {
-        this.baseURL = `http://localhost:${port}`;
+    constructor() {
     }
 
     async _get(path: string, config?: any): Promise<AxiosResponse> {
+        if (!this.baseURL) {
+            if (!process.env.DC_LOCALSERVICE_PORT) {
+                logger.channel()?.info("No local service port found.");
+                throw new DCLocalServicePortNotSetError();
+            }
+            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+            this.baseURL = `http://localhost:${port}`;
+        }
+
         try {
             logger.channel()?.debug(`GET request to ${this.baseURL}${path}`);
             const response = await axios.get(`${this.baseURL}${path}`, config);
@@ -155,6 +169,15 @@ export class DevChatClient {
         }
     }
     async _post(path: string, data: any = undefined): Promise<AxiosResponse> {
+        if (!this.baseURL) {
+            if (!process.env.DC_LOCALSERVICE_PORT) {
+                logger.channel()?.info("No local service port found.");
+                throw new DCLocalServicePortNotSetError();
+            }
+            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+            this.baseURL = `http://localhost:${port}`;
+        }
+
         try {
             logger.channel()?.debug(`POST request to ${this.baseURL}${path}`);
             const response = await axios.post(`${this.baseURL}${path}`, data);
@@ -211,6 +234,14 @@ export class DevChatClient {
         message: ChatRequest,
         onData: (data: ChatResponse) => void
     ): Promise<ChatResponse> {
+        if (!this.baseURL) {
+            if (!process.env.DC_LOCALSERVICE_PORT) {
+                logger.channel()?.info("No local service port found.");
+            }
+            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+            this.baseURL = `http://localhost:${port}`;
+        }
+
         this._cancelMessageToken = axios.CancelToken.source();
         const workspace = UiUtilWrapper.workspaceFoldersFirstPath();
         // const workspace = undefined;
