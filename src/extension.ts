@@ -16,6 +16,7 @@ import {
 	registerFixCommand,
 	registerExplainCommand,
 	registerQuickFixCommand,
+	registerStartLocalServiceCommand
 } from './contributes/commands';
 import { regLanguageContext } from './contributes/context';
 import { regDevChatView } from './contributes/views';
@@ -33,6 +34,7 @@ import { DevChatConfig } from './util/config';
 import { InlineCompletionProvider, registerCodeCompleteCallbackCommand } from "./contributes/codecomplete/codecomplete";
 import { indexDir } from "./contributes/codecomplete/astIndex";
 import registerQuickFixProvider from "./contributes/quickFixProvider";
+import { stopLocalService } from './util/localService';
 
 
 async function migrateConfig() {
@@ -152,6 +154,7 @@ async function activate(context: vscode.ExtensionContext) {
   registerStatusBarItemClickCommand(context);
 
   registerInstallCommandsCommand(context);
+  registerStartLocalServiceCommand(context);
 
   createStatusBarItem(context);
 
@@ -178,6 +181,13 @@ async function activate(context: vscode.ExtensionContext) {
 async function deactivate() {
   // stop devchat
   await stopDevChatBase({});
+
+  try {
+    await stopLocalService();
+    logger.channel()?.info('Local service stopped successfully');
+  } catch (error) {
+    logger.channel()?.error('Error stopping local service:', error);
+  }
 }
 exports.activate = activate;
 exports.deactivate = deactivate;
