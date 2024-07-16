@@ -30,7 +30,8 @@ export async function startLocalService(extensionPath: string, workspacePath: st
                 DevChatConfig.getInstance().get("python_for_chat") || "python3";
     serviceProcess = spawn(pythonApp, [mainPyPath], {
       env: { ...process.env },
-      stdio: 'inherit'
+      stdio: 'inherit',
+      windowsHide: true, // hide the console window on Windows
     });
 
     serviceProcess.on('error', (err) => {
