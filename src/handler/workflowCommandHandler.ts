@@ -17,6 +17,9 @@ export async function handleRegCommandList(
     panel: vscode.WebviewPanel | vscode.WebviewView
 ): Promise<void> {
     existPannel = panel;
+    if (process.env.DC_LOCALSERVICE_PORT) {
+        await getWorkflowCommandList(message, existPannel!);
+    }
 }
 
 export async function getWorkflowCommandList(
