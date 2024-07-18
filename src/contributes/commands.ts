@@ -375,7 +375,7 @@ export function registerFixCommand(context: vscode.ExtensionContext) {
 
 export async function registerQuickFixCommand(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand(
-      "DevChat.quickFix",
+      "DevChat.quickFixAskDevChat",
       async (document: vscode.TextDocument, range: vscode.Range | vscode.Selection, diagnostic: vscode.Diagnostic) => {
           ensureChatPanel(context);
           if (!ExtensionContextHolder.provider?.view()) {
@@ -386,11 +386,27 @@ export async function registerQuickFixCommand(context: vscode.ExtensionContext) 
           const editor = vscode.window.activeTextEditor;
           editor!.selection = new vscode.Selection(range.start, range.end);
 
-          chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/fix_issue ");
+          chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/ask_issue ");
       }
   );
+  let disposableFixUsingDevChat = vscode.commands.registerCommand(
+    "DevChat.quickFixUsingDevChat",
+    async (document: vscode.TextDocument, range: vscode.Range | vscode.Selection, diagnostic: vscode.Diagnostic) => {
+        ensureChatPanel(context);
+        if (!ExtensionContextHolder.provider?.view()) {
+            await waitForPanelActivation();
+        }
+
+        // select the code
+        const editor = vscode.window.activeTextEditor;
+        editor!.selection = new vscode.Selection(range.start, range.end);
+
+        chatWithDevChat(ExtensionContextHolder.provider?.view()!, "/fix_issue ");
+    }
+);
 
   context.subscriptions.push(disposable);
+  context.subscriptions.push(disposableFixUsingDevChat);
 }
 
 async function waitForPanelActivation() {
