@@ -51,6 +51,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			// install devchat workflow commands
 			if (!hasInstallCommands) {
 				hasInstallCommands = true;
+				await vscode.commands.executeCommand('DevChat.StartLocalService');
 				await vscode.commands.executeCommand('DevChat.InstallCommands');
 				// vscode.commands.executeCommand('DevChat.InstallCommandPython');
 			}

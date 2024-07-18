@@ -1,4 +1,17 @@
-import DevChat, { LogEntry, LogOptions } from '../toolwrapper/devchat';
+import { DevChatClient, ShortLog } from '../toolwrapper/devchatClient';
+
+export interface LogEntry {
+	hash: string;
+	parent: string | null;
+	user: string;
+	date: string;
+	request: string;
+	response: string;
+	context: Array<{
+		content: string;
+		role: string;
+	}>;
+}
 
 export interface LoadHistoryMessages {
 	command: string;
@@ -41,18 +54,28 @@ OPENAI_API_KEY is missing from your environment or settings. Kindly input your O
 	} as LogEntry;
 }
 
-export async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
+async function loadTopicHistoryLogs(topicId: string | undefined): Promise<Array<LogEntry> | undefined> {
 	if (!topicId) {
 		return undefined;
 	}
-	
-	const devChat = new DevChat();
-	const logOptions: LogOptions = {
-		skip: 0,
-		maxCount: 10000,
-		topic: topicId
-	};
-	const logEntries = await devChat.log(logOptions);
+
+	const dcClient = new DevChatClient();
+	const shortLogs: ShortLog[] = await dcClient.getTopicLogs(topicId, 10000, 0);
+
+	const logEntries: Array<LogEntry> = [];
+	for (const shortLog of shortLogs) {
+		const logE: LogEntry = {
+			hash: shortLog.hash,
+			parent: shortLog.parent,
+			user: shortLog.user,
+			date: shortLog.date,
+			request: shortLog.request,
+			response: shortLog.responses[0],
+			context: shortLog.context,
+		};
+			
+		logEntries.push(logE);
+	}
 
 	return logEntries;
 }

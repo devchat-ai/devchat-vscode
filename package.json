@@ -131,6 +131,11 @@
         "category": "DevChat"
       },
       {
+        "command": "DevChat.StartLocalService",
+        "title": "Start local service",
+        "category": "DevChat"
+      },
+      {
         "command": "DevChat.Chat",
         "title": "Chat with DevChat",
         "category": "DevChat"
@@ -252,6 +257,10 @@
         },
         {
           "command": "DevChat.InstallCommands",
+          "when": "false"
+        },
+        {
+          "command": "DevChat.StartLocalService",
           "when": "false"
         }
       ],

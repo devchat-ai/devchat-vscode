@@ -8,11 +8,13 @@ import { FilePairManager } from "../util/diffFilePairs";
 import { UiUtilWrapper } from "../util/uiUtil";
 
 import { sendCommandListByDevChatRun } from '../handler/workflowCommandHandler';
-import DevChat from "../toolwrapper/devchat";
+import { DevChatClient } from "../toolwrapper/devchatClient";
 import { chatWithDevChat } from '../handler/chatHandler';
 import { focusDevChatInput } from '../handler/focusHandler';
 import { DevChatConfig } from '../util/config';
 import { MessageHandler } from "../handler/messageHandler";
+import { startLocalService } from '../util/localService';
+import { logger } from "../util/logger";
 
 const readdir = util.promisify(fs.readdir);
 const mkdir = util.promisify(fs.mkdir);
@@ -196,7 +198,7 @@ export function registerInstallCommandsCommand(
         "workflowsCommands"
       ); // Adjust this path as needed
 
-      const devchat = new DevChat();
+      const dcClient = new DevChatClient();
 
       if (!fs.existsSync(sysDirPath)) {
         await copyDirectory(pluginDirPath, sysDirPath);
@@ -204,16 +206,38 @@ export function registerInstallCommandsCommand(
 
       // Check if ~/.chat/scripts directory exists
       if (!fs.existsSync(sysDirPath)) {
-        // Directory does not exist, wait for updateSysCommand to finish
-        await devchat.updateSysCommand();
+        // Directory does not exist, wait for updateWorkflows to finish
+        await dcClient.updateWorkflows();
         sendCommandListByDevChatRun();
       } else {
         // Directory exists, execute sendCommandListByDevChatRun immediately
         await sendCommandListByDevChatRun();
 
-        // Then asynchronously execute updateSysCommand
-        await devchat.updateSysCommand();
+        // Then asynchronously execute updateWorkflows
+        await dcClient.updateWorkflows();
         await sendCommandListByDevChatRun();
+      }
+    }
+  );
+
+  context.subscriptions.push(disposable);
+}
+
+
+export function registerStartLocalServiceCommand(
+  context: vscode.ExtensionContext
+) {
+  let disposable = vscode.commands.registerCommand(
+    "DevChat.StartLocalService",
+    async () => {
+      try {
+        const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath() ?? '';
+        logger.channel()?.debug(`extensionPath: ${context.extensionPath}`);
+        logger.channel()?.debug(`workspacePath: ${workspaceDir}`);
+        const port = await startLocalService(context.extensionPath, workspaceDir);
+        logger.channel()?.debug(`Local service started on port ${port}`);
+      } catch (error) {
+        logger.channel()?.error('Failed to start local service:', error);
       }
     }
   );

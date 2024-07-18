@@ -81,10 +81,6 @@ const functionRegistry: any = {
     /**
      * Unofficial endpoints
      */
-    "/get_symbol_defines_in_selected_code": {
-        keys: [],
-        handler: UnofficialEndpoints.getSymbolDefinesInSelectedCode,
-    },
 	"/run_code": {
 		keys: ["code"],
 		handler: UnofficialEndpoints.runCode,
