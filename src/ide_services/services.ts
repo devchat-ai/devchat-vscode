@@ -100,6 +100,10 @@ const functionRegistry: any = {
     "/get_collapsed_code": {
         keys: ["fileName", "startLine", "endLine"],
         handler: getCollapsedCode,
+    },
+    "/select_range": {
+        keys: ["fileName", "startLine", "startColumn", "endLine", "endColumn"],
+        handler: UnofficialEndpoints.selectRange,
     }
 };
 
