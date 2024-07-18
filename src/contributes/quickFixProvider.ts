@@ -23,10 +23,16 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
         );
         quickFix.isPreferred = false;
 
+        const fixUsingDevChat = new vscode.CodeAction(
+            "Fix using DevChat",
+            vscode.CodeActionKind.QuickFix,
+        );
+        fixUsingDevChat.isPreferred = true;
+
         return new Promise(async (resolve) => {
             quickFix.command = {
-                command: "DevChat.quickFix",
-                title: "DevChat Quick Fix",
+                command: "DevChat.quickFixAskDevChat",
+                title: "Ask DevChat",
                 arguments: [
                     document,
                     range,
@@ -34,7 +40,17 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
                 ],
             };
 
-            resolve([quickFix]);
+            fixUsingDevChat.command = {
+                command: "DevChat.quickFixUsingDevChat",
+                title: "Fix using DevChat",
+                arguments: [
+                    document,
+                    range,
+                    diagnostic,
+                ],
+            };
+
+            resolve([quickFix, fixUsingDevChat]);
         });
     }
 }
@@ -48,4 +64,3 @@ export default function registerQuickFixProvider() {
         },
     );
 }
-
