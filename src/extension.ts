@@ -35,6 +35,8 @@ import { InlineCompletionProvider, registerCodeCompleteCallbackCommand } from ".
 import { indexDir } from "./contributes/codecomplete/astIndex";
 import registerQuickFixProvider from "./contributes/quickFixProvider";
 import { stopLocalService } from './util/localService';
+import webappUtil from './util/webapp';
+import * as path from 'path'
 
 
 async function migrateConfig() {
@@ -135,6 +137,11 @@ async function activate(context: vscode.ExtensionContext) {
 	
 	await migrateConfig();
 
+
+	const devchatIconAbsPath = path.join(context.extensionUri.fsPath, "assets/devchat_icon.svg")
+	const devchatApplyAbsPath = path.join(context.extensionUri.fsPath, "assets/devchat_apply.svg")
+	await webappUtil.updateIcon("vscode_icon", devchatIconAbsPath)
+	await webappUtil.updateIcon("vscode_apply", devchatApplyAbsPath)
     regLanguageContext();
     regDevChatView(context);
 	
