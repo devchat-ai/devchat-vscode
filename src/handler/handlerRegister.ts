@@ -3,7 +3,7 @@ import { insertCodeBlockToFile } from './codeBlockHandler';
 import { replaceCodeBlockToFile } from './codeBlockHandler';
 import { doCommit } from './commitHandler';
 import { getHistoryMessages } from './historyMessagesHandler';
-import { handleRegCommandList } from './workflowCommandHandler';
+import { handleRegCommandList,handleUpdateWorkflowList } from './workflowCommandHandler';
 import { sendMessage, stopDevChat, regeneration, deleteChatMessage, userInput } from './sendMessage';
 import { applyCodeWithDiff } from './diffHandler';
 import { addConext } from './contextHandler';
@@ -37,6 +37,7 @@ messageHandler.registerHandler('historyMessages', getHistoryMessages);
 // Register the command list
 // Response: { command: 'regCommandList', result: <command list> }
 messageHandler.registerHandler('regCommandList', handleRegCommandList);
+messageHandler.registerHandler('updateWorkflowList', handleUpdateWorkflowList);
 // Send a message, send the message entered by the user to AI
 // Response:
 //    { command: 'receiveMessagePartial', text: <response message text>, user: <user>, date: <date> }
@@ -82,3 +83,5 @@ messageHandler.registerHandler('getIDEServicePort', getIDEServicePort);
 
 messageHandler.registerHandler('readServerConfigBase', readServerConfigBase);
 messageHandler.registerHandler('writeServerConfigBase', writeServerConfigBase);
+
+

@@ -208,6 +208,7 @@ export function registerInstallCommandsCommand(
       if (!fs.existsSync(sysDirPath)) {
         // Directory does not exist, wait for updateWorkflows to finish
         await dcClient.updateWorkflows();
+        await dcClient.updateCustomWorkflows();
         sendCommandListByDevChatRun();
       } else {
         // Directory exists, execute sendCommandListByDevChatRun immediately
@@ -215,6 +216,8 @@ export function registerInstallCommandsCommand(
 
         // Then asynchronously execute updateWorkflows
         await dcClient.updateWorkflows();
+        await dcClient.updateCustomWorkflows();
+        
         await sendCommandListByDevChatRun();
       }
     }
