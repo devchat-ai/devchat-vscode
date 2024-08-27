@@ -58,13 +58,3 @@ export async function sendCommandListByDevChatRun() {
         await getWorkflowCommandList({}, existPannel!);
     }
 }
-
-export async function handleUpdateWorkflowList(){
-
-    const dcClient = new DevChatClient();
-
-    await dcClient.updateWorkflows();
-    await dcClient.updateCustomWorkflows();
-    
-    await sendCommandListByDevChatRun();
-}
