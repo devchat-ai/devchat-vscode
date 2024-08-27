@@ -16,6 +16,7 @@
 				"${workspaceFolder}/dist/**/*.js"
 			],
 			"preLaunchTask": "${defaultBuildTask}",
+			"postDebugTask": "npm: postbuild",
 			"env": {
 				"COMPLETE_DEBUG": "true"
 			}

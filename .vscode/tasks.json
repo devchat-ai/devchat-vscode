@@ -35,6 +35,13 @@
 				"npm: watch-tests"
 			],
 			"problemMatcher": []
+		},
+		{
+			"type": "npm",
+			"script": "postbuild",
+			"problemMatcher": [],
+			"label": "npm: postbuild",
+			"detail": "npm run postbuild"
 		}
 	]
 }
