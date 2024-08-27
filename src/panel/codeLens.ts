@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-import * as fs from "fs";
-import * as path from "path";
 import { logger } from "../util/logger";
-import { log } from "console";
+import { ASSISTANT_NAME_ZH } from "../util/constants";
+import { ExtensionContextHolder } from "../util/extensionContext";
 
 interface FunctionDefinition {
   name: string;
@@ -19,42 +18,10 @@ type CodeLensRegistration = {
 
 export class CodeLensManager {
   private static instance: CodeLensManager;
-  private registrations: CodeLensRegistration[] = [];
-  private configFilePath: string;
-
-  private constructor() {
-    this.configFilePath = path.join(
-      process.env.HOME || process.env.USERPROFILE || ".",
-      ".chat/ideconfig.json"
-    );
-    this.loadConfig();
-  }
-
-  public static getInstance(): CodeLensManager {
-    if (!CodeLensManager.instance) {
-      CodeLensManager.instance = new CodeLensManager();
-    }
-    return CodeLensManager.instance;
-  }
-
-  private loadConfig(): void {
-    if (!fs.existsSync(this.configFilePath)) {
-      this.initializeConfig();
-    } else {
-      const data = fs.readFileSync(this.configFilePath, "utf-8");
-      this.registrations = JSON.parse(data);
-
-      if (this.registrations.length === 0) {
-        this.initializeConfig();
-      }
-    }
-  }
-
-  private initializeConfig(): void {
-    this.registrations = [
+  private registrations: CodeLensRegistration[] = [
       {
         elementType: "function",
-        objectName: "DevChat: unit tests",
+        objectName: `${ExtensionContextHolder.context?.extension.packageJSON.assistantNames.ASSISTANT_NAME_ZH}: unit tests`,
         promptGenerator:
           "/unit_tests {__filename__}:::{__functionName__}:::{__functionStartLine__}:::{__functionEndLine__}:::{__containerStartLine__}:::{__containerEndLine__}",
       },
@@ -68,36 +35,17 @@ export class CodeLensManager {
         objectName: "docstring",
         promptGenerator: "/docstring",
       },
-      // {
-      // 	elementType: 'function',
-      // 	objectName: 'generate unit tests',
-      // 	promptGenerator: '/test generate unit tests for {__filename__} {__functionName__}'
-      // },
-      // {
-      // 	elementType: 'inner_function',
-      // 	objectName: 'generate comment',
-      // 	promptGenerator: 'generate comment for \n ```code\n{__functionCode__}\n```\n'
-      // },
-      // {
-      // 	elementType: 'function',
-      // 	objectName: 'generate comment',
-      // 	promptGenerator: 'generate comment for \n ```code\n{__functionCode__}\n```\n'
-      // }
     ];
-    this.saveConfig();
+
+  private constructor() {}
+
+  public static getInstance(): CodeLensManager {
+    if (!CodeLensManager.instance) {
+      CodeLensManager.instance = new CodeLensManager();
+    }
+    return CodeLensManager.instance;
   }
 
-  private saveConfig(): void {
-    const configDir = path.dirname(this.configFilePath);
-    if (!fs.existsSync(configDir)) {
-      fs.mkdirSync(configDir, { recursive: true });
-    }
-    fs.writeFileSync(
-      this.configFilePath,
-      JSON.stringify(this.registrations, null, 2),
-      "utf8"
-    );
-  }
 
   public getRegistrations(): CodeLensRegistration[] {
     return this.registrations;

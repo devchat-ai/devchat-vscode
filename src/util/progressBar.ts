@@ -1,5 +1,6 @@
 
 import * as vscode from 'vscode';
+import { ASSISTANT_NAME_ZH } from './constants';
 
 export class ProgressBar {
     private message: string;
@@ -13,7 +14,7 @@ export class ProgressBar {
     init() {
         vscode.window.withProgress({
             location: vscode.ProgressLocation.Notification,
-            title: 'DevChat',
+            title: ASSISTANT_NAME_ZH,
             cancellable: false
         }, (progress, token) => {
             return new Promise<void>((resolve) => {
