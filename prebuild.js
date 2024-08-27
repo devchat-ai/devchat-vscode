@@ -8,6 +8,7 @@ function copyIcon(src, dst) {
         console.warn(`Icon path for ${dst} is not defined in your environment variables`)
         return
     }
+    console.log(`Replacing icon ${dst} by ${src}`)
     if (!fs.existsSync(src)) {
         console.warn(`Icon file ${src} does not exist.`)
         return
@@ -30,6 +31,7 @@ function updatePackageJson() {
         ASSISTANT_NAME_EN: process.env.ASSISTANT_NAME_EN || "DevChat",
         ASSISTANT_NAME_ZH: process.env.ASSISTANT_NAME_ZH || "DevChat"
     }
+    console.log(`Updating package.json, env: ${JSON.stringify(placeholders)}`)
 
     let packageJson = fs.readFileSync('package.json', 'utf8');
 
