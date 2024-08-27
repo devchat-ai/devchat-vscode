@@ -1,3 +1,4 @@
+import { ASSISTANT_NAME_ZH } from "./constants";
 import { LogChannel } from "./logger";
 import * as vscode from 'vscode';
 
@@ -7,7 +8,7 @@ export class LoggerChannelVscode implements LogChannel {
   private static _instance: LoggerChannelVscode;
 
   private constructor() {
-    this._channel = vscode.window.createOutputChannel('DevChat', { log: true });
+    this._channel = vscode.window.createOutputChannel(ASSISTANT_NAME_ZH, { log: true });
   }
 
   public static getInstance(): LoggerChannelVscode {

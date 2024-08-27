@@ -2,16 +2,15 @@ import * as vscode from 'vscode';
 
 import { dependencyCheck } from './statusBarViewBase';
 import { ProgressBar } from '../util/progressBar';
-import { logger } from '../util/logger';
-import { DevChatConfig } from '../util/config';
+import { ASSISTANT_NAME_EN } from '../util/constants';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 100);
 	
     // Set the status bar item properties
-    statusBarItem.text = `$(warning)DevChat`;
-    statusBarItem.tooltip = 'DevChat is checking ..., please wait';
+    statusBarItem.text = `$(warning)${ASSISTANT_NAME_EN}`;
+    statusBarItem.tooltip = `${ASSISTANT_NAME_EN} is checking ..., please wait`;
 	// when statsBarItem.command is '', then there is "command '' not found" error.
     statusBarItem.command = undefined;
 
@@ -27,8 +26,8 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			progressBar.update("Checking dependencies", 0);
 
 			const devchatStatus = await dependencyCheck();
-			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== 'DevChat has been installed') {
-				statusBarItem.text = `$(warning)DevChat`;
+			if (devchatStatus !== 'has statisfied the dependency' && devchatStatus !== `${ASSISTANT_NAME_EN} has been installed`) {
+				statusBarItem.text = `$(warning)${ASSISTANT_NAME_EN}`;
 				statusBarItem.tooltip = `${devchatStatus}`;
 
 				if (devchatStatus === 'Missing required dependency: Python3') {
@@ -42,7 +41,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 				return;
 			}
 
-			statusBarItem.text = `$(pass)DevChat`;
+			statusBarItem.text = `$(pass)${ASSISTANT_NAME_EN}`;
 			statusBarItem.tooltip = `ready to chat`;
 			statusBarItem.command = 'devcaht.onStatusBarClick';
 			progressBar.update(`Checking dependencies: Success`, 0);
@@ -58,7 +57,7 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			
 			clearInterval(timer);
 		} catch (error) {
-			statusBarItem.text = `$(warning)DevChat`;
+			statusBarItem.text = `$(warning)${ASSISTANT_NAME_EN}`;
 			statusBarItem.tooltip = `Error: ${error}`;
 			statusBarItem.command = undefined;
 			progressBar.endWithError(`Checking dependencies: Fail with exception.`);

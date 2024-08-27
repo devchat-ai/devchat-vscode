@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { collapseFileExculdeSelectRange } from "./codecomplete/ast/collapseBlock";
+import { ASSISTANT_NAME_EN } from "../util/constants";
 
 class DevChatQuickFixProvider implements vscode.CodeActionProvider {
     public static readonly providedCodeActionKinds = [
@@ -18,13 +19,13 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
 
         const diagnostic = context.diagnostics[0];
         const quickFix = new vscode.CodeAction(
-            "Ask DevChat",
+            `Ask ${ASSISTANT_NAME_EN}`,
             vscode.CodeActionKind.QuickFix,
         );
         quickFix.isPreferred = false;
 
         const fixUsingDevChat = new vscode.CodeAction(
-            "Fix using DevChat",
+            `Fix using ${ASSISTANT_NAME_EN}`,
             vscode.CodeActionKind.QuickFix,
         );
         fixUsingDevChat.isPreferred = true;
@@ -32,7 +33,7 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
         return new Promise(async (resolve) => {
             quickFix.command = {
                 command: "DevChat.quickFixAskDevChat",
-                title: "Ask DevChat",
+                title: `Ask ${ASSISTANT_NAME_EN}`,
                 arguments: [
                     document,
                     range,
@@ -42,7 +43,7 @@ class DevChatQuickFixProvider implements vscode.CodeActionProvider {
 
             fixUsingDevChat.command = {
                 command: "DevChat.quickFixUsingDevChat",
-                title: "Fix using DevChat",
+                title: `Fix using ${ASSISTANT_NAME_EN}`,
                 arguments: [
                     document,
                     range,
