@@ -7,3 +7,10 @@ export async function getServicePort() {
     // return await UiUtilWrapper.getLSPBrigePort();
     return process.env.DEVCHAT_IDE_SERVICE_PORT;
 }
+
+export async function getLocalServicePort() {
+    logger
+        .channel()
+        ?.info(`get local service port: ${process.env.DC_LOCALSERVICE_PORT}`);
+    return process.env.DC_LOCALSERVICE_PORT;
+}

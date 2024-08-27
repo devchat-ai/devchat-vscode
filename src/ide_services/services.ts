@@ -3,7 +3,7 @@ import * as http from "http";
 import * as querystring from "querystring";
 import { logger } from "../util/logger";
 
-import { getServicePort } from "./endpoints/getServicePort";
+import { getServicePort, getLocalServicePort } from "./endpoints/getServicePort";
 import { installPythonEnv } from "./endpoints/installPythonEnv";
 import { ideLogging} from "./endpoints/ideLogging";
 import { updateSlashCommands } from "./endpoints/updateSlashCommands";
@@ -25,6 +25,10 @@ const functionRegistry: any = {
     "/get_lsp_brige_port": {
         keys: [],
         handler: getServicePort,
+    },
+    "/get_local_service_port": {
+        keys: [],
+        handler: getLocalServicePort,
     },
     "/install_python_env": {
         keys: ["command_name", "requirements_file"],
