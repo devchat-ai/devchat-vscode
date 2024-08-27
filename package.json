@@ -1,5 +1,5 @@
 {
-  "name": "${EXTENSION_NAME}",
+  "name": "devchat",
   "displayName": "${ASSISTANT_NAME_ZH}",
   "description": "Write prompts, not code",
   "version": "0.1.74",
@@ -344,24 +344,21 @@
     }
   },
   "scripts": {
-    "build:gui": "cd ./gui && yarn && yarn vscode",
     "vscode:uninstall": "node ./dist/uninstall",
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "node prebuild.js && webpack --watch",
     "prebuild": "node prebuild.js",
     "postbuild": "git checkout -- assets package.json",
+    "build:gui": "cd ./gui && yarn && yarn vscode",
+    "build": "webpack --config webpack.config.js && npm run build:gui",
     "prepackage": "node prebuild.js",
     "postpackage": "git checkout -- assets package.json",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "npm run prebuild && tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "package": "webpack --mode production --devtool hidden-source-map && vsce package",
+    "dev": "webpack serve --config webpack.config.js --open",
+    "watch": "npm run prebuild && webpack --watch",
     "lint": "eslint src --ext ts",
     "test": "mocha",
-    "build": "webpack --config webpack.config.js && cd ./gui && yarn && yarn vscode",
-    "dev": "webpack serve --config webpack.config.js --open",
-    "idea": "webpack --config webpack.idea.config.js &&  mv dist/main.js dist/main.html ../devchat-intellij/src/main/resources/static && echo '🎆done'"
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "npm run prebuild && tsc -p . -w --outDir out"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",
