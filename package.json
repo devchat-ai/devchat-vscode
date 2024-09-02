@@ -1,12 +1,16 @@
 {
   "name": "devchat",
-  "displayName": "DevChat",
+  "displayName": "${ASSISTANT_NAME_ZH}",
   "description": "Write prompts, not code",
   "version": "0.1.74",
   "icon": "assets/devchat.png",
-  "publisher": "merico",
+  "publisher": "${PUBLISHER}",
   "engines": {
     "vscode": "^1.75.0"
+  },
+  "assistantNames": {
+    "ASSISTANT_NAME_EN": "${ASSISTANT_NAME_EN}",
+    "ASSISTANT_NAME_ZH": "${ASSISTANT_NAME_ZH}"
   },
   "repository": {
     "type": "git",
@@ -72,7 +76,7 @@
       "activitybar": [
         {
           "id": "devchat-sidebar",
-          "title": "DevChat",
+          "title": "${ASSISTANT_NAME_ZH}",
           "icon": "assets/devchat_icon.svg"
         }
       ]
@@ -82,7 +86,7 @@
         {
           "type": "webview",
           "id": "devchat-view",
-          "name": "DevChat"
+          "name": "${ASSISTANT_NAME_ZH}"
         }
       ]
     },
@@ -103,27 +107,27 @@
       },
       {
         "command": "devchat.addContext",
-        "title": "Devchat:Add to DevChat"
+        "title": "${ASSISTANT_NAME_EN}:Add to ${ASSISTANT_NAME_EN}"
       },
       {
         "command": "devchat.askForCode",
-        "title": "Devchat:Add to DevChat"
+        "title": "${ASSISTANT_NAME_EN}:Add to ${ASSISTANT_NAME_EN}"
       },
       {
         "command": "devchat.askForFile",
-        "title": "Devchat:Add to DevChat"
+        "title": "${ASSISTANT_NAME_EN}:Add to ${ASSISTANT_NAME_EN}"
       },
       {
         "command": "devchat.addConext_chinese",
-        "title": "Devchat:添加到DevChat"
+        "title": "${ASSISTANT_NAME_ZH}:添加到${ASSISTANT_NAME_ZH}"
       },
       {
         "command": "devchat.askForCode_chinese",
-        "title": "Devchat:添加到DevChat"
+        "title": "${ASSISTANT_NAME_ZH}:添加到${ASSISTANT_NAME_ZH}"
       },
       {
         "command": "devchat.askForFile_chinese",
-        "title": "Devchat:添加到DevChat"
+        "title": "${ASSISTANT_NAME_ZH}:添加到${ASSISTANT_NAME_ZH}"
       },
       {
         "command": "DevChat.InstallCommands",
@@ -137,32 +141,32 @@
       },
       {
         "command": "DevChat.Chat",
-        "title": "Chat with DevChat",
+        "title": "Chat with ${ASSISTANT_NAME_EN}",
         "category": "DevChat"
       },
       {
         "command": "devchat.explain",
-        "title": "Devchat:Generate Explain"
+        "title": "${ASSISTANT_NAME_EN}:Generate Explain"
       },
       {
         "command": "devchat.explain_chinese",
-        "title": "Devchat:代码解释"
+        "title": "${ASSISTANT_NAME_ZH}:代码解释"
       },
       {
         "command": "devchat.comments",
-        "title": "Devchat:Generate Comments"
+        "title": "${ASSISTANT_NAME_EN}:Generate Comments"
       },
       {
         "command": "devchat.comments_chinese",
-        "title": "Devchat:生成注释"
+        "title": "${ASSISTANT_NAME_ZH}:生成注释"
       },
       {
         "command": "devchat.fix",
-        "title": "Devchat:Fix this"
+        "title": "${ASSISTANT_NAME_EN}:Fix this"
       },
       {
         "command": "devchat.fix_chinese",
-        "title": "Devchat:修复此"
+        "title": "${ASSISTANT_NAME_ZH}:修复此"
       },
       {
         "command": "DevChat.codecomplete_callback",
@@ -171,12 +175,12 @@
       },
       {
         "command": "DevChat.quickFixAskDevChat",
-        "title": "Ask DevChat",
+        "title": "Ask ${ASSISTANT_NAME_EN}",
         "category": "DevChat"
       },
       {
         "command": "DevChat.quickFixUsingDevChat",
-        "title": "Ask DevChat",
+        "title": "Ask ${ASSISTANT_NAME_EN}",
         "category": "DevChat"
       }
     ],
@@ -340,20 +344,21 @@
     }
   },
   "scripts": {
-    "build:gui": "cd ./gui && yarn && yarn vscode",
     "vscode:uninstall": "node ./dist/uninstall",
-    "vscode:prepublish": "npm run package",
-    "compile": "webpack",
-    "watch": "webpack --watch",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "compile-tests": "tsc -p . --outDir out",
-    "watch-tests": "tsc -p . -w --outDir out",
-    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "vscode:prepublish": "node prebuild.js && webpack --mode production --devtool hidden-source-map",
+    "prebuild": "node prebuild.js",
+    "postbuild": "git checkout -- assets package.json",
+    "build:gui": "cd ./gui && yarn && yarn vscode",
+    "build": "webpack --config webpack.config.js && npm run build:gui",
+    "postpackage": "git checkout -- assets package.json",
+    "package": "vsce package",
+    "dev": "webpack serve --config webpack.config.js --open",
+    "watch": "npm run prebuild && webpack --watch",
     "lint": "eslint src --ext ts",
     "test": "mocha",
-    "build": "webpack --config webpack.config.js && cd ./gui && yarn && yarn vscode",
-    "dev": "webpack serve --config webpack.config.js --open",
-    "idea": "webpack --config webpack.idea.config.js &&  mv dist/main.js dist/main.html ../devchat-intellij/src/main/resources/static && echo '🎆done'"
+    "pretest": "npm run compile-tests && npm run compile && npm run lint",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "npm run prebuild && tsc -p . -w --outDir out"
   },
   "devDependencies": {
     "@babel/core": "^7.21.8",

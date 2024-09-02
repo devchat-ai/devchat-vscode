@@ -35,6 +35,7 @@ import { InlineCompletionProvider, registerCodeCompleteCallbackCommand } from ".
 import { indexDir } from "./contributes/codecomplete/astIndex";
 import registerQuickFixProvider from "./contributes/quickFixProvider";
 import { stopLocalService } from './util/localService';
+import { updateNames } from "./util/constants";
 
 
 async function migrateConfig() {
@@ -129,6 +130,8 @@ export async function fixDevChatApiBase() {
 
 async function activate(context: vscode.ExtensionContext) {
   ExtensionContextHolder.context = context;
+  const assistantNames = context.extension.packageJSON.assistantNames
+  updateNames(assistantNames.ASSISTANT_NAME_EN, assistantNames.ASSISTANT_NAME_ZH)
 
     logger.init(LoggerChannelVscode.getInstance());
 	UiUtilWrapper.init(new UiUtilVscode());

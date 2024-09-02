@@ -1,14 +1,10 @@
-import * as fs from 'fs';
-import * as path from 'path';
 import { logger } from "../util/logger";
 
-import { UiUtilWrapper } from "../util/uiUtil";
-import { ApiKeyManager } from '../util/apiKey';
 import { installDevchat } from '../util/python_installer/install_devchat';
+import { ASSISTANT_NAME_EN } from '../util/constants';
 
 
 let devchatStatus = '';
-let apiKeyStatus = '';
 
 let preDevchatStatus = '';
 
@@ -27,26 +23,31 @@ export async function dependencyCheck(): Promise<string> {
 
 	// define subfunction to check devchat dependency
 	const getDevChatStatus = async (): Promise<string> => {
+		const statuses = {
+			installing: `installing ${ASSISTANT_NAME_EN}`,
+			installed: `${ASSISTANT_NAME_EN} has been installed`,
+			error: `An error occurred during the installation of ${ASSISTANT_NAME_EN}`
+		}
 		if (devchatStatus === '') {
-			devchatStatus = 'installing devchat';
+			devchatStatus = statuses.installing;
 			const devchatCommandEnv = await installDevchat();
 			if (devchatCommandEnv) {
 				logger.channel()?.info(`Python: ${devchatCommandEnv}`);
-				devchatStatus = 'DevChat has been installed';
+				devchatStatus = statuses.installed;
 				return devchatStatus;
 			} else {
 				logger.channel()?.info(`Python: undefined`);
 
-				devchatStatus = 'An error occurred during the installation of DevChat';
+				devchatStatus = statuses.error;
 				return devchatStatus;
 			}
 		} else if (devchatStatus === 'has statisfied the dependency') {
 			return devchatStatus;
-		} else if (devchatStatus === 'installing devchat') {
+		} else if (devchatStatus === statuses.installing) {
 			return devchatStatus;
-		} else if (devchatStatus === 'DevChat has been installed') {
+		} else if (devchatStatus === statuses.installed) {
 			return devchatStatus;
-		} else if (devchatStatus === 'An error occurred during the installation of DevChat') {
+		} else if (devchatStatus === statuses.error) {
 			return devchatStatus;
 		}
 		return "";
@@ -55,7 +56,7 @@ export async function dependencyCheck(): Promise<string> {
 	const devchatPackageStatus = await getDevChatStatus();
 
 	if (devchatPackageStatus !== preDevchatStatus) {
-		logger.channel()?.info(`devchat status: ${devchatPackageStatus}`);
+		logger.channel()?.info(`${ASSISTANT_NAME_EN} status: ${devchatPackageStatus}`);
 		preDevchatStatus = devchatPackageStatus;
 	}
 
