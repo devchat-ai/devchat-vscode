@@ -230,6 +230,19 @@ export class DevChatClient {
     }
 
     @timeThis
+    @catchAndReturn(undefined)
+    async updateCustomWorkflows(): Promise<void> {
+        const response = await this._post("/workflows/custom_update");
+        logger
+            .channel()
+            ?.trace(
+                `updateCustomWorkflows response data: \n${JSON.stringify(
+                    response.data
+                )}`
+            );
+    }
+
+    @timeThis
     async message(
         message: ChatRequest,
         onData: (data: ChatResponse) => void
