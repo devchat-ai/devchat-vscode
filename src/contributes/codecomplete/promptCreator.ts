@@ -564,138 +564,157 @@ export async function createTaskDescriptionContext() {
 }
 
 export async function createPrompt(filePath: string, fileContent: string, line: number, column: number, posoffset: number, recentEdits: RecentEdit[]) {
-    const commentPrefix = await getCommentPrefix(filePath);
+    try {
+        const commentPrefix = await getCommentPrefix(filePath);
 
-    let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
-    
-    let tokenCount = countTokens(prefix) + countTokens(suffix);
+        let { prefix, suffix } = await currentFileContext(filePath, fileContent, line, column);
 
-    let taskDescriptionContextWithCommentPrefix = "";
-    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-        const taskDescriptionContext = await createTaskDescriptionContext();
-        if (taskDescriptionContext) {
-            taskDescriptionContext.split("\n").forEach(line => {
-                taskDescriptionContextWithCommentPrefix += `${commentPrefix}<filename>task: ${line}\n`;
-            });
+        let tokenCount = countTokens(prefix) + countTokens(suffix);
 
-            taskDescriptionContextWithCommentPrefix += "\n\n\n\n";
+        let taskDescriptionContextWithCommentPrefix = "";
+        if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+            try {
+                const taskDescriptionContext = await createTaskDescriptionContext();
+                if (taskDescriptionContext) {
+                    taskDescriptionContext.split("\n").forEach(line => {
+                        taskDescriptionContextWithCommentPrefix += `${commentPrefix}<filename>task: ${line}\n`;
+                    });
+
+                    taskDescriptionContextWithCommentPrefix += "\n\n\n\n";
+                }
+
+                const taskDescriptionContextToken = countTokens(taskDescriptionContextWithCommentPrefix);
+                if (tokenCount + taskDescriptionContextToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                    tokenCount += taskDescriptionContextToken;
+                } else {
+                    taskDescriptionContextWithCommentPrefix = "";
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating task description context:", error);
+            }
         }
 
-        const taskDescriptionContextToken = countTokens(taskDescriptionContextWithCommentPrefix);
-        if (tokenCount + taskDescriptionContextToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-            tokenCount += taskDescriptionContextToken;
+        let gitDiffContext = "";
+
+        let callDefContext = "";
+        if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+            try {
+                const callCodeBlocks = await createContextCallDefine(filePath, fileContent, posoffset);
+                for (const callCodeBlock of callCodeBlocks) {
+                    const callBlockToken = countTokens(callCodeBlock.codeblock);
+                    if (tokenCount + callBlockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                        break;
+                    }
+
+                    tokenCount += callBlockToken;
+                    callDefContext += `${commentPrefix}<filename>call function define:\n\n ${callCodeBlock.filepath}\n\n`;
+                    callDefContext += `${callCodeBlock.codeblock}\n\n\n\n`;
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating call definition context:", error);
+            }
+        }
+
+        let similarBlockContext = "";
+        if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+            try {
+                let similarTokens = 0;
+                const similarContexts: {file: string, text: string}[] = await findSimilarCodeBlock(filePath, fileContent, line, column);
+
+                for (const similarContext of similarContexts) {
+                    const blockToken = countTokens(similarContext.text);
+                    if (tokenCount + blockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                        continue;
+                    }
+                    similarTokens += blockToken;
+                    if (similarTokens > CONTEXT_SIMILAR_LIMITED_SIZE) {
+                        continue;
+                    }
+
+                    tokenCount += blockToken;
+                    similarBlockContext += `${commentPrefix}<filename>similar blocks:\n\n ${similarContext.file}\n\n`;
+                    similarBlockContext += `${similarContext.text}\n\n\n\n`;
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating similar block context:", error);
+            }
+        }
+
+        let symbolContext = "";
+        if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+            try {
+                const symbolDefines: { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
+                for (const symbolDefine of symbolDefines) {
+                    const countSymboleToken = countTokens(symbolDefine.codeblock);
+                    if (tokenCount + countSymboleToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                        break;
+                    }
+
+                    tokenCount += countSymboleToken;
+                    symbolContext += `${commentPrefix}<filename>symbol defines:\n\n ${symbolDefine.filepath}\n\n`;
+                    symbolContext += `${commentPrefix}this is type of variable: ${symbolDefine.node.text}\n\n`;
+                    symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating symbol context:", error);
+            }
+        }
+
+        let recentEditContext = "";
+        if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+            try {
+                recentEditContext = await createRecentEditContext(recentEdits, filePath);
+
+                const countRecentToken = countTokens(recentEditContext);
+                if (tokenCount + countRecentToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                    tokenCount += countRecentToken;
+                } else {
+                    recentEditContext = "";
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating recent edit context:", error);
+            }
+        }
+
+        let neighborFileContext = "";
+        if (tokenCount < 200) {
+            try {
+                const neighborFiles = await findNeighborFileContext(filePath, fileContent, line, column);
+                if (neighborFiles.length > 0) {
+                    const countFileToken = countTokens(neighborFiles[0].text);
+                    if (tokenCount + countFileToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
+                        tokenCount += countFileToken;
+                        neighborFileContext += `${commentPrefix}<filename>neighbor files:\n\n ${neighborFiles[0].file}\n\n`;
+                        neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
+                    }
+                }
+            } catch (error) {
+                logger.channel()?.error("Error creating neighbor file context:", error);
+            }
+        }
+
+        logger.channel()?.debug("Complete token:", tokenCount);
+
+        let prompt = "";
+        let completeModel: string = DevChatConfig.getInstance().get("complete_model");
+        if (!completeModel) {
+            completeModel = "nvidia/starcoder2:15b";
+        }
+        if (completeModel.indexOf("deepseek") > -1) {
+            prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
+        } else if (completeModel.indexOf("starcoder") > -1) {
+            prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
+        } else if (completeModel.indexOf("codestral") > -1) {
+            prompt = "<s>[SUFFIX]" + suffix + "[PREFIX]" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix;
         } else {
-            taskDescriptionContextWithCommentPrefix = "";
+            prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
         }
+
+        return prompt;
+    } catch (error) {
+        logger.channel()?.error("Error in createPrompt:", error);
+        return undefined;
     }
-
-    // let gitDiffContext = GitDiffWatcher.getInstance().getGitDiffResult();
-    // if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000) && gitDiffContext.length > 0) {
-    //     const gitDiffContextToken = countTokens(gitDiffContext);
-    //     if (tokenCount + gitDiffContextToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-    //         tokenCount += gitDiffContextToken;
-    //         gitDiffContext = "<git_diff_start>" + gitDiffContext + "<git_diff_end>\n\n\n\n";
-    //     } else {
-    //         gitDiffContext = "";
-    //     }
-    // }
-    let gitDiffContext = "";
-
-    let callDefContext = "";
-    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-        const callCodeBlocks = await createContextCallDefine(filePath, fileContent, posoffset);
-        for (const callCodeBlock of callCodeBlocks) {
-            const callBlockToken = countTokens(callCodeBlock.codeblock);
-            if (tokenCount + callBlockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-                break;
-            }
-
-            tokenCount += callBlockToken;
-            callDefContext += `${commentPrefix}<filename>call function define:\n\n ${callCodeBlock.filepath}\n\n`;
-            callDefContext += `${callCodeBlock.codeblock}\n\n\n\n`;
-        }
-    }
-
-    let similarBlockContext = "";
-    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-        let similarTokens = 0;
-        const similarContexts: {file: string, text: string}[] = await findSimilarCodeBlock(filePath, fileContent, line, column);
-
-        for (const similarContext of similarContexts) {
-            const blockToken = countTokens(similarContext.text);
-            if (tokenCount + blockToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-                continue;
-            }
-            similarTokens += blockToken;
-             if (similarTokens > CONTEXT_SIMILAR_LIMITED_SIZE) {
-                 continue;
-            }
-
-            tokenCount += blockToken;
-            similarBlockContext += `${commentPrefix}<filename>similar blocks:\n\n ${similarContext.file}\n\n`;
-            similarBlockContext += `${similarContext.text}\n\n\n\n`;
-        }
-    }
-
-    let symbolContext = "";
-    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-        const symbolDefines: { filepath: string, node: Parser.SyntaxNode, codeblock: string }[] = await symbolDefinesContext(filePath, fileContent, line, column);
-        for (const symbolDefine of symbolDefines ) {
-            const countSymboleToken = countTokens(symbolDefine.codeblock);
-            if (tokenCount + countSymboleToken > DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-                break;
-            }
-
-            tokenCount += countSymboleToken;
-            symbolContext += `${commentPrefix}<filename>symbol defines:\n\n ${symbolDefine.filepath}\n\n`;
-            symbolContext += `${commentPrefix}this is type of variable: ${symbolDefine.node.text}\n\n`;
-            symbolContext += `${symbolDefine.codeblock}\n\n\n\n`;
-        }
-    }
-
-    let recentEditContext = "";
-    if (tokenCount < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-        recentEditContext = await createRecentEditContext(recentEdits, filePath);
-
-        const countRecentToken = countTokens(recentEditContext);
-        if (tokenCount + countRecentToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-            tokenCount += countRecentToken;
-        } else {
-            recentEditContext = "";
-        }
-    }
-
-    let neighborFileContext = "";
-    if (tokenCount < 200) {
-        const neighborFiles = await findNeighborFileContext(filePath, fileContent, line, column);
-        if (neighborFiles.length > 0) {
-            const countFileToken = countTokens(neighborFiles[0].text);
-            if (tokenCount + countFileToken < DevChatConfig.getInstance().get("complete_context_limit", 3000)) {
-                tokenCount += countFileToken;
-                neighborFileContext += `${commentPrefix}<filename>neighbor files:\n\n ${neighborFiles[0].file}\n\n`;
-                neighborFileContext += `${neighborFiles[0].text}\n\n\n\n`;
-            }
-        }
-    }
-    
-    logger.channel()?.debug("Complete token:", tokenCount);
-    
-    let prompt = "";
-    let completeModel: string = DevChatConfig.getInstance().get("complete_model");
-    if (!completeModel) {
-        completeModel = "nvidia/starcoder2:15b";
-    }
-    if (completeModel.indexOf("deepseek") > -1) {
-        prompt = "<｜fim▁begin｜>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<｜fim▁hole｜>" + suffix + "<｜fim▁end｜>";
-    } else if (completeModel.indexOf("starcoder") > -1) {
-        prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
-    } else if (completeModel.indexOf("codestral") > -1) {
-        prompt = "<s>[SUFFIX]" + suffix + "[PREFIX]" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix;
-    } else {
-        prompt = "<fim_prefix>" + taskDescriptionContextWithCommentPrefix + neighborFileContext + recentEditContext + symbolContext + callDefContext + similarBlockContext + gitDiffContext + `${commentPrefix}<filename>${filePath}\n\n` + prefix + "<fim_suffix>" + suffix + "<fim_middle>";
-    }
-    
-    return prompt;
 }
 
 function findImportTypeDefine(filePath: string, fileContent: string, node: Parser.SyntaxNode) {
