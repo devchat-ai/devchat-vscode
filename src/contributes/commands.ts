@@ -193,6 +193,7 @@ export function registerInstallCommandsCommand(
     async () => {
       const homePath = process.env.HOME || process.env.USERPROFILE || "";
       const sysDirPath = path.join(homePath, ".chat", "scripts");
+      const sysMericoDirPath = path.join(homePath, ".chat", "scripts", "merico");
       const pluginDirPath = path.join(
         UiUtilWrapper.extensionPath(),
         "workflowsCommands"
@@ -200,7 +201,7 @@ export function registerInstallCommandsCommand(
 
       const dcClient = new DevChatClient();
 
-      if (!fs.existsSync(sysDirPath)) {
+      if (!fs.existsSync(sysMericoDirPath)) {
         await copyDirectory(pluginDirPath, sysDirPath);
       }
 
