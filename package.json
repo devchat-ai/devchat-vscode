@@ -2,7 +2,7 @@
   "name": "devchat",
   "displayName": "${ASSISTANT_NAME_ZH}",
   "description": "Write prompts, not code",
-  "version": "0.1.74",
+  "version": "0.1.84",
   "icon": "assets/devchat.png",
   "publisher": "${PUBLISHER}",
   "engines": {
@@ -91,6 +91,10 @@
       ]
     },
     "commands": [
+      {
+        "command": "devchat.triggerCodeComplete",
+        "title": "Trigger Code Complete"
+      },
       {
         "command": "devchat.applyDiffResult",
         "title": "Apply Diff",
@@ -189,6 +193,12 @@
         "command": "devchat.openChatPanel",
         "key": "ctrl+shift+/",
         "mac": "cmd+shift+/"
+      },
+      {
+        "command": "devchat.triggerCodeComplete",
+        "key": "ctrl+shift+'",
+        "mac": "ctrl+shift+'",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
@@ -218,6 +228,10 @@
         },
         {
           "command": "devchat.addConext_chinese",
+          "when": "false"
+        },
+        {
+          "command": "devchat.triggerCodeComplete",
           "when": "false"
         },
         {
@@ -290,6 +304,11 @@
         }
       ],
       "editor/context": [
+        {
+          "command": "devchat.triggerCodeComplete",
+          "when": "editorTextFocus",
+          "group": "navigation"
+        },
         {
           "command": "devchat.askForCode_chinese",
           "when": "isChineseLocale && editorTextFocus && editorHasSelection",
