@@ -93,7 +93,11 @@
     "commands": [
       {
         "command": "devchat.triggerCodeComplete",
-        "title": "Trigger Code Complete"
+        "title": "Trigger Code Completion"
+      },
+      {
+        "command": "devchat.triggerCodeCompleteChinese",
+        "title": "触发代码补全"
       },
       {
         "command": "devchat.applyDiffResult",
@@ -235,6 +239,10 @@
           "when": "false"
         },
         {
+          "command": "devchat.triggerCodeCompleteChinese",
+          "when": "false"
+        },
+        {
           "command": "devchat.askForCode_chinese",
           "when": "false"
         },
@@ -306,7 +314,12 @@
       "editor/context": [
         {
           "command": "devchat.triggerCodeComplete",
-          "when": "editorTextFocus",
+          "when": "!isChineseLocale && editorTextFocus",
+          "group": "navigation"
+        },
+        {
+          "command": "devchat.triggerCodeCompleteChinese",
+          "when": "isChineseLocale && editorTextFocus",
           "group": "navigation"
         },
         {
