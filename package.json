@@ -201,7 +201,8 @@
       {
         "command": "devchat.triggerCodeComplete",
         "key": "ctrl+shift+'",
-        "mac": "ctrl+shift+'"
+        "mac": "cmd+shift+'",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
