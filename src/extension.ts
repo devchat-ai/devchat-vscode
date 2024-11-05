@@ -146,6 +146,21 @@ async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(vscode.languages.registerInlineCompletionItemProvider(selector, provider));  
   registerCodeCompleteCallbackCommand(context);
 
+  function handleCodeComplete() {
+	const editor = vscode.window.activeTextEditor;
+	if (editor) {
+	  const position = editor.selection.active;
+	  provider.triggerCodeComplete(editor.document, position);
+	}
+  }
+  
+  // command for code completion
+  context.subscriptions.push(
+	// 注册英文命令
+	vscode.commands.registerCommand('devchat.triggerCodeComplete', handleCodeComplete),
+	// 注册中文命令
+	vscode.commands.registerCommand('devchat.triggerCodeCompleteChinese', handleCodeComplete)
+  );
 
   registerOpenChatPanelCommand(context);
   registerAddContextCommand(context);
