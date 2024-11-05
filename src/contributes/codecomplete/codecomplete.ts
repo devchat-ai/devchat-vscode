@@ -16,6 +16,7 @@ export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionCon
     let disposable = vscode.commands.registerCommand(
         "DevChat.codecomplete_callback",
         async (callback: any) => {
+            logger.channel()?.trace(`Trigger codecomplete callback command`);
             callback();
         }
     );
@@ -63,6 +64,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     private previousCodeComplete: CodeCompleteResult | undefined;
     private previousPrefix: string | undefined;
     private preCompletionItem: vscode.InlineCompletionItem | undefined;
+    private isManualTrigger: boolean = false;
 
     constructor() {
         // TODO
@@ -126,7 +128,17 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     //     return true;
     // }
 
+    async triggerCodeComplete(document: vscode.TextDocument, position: vscode.Position) {
+        this.isManualTrigger = true;
+        await vscode.commands.executeCommand('editor.action.inlineSuggest.trigger');
+        // 重置标记，以便下次正常检查配置
+        setTimeout(() => {
+            this.isManualTrigger = false;
+        }, 100);
+    }
+
     async codeComplete(document: vscode.TextDocument, position: vscode.Position, context: vscode.InlineCompletionContext, token: vscode.CancellationToken): Promise<CodeCompleteResultWithMeta | undefined> {
+        logger.channel()?.debug("codeComplete called");
         const startTime = process.hrtime();
         GitDiffWatcher.getInstance().tryRun();
         
@@ -139,6 +151,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
 
         const prompt = await createPrompt(fsPath, fileContent, position.line, position.character, posOffset, this.recentEditors.getEdits());
         if (!prompt) {
+            logger.channel()?.debug("prompt is empty");
             return undefined;
         }
         logger.channel()?.trace("prompt:", prompt);
@@ -203,7 +216,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         // if (context.selectedCompletionInfo) {
         //     return [];
         // }
-        if (this.devchatConfig.get("complete_enable") !== true) {
+        if (!this.isManualTrigger && this.devchatConfig.get("complete_enable") !== true) {
             return [];
         }
 
@@ -221,7 +234,9 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         let response: CodeCompleteResultWithMeta | undefined = undefined;
 
         // 获取当前光标前三行代码
-        const linePrefix = document.getText(new vscode.Range(position.line - 4, 0, position.line, position.character));
+        let preLinesNum = 4;
+        const startLine = Math.max(0, position.line - preLinesNum);
+        const linePrefix = document.getText(new vscode.Range(startLine, 0, position.line, position.character));
         
         // 如果this.previousPrefix + this.previousCodeComplete包含“当前行光标之前内容”，且index为0，那么不需要执行代码补全
         if (this.previousPrefix && this.previousCodeComplete && this.previousCodeComplete.code.length > 0) {

@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { dependencyCheck } from './statusBarViewBase';
 import { ProgressBar } from '../util/progressBar';
 import { ASSISTANT_NAME_EN } from '../util/constants';
+import { logger } from '../util/logger';
 
 
 export function createStatusBarItem(context: vscode.ExtensionContext): vscode.StatusBarItem {
@@ -50,7 +51,9 @@ export function createStatusBarItem(context: vscode.ExtensionContext): vscode.St
 			// install devchat workflow commands
 			if (!hasInstallCommands) {
 				hasInstallCommands = true;
+				logger.channel()?.debug("Starting local service...");
 				await vscode.commands.executeCommand('DevChat.StartLocalService');
+				logger.channel()?.debug("Installing commands...");
 				await vscode.commands.executeCommand('DevChat.InstallCommands');
 				// vscode.commands.executeCommand('DevChat.InstallCommandPython');
 			}

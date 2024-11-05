@@ -3,6 +3,7 @@
  通过LLM模型生成代码补全
 */
 import axios from 'axios';
+import fetch from 'node-fetch';
 
 import { logger } from "../../util/logger";
 import { Chunk } from 'webpack';
