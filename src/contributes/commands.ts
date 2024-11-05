@@ -191,6 +191,7 @@ export function registerInstallCommandsCommand(
   let disposable = vscode.commands.registerCommand(
     "DevChat.InstallCommands",
     async () => {
+      logger.channel()?.debug("InstallCommands command triggered.");
       const homePath = process.env.HOME || process.env.USERPROFILE || "";
       const sysDirPath = path.join(homePath, ".chat", "scripts");
       const sysMericoDirPath = path.join(homePath, ".chat", "scripts", "merico");
@@ -202,17 +203,20 @@ export function registerInstallCommandsCommand(
       const dcClient = new DevChatClient();
 
       if (!fs.existsSync(sysMericoDirPath)) {
+        logger.channel()?.debug("Creating directory: " + sysMericoDirPath);
         await copyDirectory(pluginDirPath, sysDirPath);
       }
 
       // Check if ~/.chat/scripts directory exists
-      if (!fs.existsSync(sysDirPath)) {
+      if (!fs.existsSync(sysMericoDirPath)) {
         // Directory does not exist, wait for updateWorkflows to finish
+        logger.channel()?.debug("Update workflows...");
         await dcClient.updateWorkflows();
         await dcClient.updateCustomWorkflows();
         sendCommandListByDevChatRun();
       } else {
         // Directory exists, execute sendCommandListByDevChatRun immediately
+        logger.channel()?.debug("Sending and updating workflows...");
         await sendCommandListByDevChatRun();
 
         // Then asynchronously execute updateWorkflows
