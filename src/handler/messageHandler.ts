@@ -3,6 +3,7 @@
 import * as vscode from 'vscode';
 
 import { logger } from '../util/logger';
+import { ExtensionContextHolder } from '../util/extensionContext';
 
 
 export class MessageHandler {
@@ -58,6 +59,19 @@ export class MessageHandler {
 			logger.channel()?.trace(`Message to GUI: "${JSON.stringify(message)}"`);
 		}
 		
+		panel.webview.postMessage(message);
+	}
+
+	public static sendMessage2(message : any, log: boolean = true): void {
+		if (log) {
+			logger.channel()?.trace(`Message to GUI: "${JSON.stringify(message)}"`);
+		}
+		
+		const panel = ExtensionContextHolder.provider?.view()!;
+		if (!panel) {
+			logger.channel()?.warn(`No panel found to send message: "${JSON.stringify(message)}"`);
+			return;
+		}
 		panel.webview.postMessage(message);
 	}
 }

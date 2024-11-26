@@ -11,6 +11,7 @@ import { outputAst } from './astTest';
 import { getEndOfLine } from './ast/language';
 import { RecentEditsManager } from './recentEdits';
 import { GitDiffWatcher } from './gitDiffWatcher';
+import { MessageHandler } from '../../handler/messageHandler';
 
 export function registerCodeCompleteCallbackCommand(context: vscode.ExtensionContext) {
     let disposable = vscode.commands.registerCommand(
@@ -44,6 +45,7 @@ function isSubsequence(sub: string, source: string): boolean {
 
 interface LogEventRequest {
     completion_id: string;
+    is_manual_trigger: boolean;
     type: string; // "view", "select"
     lines: number;
     length: number; // length of code completed
@@ -77,26 +79,11 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
     }
 
     async logEventToServer(event: LogEventRequest) {
-        const devchatToken = this.devchatConfig.get("providers.devchat.api_key");
-        const devchatEndpoint = this.devchatConfig.get("providers.devchat.api_base");
-        const apiUrl = `${devchatEndpoint}/complete_events`;
-        const requestOptions: RequestInit = {
-            method: 'POST',
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${devchatToken}`,
-            },
-            body: JSON.stringify(event),
-        };
+        MessageHandler.sendMessage2({command: "logEvent", id: event.completion_id, language: event.language, name: event.type, value: {...event}});
+    }
 
-        try {
-            const response = await fetch(apiUrl, requestOptions);
-            if (!response.ok) {
-                logger.channel()?.info("log event to server failed:", response.status);
-            }
-        } catch (error) {
-            console.error('Error posting event to the server:', error);
-        }
+    async logMessageToServer(id: string, language: string, model: string, result: string) {
+        MessageHandler.sendMessage2({command: "logMessage", id: id, language, commandName: "code_completion", content: result, model});
     }
 
     // check whether need to send code complete event
@@ -219,6 +206,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
         if (!this.isManualTrigger && this.devchatConfig.get("complete_enable") !== true) {
             return [];
         }
+        const isManualTrigger = this.isManualTrigger;
 
         // const filepath = document.uri.fsPath;
         // const fileContent = document.getText();
@@ -269,12 +257,20 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             }
         }
 
+        this.logMessageToServer(
+            response.result.id,
+            path.extname(document.uri.fsPath).toLowerCase().slice(1),
+            DevChatConfig.getInstance().get("complete_model") ?? "unknow",
+            response.result.code
+        );
+
         // TODO
         // 代码补全建议是否已经被用户看到，这个需要更加准确的方式来识别。
         logger.channel()?.trace("code complete show.");
         this.logEventToServer(
             {
                 completion_id: response.result.id,
+                is_manual_trigger: isManualTrigger,
                 type: "view",
                 lines: response.result.code.split('\n').length,
                 length: response.result.code.length,
@@ -302,6 +298,7 @@ export class InlineCompletionProvider implements vscode.InlineCompletionItemProv
             this.logEventToServer(
                 {
                     completion_id: response!.result.id,
+                    is_manual_trigger: isManualTrigger,
                     type: "select",
                     lines: response!.result.code.split('\n').length,
                     length: response!.result.code.length,

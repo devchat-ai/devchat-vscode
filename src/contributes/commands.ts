@@ -29,6 +29,10 @@ async function copyDirectory(src: string, dest: string): Promise<void> {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
+    if (entry.name === ".git") {
+      continue;
+    }
+
     if (entry.isDirectory()) {
       await copyDirectory(srcPath, destPath);
     } else {
@@ -185,6 +189,12 @@ export function regApplyDiffResultCommand(context: vscode.ExtensionContext) {
   );
 }
 
+function getExtensionVersion(): string {
+  const packageJsonPath = path.join(__dirname, '..', 'package.json');
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  return packageJson.version;
+}
+
 export function registerInstallCommandsCommand(
   context: vscode.ExtensionContext
 ) {
@@ -195,17 +205,22 @@ export function registerInstallCommandsCommand(
       const homePath = process.env.HOME || process.env.USERPROFILE || "";
       const sysDirPath = path.join(homePath, ".chat", "scripts");
       const sysMericoDirPath = path.join(homePath, ".chat", "scripts", "merico");
+      const devchatConfig = DevChatConfig.getInstance();
       const pluginDirPath = path.join(
         UiUtilWrapper.extensionPath(),
         "workflowsCommands"
       ); // Adjust this path as needed
 
       const dcClient = new DevChatClient();
+      const updatePublicWorkflow = devchatConfig.get("update_public_workflow", true);
+      const currentVersion = UiUtilWrapper.extensionPath();
+      const previousVersion = devchatConfig.get("last_devchat_version", "");
 
-      if (!fs.existsSync(sysMericoDirPath)) {
+      if (!fs.existsSync(sysMericoDirPath) || (updatePublicWorkflow === false && currentVersion !== previousVersion)) {
         logger.channel()?.debug("Creating directory: " + sysMericoDirPath);
         await copyDirectory(pluginDirPath, sysDirPath);
       }
+      devchatConfig.set("last_devchat_version", currentVersion);
 
       // Check if ~/.chat/scripts directory exists
       if (!fs.existsSync(sysMericoDirPath)) {
