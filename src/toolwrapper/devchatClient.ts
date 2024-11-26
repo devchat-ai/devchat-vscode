@@ -155,6 +155,7 @@ export class DevChatClient {
                 logger.channel()?.info("No local service port found.");
                 throw new DCLocalServicePortNotSetError();
             }
+            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
             const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
             this.baseURL = `http://localhost:${port}`;
         }
@@ -174,6 +175,7 @@ export class DevChatClient {
                 logger.channel()?.info("No local service port found.");
                 throw new DCLocalServicePortNotSetError();
             }
+            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
             const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
             this.baseURL = `http://localhost:${port}`;
         }
@@ -251,6 +253,7 @@ export class DevChatClient {
             if (!process.env.DC_LOCALSERVICE_PORT) {
                 logger.channel()?.info("No local service port found.");
             }
+            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
             const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
             this.baseURL = `http://localhost:${port}`;
         }
