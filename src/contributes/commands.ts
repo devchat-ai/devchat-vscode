@@ -240,6 +240,9 @@ export function registerInstallCommandsCommand(
         
         await sendCommandListByDevChatRun();
       }
+
+      // Ensure the panel is activated
+      await ensureChatPanel(context);
     }
   );
 
