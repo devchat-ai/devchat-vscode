@@ -16,7 +16,9 @@ export async function handleCodeSelected(fileSelected: string, codeSelected: str
 
 	// get relative path of workspace
 	const workspaceDir = UiUtilWrapper.workspaceFoldersFirstPath();
-	const relativePath = path.relative(workspaceDir!, fileSelected);
+    const relativePath = workspaceDir 
+        ? path.relative(workspaceDir, fileSelected)
+        : fileSelected;
 
     // convert fileContent to markdown code block with languageId and file path
     const data = {

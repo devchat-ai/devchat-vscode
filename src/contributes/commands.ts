@@ -216,31 +216,38 @@ export function registerInstallCommandsCommand(
       const currentVersion = UiUtilWrapper.extensionPath();
       const previousVersion = devchatConfig.get("last_devchat_version", "");
 
+      let copiedDirectory = false;
       if (!fs.existsSync(sysMericoDirPath) || (updatePublicWorkflow === false && currentVersion !== previousVersion)) {
         logger.channel()?.debug("Creating directory: " + sysMericoDirPath);
         await copyDirectory(pluginDirPath, sysDirPath);
+        copiedDirectory = true;
       }
       devchatConfig.set("last_devchat_version", currentVersion);
 
-      // Check if ~/.chat/scripts directory exists
-      if (!fs.existsSync(sysMericoDirPath)) {
-        // Directory does not exist, wait for updateWorkflows to finish
-        logger.channel()?.debug("Update workflows...");
-        await dcClient.updateWorkflows();
-        await dcClient.updateCustomWorkflows();
+      if (copiedDirectory) {
+        logger.channel()?.debug("Directory copied successfully.");
         sendCommandListByDevChatRun();
       } else {
-        // Directory exists, execute sendCommandListByDevChatRun immediately
-        logger.channel()?.debug("Sending and updating workflows...");
-        await sendCommandListByDevChatRun();
+        // Check if ~/.chat/scripts directory exists
+        if (!fs.existsSync(sysMericoDirPath)) {
+          // Directory does not exist, wait for updateWorkflows to finish
+          logger.channel()?.debug("Update workflows...");
+          await dcClient.updateWorkflows();
+          await dcClient.updateCustomWorkflows();
+          sendCommandListByDevChatRun();
+        } else {
+          // Directory exists, execute sendCommandListByDevChatRun immediately
+          logger.channel()?.debug("Sending and updating workflows...");
+          await sendCommandListByDevChatRun();
 
-        // Then asynchronously execute updateWorkflows
-        await dcClient.updateWorkflows();
-        await dcClient.updateCustomWorkflows();
-        
-        await sendCommandListByDevChatRun();
+          // Then asynchronously execute updateWorkflows
+          await dcClient.updateWorkflows();
+          await dcClient.updateCustomWorkflows();
+          
+          await sendCommandListByDevChatRun();
+        }
       }
-
+      
       // Ensure the panel is activated
       await ensureChatPanel(context);
     }
