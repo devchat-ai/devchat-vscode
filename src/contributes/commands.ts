@@ -219,6 +219,9 @@ export function registerInstallCommandsCommand(
       let copiedDirectory = false;
       if (!fs.existsSync(sysMericoDirPath) || (updatePublicWorkflow === false && currentVersion !== previousVersion)) {
         logger.channel()?.debug("Creating directory: " + sysMericoDirPath);
+        if (fs.existsSync(sysMericoDirPath)) {
+          fs.rmSync(sysMericoDirPath, { recursive: true, force: true });
+        }
         await copyDirectory(pluginDirPath, sysDirPath);
         copiedDirectory = true;
       }
