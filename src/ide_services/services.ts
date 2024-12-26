@@ -18,6 +18,8 @@ import { getDiagnosticsInRange } from "./endpoints/documentRangeDiagnostics";
 import { getExtensionToolsPath } from "./endpoints/getToolsPath";
 import { getCollapsedCode } from "./endpoints/getCollapsedCode";
 
+import * as vscode from 'vscode';
+
 const functionRegistry: any = {
     /**
      * Official IDE Service Protocol Endpoints
@@ -29,6 +31,19 @@ const functionRegistry: any = {
     "/get_local_service_port": {
         keys: [],
         handler: getLocalServicePort,
+    },
+    "/get_extension_version": {
+        keys: [],
+        handler: () => {
+            // 从package.json中获取版本号
+            const extension = vscode.extensions.all.find(ext => 
+                ext.packageJSON.name === 'devchat'  // 只匹配 name，不匹配 publisher
+            );
+            if (extension) {
+                return extension.packageJSON.version;
+            }
+            return undefined;
+        }
     },
     "/install_python_env": {
         keys: ["command_name", "requirements_file"],
