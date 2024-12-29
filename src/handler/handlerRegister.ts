@@ -14,6 +14,7 @@ import { doVscodeCommand } from './vscodeCommandHandler';
 import { readFile, writeFile, getIDEServicePort, getCurrentFileInfo } from './fileHandler';
 import { getTopics, deleteTopic } from './topicHandler';
 import { readConfig, writeConfig, readServerConfigBase, writeServerConfigBase } from './configHandler';
+import { openLink } from './openlinkHandler';
 
 
 // According to the context menu selected by the user, add the corresponding context file
@@ -83,4 +84,5 @@ messageHandler.registerHandler('getIDEServicePort', getIDEServicePort);
 messageHandler.registerHandler('readServerConfigBase', readServerConfigBase);
 messageHandler.registerHandler('writeServerConfigBase', writeServerConfigBase);
 
+messageHandler.registerHandler('openLink', openLink);
 
