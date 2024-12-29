@@ -150,15 +150,13 @@ export class DevChatClient {
     }
 
     async _get(path: string, config?: any): Promise<AxiosResponse> {
-        if (!this.baseURL) {
-            if (!process.env.DC_LOCALSERVICE_PORT) {
-                logger.channel()?.info("No local service port found.");
-                throw new DCLocalServicePortNotSetError();
-            }
-            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
-            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
-            this.baseURL = `http://localhost:${port}`;
+        if (!process.env.DC_LOCALSERVICE_PORT) {
+            logger.channel()?.info("No local service port found.");
+            throw new DCLocalServicePortNotSetError();
         }
+        logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
+        const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+        this.baseURL = `http://localhost:${port}`;
 
         try {
             logger.channel()?.debug(`GET request to ${this.baseURL}${path}`);
@@ -170,15 +168,13 @@ export class DevChatClient {
         }
     }
     async _post(path: string, data: any = undefined): Promise<AxiosResponse> {
-        if (!this.baseURL) {
-            if (!process.env.DC_LOCALSERVICE_PORT) {
-                logger.channel()?.info("No local service port found.");
-                throw new DCLocalServicePortNotSetError();
-            }
-            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
-            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
-            this.baseURL = `http://localhost:${port}`;
+        if (!process.env.DC_LOCALSERVICE_PORT) {
+            logger.channel()?.info("No local service port found.");
+            throw new DCLocalServicePortNotSetError();
         }
+        logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
+        const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+        this.baseURL = `http://localhost:${port}`;
 
         try {
             logger.channel()?.debug(`POST request to ${this.baseURL}${path}`);
@@ -249,14 +245,12 @@ export class DevChatClient {
         message: ChatRequest,
         onData: (data: ChatResponse) => void
     ): Promise<ChatResponse> {
-        if (!this.baseURL) {
-            if (!process.env.DC_LOCALSERVICE_PORT) {
-                logger.channel()?.info("No local service port found.");
-            }
-            logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
-            const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
-            this.baseURL = `http://localhost:${port}`;
+        if (!process.env.DC_LOCALSERVICE_PORT) {
+            logger.channel()?.info("No local service port found.");
         }
+        logger.channel()?.trace("Using local service port:", process.env.DC_LOCALSERVICE_PORT);
+        const port: number = parseInt(process.env.DC_LOCALSERVICE_PORT || '8008', 10);
+        this.baseURL = `http://localhost:${port}`;
 
         this._cancelMessageToken = axios.CancelToken.source();
         const workspace = UiUtilWrapper.workspaceFoldersFirstPath();
