@@ -11,7 +11,13 @@ jobs:
       - run: git submodule sync
       - run: git submodule update --init --recursive
       - run: npm install
+      - run: |
+          cd gui
+          yarn
+          yarn vscode
+          cd ..
       - run: npm run build
+      - run: yarn package
       - persist_to_workspace:
           root: .
           paths:
