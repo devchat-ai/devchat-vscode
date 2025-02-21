@@ -10,13 +10,15 @@ jobs:
       - checkout
       - run: git submodule sync
       - run: git submodule update --init --recursive
-      - run: npm install
+      # 首先在根目录安装依赖
+      - run: yarn install
+      # 然后进入 gui 目录安装依赖并构建
       - run: |
           cd gui
-          yarn
+          yarn install
           yarn vscode
           cd ..
-      - run: npm run build
+      # 最后执行打包
       - run: yarn package
       - persist_to_workspace:
           root: .
