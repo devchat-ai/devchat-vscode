@@ -20,8 +20,6 @@ jobs:
           yarn install
           yarn vscode
           cd ..
-      # 最后执行打包
-      - run: yarn package
       - persist_to_workspace:
           root: .
           paths:
