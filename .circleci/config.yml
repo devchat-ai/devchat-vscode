@@ -10,6 +10,8 @@ jobs:
       - checkout
       - run: git submodule sync
       - run: git submodule update --init --recursive
+      # 创建必要的目录
+      - run: mkdir -p dist
       # 首先在根目录安装依赖
       - run: yarn install
       # 然后进入 gui 目录安装依赖并构建
