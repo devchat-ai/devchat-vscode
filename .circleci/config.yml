@@ -63,7 +63,7 @@ jobs:
             sed -i "s/\"version\": \".*\",/\"version\": \"${CIRCLE_TAG:1}\",/" package.json
       - run:
           name: "Publish to Marketplace"
-          command: npx vsce publish -p $VSCE_TOKEN --allow-star-activation --pre-release
+          command: npx vsce publish -p $VSCE_TOKEN --allow-star-activation
 workflows:
   version: 2
   build-and-publish:
