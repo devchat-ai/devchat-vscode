@@ -5,82 +5,44 @@
 
 # DevChat Visual Studio Code Extension
 
-**The AI Coding Assistant Made Effective with Human in the Loop**
+### Intelligent Workflows Generated with Natural Language
 
-🛠️ No excessive automation, just right AI where it works.
+#### 🪄 Without leaving the IDE, direct AI to perform tasks using natural language.
 
-☕ Simple to use, without complicated prompt engineering.
+#### 🧩 Bridge the last mile of AI productivity through knowledge engineering.
 
-🍻 Designed for extensibility.
+#### 🛠️ Tailor the AI coding assistant to align perfectly with your specific needs.
 
-</div>
 <br>
-<div align="left">
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
 [![VS Code Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![VS Code Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/merico.devchat?logo=visual-studio-code)](https://marketplace.visualstudio.com/items?itemName=merico.devchat)
 [![GitHub license](https://img.shields.io/github/license/devchat-ai/devchat-vscode.svg)](https://github.com/devchat-ai/devchat-vscode/blob/main/LICENSE)
-[![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/9t3yrbBUXD)
+[![Discord Chat](https://img.shields.io/discord/1106908489114206309?logo=discord)](https://discord.gg/JNyVGz8y)
 
-👉 Install [Visual Studio Code extension](https://github.com/devchat-ai/devchat-vscode) from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy DevChat 👏
+👉 Install from from [Visual Studio Marketplace](https://marketplace.visualstudio.com/items?itemName=merico.devchat) and enjoy DevChat 👏
 
-  
-***
+</div>
 
-## What is DevChat?
 
-DevChat is an open-source platform that empowers developers to more effectively integrate AI into code generation and documentation. DevChat aims to go beyond simple code auto-completion and limited operations on code snippets. DevChat offers a highly *practical* and *effective* way for developers to interact and collaborate with large language models (LLMs).
+While tools like GitHub Copilot, Cursor, and Cline are making coding increasingly intelligent, and platforms like Dify, Flowise, and Coze enable drag-and-drop workflows, we developers still find ourselves wading through vast AI-less seas daily, wearied by the myriad tedious processes in development.
 
-## Why DevChat?
+While some complex customization demands of enterprises have turned tool adaptation into tar pits, hands-on enthusiasts are busily engaged in various personalized tasks.
+Every dev team has its own character and deserves tailored AI services, and implementing these shouldn’t be arduous.
 
-While there are many AI coding tools available, we developed DevChat based on our practical insights from generating tens of thousands of lines of code. DevChat makes the following distinctive design choices:
+We’ve built the DevChat open-source community to help every developer effortlessly cross the last mile of AI productivity!
 
-- **Precise manual control over the context embedded in a prompt**. Precise control over context is the key to effective AI use. We find that most other "intelligent" or "automatic" tools tend to over-guess what a user needs to put into a prompt. That typically introduces more noise than LLMs can effectively manage.
-- **A simple, extensible prompt directory**. Bring your own prompts, and build a library of what works for you and your team. Easily integrate your own prompt templates into DevChat, avoiding significant engineering effort or a steep learning curve. You don't need a complex framework to make AI work for you. All it takes is a standard editor operating on your filesystem.
+## Core Features
 
-## Feature Overview
+### ❤️ Simplified Personalization: Create Custom Workflows with a Few Sentences
+- Say goodbye to the rigid and learning-intensive “drag-and-drop” workflow frameworks. With just a few sentences, you can easily generate intelligent workflows that assist or handle various tasks for you — whether it’s submitting a standardized GitLab MR, generating API automated API test cases, or having the AI provide progress updates via voice notifications.
+- Through the open-source community, we aim to build a rich collection of intelligent workflows, ranging from plugins that access rich IDE context to various autonomous agents, ensuring there’s always a “magical tool” that suits you.
 
-### Context Building
-
-Great output requires great input. To maximize the power of AI, DevChat assists you seamlessly to **provide the right context** to the AI.
-
-- For instance, to generate test cases for a function, you can add to the prompt the function along with an existing test case. The test case serves as a useful reference for DevChat, enabling it to understand how to write a valid test case specific to your environment, thus eliminating the need for you to specify every requirement in your prompt.
-
-  ![Add to context](https://github.com/devchat-ai/devchat-vscode/assets/592493/9b19c798-d06f-4373-8f8a-6a950c3a8ba5)
-
-- You can incorporate the output of any command, such as `tree ./src`, into a prompt with DevChat. For example, you can add the output of `git diff --cached` to DevChat, which can then generate a commit message for you.
-
-  ![Generate a commit message](https://github.com/devchat-ai/devchat-vscode/assets/592493/7bd34547-762c-4f97-b792-8d05a9eb1dcf)
-
-- Program analysis can assist in building the necessary context. Suppose you want DevChat to explain some code to you. DevChat can perform better if it's aware of the dependent functions that the code is calling. In this scenario, you can select the target code with DevChat to explain and add "symbol definitions" to the context (by clicking the plus button). DevChat will then generate a prompt that explains the target code, taking into account the dependent functions.
-
-### Prompt Extension
-
-DevChat utilizes a directory to manage predefined prompt templates. You can easily add your own or modify existing ones using a text editor.
-By default, the directory is named `workflows` and located in the `.chat` folder at your home directory. You can run `ls ~/.chat/workflows` in a terminal to see what's inside.
-
-The `workflows` directory typically contains three subdirectories, `sys`, `org`, and `usr`. The `sys` (system) directory is a clone of https://github.com/devchat-ai/workflows, which contains the default prompt templates. You can overwrite those system prompts. For instance, if you create `commit_message` in the `usr` directory and define your own `prompt.txt`, DevChat will use your version instead of the default in `sys` or `org`.
-
-  ```
-  workflows
-  ├── sys
-  │   └── commit_message
-  │       └── prompt.txt
-  ├── org
-  │   └── commit_message
-  │       └── prompt.txt
-  └── usr
-      └── commit_message
-          └── prompt.txt
-  ```
-
-The `org` directory is useful for cleanly maintaining team-wise conventions or requirements. Your team can share a Git repository to store prompts in `org`, and every team member can locally sync `~/.chat/workflows/org` with the repository. The `org` prompts will overwrite those in `sys`, while an individual developer can then further customize them in `usr`.
-
-You can incorporate a template in your prompt by typing a "command" with the corresponding name in the DevChat input. Type `/` followed by the command name, as shown below. The `/`-separated path to the prompt directory corresponds to a `.`-separated command name. For instance, if you want to embed the 'prompt.txt' file located in `path/to/dir` into your current prompt, you should type `/path.to.dir` into the DevChat input field, along with the other content of the prompt. Note that `sys`, `org`, or `usr` do not need to be included in a command name. DevChat will first look up the corresponding path under `usr`, then `org`, and finally `sys`.
-
-  <img width="386" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/145d94eb-a3e8-42ca-bb88-a462b6070b2f">
-
+### ❤️ Deep Understanding of Private Knowledge Through Knowledge Engineering
+- Integrated knowledge graph capabilities support diverse semantic queries, combining static pre-construction before queries with dynamic construction during queries to balance optimal effectiveness and performance.
+- Classify knowledge for specific scenarios to enhance AI generations.
+  - For example, by analyzing all interfaces, parameters, and relationships in API documents, our AI autonomous testing tool can use multiple APIs to generate test cases, reducing exploratory steps and improving the quality of test scripts.
 
 ## Quick Start
 
@@ -91,7 +53,7 @@ You can incorporate a template in your prompt by typing a "command" with the cor
   
   &nbsp; &nbsp; <img width="220" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/c30f76fe-321a-4145-88fa-a0ef3d36bde5">
 
-  - Click on the DevChat icon in the status bar. If the API key is not set, DevChat will prompt you to enter it. Simply input your OpenAI's key (DevChat's keys are for users having no OpenAI keys).
+  - Click on the DevChat icon in the status bar. If the API key is not set, DevChat will prompt you to enter it. Simply input your OpenAI's key (or DevChat's key).
 
   &nbsp; &nbsp; <img width="400" alt="image" src="https://github.com/devchat-ai/devchat-vscode/assets/592493/172ae656-a3ea-45c9-8b67-9bba1added1a">
 
@@ -101,7 +63,7 @@ You can incorporate a template in your prompt by typing a "command" with the cor
 
 ## Community
 
-- Join our [Discord](https://discord.gg/9t3yrbBUXD)!
+- Join our [Discord](https://discord.gg/JNyVGz8y)!
 - Participate in [discussions](https://github.com/devchat-ai/devchat/discussions)!
 
 ## What is Prompt-Centric Software Development (PCSD)?
@@ -122,7 +84,7 @@ You can incorporate a template in your prompt by typing a "command" with the cor
 
 ## Contributing
 
-Issues and pull request are welcome: 
+Issues and pull requests are welcome: 
 - https://github.com/devchat-ai/devchat/issues
 - https://github.com/devchat-ai/devchat-vscode/pulls
 
