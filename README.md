@@ -5,7 +5,7 @@
 
 # DevChat Visual Studio Code Extension
 
-### Intelligent Workflows Generated with Natural Language
+### AI Workflows Generated with Natural Language
 
 #### 🪄 Without leaving the IDE, direct AI to perform tasks using natural language.
 
@@ -31,7 +31,7 @@ While tools like GitHub Copilot, Cursor, and Cline are making coding increasingl
 While some complex customization demands of enterprises have turned tool adaptation into tar pits, hands-on enthusiasts are busily engaged in various personalized tasks.
 Every dev team has its own character and deserves tailored AI services, and implementing these shouldn’t be arduous.
 
-We’ve built the DevChat open-source community to help every developer effortlessly cross the last mile of AI productivity!
+We’ve built the DevChat open-source community to help every developer effortlessly cross the last mile of LLM productivity!
 
 ## Core Features
 
